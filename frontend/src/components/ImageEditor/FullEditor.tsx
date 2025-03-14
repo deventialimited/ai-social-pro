@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { Fragment, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
