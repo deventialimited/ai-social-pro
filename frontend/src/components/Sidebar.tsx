@@ -156,7 +156,7 @@ const Sidebar = ({
           <div className="mt-4">
             <a
               href="#"
-              onClick={handleLogout}
+              onClick={handleLogout} //fontpicker uninstalled
               className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded"
             >
               <FaSignOutAlt className="mr-2" /> Logout
