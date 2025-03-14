@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import type React from "react";
-import { v4 as uuidv4 } from "uuid";
+import type React from "react"
+import { v4 as uuidv4 } from "uuid"
 
 // Define shape types
 type ShapeType =
@@ -18,23 +18,33 @@ type ShapeType =
   | "arrow-left"
   | "arrow-right"
   | "arrow-down"
-  | "arrow-up";
+  | "arrow-up"
 
 // Define shape object structure
 interface Shape {
-  id: string;
-  type: ShapeType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-  zIndex: number;
-  rotation: number;
+  id: string
+  type: ShapeType
+  x: number
+  y: number
+  width: number
+  height: number
+  color: string
+  zIndex: number
+  rotation: number
+  effects?: ShapeEffects
+}
+
+interface ShapeEffects {
+  shadow: boolean
+  blur: number
+  offsetX: number
+  offsetY: number
+  opacity: number
+  color: string
 }
 
 interface ShapesTabContentProps {
-  onAddShape: (shape: Shape) => void;
+  onAddShape: (shape: Shape) => void
 }
 
 const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
@@ -64,11 +74,7 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "triangle",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M1,21H23L12,2L1,21Z"
-            className="text-gray-400"
-          />
+          <path fill="currentColor" d="M1,21H23L12,2L1,21Z" className="text-gray-400" />
         </svg>
       ),
     },
@@ -76,11 +82,7 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "pentagon",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M12,2L1,9.5L4.5,21H19.5L23,9.5L12,2Z"
-            className="text-gray-400"
-          />
+          <path fill="currentColor" d="M12,2L1,9.5L4.5,21H19.5L23,9.5L12,2Z" className="text-gray-400" />
         </svg>
       ),
     },
@@ -112,21 +114,14 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "cross",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M10,2H14V8H20V12H14V22H10V12H4V8H10V2Z"
-            className="text-gray-400"
-          />
+          <path fill="currentColor" d="M10,2H14V8H20V12H14V22H10V12H4V8H10V2Z" className="text-gray-400" />
         </svg>
       ),
     },
     {
       type: "oval",
       component: (
-        <div
-          className="w-full h-full bg-gray-400 rounded-full"
-          style={{ height: "75%" }}
-        ></div>
+        <div className="w-full h-full bg-gray-400 rounded-full" style={{ height: "75%" }}></div>
       ),
     },
     {
@@ -145,10 +140,10 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "arrow-left",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
-            className="text-gray-400"
+          <path 
+            fill="currentColor" 
+            d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" 
+            className="text-gray-400" 
           />
         </svg>
       ),
@@ -157,10 +152,10 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "arrow-right",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"
-            className="text-gray-400"
+          <path 
+            fill="currentColor" 
+            d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" 
+            className="text-gray-400" 
           />
         </svg>
       ),
@@ -169,10 +164,10 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "arrow-up",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z"
-            className="text-gray-400"
+          <path 
+            fill="currentColor" 
+            d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" 
+            className="text-gray-400" 
           />
         </svg>
       ),
@@ -181,15 +176,15 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       type: "arrow-down",
       component: (
         <svg viewBox="0 0 24 24" className="w-full h-full">
-          <path
-            fill="currentColor"
-            d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z"
-            className="text-gray-400"
+          <path 
+            fill="currentColor" 
+            d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z" 
+            className="text-gray-400" 
           />
         </svg>
       ),
     },
-  ];
+  ]
 
   // Handle shape click
   const handleShapeClick = (type: ShapeType) => {
@@ -203,11 +198,19 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
       height: 100,
       color: "#cccccc",
       zIndex: 1,
-      rotation: 0, // Adding the missing rotation property with default value 0
-    };
+      rotation: 0,
+      effects: {
+        shadow: false,
+        blur: 0,
+        offsetX: 0,
+        offsetY: 0,
+        opacity: 70, // Default opacity set to 1 (fully opaque)
+        color: "#000000", // should be black
+      },
+    }
     // Pass the new shape to parent component
-    onAddShape(newShape);
-  };
+    onAddShape(newShape)
+  }
 
   return (
     <div className="w-full p-4">
@@ -224,7 +227,7 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ShapesTabContent;
+export default ShapesTabContent

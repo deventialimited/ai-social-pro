@@ -1,8 +1,7 @@
-// @ts-nocheck
-import type React from "react"
-import { Fragment, useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { Dialog, Transition, Listbox } from "@headlessui/react"
+"use client";
+import React, { Fragment, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Dialog, Transition, Listbox } from "@headlessui/react";
 import {
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
@@ -15,17 +14,17 @@ import {
   TrashIcon,
   ChevronRightIcon,
   ArrowsPointingInIcon,
-} from "@heroicons/react/24/outline"
-import { Dropdown } from "antd"
-import { DownOutlined } from "@ant-design/icons"
-import html2canvas from "html2canvas"
-import axios from "axios"
+} from "@heroicons/react/24/outline";
+import { Dropdown } from "antd";
+import { DownOutlined } from "@ant-design/icons";
+import html2canvas from "html2canvas";
+import axios from "axios";
 
-import ShapesTabContent from "./shapTabContent"
-import CanvasEditor from "./CanvasEditor"
-import { ImagesTabContent } from "./editor_components/ImagesTabContent"
-import { Toolbar, ShapeToolbar, ImageToolbar, BackgroundToolbar } from "./editor_components/Toolbar" // Import the Toolbar component including BackgroundToolbar
-                                    
+import ShapesTabContent from "./shapTabContent";
+import CanvasEditor from "./CanvasEditor";
+import { ImagesTabContent } from "./editor_components/ImagesTabContent";
+import { Toolbar, ShapeToolbar, ImageToolbar, BackgroundToolbar } from "./editor_components/Toolbar";
+
 // Define shape types
 type ShapeType =
   | "square"
@@ -42,44 +41,70 @@ type ShapeType =
   | "arrow-right"
   | "arrow-down"
   | "arrow-up"
-  | "textarea" // Changed text to textarea for text input
+  | "textarea"; // Changed text to textarea for text input
 
 // Define shape object structure
 interface Shape {
-  id: string
-  type: ShapeType
-  x: number
-  y: number
-  width: number
-  height: number
-  color: string
-  zIndex: number
-  rotation: number // Added rotation property
-  textContent?: string // Added text content for text shapes
+  id: string;
+  type: ShapeType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  zIndex: number;
+  rotation: number; // Added rotation property
+  textContent?: string; // Added text content for text shapes
+  transparency?: number; // Added transparency property
+  effects?: ShapeEffects; // Added effects property
 }
 
-type EditorTab = "text" | "images" | "elements" | "background" | "layers" | "size" | "shapes" | "selectedImage"
+interface ShapeEffects {
+  shadow: boolean;
+  blur: number; // Default blur set to 0
+  offsetX: number;
+  offsetY: number;
+  opacity: number; // Default opacity set to 0
+  color: string;
+}
+
+type EditorTab = "text" | "images" | "elements" | "background" | "layers" | "size" | "shapes" | "selectedImage";
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
 const FullEditor: React.FC = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [isOpen, setIsOpen] = useState<boolean>(true)
-  const [activeTab, setActiveTab] = useState<EditorTab>("images")
-  const [zoomLevel, setZoomLevel] = useState<number>(100)
-  const [shapes, setShapes] = useState<Shape[]>([])
-  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null)
-  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff")
-  const [backgroundImages, setBackgroundImages] = useState<string[]>([])
-  const [backgroundColors, setBackgroundColors] = useState<string[]>([])
-  const [colors, setColors] = useState<string[]>([])
-  const [patterns, setPatterns] = useState<string[]>([])
-  const [history, setHistory] = useState<any[]>([])
-  const [historyIndex, setHistoryIndex] = useState<number>(-1)
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(location.state?.image || null)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [postBody, setPostBody] = useState<string>(location.state?.body || "")
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<EditorTab>("images");
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
+  const [shapes, setShapes] = useState<Shape[]>(() => {
+    const savedShapes = localStorage.getItem("shapes");
+    return savedShapes ? JSON.parse(savedShapes) : [];
+  });
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
+  const [backgroundColor, setBackgroundColor] = useState<string>(() => {
+    return localStorage.getItem("backgroundColor") || "#ffffff";
+  });
+  const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
+  const [backgroundColors, setBackgroundColors] = useState<string[]>([]);
+  const [colors, setColors] = useState<string[]>([]);
+  const [patterns, setPatterns] = useState<string[]>([]);
+  const [history, setHistory] = useState<any[]>(() => {
+    const savedHistory = localStorage.getItem("history");
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  });
+  const [historyIndex, setHistoryIndex] = useState<number>(() => {
+    const savedHistoryIndex = localStorage.getItem("historyIndex");
+    return savedHistoryIndex ? JSON.parse(savedHistoryIndex) : -1;
+  });
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
+    return localStorage.getItem("backgroundImage") || location.state?.image || null;
+  });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [postBody, setPostBody] = useState<string>(() => {
+    return localStorage.getItem("postBody") || location.state?.body || "";
+  });
   const [postBodyActive, setPostBodyActive] = useState<boolean>(false); // New state to track post body activity
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textColor, setTextColor] = useState<string>("#000000"); // New state for text color
@@ -87,21 +112,35 @@ const FullEditor: React.FC = () => {
 
   const captureDiagramAsImage = async () => {
     const diagramElement = document.getElementById("canvas");
-    if (!diagramElement) return;
+    if (diagramElement) {
+      const canvas = await html2canvas(diagramElement);
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
+      if (blob) {
+        // Create a URL for the blob and trigger a download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "diagram.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-    const canvas = await html2canvas(diagramElement as HTMLElement);
-    // Convert canvas to a base64-encoded PNG
-    const imageBase64 = canvas.toDataURL("image/png");
-
-    // Navigate back to /editor, passing the updated base64
-    // (We also forward back any existing state if desired)
-    navigate("/editor", {
-      state: {
-        ...location.state,
-        imageBase64,
-        body: postBody, // If you want to preserve the body edits
-      },
-    });
+        // Proceed with the API call
+        const formData = new FormData();
+        formData.append("image", blob, "diagram.png");
+        try {
+          await axios.post("/api/update-image", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          console.log("Image successfully updated in the database");
+        } catch (error) {
+          console.error("Error updating image in the database:", error);
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -136,117 +175,137 @@ const FullEditor: React.FC = () => {
     fetchBackgroundData();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("shapes", JSON.stringify(shapes));
+    localStorage.setItem("backgroundColor", backgroundColor);
+    localStorage.setItem("backgroundImage", backgroundImage || "");
+    localStorage.setItem("postBody", postBody);
+    localStorage.setItem("history", JSON.stringify(history));
+    localStorage.setItem("historyIndex", JSON.stringify(historyIndex));
+  }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex]);
+
   const closeModal = () => {
-    setIsOpen(false)
-    navigate("/posts")
-  }
+    setIsOpen(false);
+    navigate("/posts");
+  };
 
   const openModal = () => {
-    setIsOpen(true)
-  }
+    setIsOpen(true);
+  };
 
   // Add a shape to the canvas
   const handleAddShape = (shape: Shape) => {
-    const newShapes = [...shapes, shape]
-    setShapes(newShapes)
-    addToHistory({ shapes: newShapes })
-  }
+    const newShape = {
+      ...shape,
+      effects: {
+        shadow: false,
+        blur: 0,
+        opacity: 0,
+        offsetX: 0,
+        offsetY: 0,
+        color: "#000000",
+      },
+    };
+    const newShapes = [...shapes, newShape];
+    setShapes(newShapes);
+    addToHistory({ shapes: newShapes });
+  };
 
   // Update a shape's properties
   const handleUpdateShape = (updatedShape: Shape) => {
-    const newShapes = shapes.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape))
-    setShapes(newShapes)
-    addToHistory({ shapes: newShapes })
-  }
+    const newShapes = shapes.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape));
+    setShapes(newShapes);
+    addToHistory({ shapes: newShapes });
+  };
 
   // Delete the selected shape
   const handleDeleteShape = (id: string) => {
-    const newShapes = shapes.filter((shape) => shape.id !== id)
-    setShapes(newShapes)
-    setSelectedShapeId(null)
-    addToHistory({ shapes: newShapes })
-  }
+    const newShapes = shapes.filter((shape) => shape.id !== id);
+    setShapes(newShapes);
+    setSelectedShapeId(null);
+    addToHistory({ shapes: newShapes });
+  };
 
   // Duplicate the selected shape
   const handleDuplicateShape = () => {
     if (selectedShapeId) {
-      const shapeToClone = shapes.find((shape) => shape.id === selectedShapeId)
+      const shapeToClone = shapes.find((shape) => shape.id === selectedShapeId);
       if (shapeToClone) {
         const newShape = {
           ...shapeToClone,
           id: `${shapeToClone.id}-copy-${Date.now()}`,
           x: shapeToClone.x + 20,
           y: shapeToClone.y + 20,
-        }
-        const newShapes = [...shapes, newShape]
-        setShapes(newShapes)
-        setSelectedShapeId(newShape.id)
-        addToHistory({ shapes: newShapes })
+        };
+        const newShapes = [...shapes, newShape];
+        setShapes(newShapes);
+        setSelectedShapeId(newShape.id);
+        addToHistory({ shapes: newShapes });
       }
     }
-  }
+  };
 
   // Rotate the selected shape
   const handleRotateShape = () => {
     if (!selectedShapeId) {
-      console.error("No shape selected for rotation")
-      return
+      console.error("No shape selected for rotation");
+      return;
     }
 
-    const shapeToRotate = shapes.find((shape) => shape.id === selectedShapeId)
+    const shapeToRotate = shapes.find((shape) => shape.id === selectedShapeId);
     if (!shapeToRotate) {
-      console.error("Shape to rotate not found")
-      return
+      console.error("Shape to rotate not found");
+      return;
     }
 
-    const currentRotation = shapeToRotate.rotation
+    const currentRotation = shapeToRotate.rotation;
     if (typeof currentRotation !== "number" || isNaN(currentRotation)) {
-      console.error("Current rotation value is not a valid number")
-      return
+      console.error("Current rotation value is not a valid number");
+      return;
     }
 
-    const newRotation = (currentRotation + 45) % 360
-    const updatedShape = { ...shapeToRotate, rotation: newRotation }
-    handleUpdateShape(updatedShape)
-  }
+    const newRotation = (currentRotation + 45) % 360;
+    const updatedShape = { ...shapeToRotate, rotation: newRotation };
+    handleUpdateShape(updatedShape);
+  };
 
   // Add to history
   const addToHistory = (state: any) => {
-    const newHistory = history.slice(0, historyIndex + 1)
-    newHistory.push(state)
-    setHistory(newHistory)
-    setHistoryIndex(newHistory.length - 1)
-  }
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(state);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
 
   // Undo action
   const handleUndo = () => {
     if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1)
-      const previousState = history[historyIndex - 1]
-      setShapes(previousState.shapes || [])
-      setBackgroundColor(previousState.backgroundColor || "#ffffff")
-      setPostBody(previousState.postBody || "")
+      setHistoryIndex(historyIndex - 1);
+      const previousState = history[historyIndex - 1];
+      setShapes(previousState.shapes || []);
+      setBackgroundColor(previousState.backgroundColor || "#ffffff");
+      setPostBody(previousState.postBody || "");
     }
-  }
+  };
 
   // Redo action
   const handleRedo = () => {
     if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1)
-      const nextState = history[historyIndex + 1]
-      setShapes(nextState.shapes || [])
-      setBackgroundColor(nextState.backgroundColor || "#ffffff")
-      setPostBody(nextState.postBody || "")
+      setHistoryIndex(historyIndex + 1);
+      const nextState = history[historyIndex + 1];
+      setShapes(nextState.shapes || []);
+      setBackgroundColor(nextState.backgroundColor || "#ffffff");
+      setPostBody(nextState.postBody || "");
     }
-  }
+  };
 
   // Initialize history
   useEffect(() => {
     if (history.length === 0) {
-      setHistory([{ shapes: [], backgroundColor: "#ffffff", postBody: "" }])
-      setHistoryIndex(0)
+      setHistory([{ shapes: [], backgroundColor: "#ffffff", postBody: "" }]);
+      setHistoryIndex(0);
     }
-  }, [history])
+  }, [history]);
 
   const items = [
     {
@@ -257,80 +316,99 @@ const FullEditor: React.FC = () => {
       key: "2",
       label: "Option 2",
     },
-  ]
+  ];
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "text":
-        return <TextTabContent onAddText={handleAddText} />
+        return <TextTabContent onAddText={handleAddText} />;
       case "images":
-        return <ImagesTabContent onSelectImage={(image) => {
-          setBackgroundImage(image); // Set the image as the background in the canvas
-        }} />
+        return (
+          <ImagesTabContent
+            onSelectImage={(image) => {
+              setBackgroundImage(image); // Set the image as the background in the canvas
+            }}
+          />
+        );
       case "elements":
-        return <ElementsTabContent />
+        return <ElementsTabContent />;
       case "background":
         return (
           <BackgroundTabContent
             onColorChange={(color) => {
               setBackgroundImage(null); // Clear pattern when color is selected
               setBackgroundColor(color);
-              addToHistory({ backgroundColor: color })
+              addToHistory({ backgroundColor: color });
             }}
             colors={colors}
             patterns={patterns}
             onPatternSelect={(pattern) => {
               setBackgroundColor("#ffffff"); // Reset color when pattern is selected
               setBackgroundImage(pattern);
-              addToHistory({ backgroundImage: pattern })
+              addToHistory({ backgroundImage: pattern });
             }}
           />
-        )
+        );
       case "layers":
-        return <LayersTabContent shapes={shapes} onSelectShape={setSelectedShapeId} selectedShapeId={selectedShapeId} />
+        return <LayersTabContent shapes={shapes} onSelectShape={setSelectedShapeId} selectedShapeId={selectedShapeId} />;
       case "size":
-        return <SizeTabContent />
+        return <SizeTabContent />;
       case "shapes":
-        return <ShapesTabContent onAddShape={handleAddShape} />
+        return <ShapesTabContent onAddShape={handleAddShape} />;
       case "selectedImage":
         return (
           <div className="w-full h-full flex items-center justify-center">
             <img src={selectedImage || ""} alt="Selected" className="max-w-full max-h-full" />
           </div>
-        )
+        );
       default:
-        return <TextTabContent onAddText={handleAddText} />
+        return <TextTabContent onAddText={handleAddText} />;
     }
-  }
-
-const handleAddText = (textType: string) => {
-  const newTextArea = createTextArea(textType);
-  setPostBody((prevBody) => prevBody + "\n" + newTextArea.textContent); // Append new text content to the existing post body
-};
-
-const createTextArea = (textType: string) => {
-  let defaultText = "";
-
-  // Set default text based on type
-  switch (textType) {
-    case "header":
-      defaultText = "Header";
-      break;
-    case "h2":
-      defaultText = "Sub Header";
-      break;
-    case "p":
-      defaultText = "Body Text";
-      break;
-    default:
-      defaultText = "New Text";
-  }
-
-  return {
-    id: `textarea-${Date.now()}`,
-    textContent: defaultText, // This sets the initial visible text
   };
-};
+
+  const handleAddText = (textType: string) => {
+    const newTextArea = createTextArea(textType);
+    setPostBody((prevBody) => prevBody + "\n" + newTextArea.textContent); // Append new text content to the existing post body
+  };
+
+  const createTextArea = (textType: string) => {
+    let defaultText = "";
+
+    // Set default text based on type
+    switch (textType) {
+      case "header":
+        defaultText = "Header";
+        break;
+      case "h2":
+        defaultText = "Sub Header";
+        break;
+      case "p":
+        defaultText = "Body Text";
+        break;
+      default:
+        defaultText = "New Text";
+    }
+
+    return {
+      id: `textarea-${Date.now()}`,
+      textContent: defaultText, // This sets the initial visible text
+    };
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Delete" && selectedShapeId) {
+      handleDeleteShape(selectedShapeId);
+    } else if (event.ctrlKey && event.key === "c" && selectedShapeId) {
+      handleDuplicateShape();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedShapeId]);
 
   return (
     <>
@@ -597,7 +675,7 @@ const createTextArea = (textType: string) => {
                       {/* Sidebar for active tab */}
                       <div className="w-1/5 p-4 shadow">{renderTabContent()}</div>
 
-                      <div className="flex-1 flex flex-col">
+                      <div className="flex-1  flex flex-col">
                         {/* Toolbar */}
                         {isTextAreaActive ? (
                           <Toolbar
@@ -650,6 +728,41 @@ const createTextArea = (textType: string) => {
                             onColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
                                 shape.id === selectedShapeId ? { ...shape, color } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onTransparencyChange={(transparency) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, transparency } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onEffectsChange={(effects) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, effects } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onOffsetXChange={(offsetX) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, offsetX } } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onOffsetYChange={(offsetY) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, offsetY } } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onEffectColorChange={(color) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, color } } : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
@@ -785,8 +898,8 @@ const createTextArea = (textType: string) => {
                         )}
 
                         {/* Editor area */}
-                        <div className="flex-1 bg-gray-200 p-4 relative">
-                          <div className="bg-white w-full h-full rounded-md flex items-center justify-center">
+                        <div className="flex-1 bg-gray-200 p-4 ">
+                          <div className="bg-white  w-full h-full rounded-md flex items-center justify-center">
                             <CanvasEditor
                               shapes={shapes}
                               onUpdateShape={handleUpdateShape}
@@ -801,7 +914,7 @@ const createTextArea = (textType: string) => {
                               selectedImage={selectedImage}
                             />
                           </div>
-                          <div className={`absolute top-8 left-4 ml-12 p-2 rounded-md ${isTextAreaActive ? 'border border-black-500' : ''}`}>
+                          <div className={`absolute top-48 right-[35%] ml-12 p-2 rounded-md ${isTextAreaActive ? 'border border-black-500' : ''}`}>
                             <textarea
                               className="w-full h-full text-sm resize border-none focus:outline-none"
                               value={postBody}
@@ -855,19 +968,25 @@ const createTextArea = (textType: string) => {
         </Dialog>
       </Transition>
     </>
-  )
-}
+  );
+};
 
 // Tab content components
 const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({ onAddText }) => {
   return (
     <div className="w-full max-w-lg mx-auto text-center">
-      <h1 className="text-4xl font-bold mb-4 cursor-pointer" onClick={() => onAddText("header")}>Create header</h1>
-      <h2 className="text-2xl font-medium mb-4 cursor-pointer" onClick={() => onAddText("h2")}>Create sub header</h2>
-      <p className="text-base cursor-pointer" onClick={() => onAddText("p")}>Create body text</p>
+      <h1 className="text-4xl font-bold mb-4 cursor-pointer" onClick={() => onAddText("header")}>
+        Create header
+      </h1>
+      <h2 className="text-2xl font-medium mb-4 cursor-pointer" onClick={() => onAddText("h2")}>
+        Create sub header
+      </h2>
+      <p className="text-base cursor-pointer" onClick={() => onAddText("p")}>
+        Create body text
+      </p>
     </div>
-  )
-}
+  );
+};
 
 const ElementsTabContent: React.FC = () => {
   return (
@@ -876,20 +995,20 @@ const ElementsTabContent: React.FC = () => {
         <p className="text-gray-500">Elements will be displayed here</p>
       </div>
     </div>
-  )
-}
+  );
+};
 
 interface BackgroundTabContentProps {
-  onColorChange: (color: string) => void
-  colors: string[]
-  patterns: string[]
-  onPatternSelect: (pattern: string) => void
+  onColorChange: (color: string) => void;
+  colors: string[];
+  patterns: string[];
+  onPatternSelect: (pattern: string) => void;
 }
 
 const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({ onColorChange, colors, patterns, onPatternSelect }) => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
-      <div className="mb-4" style={{ height: '30%' }}>
+      <div className="mb-4" style={{ height: "30%" }}>
         <h3 className="text-lg font-medium mb-2">Colors</h3>
         <div className="grid grid-cols-5 gap-2 overflow-y-auto max-h-24">
           {colors.map((color, index) => (
@@ -902,7 +1021,7 @@ const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({ onColorChan
           ))}
         </div>
       </div>
-      <div style={{ height: '70%' }}>
+      <div style={{ height: "70%" }}>
         <h3 className="text-lg font-medium mb-2">Patterns</h3>
         <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-128">
           {patterns.map((pattern, index) => (
@@ -918,13 +1037,13 @@ const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({ onColorChan
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 interface LayersTabContentProps {
-  shapes: Shape[]
-  onSelectShape: (id: string | null) => void
-  selectedShapeId: string | null
+  shapes: Shape[];
+  onSelectShape: (id: string | null) => void;
+  selectedShapeId: string | null;
 }
 
 const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectShape, selectedShapeId }) => {
@@ -952,8 +1071,8 @@ const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectSha
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const SizeTabContent: React.FC = () => {
   return (
@@ -984,7 +1103,7 @@ const SizeTabContent: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FullEditor
+export default FullEditor;
