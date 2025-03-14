@@ -12,7 +12,9 @@ import postRoutes from "./routes/post.routes.js";
 
 // Initialize app
 const app = express();
-
+app.get("/", (req, res) => {
+  res.json({ message: "Server is running" });
+});
 // Middleware
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "50mb" }));

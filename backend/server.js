@@ -8,7 +8,9 @@ import connectDB from "./config/db.js";
 connectDB();
 
 // Set port
-const PORT = process.env.PORT || 5000;
+
+const PORT = process.env.PORT || 4000;
+
 
 // Start server
 app.listen(PORT, () => {

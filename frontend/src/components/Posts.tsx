@@ -8,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 
 // Helper function to get a cookie by name
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; // || "http://localhost:5000"
 
 /** Attempt to refresh the ID token if it's expired. */
 

@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; // "http://localhost:5000";
 
 function checkTokenValidity(token) {
   try {

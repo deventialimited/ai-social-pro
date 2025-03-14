@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import axios from "axios";
 // imported react 1werwer
-const API_BASE_URL = import.meta.env.VITE_BASE_URL; //|| "http://localhost:5000"
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; //|| "http://localhost:5000"
 
 const DEFAULT_BUSINESS_DATA = {
   name: "no data available",
