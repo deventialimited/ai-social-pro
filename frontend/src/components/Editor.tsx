@@ -39,7 +39,8 @@ const Editor = () => {
   // Open Full Editor
   const handleEditDesignClick = () => {
     // Pass all current post fields to FullEditor
-    navigate("/fullEditor", { state: { ...post } });
+    localStorage.setItem("postdata", JSON.stringify(post));
+    navigate("/fullEditor");
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
