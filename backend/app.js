@@ -3,10 +3,10 @@
  */
 import express from "express";
 import cors from "cors";
-import errorHandler from "./middlewares/error.middleware.js"
+import errorHandler from "./middlewares/error.middleware.js";
 
 // Import routes
-import authRoutes from "./routes/auth.routes.js"
+import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.routes.js";
 
@@ -15,6 +15,28 @@ const app = express();
 app.get("/", (req, res) => {
   res.json({ message: "Server is running" });
 });
+
+// Define allowed origins
+const allowedOrigins = [
+  "http://localhost:5000", // Backend
+  "https://ai-social-pro.onrender.com/", // Backend
+  "http://localhost:5174", // Frontend (Vite)
+  "https://ai-social-pro-frontend.onrender.com/", // Deployed frontend (replace with actual domain)
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // If using cookies or authentication tokens
+  })
+);
+
 // Middleware
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "50mb" }));
