@@ -89,52 +89,6 @@ const generateCompanyData = async (domain, email) => {
  * Get site data for a domain
  * @route POST /api/users/site-data
  */
-export const getSiteData = async (req, res) => {
-  try {
-    const { domain } = req.body;
-
-    if (!domain) {
-      return res.status(400).json({ error: "Missing domain in request body" });
-    }
-
-    const user = req.user;
-    if (!user) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    // Fetch logo from Clearbit
-    const logoUrl = `https://logo.clearbit.com/${domain}`;
-    const logoResponse = await fetch(logoUrl);
-
-    let logoCloudinaryUrl = null;
-    if (logoResponse.ok) {
-      logoCloudinaryUrl = await uploadImageFromUrl(logoUrl);
-    }
-
-    // Generate enriched company data
-    const enrichedData = await generateCompanyData(domain, user.email);
-    if (enrichedData) {
-      enrichedData.logoUrl = logoCloudinaryUrl;
-    }
-
-    // Store domain with dots replaced by ___DOT___
-    const safeDomainKey = domain.replace(/\./g, "___DOT___");
-
-    let updatedUser = await User.findByIdAndUpdate(
-      user._id,
-      { $set: { [`domains.${safeDomainKey}`]: enrichedData || {} } },
-      { new: true, upsert: true }
-    );
-
-    return res.status(200).json({
-      message: "Data saved successfully",
-      updatedUser,
-    });
-  } catch (error) {
-    console.error("Error in getSiteData:", error);
-    return res.status(500).json({ error: `Server error: ${error.message}` });
-  }
-};
 
 export const getUserDomains = async (req, res) => {
   try {
@@ -163,5 +117,53 @@ export const getUserDomains = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user domains:", error);
     return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const getSiteData = async (req, res) => {
+  try {
+    const { domain } = req.body;
+
+    if (!domain) {
+      return res.status(400).json({ error: "Missing domain in request body" });
+    }
+
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Fetch logo from Clearbit
+    const logoUrl = `https://logo.clearbit.com/${domain}`;
+    const logoResponse = await fetch(logoUrl);
+
+    let logoCloudinaryUrl = null;
+    if (logoResponse.ok) {
+      logoCloudinaryUrl = await uploadImageFromUrl(logoUrl);
+    }
+
+    // Generate enriched company data
+    const enrichedData = await generateCompanyData(domain, user.email);
+    if (enrichedData) {
+      enrichedData.logoUrl = logoCloudinaryUrl;
+    }
+
+    // Store domain with dots replaced by _DOT_
+    const safeDomainKey = domain.replace(/\./g, "_DOT_");
+    let updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $set: { [`domains.${safeDomainKey}`]: enrichedData || {} } },
+      { new: true, upsert: true }
+    );
+    updatedUser = updatedUser.toObject();
+    updatedUser.domains = { [domain]: enrichedData };
+
+    return res.status(200).json({
+      message: "Data saved successfully",
+      updatedUser,
+    });
+  } catch (error) {
+    console.error("Error in getSiteData:", error);
+    return res.status(500).json({ error: `Server error: ${error.message}` });
   }
 };
