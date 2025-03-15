@@ -17,8 +17,8 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
-*.suo git git remote add origin https://github.com/MunawarJamil/ai-social-pro.git
+*.suo
 *.ntvs*
-*.njsproj  
+*.njsproj
 *.sln
 *.sw?

@@ -1,0 +1,45 @@
+name: Deploy Frontend to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Node.js (Use Node 20)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Navigate to Frontend Folder
+        run: cd frontend
+
+      - name: Delete Existing Dist Folder (if exists)
+        run: rm -rf frontend/public/dist
+
+      - name: Install Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build React App
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          cd frontend
+          firebase deploy --only hosting
