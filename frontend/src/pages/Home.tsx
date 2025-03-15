@@ -179,7 +179,7 @@ const Home = () => {
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Website to Social Media Content (v1.4)
+            Website to Social Media Content (v2.0)
           </h1>
           <p className="text-lg text-gray-600">
             Transform any website into engaging social media posts

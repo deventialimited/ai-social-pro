@@ -24,10 +24,10 @@ const Sidebar = ({
 
   const handleLogout = (e) => {
     e.preventDefault();
-    Cookies.remove("idtoken");
-    Cookies.remove("refreshToken");
-    Cookies.remove("websitename");
-    Cookies.remove("userData");
+
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("websitename");
+    localStorage.removeItem("userData");
 
     navigate("/login");
   };
