@@ -146,11 +146,9 @@ export const getSiteData = async (req, res) => {
       enrichedData.logoUrl = logoCloudinaryUrl;
     }
 
-    const safeDomainKey = domain.replace(/\./g, "_DOT_");
-
     let updatedUser = await User.findByIdAndUpdate(
       user._id,
-      { $set: { [`domains.${safeDomainKey}`]: enrichedData || {} } },
+      { $set: { [`domains.${domain}`]: enrichedData || {} } },
       { new: true, upsert: true }
     ).lean();
 
