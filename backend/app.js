@@ -19,10 +19,25 @@ app.get("/", (req, res) => {
 // Define allowed origins
 const allowedOrigins = [
   "http://localhost:5000", // Backend
-  "https://ai-social-pro.onrender.com/", // Backend
+  "https://ai-social-pro.onrender.com", // Backend
   "http://localhost:5174", // Frontend (Vite)
-  "https://ai-social-pro-frontend.onrender.com/", // Deployed frontend (replace with actual domain)
+  "http://localhost:5173", // Frontend (Vite)
+  "https://ai-social-pro-frontend.onrender.com", // Deployed frontend
 ];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"], // Explicitly allow these methods
+    credentials: true, // Allow cookies/authentication headers
+  })
+);
 
 app.use(
   cors({
