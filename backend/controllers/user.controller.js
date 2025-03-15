@@ -133,7 +133,6 @@ export const getSiteData = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Fetch logo from Clearbit
     const logoUrl = `https://logo.clearbit.com/${domain}`;
     const logoResponse = await fetch(logoUrl);
 
@@ -142,21 +141,23 @@ export const getSiteData = async (req, res) => {
       logoCloudinaryUrl = await uploadImageFromUrl(logoUrl);
     }
 
-    // Generate enriched company data
     const enrichedData = await generateCompanyData(domain, user.email);
     if (enrichedData) {
       enrichedData.logoUrl = logoCloudinaryUrl;
     }
 
-    // Store domain with dots replaced by _DOT_
     const safeDomainKey = domain.replace(/\./g, "_DOT_");
+
     let updatedUser = await User.findByIdAndUpdate(
       user._id,
       { $set: { [`domains.${safeDomainKey}`]: enrichedData || {} } },
       { new: true, upsert: true }
-    );
-    updatedUser = updatedUser.toObject();
-    updatedUser.domains = { [domain]: enrichedData };
+    ).lean();
+
+    updatedUser = {
+      ...updatedUser,
+      domains: { [domain]: enrichedData },
+    };
 
     return res.status(200).json({
       message: "Data saved successfully",
