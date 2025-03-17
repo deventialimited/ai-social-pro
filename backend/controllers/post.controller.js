@@ -20,20 +20,37 @@ export const getPosts = async (req, res) => {
 
     const authToken = authHeader.split(" ")[1]; // Extract token
 
-    // Verify token using your utility function
+    // Verify token
     const decoded = verifyToken(authToken);
     if (!decoded.id) return res.status(401).json({ message: "Invalid token" });
 
     // Find user by ID
-    const user = await User.findById(decoded.id);
+    let user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    return res.status(200).json(user); // Return full user object
+    // ———————————————— Transform domains here ————————————————
+    if (user.domains && typeof user.domains === "object") {
+      // Convert to a plain object if needed
+      user = user.toObject ? user.toObject() : user;
+
+      const dotDomains = {};
+      for (const [key, value] of Object.entries(user.domains)) {
+        // Replace all '_dot_' occurrences back to '.'
+        const realDomain = key.replace(/_dot_/g, ".");
+        dotDomains[realDomain] = value;
+      }
+
+      user.domains = dotDomains;
+    }
+    // ————————————————————————————————————————————————
+
+    return res.status(200).json(user); // Return the transformed user object
   } catch (error) {
     console.error("Error fetching user data:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 /**
  * Update a post
