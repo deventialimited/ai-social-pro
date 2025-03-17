@@ -14,6 +14,7 @@ import {
   Trash2,
   Droplet,
 } from "lucide-react"
+import BorderStyleDropdown from "./BorderStyleDropdown"
 
 // Common toolbar style
 const toolbarStyle = "flex items-center h-14 bg-white border border-gray-200 rounded-sm shadow-sm"
@@ -386,6 +387,14 @@ interface ShapeToolbarProps {
   onUndo?: () => void
   onRedo?: () => void
   isItemSelected?: boolean
+  onBorderStyleChange?: (style: string) => void
+  onBorderWidthChange?: (width: number) => void
+  onBorderColorChange?: (color: string) => void
+  borderStyle?: string
+  borderWidth?: number
+  borderColor?: string
+  selectedShapeId?: string | null
+  updateShape?: (id: string, updates: Partial<Shape>) => void
 }
 
 const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
@@ -397,6 +406,14 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
   onUndo,
   onRedo,
   isItemSelected,
+  onBorderStyleChange,
+  onBorderWidthChange,
+  onBorderColorChange,
+  borderStyle,
+  borderWidth,
+  borderColor,
+  selectedShapeId,
+  updateShape,
 }) => {
   const [shapeColor, setShapeColor] = useState<string>(() => getLocalStorageData('editor_shapeColor', '#cccccc'))
   const [shapeTransparency, setShapeTransparency] = useState<number>(() => parseFloat(getLocalStorageData('editor_shapeTransparency', '1')))
@@ -487,6 +504,17 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
 
         {/* Effects Dropdown Component */}
         <EffectsDropdown onEffectsChange={handleEffectsChange} />
+
+        <BorderStyleDropdown
+          onBorderStyleChange={onBorderStyleChange}
+          onBorderWidthChange={onBorderWidthChange}
+          onBorderColorChange={onBorderColorChange}
+          borderStyle={borderStyle || "solid"}
+          borderWidth={borderWidth || 1}
+          borderColor={borderColor || "#000000"}
+          selectedShapeId={selectedShapeId}
+          updateShape={updateShape}
+        />
 
         <button className="p-2 rounded-md hover:bg-gray-100 cursor-pointer" title="Position">
           <div className="flex items-center gap-1.5">

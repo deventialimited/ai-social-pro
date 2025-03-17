@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
 
 interface BorderStyleDropdownProps {
-  onBorderStyleChange: (style: string) => void
-  onBorderWidthChange: (width: number) => void
-  onBorderColorChange: (color: string) => void
+  onBorderStyleChange?: (style: string) => void
+  onBorderWidthChange?: (width: number) => void
+  onBorderColorChange?: (color: string) => void
   borderStyle: string
   borderWidth: number
   borderColor: string
@@ -22,7 +22,7 @@ const borderStyles = [
   { name: "Double", value: "double" },
 ]
 
-export function BorderStyleDropdown({
+const BorderStyleDropdown = ({
   onBorderStyleChange,
   onBorderWidthChange,
   onBorderColorChange,
@@ -31,7 +31,7 @@ export function BorderStyleDropdown({
   borderColor,
   selectedShapeId,
   updateShape,
-}: BorderStyleDropdownProps) {
+}: BorderStyleDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -49,21 +49,21 @@ export function BorderStyleDropdown({
   }, [])
 
   const handleBorderStyleChange = (style: string) => {
-    onBorderStyleChange(style)
+    onBorderStyleChange?.(style)
     if (selectedShapeId) {
       updateShape(selectedShapeId, { borderStyle: style })
     }
   }
 
   const handleBorderWidthChange = (width: number) => {
-    onBorderWidthChange(width)
+    onBorderWidthChange?.(width)
     if (selectedShapeId) {
       updateShape(selectedShapeId, { borderWidth: width })
     }
   }
 
   const handleBorderColorChange = (color: string) => {
-    onBorderColorChange(color)
+    onBorderColorChange?.(color)
     if (selectedShapeId) {
       updateShape(selectedShapeId, { borderColor: color })
     }
@@ -144,3 +144,5 @@ export function BorderStyleDropdown({
     </div>
   )
 }
+
+export default BorderStyleDropdown

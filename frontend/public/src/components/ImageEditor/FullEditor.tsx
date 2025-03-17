@@ -58,6 +58,7 @@ interface Shape {
   textContent?: string; // Added text content for text shapes
   transparency?: number; // Added transparency property
   effects?: ShapeEffects; // Added effects property
+  borderStyle?: string; // Added border style property
 }
 
 interface ShapeEffects {
@@ -222,6 +223,7 @@ const FullEditor: React.FC = () => {
         offsetY: 0,
         color: "#000000",
       },
+      borderStyle: "solid", // Default border style
     };
     const newShapes = [...shapes, newShape];
     setShapes(newShapes);
@@ -780,6 +782,13 @@ const FullEditor: React.FC = () => {
                             onEffectColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
                                 shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, color } } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onBorderStyleChange={(style) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, borderStyle: style } : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
