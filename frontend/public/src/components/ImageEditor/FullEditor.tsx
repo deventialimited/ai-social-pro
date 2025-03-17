@@ -59,6 +59,8 @@ interface Shape {
   transparency?: number; // Added transparency property
   effects?: ShapeEffects; // Added effects property
   borderStyle?: string; // Added border style property
+  borderColor?: string; // Added border color property
+  borderWidth?: number; // Added border width property
 }
 
 interface ShapeEffects {
@@ -224,6 +226,8 @@ const FullEditor: React.FC = () => {
         color: "#000000",
       },
       borderStyle: "solid", // Default border style
+      borderColor: "#000000", // Default border color
+      borderWidth: 1, // Default border width
     };
     const newShapes = [...shapes, newShape];
     setShapes(newShapes);
@@ -789,6 +793,20 @@ const FullEditor: React.FC = () => {
                             onBorderStyleChange={(style) => {
                               const updatedShapes = shapes.map((shape) =>
                                 shape.id === selectedShapeId ? { ...shape, borderStyle: style } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onBorderColorChange={(color) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, borderColor: color } : shape
+                              );
+                              setShapes(updatedShapes);
+                              addToHistory({ shapes: updatedShapes });
+                            }}
+                            onBorderWidthChange={(width) => {
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId ? { ...shape, borderWidth: width } : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });

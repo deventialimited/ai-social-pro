@@ -33,6 +33,9 @@ const BorderStyleDropdown = ({
   updateShape,
 }: BorderStyleDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [currentBorderStyle, setCurrentBorderStyle] = useState(borderStyle)
+  const [currentBorderWidth, setCurrentBorderWidth] = useState(borderWidth)
+  const [currentBorderColor, setCurrentBorderColor] = useState(borderColor)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -49,6 +52,7 @@ const BorderStyleDropdown = ({
   }, [])
 
   const handleBorderStyleChange = (style: string) => {
+    setCurrentBorderStyle(style)
     onBorderStyleChange?.(style)
     if (selectedShapeId) {
       updateShape(selectedShapeId, { borderStyle: style })
@@ -56,6 +60,7 @@ const BorderStyleDropdown = ({
   }
 
   const handleBorderWidthChange = (width: number) => {
+    setCurrentBorderWidth(width)
     onBorderWidthChange?.(width)
     if (selectedShapeId) {
       updateShape(selectedShapeId, { borderWidth: width })
@@ -63,6 +68,7 @@ const BorderStyleDropdown = ({
   }
 
   const handleBorderColorChange = (color: string) => {
+    setCurrentBorderColor(color)
     onBorderColorChange?.(color)
     if (selectedShapeId) {
       updateShape(selectedShapeId, { borderColor: color })
@@ -76,8 +82,7 @@ const BorderStyleDropdown = ({
         title="Border"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="w-6 h-6 border-2" style={{ borderStyle: borderStyle || "solid" }} />
-        <span className="text-sm text-gray-600">Border</span>
+        <div className="w-6 h-6" style={{ borderStyle: borderStyle || "solid", borderWidth, borderColor, backgroundColor: borderColor }} />        <span className="text-sm text-gray-600">Border</span>
         <ChevronDown className="w-4 h-4" />
       </button>
 
@@ -91,7 +96,7 @@ const BorderStyleDropdown = ({
                   <button
                     key={style.value}
                     className={`p-2 h-10 border rounded-md ${
-                      borderStyle === style.value ? "border-blue-500" : "border-gray-300"
+                      currentBorderStyle === style.value ? "border-blue-500" : "border-gray-300"
                     } hover:bg-gray-50`}
                     onClick={() => handleBorderStyleChange(style.value)}
                   >
@@ -116,13 +121,13 @@ const BorderStyleDropdown = ({
                   min="0"
                   max="100"
                   step="1"
-                  value={borderWidth}
+                  value={currentBorderWidth}
                   onChange={(e) => handleBorderWidthChange(Number(e.target.value))}
                   className="flex-1"
                 />
                 <input
                   type="number"
-                  value={borderWidth}
+                  value={currentBorderWidth}
                   onChange={(e) => handleBorderWidthChange(Number(e.target.value))}
                   className="w-20 px-2 py-1 border border-gray-300 rounded-md"
                 />
@@ -133,7 +138,7 @@ const BorderStyleDropdown = ({
               <div className="text-sm font-medium">Color</div>
               <input
                 type="color"
-                value={borderColor}
+                value={currentBorderColor}
                 onChange={(e) => handleBorderColorChange(e.target.value)}
                 className="w-full h-10"
               />
