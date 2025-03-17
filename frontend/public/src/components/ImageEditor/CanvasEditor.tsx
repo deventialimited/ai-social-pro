@@ -34,6 +34,9 @@ interface Shape {
   zIndex: number
   rotation: number
   effects?: ShapeEffects
+  borderStyle?: string
+  borderWidth?: number
+  borderColor?: string
 }
 
 interface ShapeEffects {
@@ -54,6 +57,9 @@ interface CanvasEditorProps {
   selectedShapeId: string | null
   backgroundImage?: string
   backgroundColor?: string
+  onBorderStyleChange: (style: string) => void
+  onBorderWidthChange: (width: number) => void
+  onBorderColorChange: (color: string) => void
 }
 
 const CanvasEditor: React.FC<CanvasEditorProps> = ({
@@ -65,6 +71,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   selectedShapeId,
   backgroundImage,
   backgroundColor = "#ffffff",
+  onBorderStyleChange,
+  onBorderWidthChange,
+  onBorderColorChange,
 }) => {
   const rotationRef = React.useRef({
     isRotating: false,
@@ -155,113 +164,248 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   const getShapeStyle = (shape: Shape) => {
     return {
       color: shape.color,
+      borderStyle: shape.borderStyle || "none",
+      borderWidth: shape.borderWidth ? `${shape.borderWidth}px` : "0",
+      borderColor: shape.borderColor || "transparent",
     }
   }
 
   const renderShape = (shape: Shape) => {
     const isSelected = selectedShapeId === shape.id
-
+  
     // Get shadow style separately
     const shadowStyle = getShadowStyle(shape.effects)
-
-    // Get shape style (without shadow properties)
-    const shapeStyle = getShapeStyle(shape)
-
-    // Combine styles
-    const combinedStyles = {
-      ...shapeStyle,
+  
+    // Create border style for div-based shapes
+    const divBorderStyle = shape.borderStyle !== 'none' 
+      ? {
+          border: `${shape.borderWidth || 0}px ${shape.borderStyle || 'solid'} ${shape.borderColor || 'transparent'}`
+        }
+      : {};
+  
+    // Create stroke style for SVG-based shapes
+    const svgStrokeProps = {
+      stroke: shape.borderStyle !== 'none' ? shape.borderColor || 'black' : 'none',
+      strokeWidth: shape.borderStyle !== 'none' ? shape.borderWidth || 0 : 0,
+      strokeDasharray: shape.borderStyle === 'dashed' 
+        ? '5,5' 
+        : (shape.borderStyle === 'dotted' ? '1,3' : undefined),
+    };
+  
+    // Set up double border for SVG if needed
+    const doubleStrokeProps = shape.borderStyle === 'double' 
+      ? {
+          filter: 'url(#doubleStroke)',
+        }
+      : {};
+  
+    // Base style for all shapes
+    const baseStyle = {
+      color: shape.color,
       ...shadowStyle,
-    }
-
+    };
+  
     switch (shape.type) {
       case "square":
-        return <div className="w-full h-full bg-current rounded-sm" style={combinedStyles}></div>
+        return <div className="w-full h-full bg-current rounded-sm" style={{...baseStyle, ...divBorderStyle}}></div>;
+      
       case "circle":
-        return <div className="w-full h-full bg-current rounded-full" style={combinedStyles}></div>
+        return <div className="w-full h-full bg-current rounded-full" style={{...baseStyle, ...divBorderStyle}}></div>;
+      
+      case "oval":
+        return <div className="w-full h-full bg-current rounded-full" style={{...baseStyle, ...divBorderStyle, height: "75%"}}></div>;
+      
       case "star":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
             <path
               fill="currentColor"
               d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
             />
           </svg>
-        )
+        );
+      
       case "triangle":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M1,21H23L12,2L1,21Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M1,21H23L12,2L1,21Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       case "pentagon":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M12,2L1,9.5L4.5,21H19.5L23,9.5L12,2Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M12,2L1,9.5L4.5,21H19.5L23,9.5L12,2Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       case "hexagon":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
             <path
               fill="currentColor"
               d="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5Z"
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
             />
           </svg>
-        )
+        );
+      
       case "speech-bubble":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       case "cross":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M10,2H14V8H20V12H14V22H10V12H4V8H10V2Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M10,2H14V8H20V12H14V22H10V12H4V8H10V2Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
-      case "oval":
-        return (
-          <div className="w-full h-full bg-current rounded-full" style={{ ...combinedStyles, height: "75%" }}></div>
-        )
+        );
+      
       case "cloud":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
             <path
               fill="currentColor"
               d="M19.35,10.03C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.03C2.34,8.36 0,10.9 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.03Z"
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
             />
           </svg>
-        )
+        );
+      
       case "arrow-right":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       case "arrow-left":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       case "arrow-up":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       case "arrow-down":
         return (
-          <svg viewBox="0 0 24 24" className="w-full h-full" style={combinedStyles}>
-            <path fill="currentColor" d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z" />
+          <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
+            <defs>
+              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
+                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              </filter>
+            </defs>
+            <path 
+              fill="currentColor" 
+              d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z" 
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
-        )
+        );
+      
       default:
-        return <div className="w-full h-full bg-current" style={combinedStyles}></div>
+        return <div className="w-full h-full bg-current" style={{...baseStyle, ...divBorderStyle}}></div>;
     }
   }
-
   return (
     <div
       id="canvas"
@@ -355,7 +499,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     </div>
 
                     {/* Border and resize handles */}
-                    <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none"></div>
+                    <div
+                      className="absolute inset-0 border-2 border-blue-500 pointer-events-none"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onBorderStyleChange(shape.borderStyle || "solid")
+                        onBorderWidthChange(shape.borderWidth || 1)
+                        onBorderColorChange(shape.borderColor || "#000000")
+                      }}
+                    ></div>
 
                     {/* Corner resize handles */}
                     <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>

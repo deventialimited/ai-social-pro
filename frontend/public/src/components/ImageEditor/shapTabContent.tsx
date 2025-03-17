@@ -32,6 +32,9 @@ interface Shape {
   zIndex: number
   rotation: number
   effects?: ShapeEffects
+  borderStyle?: string
+  borderWidth?: number
+  borderColor?: string
 }
 
 interface ShapeEffects {
@@ -207,6 +210,9 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
         opacity: 70, // Default opacity set to 1 (fully opaque)
         color: "#000000", // should be black
       },
+      borderStyle: "solid", // Default border style
+      borderWidth: 1, // Default border width
+      borderColor: "#000000", // Default border color
     }
     // Pass the new shape to parent component
     onAddShape(newShape)
