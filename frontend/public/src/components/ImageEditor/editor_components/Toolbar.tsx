@@ -99,11 +99,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <div className="flex items-center p-2 border-b h-14">
       <div className="flex space-x-2 mr-4">
-        <FontPicker
+        {/* <FontPicker
           apiKey="AIzaSyBF9iz-ZlVitz2P0x6Ob9X63MFKf1-8_i8"
           activeFontFamily={fontFamily}
           onChange={handleFontChange}
-        />
+        /> */}
         <input
           type="number"
           className="w-16 px-2 py-1 border border-gray-200 rounded"
