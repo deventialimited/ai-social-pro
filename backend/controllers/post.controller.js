@@ -71,7 +71,10 @@ export const getPosts = async (req, res) => {
         if (key.includes("_dot_")) {
           const realDomain = key.replace(/_dot_/g, ".");
           dotDomains[realDomain] = value;
-        } else {
+        } else if(key.includes("___DOT__")) {
+          const realDomain = key.replace(/___DOT___/g, ".");
+          dotDomains[realDomain] = value;
+        }else {
           const { domainPart, finalData } = buildDomainRecursive(key, value);
           dotDomains[domainPart] = finalData;
         }

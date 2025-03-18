@@ -11,7 +11,6 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 
 const Sidebar = ({
   isSidebarOpen,
@@ -19,22 +18,25 @@ const Sidebar = ({
   toggleBusiness,
   isBusinessOpen,
   openProfile,
+
+  // NEW PROPS for domain selection
+  domains = [],
+  selectedDomain = "",
+  onDomainChange = () => {}
 }) => {
   const navigate = useNavigate();
 
   const handleLogout = (e) => {
     e.preventDefault();
-
     localStorage.removeItem("authToken");
     localStorage.removeItem("websitename");
     localStorage.removeItem("userData");
-
     navigate("/login");
   };
 
   return (
     <div className="fixed">
-      {/* Top Menu */}
+      {/* Top Menu (for mobile) */}
       <div className="flex md:hidden pl-4 right-2 justify-between items-center mb-2">
         <button
           className="p-4"
@@ -62,21 +64,45 @@ const Sidebar = ({
       >
         <div className="p-4 flex flex-col justify-between h-full">
           <div>
+            {/* Heading (desktop) */}
             <h1 className="text-[22px] font-bold text-blue-600 mb-4 flex items-center hidden md:flex">
               Profile
               <FaBars className="ml-[138px] text-[26px] text-gray-600" />
             </h1>
-            <div className="flex items-center border border-gray-300 rounded-lg p-2">
-              <img
-                src="https://www.w3schools.com/w3images/avatar2.png"
-                alt="Logo"
-                className="mr-2 w-8 h-8"
-              />
-              <span className="text-lg text-gray-600">Acme Corp</span>
-              <button className="ml-2">
-                <FaCaretDown />
-              </button>
+
+            {/* 
+              Replacing the old "Acme Corp" text with a domain dropdown.
+              You can style it any way you like. 
+            */}
+            <div className="flex flex-col border border-gray-300 rounded-lg p-2">
+              <div className="flex items-center justify-between">
+                <img
+                  src="https://www.w3schools.com/w3images/avatar2.png"
+                  alt="Logo"
+                  className="mr-2 w-8 h-8"
+                />
+                {/* Domain Dropdown */}
+                <div className="relative flex-1">
+                  <select
+                    className="w-full border-none bg-transparent text-gray-600 cursor-pointer"
+                    value={selectedDomain}
+                    onChange={(e) => onDomainChange(e.target.value)}
+                  >
+                    <option value="">-- All Websites --</option>
+                    {domains.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button className="ml-2">
+                  <FaCaretDown />
+                </button>
+              </div>
             </div>
+
+            {/* Sidebar Nav */}
             <ul>
               <li className="mb-2">
                 <button
@@ -153,10 +179,12 @@ const Sidebar = ({
               </li>
             </ul>
           </div>
+
+          {/* Logout */}
           <div className="mt-4">
             <a
               href="#"
-              onClick={handleLogout} //fontpicker uninstalled
+              onClick={handleLogout}
               className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded"
             >
               <FaSignOutAlt className="mr-2" /> Logout
