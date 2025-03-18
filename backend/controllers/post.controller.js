@@ -33,7 +33,8 @@ export const getPosts = async (req, res) => {
     if (user.domains) {
       if (user.toObject) {
         console.log("user converted to object");
-        user = user.toObject({ getters: true }); 
+        user = user.toObject({ getters: true, flattenMaps: true });
+ 
       }
     
       console.log("Before transforming:", JSON.stringify(user.domains)); // Debug log
