@@ -27,19 +27,25 @@ export const getPosts = async (req, res) => {
     // Find user by ID
     let user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-
+    console.log("getPostsLogs: user.domain " + JSON.stringify(user.domains));
     // ———————————————— Transform domains here ————————————————
-    if (user.domains && typeof user.domains === "object") {
+    if (user.domains) {
+
       // Convert to a plain object if needed
-      user = user.toObject ? user.toObject() : user;
+      if (user.toObject) {
+        console.log("user converted to object");
+  user = user.toObject();
+}
+
 
       const dotDomains = {};
       for (const [key, value] of Object.entries(user.domains)) {
+        console.log("current domain: " + key + ", " + value);
         // Replace all '_dot_' occurrences back to '.'
         const realDomain = key.replace(/_dot_/g, ".");
         dotDomains[realDomain] = value;
       }
-
+      console.log("final domains" + JSON.stringify(dotDomains));
       user.domains = dotDomains;
     }
     // ————————————————————————————————————————————————
