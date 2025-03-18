@@ -64,7 +64,7 @@ const Login = () => {
 
         <button
           onClick={() => toast.error("Google Sign-In not available")}
-          className="mb-6 md:mb-8 w-full py-3 md:py-4 border border-gray-300 text-black rounded-lg flex items-center justify-center hover:bg-gray-100 transition font-bold"
+          className="mb-6 md:mb-8 w-full py-3 md:py-4 border border-gray-300 text-black rounded-lg flex items-center justify-center hover:bg-gray-100 transition font-bold cursor-pointer"
           disabled={loading}
         >
           <FcGoogle className="w-5 h-5 mr-2" />
@@ -116,7 +116,7 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className={`w-full py-3 bg-[#4f46e5] text-white rounded-lg transition font-bold ${
+            className={`w-full py-3 bg-[#4f46e5] text-white rounded-lg transition font-bold cursor-pointer ${
               loading ? "animate-pulse" : "hover:brightness-110"
             }`}
             disabled={loading}
@@ -129,7 +129,7 @@ const Login = () => {
           <span className="text-gray-600">Don't have an account? </span>
           <button
             onClick={handleSignupRedirect}
-            className="text-blue-500 hover:text-blue-700"
+            className="text-blue-500 hover:text-blue-700 cursor-pointer"
           >
             Sign Up
           </button>
