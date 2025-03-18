@@ -68,7 +68,7 @@ interface ShapeEffects {
   blur: number; // Default blur set to 0
   offsetX: number;
   offsetY: number;
-  opacity: number; // Default opacity set to 0
+  opacity: number; // Default opacity set to 100
   color: string;
 }
 
@@ -227,7 +227,7 @@ const FullEditor: React.FC = () => {
       },
       borderStyle: "solid", // Default border style
       borderColor: "#000000", // Default border color
-      borderWidth: 1, // Default border width
+      borderWidth: 0, // Default border width
     };
     const newShapes = [...shapes, newShape];
     setShapes(newShapes);

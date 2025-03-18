@@ -211,7 +211,7 @@ const ShapesTabContent: React.FC<ShapesTabContentProps> = ({ onAddShape }) => {
         color: "#000000", // should be black
       },
       borderStyle: "solid", // Default border style
-      borderWidth: 1, // Default border width
+      borderWidth: 0, // Default border width
       borderColor: "#000000", // Default border color
     }
     // Pass the new shape to parent component

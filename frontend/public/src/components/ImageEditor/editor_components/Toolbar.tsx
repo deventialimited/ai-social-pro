@@ -157,14 +157,14 @@ interface ShapeEffects {
 
 const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [effects, setEffects] = useState<ShapeEffects>(() => getLocalStorageData('editor_shapeEffects', {
+  const [effects, setEffects] = useState<ShapeEffects>({
     shadow: false,
-    blur: 1,
+    blur: 5,
     offsetX: 0,
     offsetY: 0,
     opacity: 100,
     color: "#000000",
-  }))
+  })
 
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -510,7 +510,7 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
           onBorderWidthChange={onBorderWidthChange}
           onBorderColorChange={onBorderColorChange}
           borderStyle={borderStyle || "solid"}
-          borderWidth={borderWidth || 1}
+          borderWidth={borderWidth || 0}
           borderColor={borderColor || "#000000"}
           selectedShapeId={selectedShapeId}
           updateShape={updateShape}
