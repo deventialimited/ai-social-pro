@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaBars,
   FaUserAlt,
@@ -11,6 +11,7 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie"; // Import the Cookies library
 
 const Sidebar = ({
   isSidebarOpen,
@@ -25,6 +26,14 @@ const Sidebar = ({
   onDomainChange = () => {}
 }) => {
   const navigate = useNavigate();
+  const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const domain = Cookies.get("websitename");
+    if (domain) {
+      onDomainChange(domain);
+    }
+  }, []);
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -32,6 +41,15 @@ const Sidebar = ({
     localStorage.removeItem("websitename");
     localStorage.removeItem("userData");
     navigate("/login");
+  };
+
+  const toggleDomainDropdown = () => {
+    setIsDomainDropdownOpen(!isDomainDropdownOpen);
+  };
+
+  const handleDomainSelect = (domain) => {
+    onDomainChange(domain);
+    setIsDomainDropdownOpen(false);
   };
 
   return (
@@ -83,22 +101,37 @@ const Sidebar = ({
                 />
                 {/* Domain Dropdown */}
                 <div className="relative flex-1">
-                  <select
-                    className="w-full border-none bg-transparent text-gray-600 cursor-pointer"
-                    value={selectedDomain}
-                    onChange={(e) => onDomainChange(e.target.value)}
+                  <div
+                    className="w-full bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer"
+                    onClick={toggleDomainDropdown}
                   >
-                    <option value="">-- All Websites --</option>
-                    {domains.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
+                    <div className="flex items-center justify-between p-2">
+                      <span className="text-gray-600 truncate">
+                        {selectedDomain || "-- All Websites --"}
+                      </span>
+                      <FaCaretDown className={`transform transition-transform ${isDomainDropdownOpen ? "rotate-180" : ""}`} />
+                    </div>
+                  </div>
+                  {isDomainDropdownOpen && (
+                    <ul className="absolute z-10 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
+                      <li
+                        className="p-2 hover:bg-gray-100"
+                        onClick={() => handleDomainSelect("")}
+                      >
+                        -- All Websites --
+                      </li>
+                      {domains.map((d) => (
+                        <li
+                          key={d}
+                          className="p-2 hover:bg-gray-100 truncate"
+                          onClick={() => handleDomainSelect(d)}
+                        >
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <button className="ml-2">
-                  <FaCaretDown />
-                </button>
               </div>
             </div>
 

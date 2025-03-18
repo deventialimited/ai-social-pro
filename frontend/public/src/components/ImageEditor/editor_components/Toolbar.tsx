@@ -416,7 +416,7 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
   updateShape,
 }) => {
   const [shapeColor, setShapeColor] = useState<string>(() => getLocalStorageData('editor_shapeColor', '#cccccc'))
-  const [shapeTransparency, setShapeTransparency] = useState<number>(() => parseFloat(getLocalStorageData('editor_shapeTransparency', '1')))
+  const [shapeTransparency, setShapeTransparency] = useState<number>(0)
 
   const handleShapeColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value
