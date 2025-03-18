@@ -18,48 +18,77 @@ export const getPosts = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const authToken = authHeader.split(" ")[1]; // Extract token
+    const authToken = authHeader.split(" ")[1];
 
-    // Verify token
     const decoded = verifyToken(authToken);
     if (!decoded.id) return res.status(401).json({ message: "Invalid token" });
 
-    // Find user by ID
     let user = await User.findById(decoded.id).select("+domains");
-
     if (!user) return res.status(404).json({ message: "User not found" });
+
     console.log("getPostsLogs: user.domain " + JSON.stringify(user.domains));
-    // ———————————————— Transform domains here ————————————————
+
+
     if (user.domains) {
       if (user.toObject) {
         console.log("user converted to object");
         user = user.toObject({ getters: true, flattenMaps: true });
- 
       }
-    
-      console.log("Before transforming:", JSON.stringify(user.domains)); // Debug log
-    
+
+      console.log("Before transforming:", JSON.stringify(user.domains));
+
+      const domainsObject = JSON.parse(JSON.stringify(user.domains)); 
       const dotDomains = {};
-      const domainsObject = JSON.parse(JSON.stringify(user.domains)); // Ensure it is a plain object
-    
+
+      
+      function buildDomainRecursive(key, value) {
+        let domainPart = key.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+
+        let node = value;
+        while (
+          node &&
+          typeof node === "object" &&
+          !Array.isArray(node) &&
+          Object.keys(node).length === 1
+        ) {
+          const [childKey] = Object.keys(node);
+          const childValue = node[childKey];
+          const cleanChildKey = childKey.replace(/\/+$/, "");
+
+          domainPart = domainPart
+            ? domainPart + "." + cleanChildKey
+            : cleanChildKey;
+
+          node = childValue;
+        }
+
+        return { domainPart, finalData: node };
+      }
+
       for (const [key, value] of Object.entries(domainsObject)) {
         console.log("current domain: " + key + ", value:", JSON.stringify(value));
-        const realDomain = key.replace(/_dot_/g, ".");
-        dotDomains[realDomain] = value;
+
+        if (key.includes("_dot_")) {
+          const realDomain = key.replace(/_dot_/g, ".");
+          dotDomains[realDomain] = value;
+        } else {
+          const { domainPart, finalData } = buildDomainRecursive(key, value);
+          dotDomains[domainPart] = finalData;
+        }
       }
-    
+
       console.log("final domains:", JSON.stringify(dotDomains));
       user.domains = dotDomains;
     }
-    
     // ————————————————————————————————————————————————
 
-    return res.status(200).json(user); // Return the transformed user object
+    return res.status(200).json(user);
   } catch (error) {
     console.error("Error fetching user data:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 
 /**
