@@ -4,8 +4,13 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { CiEdit } from "react-icons/ci";
+import { MdSaveAlt } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
+import { FaAngleDown } from "react-icons/fa6";
 
-const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; // || "http://localhost:5000"
 
 const PostCard = ({
   image = "",
@@ -17,6 +22,7 @@ const PostCard = ({
   platform = "",
   onPost,
 }) => {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const handleEditClick = () => {
@@ -28,138 +34,95 @@ const PostCard = ({
   const toggleExpanded = () => setExpanded(!expanded);
 
   return (
-    <div className="w-full flex flex-col sm:grid sm:grid-cols-[1fr_450px_1fr] gap-x-0 gap-y-4 px-2">
+    <div className="w-full flex flex-col sm:grid sm:grid-cols-[2fr_800px_1fr] gap-x-0 gap-y-4 px-2">
       <div
         tabIndex="1"
         className="post-container relative px-6 group/card col-start-2 h-fit max-w-full"
       >
-        <div className="w-full cursor-pointer shadow-lg rounded-lg mx-auto p-4 shadow-md bg-white">
-          {/* 3-dots button */}
-          <button
-            type="button"
-            className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only !size-10 z-10 absolute right-2 top-1.5 ant-dropdown-trigger"
-          >
-            <span className="ant-btn-icon">
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                strokeWidth="0"
-                viewBox="0 0 24 24"
-                height="18"
-                width="18"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path fill="none" d="M0 0h24v24H0z"></path>
-                <path
-                  d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2
-                    .9-2 2 .9 2 2 2zm0
-                    2c-1.1 0-2 .9-2 2s.9 2 2
-                    2 2-.9 2-2-.9-2-2-2zm0
-                    6c-1.1 0-2 .9-2 2s.9 2 2
-                    2 2-.9 2-2-.9-2-2-2z"
-                ></path>
-              </svg>
-            </span>
-          </button>
-
-          {/* Topic */}
-          <div className="text-center mt-2 mb-2">
-            <h2 className="text-xl font-semibold">{topic}</h2>
-          </div>
-
-          {/* Image */}
-          <div className="relative flex justify-center">
-            <img
-              loading="lazy"
-              className="object-contain rounded border border-solid border-antd-colorBorder sm:w-[366px]"
-              alt={topic}
-              src={image}
-            />
-          </div>
-
-          {/* Content (2-line clamp) */}
-          <div
-            className={`text-xs mt-4 whitespace-pre-wrap ${
-              expanded ? "" : "line-clamp-2 overflow-hidden"
-            }`}
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: expanded ? "none" : "2",
-              WebkitBoxOrient: "vertical",
-            }}
-          >
-            {content}
-          </div>
-          {content.length > 100 && (
-            <button
-              className="text-blue-500 underline text-xs mt-1"
-              onClick={toggleExpanded}
-            >
-              {expanded ? "Show Less" : "Show More"}
+        <div className="w-full shadow-lg rounded-lg mx-auto p-0 bg-white px-8">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className="flex items-center">
+              <div className="h-10 w-10 rounded-full overflow-hidden bg-purple-600 mr-3 flex-shrink-0 cursor-pointer">
+                <img
+                  src="/api/placeholder/40/40"
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div>
+                <div className="font-medium text-gray-800 cursor-pointer">
+                  Anonymous User
+                </div>
+                <div className="text-xs text-gray-500">879,873 followers</div>
+              </div>
+            </div>
+            <button className="text-gray-500">
+              <span className="text-xl">...</span>
             </button>
-          )}
-
-          {/* Meta info */}
-          <div className="mt-4 text-sm space-y-1">
-            <div>
-              <strong>Post ID:</strong> {post_id}
-            </div>
-            <div>
-              <strong>Website:</strong> {website}
-            </div>
-            <div>
-              <strong>Date:</strong> {date}
-            </div>
-            <div>
-              <strong>Platform:</strong> {platform}
-            </div>
           </div>
 
-          {/* Bottom actions (Edit) */}
-          <div className="mt-5 flex flex-row gap-2 items-center justify-center">
-            <div className="post-actions flex space-x-2">
+          <div className="shadow-[2px_2px_5px_rgba(0,0,0,0.1),-2px_-2px_5px_rgba(0,0,0,0.1)]">
+            <div className="px-4 py-2">
+              <p
+                className={`text-gray-700 text-sm ${
+                  expanded ? "" : "line-clamp-2"
+                }`}
+              >
+                {content ||
+                  "Hilma's move-in ready office made it easy to quickly take their business further. It's simplicity and growth made at WeWork."}
+              </p>
+              {content?.length > 100 && (
+                <button
+                  className="text-blue-500 text-xs mt-1 cursor-pointer"
+                  onClick={toggleExpanded}
+                >
+                  {expanded ? "Show Less" : "Show More"}
+                </button>
+              )}
+            </div>
+
+            <div className="relative w-full">
+              <img
+                loading="lazy"
+                className="w-full object-contain"
+                alt={topic || "Post image"}
+                src={image || "/api/placeholder/800/500"}
+              />
+            </div>
+
+            <div className="flex border-gray-200 py-2 gap-8 w-[250px] mx-auto mt-4 h-auto">
               <button
-                id="edit-post-btn"
-                type="button"
-                className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only icon-btn"
+                className="flex-1 flex justify-center items-center text-gray-600 cursor-pointer border border-gray-300 rounded-sm text-1xl px-3"
                 onClick={handleEditClick}
               >
-                <span className="ant-btn-icon">
-                  <span
-                    role="img"
-                    aria-label="edit"
-                    className="anticon anticon-edit"
-                  >
-                    <svg
-                      viewBox="64 64 896 896"
-                      focusable="false"
-                      data-icon="edit"
-                      width="1em"
-                      height="1em"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M257.7 752c2 0 4-.2 6-.5L431.9
-                        722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96
-                        9.96 0 000-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2
-                        1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8
-                        5.3l-29.5 168.2a33.5 33.5 0 009.4
-                        29.8c6.6 6.4 14.9 9.9 23.8
-                        9.9zm67.4-174.4L687.8 215l73.3
-                        73.3-362.7 362.6-88.9
-                        15.7 15.6-89zM880
-                        836H144c-17.7 0-32 14.3-32
-                        32v36c0 4.4 3.6 8
-                        8 8h784c4.4 0 8-3.6
-                        8-8v-36c0-17.7-14.3-32-32-32z"
-                      ></path>
-                    </svg>
-                  </span>
-                </span>
+                <CiEdit />
               </button>
-              {/* Additional buttons if needed */}
+
+              <button className="flex-1 flex justify-center items-center text-gray-600 cursor-pointer border border-gray-300 rounded-sm text-1xl px-3">
+                <MdSaveAlt />
+              </button>
+              <button className="flex-1 flex justify-center items-center text-gray-600 cursor-pointer border border-gray-300 rounded-sm text-1xl px-3">
+                <MdDelete />
+              </button>
+              <button className="flex-1 flex justify-center items-center text-gray-600 cursor-pointer border border-gray-300 rounded-sm text-lg">
+                Schedule
+                <button className="flex items-center justify-center px-2 text-gray-600 cursor-pointer"></button>
+                <button className="">
+                  <span className="flex items-center justify-center px-2 text-gray-600 cursor-pointer ">
+                    <FaAngleDown />
+                  </span>
+                </button>
+              </button>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
+            <div className="flex items-center">
+              <span className="mr-2">📅 {date || "Mar 10, 2023"}</span>
+              <span className="mr-2"># rechks</span>
+              <span>{platform || "Facebook"}</span>
+            </div>
+            <div className="cursor-pointer">Post Analytics</div>
           </div>
         </div>
       </div>
@@ -171,13 +134,11 @@ const Posts = () => {
   const [posts, setPosts] = useState([]);
   const [domains, setDomains] = useState<string[]>([]);
   const [domainMap, setDomainMap] = useState<any>({});
-  const [loading, setLoading] = useState(false);
 
-  // For sidebar toggles
+  const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBusinessOpen, setIsBusinessOpen] = useState(false);
 
-  // Currently selected domain
   const [selectedDomain, setSelectedDomain] = useState("");
 
   const navigate = useNavigate();
@@ -190,23 +151,26 @@ const Posts = () => {
           navigate("/login");
           return;
         }
-        setLoading(true);
 
+        setLoading(true);
         const resp = await fetch(`${API_BASE_URL}/api/posts/getuserposts`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
+
         if (!resp.ok) {
           throw new Error(`Error fetching posts: ${resp.statusText}`);
         }
         const data = await resp.json();
 
-        // 1) Store domain map
         if (data.domains) {
           setDomainMap(data.domains);
-          // The keys will look like "www.bredwares.com", "mydomain.com", etc.
-          setDomains(Object.keys(data.domains));
+
+          const keys = Object.keys(data.domains).map((key) =>
+            key.replace(/___DOT___/g, ".")
+          );
+          setDomains(keys);
         }
-        // 2) Store posts
+
         if (data.posts) {
           setPosts(data.posts);
         }
@@ -219,48 +183,48 @@ const Posts = () => {
   }, [navigate]);
 
   const handlePost = (post) => {
-    // Navigate to Editor, passing the full post
     navigate("/editor", { state: post });
   };
 
-  /** Called when user picks a domain in the sidebar */
-  const handleDomainChange = (domainName) => {
-    setSelectedDomain(domainName);
-    // Optionally store in a cookie
-    Cookies.set("websitename", domainName, { expires: 0.916 }); // ~55 minutes
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Filter posts by the "website" field if `selectedDomain` is set
-  const filteredPosts = !selectedDomain
-    ? posts
-    : posts.filter(
-        (p) =>
-          p.website &&
-          p.website.toLowerCase() === selectedDomain.toLowerCase()
-      );
+  const toggleBusiness = () => {
+    setIsBusinessOpen(!isBusinessOpen);
+  };
 
-  // Sidebar toggles
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const toggleBusiness = () => setIsBusinessOpen(!isBusinessOpen);
   const openProfile = () => {
     navigate("/profile");
+  };
+
+  const filteredPosts = (() => {
+    if (!selectedDomain) {
+      return posts;
+    }
+    return posts.filter(
+      (p) =>
+        p.website && p.website.toLowerCase() === selectedDomain.toLowerCase()
+    );
+  })();
+
+  const handleDomainChange = (domain) => {
+    setSelectedDomain(domain);
+    Cookies.set("websitename", domain, { expires: 55 / 60 });
   };
 
   return (
     <div className="[grid-area:content] h-full flex flex-col overflow-auto bg-blue-50">
       <div className="min-h-0 flex-grow flex flex-col overflow-y-auto overflow-x-hidden pb-12">
-        {/* Top Nav + Sidebar */}
         <div className="sticky top-0 z-[100]">
           <div className="flex fixed top-0 left-0 right-0 z-10">
             <div>
-              {/* Pass domain props to Sidebar */}
               <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}
                 toggleBusiness={toggleBusiness}
                 isBusinessOpen={isBusinessOpen}
                 openProfile={openProfile}
-
                 domains={domains}
                 selectedDomain={selectedDomain}
                 onDomainChange={handleDomainChange}
@@ -272,12 +236,6 @@ const Posts = () => {
           </div>
         </div>
 
-        {/* 
-          Domain selection (REMOVED from top-right, 
-          since it's now inside the sidebar)
-        */}
-
-        {/* Post container */}
         <div
           id="generated-post-container"
           className="flex flex-col gap-7 pt-4 items-center"
@@ -313,7 +271,6 @@ const Posts = () => {
           )}
         </div>
 
-        {/* Floating button and post count */}
         <div
           className="generate-post-btn-container delay-300"
           style={{
@@ -339,8 +296,7 @@ const Posts = () => {
                 >
                   <path fill="none" d="M0 0h24v24H0V0z"></path>
                   <path
-                    d="M3 17v2h6v-2H3zM3
-                    5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7
+                    d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7
                     9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"
                   ></path>
                 </svg>
