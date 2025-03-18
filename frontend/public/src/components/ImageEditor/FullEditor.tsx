@@ -79,18 +79,18 @@ const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 const FullEditor: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const postdata = localStorage.getItem("postdata");
+  // const postdata = localStorage.getItem("postdata");
   let postId: string | null = null;
   let postContent: string = "";
   let postImage: string = "";
 
-  if (postdata) {
-    const parsedPostdata = JSON.parse(postdata);
-    postId = parsedPostdata.post_id;
-    postContent = parsedPostdata.content;
-    postImage = parsedPostdata.image;
-    console.log(postContent);
-  }
+  // if (postdata) {
+  //   const parsedPostdata = JSON.parse(postdata);
+  //   postId = parsedPostdata.post_id;
+  //   postContent = parsedPostdata.content;
+  //   postImage = parsedPostdata.image;
+  //   console.log(postContent);
+  // }
 
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<EditorTab>("images");

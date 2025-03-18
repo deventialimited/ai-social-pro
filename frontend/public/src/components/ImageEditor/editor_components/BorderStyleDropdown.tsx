@@ -83,7 +83,8 @@ const BorderStyleDropdown = ({
         title="Border"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="w-6 h-6" style={{ borderStyle: borderStyle || "solid", borderWidth, borderColor, backgroundColor: borderColor }} />        <span className="text-sm text-gray-600">Border</span>
+        <div className="w-6 h-6" style={{ borderStyle: borderStyle || "solid", borderWidth, borderColor, backgroundColor: borderColor }} />
+        <span className="text-sm text-gray-600">Border</span>
         <ChevronDown className="w-4 h-4" />
       </button>
 
@@ -98,17 +99,40 @@ const BorderStyleDropdown = ({
                     key={style.value}
                     className={`p-2 h-10 border rounded-md ${
                       currentBorderStyle === style.value ? "border-blue-500" : "border-gray-300"
-                    } hover:bg-gray-50`}
+                    } hover:bg-gray-50 flex items-center justify-center`}
                     onClick={() => handleBorderStyleChange(style.value)}
                   >
-                    <div
-                      className="w-full h-0.5 bg-current"
-                      style={{
-                        borderTopWidth: "2px",
-                        borderTopStyle: style.value === "none" ? "solid" : style.value,
-                        opacity: style.value === "none" ? 0.2 : 1,
-                      }}
-                    />
+                    {style.value === "none" && (
+                      <div className="relative w-6 h-6 flex items-center justify-center">
+                        <div className="w-6 h-6 border border-gray-400 rounded-md"></div>
+                        <div className="absolute w-8 h-0.5 bg-gray-400 transform rotate-45"></div>
+                      </div>
+                    )}
+                    {style.value === "solid" && (
+                      <div className="w-10 h-0.5 bg-gray-800"></div>
+                    )}
+                    {style.value === "dashed" && (
+                      <div className="w-10 flex justify-between">
+                        <div className="w-2 h-0.5 bg-gray-800"></div>
+                        <div className="w-2 h-0.5 bg-gray-800"></div>
+                        <div className="w-2 h-0.5 bg-gray-800"></div>
+                      </div>
+                    )}
+                    {style.value === "dotted" && (
+                      <div className="w-10 flex justify-between">
+                        <div className="w-0.5 h-0.5 rounded-full bg-gray-800"></div>
+                        <div className="w-0.5 h-0.5 rounded-full bg-gray-800"></div>
+                        <div className="w-0.5 h-0.5 rounded-full bg-gray-800"></div>
+                        <div className="w-0.5 h-0.5 rounded-full bg-gray-800"></div>
+                        <div className="w-0.5 h-0.5 rounded-full bg-gray-800"></div>
+                      </div>
+                    )}
+                    {style.value === "double" && (
+                      <div className="w-10 flex flex-col space-y-1">
+                        <div className="w-full h-0.5 bg-gray-800"></div>
+                        <div className="w-full h-0.5 bg-gray-800"></div>
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
