@@ -25,7 +25,8 @@ export const getPosts = async (req, res) => {
     if (!decoded.id) return res.status(401).json({ message: "Invalid token" });
 
     // Find user by ID
-    let user = await User.findById(decoded.id);
+    let user = await User.findById(decoded.id).select("+domains");
+
     if (!user) return res.status(404).json({ message: "User not found" });
     console.log("getPostsLogs: user.domain " + JSON.stringify(user.domains));
     // ———————————————— Transform domains here ————————————————
