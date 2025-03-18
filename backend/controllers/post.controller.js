@@ -30,24 +30,26 @@ export const getPosts = async (req, res) => {
     console.log("getPostsLogs: user.domain " + JSON.stringify(user.domains));
     // ———————————————— Transform domains here ————————————————
     if (user.domains) {
-
-      // Convert to a plain object if needed
       if (user.toObject) {
         console.log("user converted to object");
-  user = user.toObject();
-}
-
-
+        user = user.toObject();
+      }
+    
+      console.log("Before transforming:", JSON.stringify(user.domains)); // Debug log
+    
       const dotDomains = {};
-      for (const [key, value] of Object.entries(user.domains)) {
-        console.log("current domain: " + key + ", " + value);
-        // Replace all '_dot_' occurrences back to '.'
+      const domainsObject = JSON.parse(JSON.stringify(user.domains)); // Ensure it is a plain object
+    
+      for (const [key, value] of Object.entries(domainsObject)) {
+        console.log("current domain: " + key + ", value:", JSON.stringify(value));
         const realDomain = key.replace(/_dot_/g, ".");
         dotDomains[realDomain] = value;
       }
-      console.log("final domains" + JSON.stringify(dotDomains));
+    
+      console.log("final domains:", JSON.stringify(dotDomains));
       user.domains = dotDomains;
     }
+    
     // ————————————————————————————————————————————————
 
     return res.status(200).json(user); // Return the transformed user object
