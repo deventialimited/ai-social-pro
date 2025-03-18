@@ -433,6 +433,20 @@ const FullEditor: React.FC = () => {
     };
   }, [selectedShapeId]);
 
+  const handleClickOutside = (event: MouseEvent) => {
+    const editorElement = document.querySelector(".editor-container");
+    if (editorElement && !editorElement.contains(event.target as Node)) {
+      navigate("/posts");
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("click", handleClickOutside);
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
@@ -460,7 +474,7 @@ const FullEditor: React.FC = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-[95%] h-[70vh] transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-[95%] h-[70vh] transform overflow-hidden rounded-lg bg-white shadow-xl transition-all editor-container">
                   <div className="flex justify-between items-center px-4 py-3 border-b">
                     <Dialog.Title as="h3" className="text-lg font-medium flex items-center">
                       <svg
