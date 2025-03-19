@@ -25,7 +25,6 @@ import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
 import { ImagesTabContent } from "./editor_components/ImagesTabContent";
 import { Toolbar, ShapeToolbar, ImageToolbar, BackgroundToolbar } from "./editor_components/Toolbar";
-import { getPostData, savePostData } from "../../firebase"; // Import Firebase functions
 
 // Define shape types
 type ShapeType =
@@ -80,61 +79,54 @@ const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 const FullEditor: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  // const postdata = localStorage.getItem("postdata");
   let postId: string | null = null;
   let postContent: string = "";
   let postImage: string = "";
 
+  // if (postdata) {
+  //   const parsedPostdata = JSON.parse(postdata);
+  //   postId = parsedPostdata.post_id;
+  //   postContent = parsedPostdata.content;
+  //   postImage = parsedPostdata.image;
+  //   console.log(postContent);
+  // }
+
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<EditorTab>("images");
   const [zoomLevel, setZoomLevel] = useState<number>(100);
-  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [shapes, setShapes] = useState<Shape[]>(() => {
+    const savedShapes = postId ? JSON.parse(localStorage.getItem(`shapes_${postId}`) || "[]") : [];
+    return savedShapes;
+  });
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff");
+  const [backgroundColor, setBackgroundColor] = useState<string>(() => {
+    return postId ? localStorage.getItem(`backgroundColor_${postId}`) || "#ffffff" : "#ffffff";
+  });
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
   const [backgroundColors, setBackgroundColors] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [patterns, setPatterns] = useState<string[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
-  const [historyIndex, setHistoryIndex] = useState<number>(-1);
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [history, setHistory] = useState<any[]>(() => {
+    const savedHistory = postId ? JSON.parse(localStorage.getItem(`history_${postId}`) || "[]") : [];
+    return savedHistory;
+  });
+  const [historyIndex, setHistoryIndex] = useState<number>(() => {
+    const savedHistoryIndex = postId ? JSON.parse(localStorage.getItem(`historyIndex_${postId}`) || "-1") : -1;
+    return savedHistoryIndex;
+  });
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
+    return postId ? localStorage.getItem(`backgroundImage_${postId}`) || location.state?.image || null : null;
+  });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const [postBody, setPostBody] = useState<string>("");
+  const [postBody, setPostBody] = useState<string>(() => {
+    return postId ? localStorage.getItem(`postBody_${postId}`) || postContent || "" : "";
+  });
   const [postBodyActive, setPostBodyActive] = useState<boolean>(false); // New state to track post body activity
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textColor, setTextColor] = useState<string>("#000000"); // New state for text color
   const [isTextAreaActive, setIsTextAreaActive] = useState<boolean>(false); // State to track textarea focus
-
-  useEffect(() => {
-    const fetchPostData = async () => {
-      if (postId) {
-        const data = await getPostData(postId);
-        if (data) {
-          setShapes(data.shapes || []);
-          setBackgroundColor(data.backgroundColor || "#ffffff");
-          setBackgroundImage(data.backgroundImage || null);
-          setPostBody(data.postBody || "");
-          setHistory(data.history || []);
-          setHistoryIndex(data.historyIndex || -1);
-        }
-      }
-    };
-
-    fetchPostData();
-  }, [postId]);
-
-  useEffect(() => {
-    if (postId) {
-      savePostData(postId, {
-        shapes,
-        backgroundColor,
-        backgroundImage,
-        postBody,
-        history,
-        historyIndex,
-      });
-    }
-  }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
 
   const captureDiagramAsImage = async () => {
     const diagramElement = document.getElementById("canvas");
@@ -200,6 +192,17 @@ const FullEditor: React.FC = () => {
 
     fetchBackgroundData();
   }, []);
+
+  useEffect(() => {
+    if (postId) {
+      localStorage.setItem(`shapes_${postId}`, JSON.stringify(shapes));
+      localStorage.setItem(`backgroundColor_${postId}`, backgroundColor);
+      localStorage.setItem(`backgroundImage_${postId}`, backgroundImage || "");
+      localStorage.setItem(`postBody_${postId}`, postBody);
+      localStorage.setItem(`history_${postId}`, JSON.stringify(history));
+      localStorage.setItem(`historyIndex_${postId}`, JSON.stringify(historyIndex));
+    }
+  }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
 
   const closeModal = () => {
     setIsOpen(false);
