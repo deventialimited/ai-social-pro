@@ -20,6 +20,8 @@ import { Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import axios from "axios";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase"; // Importing Firebase config
 
 import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
@@ -79,54 +81,88 @@ const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 const FullEditor: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const postdata = localStorage.getItem("postdata");
-  let postId: string | null = null;
-  let postContent: string = "";
-  let postImage: string = "";
-
-  // if (postdata) {
-  //   const parsedPostdata = JSON.parse(postdata);
-  //   postId = parsedPostdata.post_id;
-  //   postContent = parsedPostdata.content;
-  //   postImage = parsedPostdata.image;
-  //   console.log(postContent);
-  // }
+  const [postId, setPostId] = useState<string | null>(null);
+  const [postContent, setPostContent] = useState<string>("");
+  const [postImage, setPostImage] = useState<string>("");
 
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<EditorTab>("images");
   const [zoomLevel, setZoomLevel] = useState<number>(100);
-  const [shapes, setShapes] = useState<Shape[]>(() => {
-    const savedShapes = postId ? JSON.parse(localStorage.getItem(`shapes_${postId}`) || "[]") : [];
-    return savedShapes;
-  });
+  const [shapes, setShapes] = useState<Shape[]>([]);
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState<string>(() => {
-    return postId ? localStorage.getItem(`backgroundColor_${postId}`) || "#ffffff" : "#ffffff";
-  });
+  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff");
   const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
   const [backgroundColors, setBackgroundColors] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
   const [patterns, setPatterns] = useState<string[]>([]);
-  const [history, setHistory] = useState<any[]>(() => {
-    const savedHistory = postId ? JSON.parse(localStorage.getItem(`history_${postId}`) || "[]") : [];
-    return savedHistory;
-  });
-  const [historyIndex, setHistoryIndex] = useState<number>(() => {
-    const savedHistoryIndex = postId ? JSON.parse(localStorage.getItem(`historyIndex_${postId}`) || "-1") : -1;
-    return savedHistoryIndex;
-  });
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
-    return postId ? localStorage.getItem(`backgroundImage_${postId}`) || location.state?.image || null : null;
-  });
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const [postBody, setPostBody] = useState<string>(() => {
-    return postId ? localStorage.getItem(`postBody_${postId}`) || postContent || "" : "";
-  });
+  const [postBody, setPostBody] = useState<string>("");
   const [postBodyActive, setPostBodyActive] = useState<boolean>(false); // New state to track post body activity
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textColor, setTextColor] = useState<string>("#000000"); // New state for text color
   const [isTextAreaActive, setIsTextAreaActive] = useState<boolean>(false); // State to track textarea focus
+
+  // Save data to Firebase Firestore
+  const saveDataToFirebase = async () => {
+    try {
+      const idToUse = postId || "1"; // Use provided postId or a dummy one
+      await setDoc(doc(db, "posts", idToUse), {
+        shapes,
+        backgroundColor,
+        backgroundImage,
+        postBody,
+        history,
+        historyIndex,
+      });
+      console.log("Data saved successfully to Firebase with postId:", idToUse);
+    } catch (e) {
+      console.error("Error saving document: ", e);
+    }
+  };
+
+  // Load data from Firebase Firestore
+  const loadDataFromFirebase = async () => {
+    if (postId) {
+      try {
+        const docRef = doc(db, "posts", postId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          console.log("Data retrieved from Firebase:", data);
+          setShapes(data.shapes);
+          setBackgroundColor(data.backgroundColor);
+          setBackgroundImage(data.backgroundImage);
+          setPostBody(data.postBody);
+          setHistory(data.history);
+          setHistoryIndex(data.historyIndex);
+        } else {
+          console.log("No such document!");
+        }
+      } catch (e) {
+        console.error("Error getting document: ", e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const id = queryParams.get("postId");
+    if (id) {
+      setPostId(id);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    if (!postId) {
+      setPostId("1");
+    } else {
+      loadDataFromFirebase();
+    }
+  }, [postId]);
 
   const captureDiagramAsImage = async () => {
     const diagramElement = document.getElementById("canvas");
@@ -194,14 +230,7 @@ const FullEditor: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (postId) {
-      localStorage.setItem(`shapes_${postId}`, JSON.stringify(shapes));
-      localStorage.setItem(`backgroundColor_${postId}`, backgroundColor);
-      localStorage.setItem(`backgroundImage_${postId}`, backgroundImage || "");
-      localStorage.setItem(`postBody_${postId}`, postBody);
-      localStorage.setItem(`history_${postId}`, JSON.stringify(history));
-      localStorage.setItem(`historyIndex_${postId}`, JSON.stringify(historyIndex));
-    }
+    saveDataToFirebase();
   }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
 
   const closeModal = () => {
@@ -215,8 +244,12 @@ const FullEditor: React.FC = () => {
 
   // Add a shape to the canvas
   const handleAddShape = (shape: Shape) => {
+    const lastShape = shapes[shapes.length - 1];
+    const offset = lastShape ? 12 : 40; // First shape should have 40 offset
     const newShape = {
       ...shape,
+      x: lastShape ? lastShape.x + offset : offset,
+      y: lastShape ? lastShape.y + offset : offset,
       effects: {
         shadow: false,
         blur: 0,
