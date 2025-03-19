@@ -61,6 +61,7 @@ const SignUp = () => {
 
       // Store token in localStorage
       localStorage.setItem("authToken", data.token);
+      localStorage.setItem("displayName", data.user.displayName);
 
       // Update user context
       setExtendedUser(data.user);

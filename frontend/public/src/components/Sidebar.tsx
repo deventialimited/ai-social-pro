@@ -35,6 +35,63 @@ const Sidebar = ({
     }
   }, []);
 
+  const DEFAULT_BUSINESS_DATA = {
+    name: "no data available",
+    logoUrl: "",
+    clientName: "no data available",
+  };
+
+  const [business, setBusiness] = useState(DEFAULT_BUSINESS_DATA);
+  const [displayName, setDisplayName] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      try {
+        const domainsData = JSON.parse(
+          localStorage.getItem("domainforcookies")
+        );
+        const displayName = localStorage.getItem("displayName");
+        setDisplayName(displayName || "jogn doe");
+        console.log("domains data is ", JSON.stringify(domainsData));
+
+        if (!domainsData || Object.keys(domainsData).length === 0) {
+          console.log("No business data found");
+          return;
+        }
+
+        const firstDomainPrefix = Object.keys(domainsData)[0];
+        const businessData = domainsData[firstDomainPrefix];
+
+        if (!businessData) {
+          console.log("No business data found in the response structure");
+          return;
+        }
+
+        setBusiness({
+          name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
+
+          clientWebsite:
+            businessData.clientWebsite || DEFAULT_BUSINESS_DATA.clientWebsite,
+
+          description:
+            businessData.clientName || DEFAULT_BUSINESS_DATA.clientName,
+          logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
+        });
+      } catch (err) {
+        console.error("Error fetching business data:", err);
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          navigate("/");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBusinessData();
+  }, [navigate]);
+
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.clear();
@@ -64,7 +121,9 @@ const Sidebar = ({
         <div className="flex items-center gap-44 justify-between w-full">
           <h2 className="text-lg font-bold text-gray-900">Profile</h2>
           <div className="flex items-center">
-            <span className="text-gray-600 text-sm mr-2 mt-1">John Doe</span>
+            <span className="text-gray-600 text-sm mr-2 mt-1">
+              {displayName}
+            </span>
             <div className="bg-blue-100 rounded-full p-2">
               <FaUserAlt className="text-blue-500" />
             </div>
@@ -93,7 +152,10 @@ const Sidebar = ({
             <div className="flex flex-col border border-gray-300 rounded-lg p-2">
               <div className="flex items-center justify-between">
                 <img
-                  src="https://www.w3schools.com/w3images/avatar2.png"
+                  src={
+                    business.logoUrl ||
+                    "https://www.w3schools.com/w3images/avatar2.png"
+                  }
                   alt="Logo"
                   className="mr-2 w-8 h-8"
                 />
@@ -105,7 +167,7 @@ const Sidebar = ({
                   >
                     <div className="flex items-center justify-between p-2">
                       <span className="text-gray-600 truncate">
-                        {selectedDomain || "-- All Websites --"}
+                        {business.clientWebsite || "-- All Websites --"}
                       </span>
                       <FaCaretDown
                         className={`transform transition-transform ${
@@ -120,7 +182,7 @@ const Sidebar = ({
                         className="p-2 hover:bg-gray-100"
                         onClick={() => handleDomainSelect("")}
                       >
-                        -- All Websites --
+                        --All Websites--
                       </li>
                       {domains.map((d) => (
                         <li

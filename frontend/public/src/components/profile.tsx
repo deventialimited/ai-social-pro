@@ -46,7 +46,7 @@ const Profile = () => {
     // Fetch business data from MongoDB through API
     const fetchBusinessData = async () => {
       try {
-           const domainsData = JSON.parse(
+        const domainsData = JSON.parse(
           localStorage.getItem("domainforcookies")
         );
         console.log("domains data is ", JSON.stringify(domainsData));
@@ -169,7 +169,7 @@ const Profile = () => {
                     and post designs.
                   </p>
 
-                  <div className="mb-4">
+                  {/* <div className="mb-4">
                     {business.logoUrl ? (
                       <img
                         src={business.logoUrl}
@@ -179,7 +179,7 @@ const Profile = () => {
                     ) : (
                       <p className="text-gray-400">No logo available.</p>
                     )}
-                  </div>
+                  </div> */}
 
                   <div className="mb-2">
                     <strong className="block mb-1">Business Name:</strong>

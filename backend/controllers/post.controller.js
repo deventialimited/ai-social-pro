@@ -191,59 +191,6 @@ export const createPost = async (req, res) => {
  */
 
 // new pubsub for fixing the issue
-export const processPubSub = async (req, res) => {
-  try {
-    const jsonData = req.body;
-
-    if (!jsonData || !Array.isArray(jsonData)) {
-      console.error("Invalid JSON payload:", jsonData);
-      return res.status(400).send("Invalid JSON payload, expected an array");
-    }
-
-    console.log("PubSub called with data:", jsonData.length, "posts");
-
-    // Step 1: Group posts by user email
-    const groupedPosts = jsonData.reduce((acc, post) => {
-      const userEmail = post.client_email;
-      if (!userEmail) {
-        console.warn("Skipping post without email:", post);
-        return acc;
-      }
-      acc[userEmail] = acc[userEmail] || [];
-      acc[userEmail].push(post);
-      return acc;
-    }, {});
-
-    // Step 2: Bulk insert grouped posts into each user document
-    const updatePromises = Object.entries(groupedPosts).map(
-      async ([email, posts]) => {
-        try {
-          return await User.findOneAndUpdate(
-            { email },
-            { $push: { posts: { $each: posts } } }, // bulk insert in array
-            { new: true, upsert: true }
-          );
-        } catch (err) {
-          console.error(`Error updating user ${email}:`, err);
-          throw err;
-        }
-      }
-    );
-
-    await Promise.all(updatePromises);
-
-    console.log("Successfully processed all posts.");
-    return res.status(200).send("All data processed successfully");
-  } catch (error) {
-    console.error("Error processing message:", error);
-    return res.status(500).json({
-      message: "skajdfhksadfhkljshldjf;l",
-      error: error.message, // or use `error.stack` to see more
-    });
-  }
-};
-
-// my old working pubsub
 // export const processPubSub = async (req, res) => {
 //   try {
 //     const jsonData = req.body;
@@ -253,30 +200,83 @@ export const processPubSub = async (req, res) => {
 //       return res.status(400).send("Invalid JSON payload, expected an array");
 //     }
 
-//     console.log("PubSub called with data:", jsonData);
+//     console.log("PubSub called with data:", jsonData.length, "posts");
 
-//     for (const post of jsonData) {
+//     // Step 1: Group posts by user email
+//     const groupedPosts = jsonData.reduce((acc, post) => {
 //       const userEmail = post.client_email;
-
 //       if (!userEmail) {
 //         console.warn("Skipping post without email:", post);
-//         continue; // Skip this post but process the others
+//         return acc;
 //       }
+//       acc[userEmail] = acc[userEmail] || [];
+//       acc[userEmail].push(post);
+//       return acc;
+//     }, {});
 
-//       await User.findOneAndUpdate(
-//         { email: userEmail },
-//         { $push: { posts: post } },
-//         { new: true, upsert: true }
-//       );
-//     }
+//     // Step 2: Bulk insert grouped posts into each user document
+//     const updatePromises = Object.entries(groupedPosts).map(
+//       async ([email, posts]) => {
+//         try {
+//           return await User.findOneAndUpdate(
+//             { email },
+//             { $push: { posts: { $each: posts } } }, // bulk insert in array
+//             { new: true, upsert: true }
+//           );
+//         } catch (err) {
+//           console.error(`Error updating user ${email}:`, err);
+//           throw err;
+//         }
+//       }
+//     );
+
+//     await Promise.all(updatePromises);
 
 //     console.log("Successfully processed all posts.");
 //     return res.status(200).send("All data processed successfully");
 //   } catch (error) {
 //     console.error("Error processing message:", error);
-//     return res.status(500).send("Error processing message");
+//     return res.status(500).json({
+//       message: "skajdfhksadfhkljshldjf;l",
+//       error: error.message, // or use `error.stack` to see more
+//     });
 //   }
 // };
+
+// my old working pubsub
+export const processPubSub = async (req, res) => {
+  try {
+    const jsonData = req.body;
+
+    if (!jsonData || !Array.isArray(jsonData)) {
+      console.error("Invalid JSON payload:", jsonData);
+      return res.status(400).send("Invalid JSON payload, expected an array");
+    }
+
+    console.log("PubSub called with data:", jsonData);
+
+    for (const post of jsonData) {
+      const userEmail = post.client_email;
+
+      if (!userEmail) {
+        console.warn("Skipping post without email:", post);
+        continue; // Skip this post but process the others
+      }
+
+      await User.findOneAndUpdate(
+        { email: userEmail },
+        { $push: { posts: post } },
+        { new: true, upsert: true }
+      );
+    }
+
+    console.log("Successfully processed all posts.");
+    return res.status(200).send("All data processed successfully");
+  } catch (error) {
+    console.error("Error processing message:", error);
+    return res.status(500).send("Error processing message");
+  }
+};
 
 //process test
 //getsite test
