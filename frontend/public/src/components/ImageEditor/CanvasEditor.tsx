@@ -33,6 +33,7 @@ interface Shape {
   color: string
   zIndex: number
   rotation: number
+  transparency?: number
   effects?: ShapeEffects
   borderStyle?: string
   borderWidth?: number
@@ -60,6 +61,7 @@ interface CanvasEditorProps {
   onBorderStyleChange: (style: string) => void
   onBorderWidthChange: (width: number) => void
   onBorderColorChange: (color: string) => void
+  onTransparencyChange?: (transparency: number) => void
 }
 
 const CanvasEditor: React.FC<CanvasEditorProps> = ({
@@ -162,8 +164,12 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
   // Keep shape style function simple - no opacity applied here
   const getShapeStyle = (shape: Shape) => {
+    // Convert transparency (0-1) to opacity (0-1)
+    const opacity = shape.transparency !== undefined ? 1 - shape.transparency : 1
+
     return {
       color: shape.color,
+      opacity: opacity,
       borderStyle: shape.borderStyle || "none",
       borderWidth: shape.borderWidth ? `${shape.borderWidth}px` : "0",
       borderColor: shape.borderColor || "transparent",
@@ -172,49 +178,57 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
   const renderShape = (shape: Shape) => {
     const isSelected = selectedShapeId === shape.id
-  
+
     // Get shadow style separately
     const shadowStyle = getShadowStyle(shape.effects)
-  
+
+    // Get shape style including opacity
+    const shapeStyle = getShapeStyle(shape)
+
     // Create border style for div-based shapes
-    const divBorderStyle = shape.borderStyle !== 'none' 
-      ? {
-          border: `${shape.borderWidth || 0}px ${shape.borderStyle || 'solid'} ${shape.borderColor || 'transparent'}`
-        }
-      : {};
-  
+    const divBorderStyle =
+      shape.borderStyle !== "none"
+        ? {
+            border: `${shape.borderWidth || 0}px ${shape.borderStyle || "solid"} ${shape.borderColor || "transparent"}`,
+          }
+        : {}
+
     // Create stroke style for SVG-based shapes
     const svgStrokeProps = {
-      stroke: shape.borderStyle !== 'none' ? shape.borderColor || 'black' : 'none',
-      strokeWidth: shape.borderStyle !== 'none' ? shape.borderWidth || 0 : 0,
-      strokeDasharray: shape.borderStyle === 'dashed' 
-        ? '5,5' 
-        : (shape.borderStyle === 'dotted' ? '1,3' : undefined),
-    };
-  
+      stroke: shape.borderStyle !== "none" ? shape.borderColor || "black" : "none",
+      strokeWidth: shape.borderStyle !== "none" ? shape.borderWidth || 0 : 0,
+      strokeDasharray: shape.borderStyle === "dashed" ? "5,5" : shape.borderStyle === "dotted" ? "1,3" : undefined,
+    }
+
     // Set up double border for SVG if needed
-    const doubleStrokeProps = shape.borderStyle === 'double' 
-      ? {
-          filter: 'url(#doubleStroke)',
-        }
-      : {};
-  
+    const doubleStrokeProps =
+      shape.borderStyle === "double"
+        ? {
+            filter: "url(#doubleStroke)",
+          }
+        : {}
+
     // Base style for all shapes
     const baseStyle = {
-      color: shape.color,
+      ...shapeStyle,
       ...shadowStyle,
-    };
-  
+    }
+
     switch (shape.type) {
       case "square":
-        return <div className="w-full h-full bg-current rounded-sm" style={{...baseStyle, ...divBorderStyle}}></div>;
-      
+        return <div className="w-full h-full bg-current rounded-sm" style={{ ...baseStyle, ...divBorderStyle }}></div>
+
       case "circle":
-        return <div className="w-full h-full bg-current rounded-full" style={{...baseStyle, ...divBorderStyle}}></div>;
-      
+        return <div className="w-full h-full bg-current rounded-full" style={{ ...baseStyle, ...divBorderStyle }}></div>
+
       case "oval":
-        return <div className="w-full h-full bg-current rounded-full" style={{...baseStyle, ...divBorderStyle, height: "75%"}}></div>;
-      
+        return (
+          <div
+            className="w-full h-full bg-current rounded-full"
+            style={{ ...baseStyle, ...divBorderStyle, height: "75%" }}
+          ></div>
+        )
+
       case "star":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -230,8 +244,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "triangle":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -240,15 +254,10 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M1,21H23L12,2L1,21Z" 
-              {...svgStrokeProps}
-              {...doubleStrokeProps}
-            />
+            <path fill="currentColor" d="M1,21H23L12,2L1,21Z" {...svgStrokeProps} {...doubleStrokeProps} />
           </svg>
-        );
-      
+        )
+
       case "pentagon":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -257,15 +266,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M12,2L1,9.5L4.5,21H19.5L23,9.5L12,2Z" 
+            <path
+              fill="currentColor"
+              d="M12,2L1,9.5L4.5,21H19.5L23,9.5L12,2Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "hexagon":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -281,8 +290,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "speech-bubble":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -291,15 +300,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z" 
+            <path
+              fill="currentColor"
+              d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "cross":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -308,15 +317,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M10,2H14V8H20V12H14V22H10V12H4V8H10V2Z" 
+            <path
+              fill="currentColor"
+              d="M10,2H14V8H20V12H14V22H10V12H4V8H10V2Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "cloud":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -332,8 +341,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "arrow-right":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -342,15 +351,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" 
+            <path
+              fill="currentColor"
+              d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "arrow-left":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -359,15 +368,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" 
+            <path
+              fill="currentColor"
+              d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "arrow-up":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -376,15 +385,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z" 
+            <path
+              fill="currentColor"
+              d="M13,20H11V8L5.5,13.5L4.08,12.08L12,4.16L19.92,12.08L18.5,13.5L13,8V20Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       case "arrow-down":
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
@@ -393,17 +402,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
               </filter>
             </defs>
-            <path 
-              fill="currentColor" 
-              d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z" 
+            <path
+              fill="currentColor"
+              d="M11,4H13V16L18.5,10.5L19.92,11.92L12,19.84L4.08,11.92L5.5,10.5L11,16V4Z"
               {...svgStrokeProps}
               {...doubleStrokeProps}
             />
           </svg>
-        );
-      
+        )
+
       default:
-        return <div className="w-full h-full bg-current" style={{...baseStyle, ...divBorderStyle}}></div>;
+        return <div className="w-full h-full bg-current" style={{ ...baseStyle, ...divBorderStyle }}></div>
     }
   }
   return (
@@ -554,3 +563,4 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 }
 
 export default CanvasEditor
+
