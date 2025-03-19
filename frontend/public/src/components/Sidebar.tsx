@@ -23,7 +23,7 @@ const Sidebar = ({
   // NEW PROPS for domain selection
   domains = [],
   selectedDomain = "",
-  onDomainChange = () => {}
+  onDomainChange = () => {},
 }) => {
   const navigate = useNavigate();
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
@@ -37,9 +37,7 @@ const Sidebar = ({
 
   const handleLogout = (e) => {
     e.preventDefault();
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("websitename");
-    localStorage.removeItem("userData");
+    localStorage.clear();
     navigate("/login");
   };
 
@@ -109,7 +107,11 @@ const Sidebar = ({
                       <span className="text-gray-600 truncate">
                         {selectedDomain || "-- All Websites --"}
                       </span>
-                      <FaCaretDown className={`transform transition-transform ${isDomainDropdownOpen ? "rotate-180" : ""}`} />
+                      <FaCaretDown
+                        className={`transform transition-transform ${
+                          isDomainDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
                     </div>
                   </div>
                   {isDomainDropdownOpen && (

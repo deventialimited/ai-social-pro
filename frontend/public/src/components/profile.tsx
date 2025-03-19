@@ -46,20 +46,7 @@ const Profile = () => {
     // Fetch business data from MongoDB through API
     const fetchBusinessData = async () => {
       try {
-        // const response = await axios.get(
-        //   `${API_BASE_URL}/api/users/userdomains`,
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${authToken}`,
-        //     },
-        //   }
-        // );
-
-        // Handle the nested structure of the domains data
-
-        //fetch from cookies name xyz and parse the cookies valu as json ,and assign that json to  domainsdata variable
-
-        const domainsData = JSON.parse(
+           const domainsData = JSON.parse(
           localStorage.getItem("domainforcookies")
         );
         console.log("domains data is ", JSON.stringify(domainsData));
