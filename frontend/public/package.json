@@ -17,6 +17,7 @@
     "axios": "^1.8.2",
     "cropperjs": "^2.0.0",
     "firebase": "^11.4.0",
+    "firebase-tools": "^13.34.0",
     "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
