@@ -30,13 +30,13 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore"; 
 
 const firebaseConfig = {
-  // apiKey: "AIzaSyBeIbV8znw8pcDC5h3zib8FZhYtNzoA5YQ",
-  // authDomain: "social-pro-editor.firebaseapp.com",
-  // projectId: "social-pro-editor",
-  // storageBucket: "social-pro-editor.firebasestorage.app",
-  // messagingSenderId: "158438381285",
-  // appId: "1:158438381285:web:4c5824e388270ef988660c",
-  // measurementId: "G-WC00M3M53N"
+  apiKey: "AIzaSyBeIbV8znw8pcDC5h3zib8FZhYtNzoA5YQ",
+  authDomain: "social-pro-editor.firebaseapp.com",
+  projectId: "social-pro-editor",
+  storageBucket: "social-pro-editor.firebasestorage.app",
+  messagingSenderId: "158438381285",
+  appId: "1:158438381285:web:4c5824e388270ef988660c",
+  measurementId: "G-WC00M3M53N"
 };
 
 // Initialize Firebase

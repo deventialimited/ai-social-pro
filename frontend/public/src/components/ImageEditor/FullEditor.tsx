@@ -126,25 +126,23 @@ const FullEditor: React.FC = () => {
 
   // Load data from Firebase Firestore
   const loadDataFromFirebase = async () => {
-    if (postId) {
-      try {
-        const docRef = doc(db, "posts", postId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          console.log("Data retrieved from Firebase:", data);
-          setShapes(data.shapes);
-          setBackgroundColor(data.backgroundColor);
-          setBackgroundImage(data.backgroundImage);
-          setPostBody(data.postBody);
-          setHistory(data.history);
-          setHistoryIndex(data.historyIndex);
-        } else {
-          console.log("No such document!");
-        }
-      } catch (e) {
-        console.error("Error getting document: ", e);
+    try {
+      const docRef = doc(db, "posts", "1");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        console.log("Data retrieved from Firebase:", data);
+        setShapes(data.shapes);
+        setBackgroundColor(data.backgroundColor);
+        setBackgroundImage(data.backgroundImage);
+        setPostBody(data.postBody);
+        setHistory(data.history);
+        setHistoryIndex(data.historyIndex);
+      } else {
+        console.log("No such document!");
       }
+    } catch (e) {
+      console.error("Error getting document: ", e);
     }
   };
 
@@ -229,11 +227,13 @@ const FullEditor: React.FC = () => {
     fetchBackgroundData();
   }, []);
 
-  useEffect(() => {
-    saveDataToFirebase();
-  }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
+  // useEffect(() => {
+  //   saveDataToFirebase();
+  // }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
 
   const closeModal = () => {
+    saveDataToFirebase();
+
     setIsOpen(false);
     navigate("/posts");
   };
@@ -245,7 +245,7 @@ const FullEditor: React.FC = () => {
   // Add a shape to the canvas
   const handleAddShape = (shape: Shape) => {
     const lastShape = shapes[shapes.length - 1];
-    const offset = lastShape ? 12 : 40; // First shape should have 40 offset
+    const offset = lastShape ? 15 : 40; // First shape should have 40 offset
     const newShape = {
       ...shape,
       x: lastShape ? lastShape.x + offset : offset,
