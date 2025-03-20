@@ -46,7 +46,7 @@ const db = getFirestore(app);
 // Function to save post data
 export const savePostData = async (postId, data) => {
   try {
-    await setDoc(doc(db, "posts", postId), data);
+    await setDoc(doc(db, "posts", postId), data, { merge: true });
     console.log("Post data saved successfully");
   } catch (error) {
     console.error("Error saving post data: ", error);
