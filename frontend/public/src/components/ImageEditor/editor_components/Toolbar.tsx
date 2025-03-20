@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client"
 import type React from "react"
-import { useState, useRef, useEffect } from "react" 
+import { useState, useRef, useEffect } from "react"
 import { DocumentDuplicateIcon, TrashIcon, ArrowUturnLeftIcon, ArrowUturnRightIcon } from "@heroicons/react/24/outline"
 import {
   UploadIcon,
@@ -15,6 +15,7 @@ import {
   Droplet,
 } from "lucide-react"
 import BorderStyleDropdown from "./BorderStyleDropdown"
+import TransparencyDropdown from "./TransparencyDropdown"
 
 // Common toolbar style
 const toolbarStyle = "flex items-center h-14 bg-white border border-gray-200 rounded-sm shadow-sm"
@@ -49,36 +50,38 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   isItemSelected,
 }) => {
-  const [fontSize, setFontSize] = useState<number>(() => parseInt(getLocalStorageData('editor_fontSize', '115')))
-  const [fontFamily, setFontFamily] = useState<string>(() => getLocalStorageData('editor_fontFamily', 'Open Sans'))
-  const [fontColor, setFontColor] = useState<string>(() => getLocalStorageData('editor_fontColor', '#000000'))
-  const [backgroundColor, setBackgroundColor] = useState<string>(() => getLocalStorageData('editor_backgroundColor', '#ffffff'))
+  const [fontSize, setFontSize] = useState<number>(() => Number.parseInt(getLocalStorageData("editor_fontSize", "115")))
+  const [fontFamily, setFontFamily] = useState<string>(() => getLocalStorageData("editor_fontFamily", "Open Sans"))
+  const [fontColor, setFontColor] = useState<string>(() => getLocalStorageData("editor_fontColor", "#000000"))
+  const [backgroundColor, setBackgroundColor] = useState<string>(() =>
+    getLocalStorageData("editor_backgroundColor", "#ffffff"),
+  )
 
   const handleFontChange = (nextFont: Font) => {
     setFontFamily(nextFont.family)
     onFontChange?.(nextFont.family)
-    localStorage.setItem('editor_fontFamily', nextFont.family)
+    localStorage.setItem("editor_fontFamily", nextFont.family)
   }
 
   const handleFontSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = Number.parseInt(e.target.value, 10)
     setFontSize(newSize)
     onFontSizeChange?.(newSize)
-    localStorage.setItem('editor_fontSize', newSize.toString())
+    localStorage.setItem("editor_fontSize", newSize.toString())
   }
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value
     setFontColor(newColor)
     onColorChange?.(newColor)
-    localStorage.setItem('editor_fontColor', newColor)
+    localStorage.setItem("editor_fontColor", newColor)
   }
 
   const handleBackgroundColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value
     setBackgroundColor(newColor)
     onBackgroundColorChange?.(newColor)
-    localStorage.setItem('editor_backgroundColor', newColor)
+    localStorage.setItem("editor_backgroundColor", newColor)
   }
 
   useEffect(() => {
@@ -192,7 +195,7 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) =>
     }
     setEffects(newEffects)
     onEffectsChange?.(newEffects)
-    localStorage.setItem('editor_shapeEffects', JSON.stringify(newEffects))
+    localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects))
   }
 
   const handleBlurChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -203,7 +206,7 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) =>
     }
     setEffects(newEffects)
     onEffectsChange?.(newEffects)
-    localStorage.setItem('editor_shapeEffects', JSON.stringify(newEffects))
+    localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects))
   }
 
   const handleOffsetXChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,7 +217,7 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) =>
     }
     setEffects(newEffects)
     onEffectsChange?.(newEffects)
-    localStorage.setItem('editor_shapeEffects', JSON.stringify(newEffects))
+    localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects))
   }
 
   const handleOffsetYChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,7 +228,7 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) =>
     }
     setEffects(newEffects)
     onEffectsChange?.(newEffects)
-    localStorage.setItem('editor_shapeEffects', JSON.stringify(newEffects))
+    localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects))
   }
 
   const handleOpacityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +239,7 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) =>
     }
     setEffects(newEffects)
     onEffectsChange?.(newEffects)
-    localStorage.setItem('editor_shapeEffects', JSON.stringify(newEffects))
+    localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects))
   }
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,17 +250,19 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({ onEffectsChange }) =>
     }
     setEffects(newEffects)
     onEffectsChange?.(newEffects)
-    localStorage.setItem('editor_shapeEffects', JSON.stringify(newEffects))
+    localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects))
   }
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button className="p-2 flex rounded-md hover:bg-gray-100 cursor-pointer" title="Effects" onClick={toggleDropdown}>
-      <svg data-icon="left-join" height="16" role="img" viewBox="0 0 16 16" width="16">
-          <path d="M6.6 3.3C6.1 3.1 5.6 3 5 3 2.2 3 0 5.2 0 8s2.2 5 5 5c.6 0 1.1-.1 1.6-.3C5.3 11.6 4.5 9.9 4.5 8s.8-3.6 2.1-4.7zM8 4c-1.2.9-2 2.4-2 4s.8 3.1 2 4c1.2-.9 2-2.3 2-4s-.8-3.1-2-4zm3-1c2.8 0 5 2.2 5 5s-2.2 5-5 5c-.6 0-1.1-.1-1.6-.3 1.3-1.1 2.1-2.9 2.1-4.7s-.8-3.5-2.1-4.7c.5-.2 1-.3 1.6-.3zm.35 1.02c.73 1.15 1.14 2.52 1.14 3.98s-.42 2.83-1.14 3.98c2.04-.18 3.64-1.9 3.64-3.98s-1.6-3.8-3.64-3.98z" fill-rule="evenodd"></path>
+        <svg data-icon="left-join" height="16" role="img" viewBox="0 0 16 16" width="16">
+          <path
+            d="M6.6 3.3C6.1 3.1 5.6 3 5 3 2.2 3 0 5.2 0 8s2.2 5 5 5c.6 0 1.1-.1 1.6-.3C5.3 11.6 4.5 9.9 4.5 8s.8-3.6 2.1-4.7zM8 4c-1.2.9-2 2.4-2 4s.8 3.1 2 4c1.2-.9 2-2.3 2-4s-.8-3.1-2-4zm3-1c2.8 0 5 2.2 5 5s-2.2 5-5 5c-.6 0-1.1-.1-1.6-.3 1.3-1.1 2.1-2.9 2.1-4.7s-.8-3.5-2.1-4.7c.5-.2 1-.3 1.6-.3zm.35 1.02c.73 1.15 1.14 2.52 1.14 3.98s-.42 2.83-1.14 3.98c2.04-.18 3.64-1.9 3.64-3.98s-1.6-3.8-3.64-3.98z"
+            fillRule="evenodd"
+          ></path>
         </svg>
         <span className="text-sm text-gray-600">Effects</span>
-        
       </button>
 
       {isOpen && (
@@ -415,21 +420,22 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
   selectedShapeId,
   updateShape,
 }) => {
-  const [shapeColor, setShapeColor] = useState<string>(() => getLocalStorageData('editor_shapeColor', '#cccccc'))
-  const [shapeTransparency, setShapeTransparency] = useState<number>(0)
+  const [shapeColor, setShapeColor] = useState<string>(() => getLocalStorageData("editor_shapeColor", "#cccccc"))
+  const [shapeTransparency, setShapeTransparency] = useState<number>(() =>
+    Number.parseFloat(getLocalStorageData("editor_shapeTransparency", "0")),
+  )
 
   const handleShapeColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value
     setShapeColor(newColor)
     onColorChange?.(newColor)
-    localStorage.setItem('editor_shapeColor', newColor)
+    localStorage.setItem("editor_shapeColor", newColor)
   }
 
-  const handleShapeTransparencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTransparency = Number.parseFloat(e.target.value)
+  const handleShapeTransparencyChange = (newTransparency: number) => {
     setShapeTransparency(newTransparency)
     onTransparencyChange?.(newTransparency)
-    localStorage.setItem('editor_shapeTransparency', newTransparency.toString())
+    localStorage.setItem("editor_shapeTransparency", newTransparency.toString())
   }
 
   const handleEffectsChange = (effects: ShapeEffects) => {
@@ -485,19 +491,15 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
           onChange={handleShapeColorChange}
           title="Fill Color"
         />
-        <div className="flex items-center space-x-2">
-          <Droplet className="w-5 h-5 text-gray-600" />
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            className="w-20"
-            value={shapeTransparency}
-            onChange={handleShapeTransparencyChange}
-            title="Transparency"
-          />
-        </div>
+        
+        {/* Replace the inline transparency control with the new dropdown */}
+        <TransparencyDropdown 
+          onTransparencyChange={handleShapeTransparencyChange}
+          transparency={shapeTransparency}
+          selectedShapeId={selectedShapeId}
+          updateShape={updateShape}
+        />
+        
         <button className="p-2 rounded-md hover:bg-gray-100 cursor-pointer" title="Alignment">
           <AlignLeft className="w-5 h-5 text-gray-600" />
         </button>
@@ -622,13 +624,15 @@ interface BackgroundToolbarProps {
 }
 
 const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onColorChange, onUndo, onRedo, isItemSelected }) => {
-  const [backgroundColor, setBackgroundColor] = useState<string>(() => getLocalStorageData('editor_backgroundColor', '#ffffff'))
+  const [backgroundColor, setBackgroundColor] = useState<string>(() =>
+    getLocalStorageData("editor_backgroundColor", "#ffffff"),
+  )
 
   const handleBackgroundColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value
     setBackgroundColor(newColor)
     onColorChange?.(newColor)
-    localStorage.setItem('editor_backgroundColor', newColor)
+    localStorage.setItem("editor_backgroundColor", newColor)
   }
 
   useEffect(() => {
