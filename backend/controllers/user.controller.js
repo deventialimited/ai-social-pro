@@ -104,6 +104,8 @@ export const getUserDomains = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // console.log(" user data of the domain", userData);
+
     // Convert stored domain keys back to the original format
     const decodedDomains = {};
     if (userData.domains) {
@@ -164,5 +166,53 @@ export const getSiteData = async (req, res) => {
   } catch (error) {
     console.error("Error in getSiteData:", error);
     return res.status(500).json({ error: `Server error: ${error.message}` });
+  }
+};
+
+// get last user domain
+export const getLastAddedDomains = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userData = await User.findById(user._id).select("domains").lean();
+
+    let domainKeys = [];
+
+    if (userData && userData.domains) {
+      domainKeys = Object.keys(userData.domains);
+      if (domainKeys.length > 0) {
+        const lastKey = domainKeys[domainKeys.length - 1];
+        const lastDomainData = userData.domains[lastKey];
+        console.log("Last Domain Key:", lastKey);
+        console.log("Last Domain Data:", lastDomainData);
+      } else {
+        console.log("No domains found.");
+      }
+    } else {
+      console.log("User or domains not found.");
+    }
+
+    if (domainKeys.length === 0) {
+      return res.status(200).json({ domain: {} });
+    }
+
+    // Get the last key
+    const lastKey = domainKeys[domainKeys.length - 1];
+
+    // Decode the key back to its original format
+    const originalKey = lastKey.replace(/_dot_/g, ".");
+
+    const lastDomainData = {
+      [originalKey]: userData.domains[lastKey],
+    };
+
+    return res.status(200).json({ domain: lastDomainData });
+  } catch (error) {
+    console.error("Error fetching user domains:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 };

@@ -4,6 +4,7 @@ import {
   updateUserData,
   getSiteData,
   getUserDomains,
+  getLastAddedDomains,
 } from "../controllers/user.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 
@@ -18,5 +19,6 @@ router.post("/update", updateUserData);
 // Get site data for a domain
 router.post("/sitedata", protect, getSiteData);
 router.get("/userdomains", protect, getUserDomains);
+router.get("/lastdomain", protect, getLastAddedDomains);
 
 export default router;
