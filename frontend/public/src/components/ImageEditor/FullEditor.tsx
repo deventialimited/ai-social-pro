@@ -162,39 +162,106 @@ const FullEditor: React.FC = () => {
     }
   }, [postId]);
 
-  const captureDiagramAsImage = async () => {
-    const diagramElement = document.getElementById("canvas");
-    if (diagramElement) {
-      const canvas = await html2canvas(diagramElement);
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
-      if (blob) {
-        // Create a URL for the blob and trigger a download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "diagram.png";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+  // const captureDiagramAsImage = async () => {
+  //   const diagramElement = document.getElementById("canvas");
+  //   if (diagramElement) {
+  //     const canvas = await html2canvas(diagramElement);
+  //     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
+  //     if (blob) {
+  //       // Create a URL for the blob and trigger a download
+  //       const url = URL.createObjectURL(blob);
+  //       const a = document.createElement("a");
+  //       a.href = url;
+  //       a.download = "diagram.png";
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       document.body.removeChild(a);
+  //       URL.revokeObjectURL(url);
 
-        // Proceed with the API call
-        const formData = new FormData();
-        formData.append("image", blob, "diagram.png");
-        try {
-          await axios.post("/api/update-image", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-          console.log("Image successfully updated in the database");
-        } catch (error) {
-          console.error("Error updating image in the database:", error);
-        }
+  //       // Proceed with the API call
+  //       const formData = new FormData();
+  //       formData.append("image", blob, "diagram.png");
+  //       try {
+  //         await axios.post("/api/update-image", formData, {
+  //           headers: {
+  //             "Content-Type": "multipart/form-data",
+  //           },
+  //         });
+  //         console.log("Image successfully updated in the database");
+  //       } catch (error) {
+  //         console.error("Error updating image in the database:", error);
+  //       }
+  //     }
+  //   }
+  // };
+
+
+  const captureDiagramAsImage = async () => {
+    try {
+      // First, load the data from Firebase to ensure we have the latest data
+      saveDataToFirebase();
+      await loadDataFromFirebase();
+      
+      // Wait a moment for the React state to update and render with the loaded data
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Get the canvas element
+      const diagramElement = document.getElementById("canvas");
+      
+      if (!diagramElement) {
+        console.error("Canvas element not found");
+        return;
       }
+      
+      // Create a canvas from the HTML element with the loaded Firebase data
+      const canvas = await html2canvas(diagramElement, {
+        useCORS: true, // This helps with any cross-origin images
+        scale: 2, // Increase quality
+        backgroundColor: backgroundColor || "#ffffff", // Use the loaded background color
+        logging: false,
+        onclone: (clonedDoc) => {
+          // You can manipulate the cloned document before rendering if needed
+          const clonedElement = clonedDoc.getElementById("canvas");
+          if (clonedElement) {
+            // Apply any additional styles or modifications to the cloned element
+            if (backgroundImage) {
+              clonedElement.style.backgroundImage = `url(${backgroundImage})`;
+            }
+          }
+        }
+      });
+      
+      // Convert the canvas to a blob
+      const blob = await new Promise<Blob | null>((resolve) => 
+        canvas.toBlob(resolve, "image/png", 1.0)
+      );
+      
+      if (!blob) {
+        console.error("Failed to create blob from canvas");
+        return;
+      }
+      
+      // Create a downloadable link
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      
+      // Include some Firebase data in the filename
+      const timestamp = new Date().getTime();
+      const filename = `editor_${postId || "1"}_${timestamp}.png`;
+      a.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log("Image downloaded successfully with Firebase data");
+    } catch (error) {
+      console.error("Error downloading image:", error);
     }
   };
-
   useEffect(() => {
     const fetchBackgroundData = async () => {
       try {
@@ -232,7 +299,7 @@ const FullEditor: React.FC = () => {
   // }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
 
   const closeModal = () => {
-    saveDataToFirebase();
+    // saveDataToFirebase();
 
     setIsOpen(false);
     navigate("/posts");
