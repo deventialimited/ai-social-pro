@@ -143,6 +143,17 @@ const Posts = () => {
 
   const navigate = useNavigate();
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = `0${date.getMonth() + 1}`.slice(-2); // Add leading zero
+    const day = `0${date.getDate()}`.slice(-2);
+    const hours = `0${date.getHours()}`.slice(-2);
+    const minutes = `0${date.getMinutes()}`.slice(-2);
+
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -214,101 +225,104 @@ const Posts = () => {
   };
 
   return (
-    <div className="[grid-area:content] h-full flex flex-col overflow-auto bg-blue-50">
-      <div className="min-h-0 flex-grow flex flex-col overflow-y-auto overflow-x-hidden pb-12">
-        <div className="sticky top-0 z-[100]">
-          <div className="flex fixed top-0 left-0 right-0 z-10">
-            <div>
-              <Sidebar
-                isSidebarOpen={isSidebarOpen}
-                toggleSidebar={toggleSidebar}
-                toggleBusiness={toggleBusiness}
-                isBusinessOpen={isBusinessOpen}
-                openProfile={openProfile}
-                domains={domains}
-                selectedDomain={selectedDomain}
-                onDomainChange={handleDomainChange}
-              />
-            </div>
-            <div className="w-full">
-              <Navbar />
+    <>
+      <div className="[grid-area:content] h-full flex flex-col overflow-auto bg-blue-50">
+        <div className="min-h-0 flex-grow flex flex-col overflow-y-auto overflow-x-hidden pb-12">
+          <div className="sticky top-0 z-[100]">
+            <div className="flex fixed top-0 left-0 right-0 z-10">
+              <div>
+                <Sidebar
+                  isSidebarOpen={isSidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                  toggleBusiness={toggleBusiness}
+                  isBusinessOpen={isBusinessOpen}
+                  openProfile={openProfile}
+                  domains={domains}
+                  selectedDomain={selectedDomain}
+                  onDomainChange={handleDomainChange}
+                />
+              </div>
+              <div className="w-full">
+                <Navbar />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          id="generated-post-container"
-          className="flex flex-col gap-7 pt-4 items-center"
-        >
-          <div className="flex w-full justify-center relative py-4"></div>
-          {loading ? (
-            <div className="text-center text-lg">Loading posts...</div>
-          ) : (
-            <div className="w-full pb-8 space-y-20">
-              {filteredPosts.map((post, index) => (
-                <div
-                  key={index}
-                  className="max-sm:w-full"
-                  style={{
-                    transform: "translateY(0px) translateX(0px)",
-                    opacity: 1,
-                    willChange: "transform, opacity",
-                  }}
-                >
-                  <PostCard
-                    image={post.image || ""}
-                    topic={post.topic || ""}
-                    content={post.content || ""}
-                    post_id={post.post_id || ""}
-                    website={post.website || ""}
-                    date={post.date || ""}
-                    platform={post.platform || ""}
-                    onPost={handlePost}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          <div
+            id="generated-post-container"
+            className="flex flex-col gap-7 pt-4 items-center"
+          >
+            <div className="flex w-full justify-center relative py-4"></div>
+            {loading ? (
+              <div className="text-center text-lg">Loading posts...</div>
+            ) : (
+              <div className="w-full pb-8 space-y-20">
+                {filteredPosts.map((post, index) => (
+                  <div
+                    key={index}
+                    className="max-sm:w-full"
+                    style={{
+                      transform: "translateY(0px) translateX(0px)",
+                      opacity: 1,
+                      willChange: "transform, opacity",
+                    }}
+                  >
+                    <PostCard
+                      image={post.image || ""}
+                      topic={post.topic || ""}
+                      content={post.content || ""}
+                      post_id={post.post_id || ""}
+                      website={post.website || ""}
+                      date={formatDate(post.date || "")}
+                      platform={post.platform || ""}
+                      onPost={handlePost}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <div
-          className="generate-post-btn-container delay-300"
-          style={{
-            transform: "translateY(0px) translateX(0px)",
-            opacity: 1,
-            willChange: "transform, opacity",
-          }}
-        >
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only"
-            >
-              <span className="ant-btn-icon">
-                <svg
-                  stroke="currentColor"
-                  fill="currentColor"
-                  strokeWidth="0"
-                  viewBox="0 0 24 24"
-                  height="18"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path fill="none" d="M0 0h24v24H0V0z"></path>
-                  <path
-                    d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7
+          <div
+            className="generate-post-btn-container delay-300"
+            style={{
+              transform: "translateY(0px) translateX(0px)",
+              opacity: 1,
+              willChange: "transform, opacity",
+            }}
+          >
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only"
+              >
+                <span className="ant-btn-icon">
+                  <svg
+                    stroke="currentColor"
+                    fill="currentColor"
+                    strokeWidth="0"
+                    viewBox="0 0 24 24"
+                    height="18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path fill="none" d="M0 0h24v24H0V0z"></path>
+                    <path
+                      d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7
                     9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"
-                  ></path>
-                </svg>
-              </span>
-            </button>
+                    ></path>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <p className="text-xs text-antd-colorTextSecondary mt-3 text-center">
+              {filteredPosts.length} post{filteredPosts.length !== 1 && "s"}{" "}
+              found
+            </p>
           </div>
-          <p className="text-xs text-antd-colorTextSecondary mt-3 text-center">
-            {filteredPosts.length} post{filteredPosts.length !== 1 && "s"} found
-          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
