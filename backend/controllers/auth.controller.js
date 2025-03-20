@@ -2,10 +2,10 @@
  * Authentication Controller
  * Handles user authentication and account creation
  */
-import User from "../models/User.model.js"
-import {generateToken} from "../config/jwt.js"
-import {verifyGoogleToken} from "../utils/googleAuth.js"
-import bcrypt from "bcrypt"
+import User from "../models/User.model.js";
+import { generateToken } from "../config/jwt.js";
+import { verifyGoogleToken } from "../utils/googleAuth.js";
+import bcrypt from "bcrypt";
 
 /**
  * Create a new user account or return existing one
@@ -46,9 +46,6 @@ export const createUserAccount = async (req, res) => {
   }
 };
 
-
-
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -68,14 +65,15 @@ export const loginUser = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.json({ success: true, token, user: { id: user._id, email: user.email } });
+    res.json({
+      success: true,
+      token,
+      user: { id: user._id, displayName: user.displayName, email: user.email },
+    });
   } catch (error) {
     res.status(500).json({ error: `Server error: ${error.message}` });
   }
 };
-
-
-
 
 /**
  * Create or authenticate a user with Google

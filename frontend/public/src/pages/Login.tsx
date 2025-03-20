@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AppContext"; // Assuming you have this cont
 
 const Login = () => {
   const navigate = useNavigate();
-  const { setExtendedUser } = useAuth(); // Assuming you have this in your context
+  const { setExtendedUser } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +29,7 @@ const Login = () => {
       );
 
       const data = await response.json();
+      console.log(data);
 
       if (!response.ok) {
         throw new Error(data.error || "Login failed");
@@ -36,6 +37,7 @@ const Login = () => {
 
       // Store token in localStorage instead of cookies
       localStorage.setItem("authToken", data.token);
+      localStorage.setItem("displayName", data.user.displayName);
 
       // Update user context with user data
       setExtendedUser(data.user);
