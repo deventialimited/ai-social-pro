@@ -46,7 +46,13 @@ const db = getFirestore(app);
 // Function to save post data
 export const savePostData = async (postId, data) => {
   try {
-    await setDoc(doc(db, "posts", postId), data, { merge: true });
+    const existingData = await getPostData(postId);
+    if (existingData) {
+      const newData = { ...existingData, ...data };
+      await setDoc(doc(db, "posts", postId), newData, { merge: true });
+    } else {
+      await setDoc(doc(db, "posts", postId), data);
+    }
     console.log("Post data saved successfully");
   } catch (error) {
     console.error("Error saving post data: ", error);
@@ -54,18 +60,18 @@ export const savePostData = async (postId, data) => {
 };
 
 // Function to get post data
-export const getPostData = async (postId) => {
+export const getLatestPostData = async (postId) => {
   try {
     const docRef = doc(db, "posts", postId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
-      console.log("No such document!");
+      console.log("No such document for post ID:", postId);
       return null;
     }
   } catch (error) {
-    console.error("Error getting post data: ", error);
+    console.error("Error getting the latest post data for post ID:", postId, error);
     return null;
   }
 };
