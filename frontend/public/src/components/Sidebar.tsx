@@ -46,6 +46,10 @@ const Sidebar = ({
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(true);
 
+
+
+
+  
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
@@ -92,6 +96,16 @@ const Sidebar = ({
 
     fetchBusinessData();
   }, [navigate]);
+
+
+
+
+
+
+
+
+
+
 
   const handleLogout = (e) => {
     e.preventDefault();

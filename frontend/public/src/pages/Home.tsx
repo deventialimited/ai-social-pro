@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { jwtDecode } from "jwt-decode"; 
+import { jwtDecode } from "jwt-decode";
 // sdkmfl;k
 
 const API_BASE_URL = "https://ai-social-pro.onrender.com"; // "http://localhost:5000";
@@ -180,7 +180,7 @@ const Home = () => {
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Website to Social Media Content (v2.0)
+            Website to Social Media Content (v2.1)
           </h1>
           <p className="text-lg text-gray-600">
             Transform any website into engaging social media posts
