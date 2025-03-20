@@ -676,3 +676,5 @@ const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({ onColorChange, on
 }
 
 export { Toolbar, EffectsDropdown, ShapeToolbar, ImageToolbar, BackgroundToolbar }
+
+
