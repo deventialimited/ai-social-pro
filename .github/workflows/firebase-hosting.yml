@@ -16,7 +16,7 @@ jobs:
       - name: Set Up Node.js (Use Node 20)
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: '20'
 
       - name: Navigate to Frontend/Public Folder
         working-directory: frontend/public
@@ -36,7 +36,7 @@ jobs:
         working-directory: frontend/public
         run: npm run build
 
-      -  name: Install Firebase CLI and Required Dependencies
+      - name: Install Firebase CLI and Required Dependencies
         run: |
           npm install -g firebase-tools@12.4.0
           npm install -g sql-formatter
