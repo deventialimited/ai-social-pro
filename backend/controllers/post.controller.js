@@ -248,27 +248,23 @@ export const processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
 
-    if (!jsonData || !Array.isArray(jsonData)) {
-      console.error("Invalid JSON payload:", jsonData);
-      return res.status(400).send("Invalid JSON payload, expected an array");
-    }
 
     console.log("PubSub called with data:", jsonData);
 
-    for (const post of jsonData) {
-      const userEmail = post.client_email;
+    
+      const userEmail = jsonData.client_email;
 
       if (!userEmail) {
         console.warn("Skipping post without email:", post);
-        continue; // Skip this post but process the others
+       return res.status(400).send("Post json must contain a client_email key");
       }
 
       await User.findOneAndUpdate(
         { email: userEmail },
-        { $push: { posts: post } },
+        { $push: { posts: jsonData } },
         { new: true, upsert: true }
       );
-    }
+    
 
     console.log("Successfully processed all posts.");
     return res.status(200).send("All data processed successfully");

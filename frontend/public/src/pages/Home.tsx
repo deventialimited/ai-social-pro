@@ -106,16 +106,12 @@ const Home = () => {
 
       localStorage.setItem(
         "domainforcookies",
-        JSON.stringify(data.updatedUser.domains)
+        JSON.stringify(data.domains)
       );
 
       // Store site data in localStorage
       localStorage.setItem("websiteName", domain);
-      if (data.site && Object.keys(data.site).length > 0) {
-        let siteName = data.site.name || domain;
-        localStorage.setItem("websiteName", siteName);
-        localStorage.setItem("siteData", JSON.stringify(data.site));
-      }
+     
 
       toast.success("Posts generated successfully!");
       navigate("/profile");
@@ -180,7 +176,7 @@ const Home = () => {
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Website to Social Media Content (v2.1)
+            Website to Social Media Content (v2.2)
           </h1>
           <p className="text-lg text-gray-600">
             Transform any website into engaging social media posts

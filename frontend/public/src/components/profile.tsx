@@ -4,15 +4,17 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import axios from "axios";
-// imported react 1werwer
-const API_BASE_URL = "https://ai-social-pro.onrender.com"; //|| "http://localhost:5000"
+import Cookies from "js-cookie";
+
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
 
 const DEFAULT_BUSINESS_DATA = {
+  domain: "",
   name: "no data available",
   description: "no data available",
   industry: "no data available",
   niche: "no data available",
-  colors: [] as string[], // Explicitly define it as a string array
+  colors: [] as string[],
   audience: ["no data available"],
   audiencePains: ["no data available"],
   coreValues: ["1. no data available"],
@@ -33,100 +35,149 @@ const Profile = () => {
   const [business, setBusiness] = useState(DEFAULT_BUSINESS_DATA);
   const [loading, setLoading] = useState(true);
 
+  const [selectedDomain, setSelectedDomain] = useState("");
+
+  // On mount, verify user is logged in, else redirect
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
-
     if (!authToken) {
       console.log("No auth token found. Redirecting...");
       navigate("/");
       return;
     }
 
-    const fetchBusinessData = async () => {
-      try {
-        let domainsData = JSON.parse(localStorage.getItem("domainforcookies"));
+    // Grab the domain from the cookie
+    const cookieDomain = Cookies.get("websitename") || "";
+    setSelectedDomain(cookieDomain);
+  }, [navigate]);
 
-        if (!domainsData || Object.keys(domainsData).length === 0) {
-          console.log("No data in localStorage, fetching from backend...");
+  /**
+   * Called whenever we choose a domain from the Sidebar
+   */
+  const handleDomainChange = (domain) => {
+    setSelectedDomain(domain);
+    // We also store it in the cookie here, to stay consistent
+    Cookies.set("websitename", domain, { expires: 55 / 60 });
+  };
+
+  /**
+   * Once we have `selectedDomain`, load domain data from localStorage array
+   * If the array is empty or we can’t find matching domain, optionally fetch from backend.
+   */
+  useEffect(() => {
+    const fetchDataForDomain = async () => {
+      setLoading(true);
+      try {
+        // 1. Load domain array from localStorage
+        let domainDataStr = localStorage.getItem("domainforcookies");
+        let domainArray = [];
+        if (domainDataStr) {
+          try {
+            domainArray = JSON.parse(domainDataStr); // array
+          } catch (error) {
+            console.error("Error parsing domainforcookies:", error);
+            domainArray = [];
+          }
+        }
+
+        // 2. If the array is empty, fallback to backend => /api/users/lastdomain
+        if (domainArray.length === 0) {
+          console.log("No domain array found in localStorage => fetching last domain from backend...");
+          const authToken = localStorage.getItem("authToken");
+          if (!authToken) {
+            console.log("No authToken, cannot fetch lastdomain");
+            setLoading(false);
+            return;
+          }
           const response = await axios.get(
-            "https://ai-social-pro.onrender.com/api/users/lastdomain",
+            `${API_BASE_URL}/api/users/lastdomain`,
             {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-              },
+              headers: { Authorization: `Bearer ${authToken}` },
             }
           );
-
-          domainsData = response.data.domain;
-          console.log("Fetched from backend:", domainsData);
-
-          // Optional: Save it to localStorage
-          localStorage.setItem("domainforcookies", JSON.stringify(domainsData));
-        } else {
-          console.log("Loaded from localStorage:", domainsData);
+          const lastDomainObj = response.data.domain || {};
+          // This `lastDomainObj` is typically { "domain.com": { ...data... } }
+          // Convert it into an array of domain objects
+          const convertedArray = Object.keys(lastDomainObj).map((dom) => {
+            return {
+              domain: dom,
+              ...(lastDomainObj[dom] || {}),
+            };
+          });
+          domainArray = convertedArray;
+          // Store back in localStorage
+          localStorage.setItem(
+            "domainforcookies",
+            JSON.stringify(convertedArray)
+          );
         }
 
-        if (!domainsData || Object.keys(domainsData).length === 0) {
-          console.log("No business data found");
+        // 3. Now, from domainArray, find the domain matching `selectedDomain`
+        let foundDomain = null;
+        if (selectedDomain) {
+          foundDomain = domainArray.find(
+            (d) => d.domain?.toLowerCase() === selectedDomain.toLowerCase()
+          );
+        }
+
+        // 4. If we can’t find a match but the array is not empty, fallback to first
+        if (!foundDomain && domainArray.length > 0) {
+          foundDomain = domainArray[0];
+        }
+
+        // 5. If we still have no domain, we do a “no data available”
+        if (!foundDomain) {
+          setBusiness(DEFAULT_BUSINESS_DATA);
           setLoading(false);
           return;
         }
 
-        const firstDomainPrefix = Object.keys(domainsData)[0];
-        const businessData = domainsData[firstDomainPrefix];
-
-        if (!businessData) {
-          console.log("No business data found in the response structure");
-          setLoading(false);
-          return;
-        }
-
+        // 6. Otherwise, fill our business state from foundDomain
         setBusiness({
-          name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
+          domain: foundDomain.domain || "",
+          name: foundDomain.clientName || DEFAULT_BUSINESS_DATA.name,
           clientEmail:
-            businessData.client_email || DEFAULT_BUSINESS_DATA.clientEmail,
+            foundDomain.client_email || DEFAULT_BUSINESS_DATA.clientEmail,
           clientWebsite:
-            businessData.clientWebsite || DEFAULT_BUSINESS_DATA.clientWebsite,
+            foundDomain.clientWebsite || DEFAULT_BUSINESS_DATA.clientWebsite,
           clientName:
-            businessData.clientName || DEFAULT_BUSINESS_DATA.clientName,
+            foundDomain.clientName || DEFAULT_BUSINESS_DATA.clientName,
           description:
-            businessData.clientDescription || DEFAULT_BUSINESS_DATA.description,
-          industry: businessData.industry || DEFAULT_BUSINESS_DATA.industry,
-          niche: businessData.niche || DEFAULT_BUSINESS_DATA.niche,
+            foundDomain.clientDescription || DEFAULT_BUSINESS_DATA.description,
+          industry: foundDomain.industry || DEFAULT_BUSINESS_DATA.industry,
+          niche: foundDomain.niche || DEFAULT_BUSINESS_DATA.niche,
           colors:
-            businessData.colors && businessData.colors !== "not found"
-              ? Array.isArray(businessData.colors)
-                ? businessData.colors
-                : businessData.colors.replace(/\u00A0/g, " ").split(", ")
+            foundDomain.colors && foundDomain.colors !== "not found"
+              ? Array.isArray(foundDomain.colors)
+                ? foundDomain.colors
+                : foundDomain.colors.replace(/\u00A0/g, " ").split(", ")
               : DEFAULT_BUSINESS_DATA.colors,
-          coreValues: businessData.core_values
-            ? Array.isArray(businessData.core_values)
-              ? businessData.core_values
-              : businessData.core_values
+          coreValues: foundDomain.core_values
+            ? Array.isArray(foundDomain.core_values)
+              ? foundDomain.core_values
+              : foundDomain.core_values
                   .split(", ")
                   .map((item: string) => item.trim())
             : DEFAULT_BUSINESS_DATA.coreValues,
-          audience: businessData.audience
-            ? Array.isArray(businessData.audience)
-              ? businessData.audience
-              : businessData.audience
-                  .split(", ")
-                  .map((item: string) => item.trim())
+          audience: foundDomain.audience
+            ? Array.isArray(foundDomain.audience)
+              ? foundDomain.audience
+              : foundDomain.audience.split(", ").map((item: string) => item.trim())
             : DEFAULT_BUSINESS_DATA.audience,
-          audiencePains: businessData.audiencePains
-            ? Array.isArray(businessData.audiencePains)
-              ? businessData.audiencePains
-              : businessData.audiencePains
+          audiencePains: foundDomain.audiencePains
+            ? Array.isArray(foundDomain.audiencePains)
+              ? foundDomain.audiencePains
+              : foundDomain.audiencePains
                   .split(", ")
                   .map((item: string) => item.trim())
             : DEFAULT_BUSINESS_DATA.audiencePains,
-          language: businessData.language || DEFAULT_BUSINESS_DATA.language,
-          country: businessData.country || DEFAULT_BUSINESS_DATA.country,
-          state: businessData.state || DEFAULT_BUSINESS_DATA.state,
-          logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
+          language: foundDomain.language || DEFAULT_BUSINESS_DATA.language,
+          country: foundDomain.country || DEFAULT_BUSINESS_DATA.country,
+          state: foundDomain.state || DEFAULT_BUSINESS_DATA.state,
+          logoUrl: foundDomain.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
         });
       } catch (err) {
-        console.error("Error fetching business data:", err);
+        console.error("Error fetching domain data:", err);
         if (axios.isAxiosError(err) && err.response?.status === 401) {
           localStorage.removeItem("authToken");
           navigate("/");
@@ -136,12 +187,11 @@ const Profile = () => {
       }
     };
 
-    fetchBusinessData();
-  }, [navigate]);
+    fetchDataForDomain();
+  }, [selectedDomain, navigate]);
 
-  // Function to open profile page - already on profile page, but needed for Sidebar prop
+  // function for the sidebar
   const openProfile = () => {
-    // Already on profile page, so this is just a placeholder
     console.log("Already on profile page");
   };
 
@@ -155,6 +205,10 @@ const Profile = () => {
             isBusinessOpen={isBusinessOpen}
             toggleBusiness={() => setIsBusinessOpen(!isBusinessOpen)}
             openProfile={openProfile}
+            // pass these so user can select domain in the sidebar
+            domains={[]} // If you want the domains from /api/posts, that’s separate. You can pass if needed
+            selectedDomain={selectedDomain}
+            onDomainChange={handleDomainChange}
           />
           <div className="w-full">
             <Navbar />
@@ -180,17 +234,17 @@ const Profile = () => {
                       and post designs.
                     </p>
 
-                    {/* <div className="mb-4">
-                    {business.logoUrl ? (
-                      <img
-                        src={business.logoUrl}
-                        alt={business.name}
-                        className="h-32 object-contain"
-                      />
-                    ) : (
-                      <p className="text-gray-400">No logo available.</p>
-                    )}
-                  </div> */}
+                    <div className="mb-4">
+                      {business.logoUrl ? (
+                        <img
+                          src={business.logoUrl}
+                          alt={business.name}
+                          className="h-32 object-contain"
+                        />
+                      ) : (
+                        <p className="text-gray-400">No logo available.</p>
+                      )}
+                    </div>
 
                     <div className="mb-2">
                       <strong className="block mb-1">Business Name:</strong>

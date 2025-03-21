@@ -11,9 +11,10 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie"; // Import the Cookies library
+import Cookies from "js-cookie"; // For setting the "websitename" cookie
 import { Plus } from "lucide-react";
 import axios from "axios";
+
 
 const Sidebar = ({
   isSidebarOpen,
@@ -22,103 +23,55 @@ const Sidebar = ({
   isBusinessOpen,
   openProfile,
 
-  // NEW PROPS for domain selection
-  domains = [],
+  // new props for domain selection
+  domains = [], // array of domain strings from the getPosts user data (for your Posts page)
   selectedDomain = "",
   onDomainChange = () => {},
 }) => {
   const navigate = useNavigate();
+
+  const [displayName, setDisplayName] = useState("");
+  const [domainDataList, setDomainDataList] = useState([]);
+  const [currentDomainObj, setCurrentDomainObj] = useState(null);
+
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const domain = Cookies.get("websitename");
-    if (domain) {
-      onDomainChange(domain);
+    // For top-right user name display
+    const storedDisplayName = localStorage.getItem("displayName");
+    setDisplayName(storedDisplayName || "John Doe");
+
+    // Load domain data array from localStorage
+    const domainDataStr = localStorage.getItem("domainforcookies");
+    if (domainDataStr) {
+      try {
+        const parsed = JSON.parse(domainDataStr); // an array of domain objects
+        setDomainDataList(parsed);
+      } catch (err) {
+        console.error("Error parsing domainforcookies:", err);
+      }
     }
   }, []);
 
-  const DEFAULT_BUSINESS_DATA = {
-    name: "no data available",
-    logoUrl: "",
-    clientName: "no data available",
-  };
-
-  const [business, setBusiness] = useState(DEFAULT_BUSINESS_DATA);
-  const [displayName, setDisplayName] = useState("");
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const fetchBusinessData = async () => {
-      try {
-        const domainsData = JSON.parse(
-          localStorage.getItem("domainforcookies")
-        );
-        const displayName = localStorage.getItem("displayName");
-        setDisplayName(displayName || "john doe");
-        console.log("domains data is ", JSON.stringify(domainsData));
+    // If user has not chosen anything, we see if the "websitename" cookie is set
+    const cookieDomain = Cookies.get("websitename");
+    if (cookieDomain) {
+      onDomainChange(cookieDomain); // also informs parent
+    }
+  }, [onDomainChange]);
 
-        if (!domainsData || Object.keys(domainsData).length === 0) {
-          console.log(
-            "No business data found in localStorage, fetching from API..."
-          );
-
-          // Fetch from backend
-          const response = await axios.get(
-            "https://ai-social-pro.onrender.com/api/users/lastdomain"
-          );
-
-          if (response?.data) {
-            const fetchedData = response.data;
-            console.log("Fetched data from API:", fetchedData);
-
-            // Save to localStorage
-            localStorage.setItem(
-              "domainforcookies",
-              JSON.stringify(fetchedData)
-            );
-
-            // Assuming structure similar to domainsData
-            const firstDomainPrefix = Object.keys(fetchedData)[0];
-            const businessData = fetchedData[firstDomainPrefix];
-
-            if (businessData) {
-              setBusiness({
-                name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
-                clientWebsite:
-                  businessData.clientWebsite ||
-                  DEFAULT_BUSINESS_DATA.clientWebsite,
-                logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
-              });
-            }
-          }
-        } else {
-          // If found in localStorage, use it directly
-          const firstDomainPrefix = Object.keys(domainsData)[0];
-          const businessData = domainsData[firstDomainPrefix];
-
-          if (businessData) {
-            setBusiness({
-              name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
-              clientWebsite:
-                businessData.clientWebsite ||
-                DEFAULT_BUSINESS_DATA.clientWebsite,
-              logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching business data:", err);
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
-          localStorage.removeItem("authToken");
-          navigate("/");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBusinessData();
-  }, [navigate]);
+  
+  useEffect(() => {
+    if (!selectedDomain || domainDataList.length === 0) {
+      setCurrentDomainObj(null);
+      return;
+    }
+    const found = domainDataList.find(
+      (d) => d.domain?.toLowerCase() === selectedDomain.toLowerCase()
+    );
+    setCurrentDomainObj(found || null);
+  }, [selectedDomain, domainDataList]);
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -130,7 +83,12 @@ const Sidebar = ({
     setIsDomainDropdownOpen(!isDomainDropdownOpen);
   };
 
+  /**
+   * If user picks a domain from the dropdown, we set the cookie
+   * and call onDomainChange so that the parent (Posts, etc.) knows.
+   */
   const handleDomainSelect = (domain) => {
+    Cookies.set("websitename", domain, { expires: 55 / 60 });
     onDomainChange(domain);
     setIsDomainDropdownOpen(false);
   };
@@ -169,29 +127,31 @@ const Sidebar = ({
           <div className="p-4 flex flex-col justify-between h-full">
             <div>
               {/* Heading (desktop) */}
-              <h1 className="text-[22px] font-bold text-blue-600 mb-4   items-center hidden md:flex">
+              <h1 className="text-[22px] font-bold text-blue-600 mb-4 items-center hidden md:flex">
                 Profile
                 <FaBars className="ml-[138px] text-[26px] text-gray-600" />
               </h1>
 
-              {/* 
-              Replacing the old "Acme Corp" text with a domain dropdown.
-              You can style it any way you like. 
-            */}
+              {/* Domain info / dropdown container */}
               <div className="flex flex-col border border-gray-300 rounded-lg p-2">
                 <div className="flex items-center justify-between">
-                  <img
-                    src={
-                      business.logoUrl ||
-                      "https://www.w3schools.com/w3images/avatar2.png"
-                    }
-                    alt="Logo"
-                    className="mr-2 w-8 h-8"
-                  />
-                  {/* Domain Dropdown */}
+                  {/* Show the currently selected domain’s logo if we have it */}
+                  {currentDomainObj?.logoUrl ? (
+                    <img
+                      src={currentDomainObj.logoUrl}
+                      alt="Logo"
+                      className="mr-2 w-8 h-8"
+                    />
+                  ) : (
+                    <img
+                      src="https://www.w3schools.com/w3images/avatar2.png"
+                      alt="Default"
+                      className="mr-2 w-8 h-8"
+                    />
+                  )}
 
+                  {/* Domain Dropdown Trigger */}
                   <div className="relative flex-1">
-                    {/* Top Trigger */}
                     <div
                       className="w-full bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer"
                       onClick={toggleDomainDropdown}
@@ -205,7 +165,10 @@ const Sidebar = ({
                                 : "text-gray-600"
                             }`}
                           >
-                            {business.clientWebsite || "-- All Websites --"}
+                            {/* If we have a selected domain, show it; else fallback */}
+                            {currentDomainObj?.clientWebsite ||
+                              selectedDomain ||
+                              "-- All Websites --"}
                           </span>
                         </div>
                         <FaCaretDown
@@ -215,39 +178,34 @@ const Sidebar = ({
                         />
                       </div>
                     </div>
-
-                    {/* Dropdown */}
+                    {/* The dropdown list itself */}
                     {isDomainDropdownOpen && (
                       <ul className="absolute z-10 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
-                        {/* Business logo + name inside dropdown */}
-                        <li className="p-2" onClick={toggleDomainDropdown}>
-                          <div className="flex items-center gap-2 bg-purple-50 p-2 rounded-lg cursor-pointer hover:bg-purple-100 transition">
-                            <img
-                              src={
-                                business.logoUrl ||
-                                "https://www.w3schools.com/w3images/avatar2.png"
-                              }
-                              alt="Logo"
-                              className="mr-2 w-8 h-8"
-                            />
-                            <span className="font-semibold truncate">
-                              {business.clientWebsite || "-- All Websites --"}
-                            </span>
-                          </div>
-                        </li>
-
-                        {/* Domains */}
-                        {domains.map((d) => (
+                        {domainDataList.map((domObj, idx) => (
                           <li
-                            key={d}
-                            className="p-2 hover:bg-gray-100 truncate"
-                            onClick={() => handleDomainSelect(d)}
+                            key={idx}
+                            className="p-2 hover:bg-gray-100 truncate flex items-center gap-2 cursor-pointer"
+                            onClick={() => handleDomainSelect(domObj.domain)}
                           >
-                            {d}
+                            {/* logo + name */}
+                            {domObj.logoUrl ? (
+                              <img
+                                src={domObj.logoUrl}
+                                alt="Domain Logo"
+                                className="w-6 h-6"
+                              />
+                            ) : (
+                              <img
+                                src="https://www.w3schools.com/w3images/avatar2.png"
+                                alt="Default"
+                                className="w-6 h-6"
+                              />
+                            )}
+                            <span>{domObj.clientWebsite || domObj.domain}</span>
                           </li>
                         ))}
 
-                        {/* Add New Business */}
+                        {/* You could also add an “Add New Business” link: */}
                         <li
                           className="p-2 hover:bg-gray-100"
                           onClick={() => handleDomainSelect("")}
@@ -264,6 +222,7 @@ const Sidebar = ({
                   </div>
                 </div>
               </div>
+              {/* end domain container */}
 
               {/* Sidebar Nav */}
               <ul>

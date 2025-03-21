@@ -135,6 +135,7 @@ export const getSiteData = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+   
     const logoUrl = `https://logo.clearbit.com/${domain}`;
     const logoResponse = await fetch(logoUrl);
 
@@ -143,25 +144,47 @@ export const getSiteData = async (req, res) => {
       logoCloudinaryUrl = await uploadImageFromUrl(logoUrl);
     }
 
-    const enrichedData = await generateCompanyData(domain, user.email);
-    if (enrichedData) {
-      enrichedData.logoUrl = logoCloudinaryUrl;
+    let enrichedData = await generateCompanyData(domain, user.email);
+    if (!enrichedData) {
+      enrichedData = {};
     }
-    const safeDomain = domain.replace(/\./g, "_dot_");
-    let updatedUser = await User.findByIdAndUpdate(
+    enrichedData.logoUrl = logoCloudinaryUrl;
+
+    const userDoc = await User.findById(user._id).lean();
+    if (!userDoc) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const existingDomains = userDoc.domains || {};
+    const decodedDomains = {};
+    for (const safeKey of Object.keys(existingDomains)) {
+      const originalDomain = safeKey.replace(/_dot_/g, ".");
+      decodedDomains[originalDomain] = existingDomains[safeKey];
+    }
+
+    decodedDomains[domain] = enrichedData;
+
+    const updatedDomains = {};
+    for (const originalDomain of Object.keys(decodedDomains)) {
+      const safeKey = originalDomain.replace(/\./g, "_dot_");
+      updatedDomains[safeKey] = decodedDomains[originalDomain];
+    }
+
+    const updatedUserDoc = await User.findByIdAndUpdate(
       user._id,
-      { $set: { [`domains.${safeDomain}`]: enrichedData || {} } },
+      { $set: { domains: updatedDomains } },
       { new: true, upsert: true }
     ).lean();
 
-    updatedUser = {
-      ...updatedUser,
-      domains: { [domain]: enrichedData },
-    };
+    const finalDomains = {};
+    for (const safeKey of Object.keys(updatedUserDoc.domains || {})) {
+      const originalDomain = safeKey.replace(/_dot_/g, ".");
+      finalDomains[originalDomain] = updatedUserDoc.domains[safeKey];
+    }
 
     return res.status(200).json({
       message: "Data saved successfully",
-      updatedUser,
+      domains: finalDomains,
     });
   } catch (error) {
     console.error("Error in getSiteData:", error);

@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
 import { CiEdit } from "react-icons/ci";
 import { MdSaveAlt } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 
-const API_BASE_URL = "https://ai-social-pro.onrender.com"; // || "http://localhost:5000"
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
 
 const PostCard = ({
   image = "",
@@ -132,25 +131,25 @@ const PostCard = ({
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
-  const [domains, setDomains] = useState<string[]>([]);
   const [domainMap, setDomainMap] = useState<any>({});
+  const [domains, setDomains] = useState<string[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBusinessOpen, setIsBusinessOpen] = useState(false);
 
-  const [selectedDomain, setSelectedDomain] = useState("");
-
   const navigate = useNavigate();
 
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
+    if (isNaN(date)) return "N/A";
     const year = date.getFullYear();
-    const month = `0${date.getMonth() + 1}`.slice(-2); // Add leading zero
+    const month = `0${date.getMonth() + 1}`.slice(-2);
     const day = `0${date.getDate()}`.slice(-2);
     const hours = `0${date.getHours()}`.slice(-2);
     const minutes = `0${date.getMinutes()}`.slice(-2);
-
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
@@ -163,6 +162,12 @@ const Posts = () => {
           return;
         }
 
+        // Check if we have a default domain from the "websitename" cookie
+        const cookieDomain = Cookies.get("websitename");
+        if (cookieDomain) {
+          setSelectedDomain(cookieDomain);
+        }
+
         setLoading(true);
         const resp = await fetch(`${API_BASE_URL}/api/posts/getuserposts`, {
           headers: { Authorization: `Bearer ${authToken}` },
@@ -173,11 +178,12 @@ const Posts = () => {
         }
         const data = await resp.json();
 
+        // For the domainMap, you might see them stored as "___DOT___" in the keys, etc.
         if (data.domains) {
           setDomainMap(data.domains);
-
+          // Convert the keys if they have underscores:
           const keys = Object.keys(data.domains).map((key) =>
-            key.replace(/___DOT___/g, ".")
+            key.replace(/___DOT___/g, ".").replace(/_dot_/g, ".")
           );
           setDomains(keys);
         }
@@ -209,6 +215,9 @@ const Posts = () => {
     navigate("/profile");
   };
 
+  /**
+   * Filter posts by selected domain if it exists
+   */
   const filteredPosts = (() => {
     if (!selectedDomain) {
       return posts;
@@ -219,9 +228,12 @@ const Posts = () => {
     );
   })();
 
+  /**
+   * When user selects a domain from the sidebar, update our local state + set cookie
+   */
   const handleDomainChange = (domain) => {
     setSelectedDomain(domain);
-    Cookies.set("websitename", domain, { expires: 55 / 60 });
+    Cookies.set("websitename", domain, { expires: 55 / 60 }); // ~55 minutes
   };
 
   return (
@@ -316,8 +328,7 @@ const Posts = () => {
               </button>
             </div>
             <p className="text-xs text-antd-colorTextSecondary mt-3 text-center">
-              {filteredPosts.length} post{filteredPosts.length !== 1 && "s"}{" "}
-              found
+              {filteredPosts.length} post{filteredPosts.length !== 1 && "s"} found
             </p>
           </div>
         </div>
