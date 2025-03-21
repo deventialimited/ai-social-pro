@@ -24,6 +24,7 @@ const allowedOrigins = [
   "http://localhost:5173", // Frontend (Vite)
   "https://ai-social-pro-frontend.onrender.com",
   "https://oneyearsocial.com",
+  ,
   "*",
   // Deployed frontend
 ];

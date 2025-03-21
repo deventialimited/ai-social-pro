@@ -34,7 +34,6 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get auth token from localStorage instead of cookie
     const authToken = localStorage.getItem("authToken");
 
     if (!authToken) {
@@ -43,24 +42,37 @@ const Profile = () => {
       return;
     }
 
-    // Fetch business data from MongoDB through API
     const fetchBusinessData = async () => {
       try {
-        const domainsData = JSON.parse(
-          localStorage.getItem("domainforcookies")
-        );
-        console.log("domains data is ", JSON.stringify(domainsData));
-        // Check if domains data exists
+        let domainsData = JSON.parse(localStorage.getItem("domainforcookies"));
+
+        if (!domainsData || Object.keys(domainsData).length === 0) {
+          console.log("No data in localStorage, fetching from backend...");
+          const response = await axios.get(
+            "https://ai-social-pro.onrender.com/api/users/lastdomain",
+            {
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+              },
+            }
+          );
+
+          domainsData = response.data.domain;
+          console.log("Fetched from backend:", domainsData);
+
+          // Optional: Save it to localStorage
+          localStorage.setItem("domainforcookies", JSON.stringify(domainsData));
+        } else {
+          console.log("Loaded from localStorage:", domainsData);
+        }
+
         if (!domainsData || Object.keys(domainsData).length === 0) {
           console.log("No business data found");
           setLoading(false);
           return;
         }
 
-        // Extract the first domain's data (assuming we want to display the first one)
-        const firstDomainPrefix = Object.keys(domainsData)[0]; // e.g., "https://www"
-        // e.g., "com/"
-
+        const firstDomainPrefix = Object.keys(domainsData)[0];
         const businessData = domainsData[firstDomainPrefix];
 
         if (!businessData) {
@@ -69,7 +81,6 @@ const Profile = () => {
           return;
         }
 
-        // Set business data with the extracted values
         setBusiness({
           name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
           clientEmail:
@@ -117,7 +128,6 @@ const Profile = () => {
       } catch (err) {
         console.error("Error fetching business data:", err);
         if (axios.isAxiosError(err) && err.response?.status === 401) {
-          // Handle unauthorized error
           localStorage.removeItem("authToken");
           navigate("/");
         }

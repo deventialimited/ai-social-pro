@@ -13,6 +13,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie"; // Import the Cookies library
 import { Plus } from "lucide-react";
+import axios from "axios";
 
 const Sidebar = ({
   isSidebarOpen,
@@ -46,10 +47,6 @@ const Sidebar = ({
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(true);
 
-
-
-
-  
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
@@ -57,32 +54,58 @@ const Sidebar = ({
           localStorage.getItem("domainforcookies")
         );
         const displayName = localStorage.getItem("displayName");
-        setDisplayName(displayName || "jogn doe");
+        setDisplayName(displayName || "john doe");
         console.log("domains data is ", JSON.stringify(domainsData));
 
         if (!domainsData || Object.keys(domainsData).length === 0) {
-          console.log("No business data found");
-          return;
+          console.log(
+            "No business data found in localStorage, fetching from API..."
+          );
+
+          // Fetch from backend
+          const response = await axios.get(
+            "https://ai-social-pro.onrender.com/api/users/lastdomain"
+          );
+
+          if (response?.data) {
+            const fetchedData = response.data;
+            console.log("Fetched data from API:", fetchedData);
+
+            // Save to localStorage
+            localStorage.setItem(
+              "domainforcookies",
+              JSON.stringify(fetchedData)
+            );
+
+            // Assuming structure similar to domainsData
+            const firstDomainPrefix = Object.keys(fetchedData)[0];
+            const businessData = fetchedData[firstDomainPrefix];
+
+            if (businessData) {
+              setBusiness({
+                name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
+                clientWebsite:
+                  businessData.clientWebsite ||
+                  DEFAULT_BUSINESS_DATA.clientWebsite,
+                logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
+              });
+            }
+          }
+        } else {
+          // If found in localStorage, use it directly
+          const firstDomainPrefix = Object.keys(domainsData)[0];
+          const businessData = domainsData[firstDomainPrefix];
+
+          if (businessData) {
+            setBusiness({
+              name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
+              clientWebsite:
+                businessData.clientWebsite ||
+                DEFAULT_BUSINESS_DATA.clientWebsite,
+              logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
+            });
+          }
         }
-
-        const firstDomainPrefix = Object.keys(domainsData)[0];
-        const businessData = domainsData[firstDomainPrefix];
-
-        if (!businessData) {
-          console.log("No business data found in the response structure");
-          return;
-        }
-
-        setBusiness({
-          name: businessData.clientName || DEFAULT_BUSINESS_DATA.name,
-
-          clientWebsite:
-            businessData.clientWebsite || DEFAULT_BUSINESS_DATA.clientWebsite,
-
-          description:
-            businessData.clientName || DEFAULT_BUSINESS_DATA.clientName,
-          logoUrl: businessData.logoUrl || DEFAULT_BUSINESS_DATA.logoUrl,
-        });
       } catch (err) {
         console.error("Error fetching business data:", err);
         if (axios.isAxiosError(err) && err.response?.status === 401) {
@@ -96,16 +119,6 @@ const Sidebar = ({
 
     fetchBusinessData();
   }, [navigate]);
-
-
-
-
-
-
-
-
-
-
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -156,7 +169,7 @@ const Sidebar = ({
           <div className="p-4 flex flex-col justify-between h-full">
             <div>
               {/* Heading (desktop) */}
-              <h1 className="text-[22px] font-bold text-blue-600 mb-4 flex items-center hidden md:flex">
+              <h1 className="text-[22px] font-bold text-blue-600 mb-4   items-center hidden md:flex">
                 Profile
                 <FaBars className="ml-[138px] text-[26px] text-gray-600" />
               </h1>
@@ -176,15 +189,25 @@ const Sidebar = ({
                     className="mr-2 w-8 h-8"
                   />
                   {/* Domain Dropdown */}
+
                   <div className="relative flex-1">
+                    {/* Top Trigger */}
                     <div
                       className="w-full bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer"
                       onClick={toggleDomainDropdown}
                     >
                       <div className="flex items-center justify-between p-2">
-                        <span className="text-gray-600 truncate">
-                          {business.clientWebsite || "-- All Websites --"}
-                        </span>
+                        <div className="flex items-center gap-2 truncate">
+                          <span
+                            className={`truncate ${
+                              isDomainDropdownOpen
+                                ? "text-gray-400 italic"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {business.clientWebsite || "-- All Websites --"}
+                          </span>
+                        </div>
                         <FaCaretDown
                           className={`transform transition-transform ${
                             isDomainDropdownOpen ? "rotate-180" : ""
@@ -192,19 +215,28 @@ const Sidebar = ({
                         />
                       </div>
                     </div>
+
+                    {/* Dropdown */}
                     {isDomainDropdownOpen && (
                       <ul className="absolute z-10 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
-                        <li
-                          className="p-2 hover:bg-gray-100"
-                          onClick={() => handleDomainSelect("")}
-                        >
-                          <Link
-                            to="/"
-                            className="inline-flex items-center gap-2 border  border-gray-300 px-4 py-2 text-nowrap rounded-lg text-sm text-black hover:bg-gray-100 transition"
-                          >
-                            Add New Business
-                          </Link>
+                        {/* Business logo + name inside dropdown */}
+                        <li className="p-2" onClick={toggleDomainDropdown}>
+                          <div className="flex items-center gap-2 bg-purple-50 p-2 rounded-lg cursor-pointer hover:bg-purple-100 transition">
+                            <img
+                              src={
+                                business.logoUrl ||
+                                "https://www.w3schools.com/w3images/avatar2.png"
+                              }
+                              alt="Logo"
+                              className="mr-2 w-8 h-8"
+                            />
+                            <span className="font-semibold truncate">
+                              {business.clientWebsite || "-- All Websites --"}
+                            </span>
+                          </div>
                         </li>
+
+                        {/* Domains */}
                         {domains.map((d) => (
                           <li
                             key={d}
@@ -214,6 +246,19 @@ const Sidebar = ({
                             {d}
                           </li>
                         ))}
+
+                        {/* Add New Business */}
+                        <li
+                          className="p-2 hover:bg-gray-100"
+                          onClick={() => handleDomainSelect("")}
+                        >
+                          <Link
+                            to="/"
+                            className="inline-flex items-center gap-2 border border-gray-300 px-4 py-2 text-nowrap rounded-lg text-sm text-black hover:bg-gray-100 transition w-full justify-center"
+                          >
+                            + Add New Business
+                          </Link>
+                        </li>
                       </ul>
                     )}
                   </div>
