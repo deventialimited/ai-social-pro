@@ -1,124 +1,124 @@
 // @ts-nocheck
-import React, { useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import Navbar from "./Navbar";
-import Cookies from "js-cookie";
+import type React from "react"
+import { useState, useRef } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import Sidebar from "./Sidebar"
+import Navbar from "./Navbar"
+import Cookies from "js-cookie"
+import { Dropdown, Menu } from "antd"
+
 const Editor = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const incomingPost = location.state || {};
-  // We keep local state for edits
+  const navigate = useNavigate()
+  const location = useLocation()
+  const incomingPost = location.state || {}
   const [post, setPost] = useState({
     topic: incomingPost.topic || "",
     content: incomingPost.content || "",
-    image: incomingPost.image || "", // existing image URL (if any)
-    imageBase64: incomingPost.imageBase64 || "", // new base64 image if user changes it
+    image: incomingPost.image || "",
+    imageBase64: incomingPost.imageBase64 || "",
     post_id: incomingPost.post_id || "",
     website: incomingPost.website || "",
     date: incomingPost.date || "",
     platform: incomingPost.platform || "",
-  });
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isBusinessOpen, setIsBusinessOpen] = useState(false);
-
-  const [isSaving, setIsSaving] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  })
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isBusinessOpen, setIsBusinessOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleEdit = (field: string, value: string) => {
-    setPost((prevPost) => ({ ...prevPost, [field]: value }));
-  };
+    setPost((prevPost) => ({ ...prevPost, [field]: value }))
+  }
 
   const handleClose = () => {
-    navigate("/posts");
-  };
+    navigate("/posts")
+  }
 
-  // Open Full Editor
   const handleEditDesignClick = () => {
-    // Pass all current post fields to FullEditor
-    localStorage.setItem("postdata", JSON.stringify(post));
-    navigate("/fullEditor");
-  };
+    localStorage.setItem("postdata", JSON.stringify(post))
+    navigate("/fullEditor")
+  }
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        // Store as base64 so we know it's newly changed
         setPost((prev) => ({
           ...prev,
           imageBase64: reader.result as string,
           image: "",
-        }));
-      };
-      reader.readAsDataURL(file);
+        }))
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
+    fileInputRef.current?.click()
+  }
 
-  // "Save to Draft" => Calls API
   const handleSaveToDraft = async () => {
     try {
-      setIsSaving(true);
+      setIsSaving(true)
       if (post.imageBase64) {
-        post.imageBase64 = post.imageBase64.split("base64,")[1];
+        post.imageBase64 = post.imageBase64.split("base64,")[1]
       }
-      // If imageBase64 exists, do not send "image" in the final payload
-      // If imageBase64 does NOT exist, use the existing "image" url
-      let payload = {
-        ...post,
-        // We'll rename the field for clarity in the backend if needed
-      };
-
+      const payload = { ...post }
       if (post.imageBase64) {
-        // Remove `image` URL since we have a new base64 image
-        payload.image = "";
+        payload.image = ""
       }
-      const idToken = Cookies.get("idtoken");
+      const idToken = Cookies.get("idtoken")
       const response = await fetch(`${API_BASE_URL}/updatePostData`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`, // key difference
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({ post: payload }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error("Failed to update post");
+        throw new Error("Failed to update post")
       }
 
-      // If success
-      navigate("/posts"); // go back to Posts page (it’ll refresh the list)
+      navigate("/posts")
     } catch (error) {
-      console.error(error);
-      alert("Error saving post");
+      console.error(error)
+      alert("Error saving post")
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+    setIsSidebarOpen(!isSidebarOpen)
+  }
 
   const toggleBusiness = () => {
-    setIsBusinessOpen(!isBusinessOpen);
-  };
+    setIsBusinessOpen(!isBusinessOpen)
+  }
 
   const openProfile = () => {
-    navigate("/profile");
-  };
+    navigate("/profile")
+  }
 
-  // The final image to display in editor (either new base64 or existing url)
-  const displayImage = post.imageBase64 || post.image;
+  const displayImage = post.imageBase64 || post.image
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="1" onClick={() => console.log("Duplicate to Drafts clicked")}>
+        Duplicate to Drafts
+      </Menu.Item>
+      <Menu.Item key="2" onClick={() => console.log("Download clicked")}>
+        Download
+      </Menu.Item>
+      <Menu.Item key="3" onClick={() => console.log("Delete clicked")}>
+        Delete
+      </Menu.Item>
+    </Menu>
+  )
 
   return (
     <div className="flex">
@@ -129,22 +129,11 @@ const Editor = () => {
           <div className="md:w-7/10 w-9/10 shadow-2xl border rounded-lg border-gray-300 p-3 md:mt-12">
             <div className="flex justify-between">
               <div className="ant-modal-header !p-4 !mb-0">
-                <div className="ant-modal-title font-bold text-md">
-                  Edit Post
-                </div>
+                <div className="ant-modal-title font-bold text-md">Edit Post</div>
               </div>
-              <button
-                type="button"
-                aria-label="Close"
-                className="ant-modal-close"
-                onClick={handleClose}
-              >
+              <button type="button" aria-label="Close" className="ant-modal-close" onClick={handleClose}>
                 <span className="ant-modal-close-x">
-                  <span
-                    role="img"
-                    aria-label="close"
-                    className="anticon anticon-close ant-modal-close-icon"
-                  >
+                  <span role="img" aria-label="close" className="anticon anticon-close ant-modal-close-icon">
                     <svg
                       fillRule="evenodd"
                       viewBox="64 64 896 896"
@@ -155,7 +144,7 @@ const Editor = () => {
                       fill="currentColor"
                       aria-hidden="true"
                     >
-                      <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
+                      <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.08.06.06a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"></path>
                     </svg>
                   </span>
                 </span>
@@ -209,7 +198,7 @@ const Editor = () => {
                         loading="lazy"
                         className="object-contain rounded border border-solid border-antd-colorBorder sm:w-[366px] cursor-pointer"
                         alt={post.topic}
-                        src={displayImage}
+                        src={displayImage || "/placeholder.svg"}
                         onClick={handleImageClick}
                       />
                     )}
@@ -236,11 +225,7 @@ const Editor = () => {
                         className="ant-btn css-doxyl0 ant-btn-default ant-btn-sm flex items-center gap-2 border border-gray-300 hover:border-gray-500 p-1 rounded-md"
                         onClick={handleEditDesignClick}
                       >
-                        <span
-                          role="img"
-                          aria-label="edit"
-                          className="anticon anticon-edit"
-                        >
+                        <span role="img" aria-label="edit" className="anticon anticon-edit">
                           <svg
                             viewBox="64 64 896 896"
                             focusable="false"
@@ -266,7 +251,7 @@ const Editor = () => {
                   <div className="w-full flex max-sm:flex-col gap-2 justify-between items-center">
                     <div className="flex items-center gap-2 pl-2 min-w-max">
                       Publish to
-                      <div className="ant-dropdown-trigger flex items-center gap-1 text-[#2e2e5e] cursor-pointer">
+                      <div className="ant-dropdown-trigger flex items-center gap-1 text-[#2e2e5e] cursor-pointer hover:cursor-pointer">
                         all socials
                         <svg
                           stroke="currentColor"
@@ -285,7 +270,7 @@ const Editor = () => {
                     <div className="flex max-sm:flex-col-reverse max-sm:w-full gap-2 [&_*]:w-[unset] ml-auto">
                       <button
                         type="button"
-                        className="ant-btn css-doxyl0 ant-btn-text border border-gray-300 hover:border-gray-500 p-1 rounded"
+                        className="ant-btn css-doxyl0 ant-btn-text border border-gray-300 hover:border-gray-500 p-1 rounded hover:cursor-pointer"
                         onClick={handleClose}
                         disabled={isSaving}
                       >
@@ -298,46 +283,39 @@ const Editor = () => {
                           onClick={handleSaveToDraft}
                           disabled={isSaving}
                         >
-                          <div className="flex gap-2 items-center">
-                            {isSaving ? "Saving..." : "Save to Drafts"}
-                          </div>
+                          <div className="flex gap-2 items-center">{isSaving ? "Saving..." : "Save to Drafts"}</div>
                         </button>
-                        <button
-                          type="button"
-                          className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only ant-btn-compact-item ant-btn-compact-last-item ant-dropdown-trigger"
-                        >
-                          <span className="ant-btn-icon">
-                            <span
-                              role="img"
-                              aria-label="down"
-                              className="anticon anticon-down"
-                            >
-                              <svg
-                                viewBox="64 64 896 896"
-                                focusable="false"
-                                data-icon="down"
-                                width="1em"
-                                height="1em"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path>
-                              </svg>
+                        <Dropdown 
+                        overlay={menu} trigger={["click"]} placement="bottomRight">
+                          <button
+                            type="button"
+                            className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only ant-btn-compact-item ant-btn-compact-last-item ant-dropdown-trigger"
+                          >
+                            <span className="ant-btn-icon">
+                              <span role="img" aria-label="down" className="anticon anticon-down">
+                                <svg
+                                  viewBox="64 64 896 896"
+                                  focusable="false"
+                                  data-icon="down"
+                                  width="1em"
+                                  height="1em"
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"></path>
+                                </svg>
+                              </span>
                             </span>
-                          </span>
-                        </button>
+                          </button>
+                        </Dropdown>
                       </div>
                       <div className="border border-gray-300 hover:border-gray-500 p-1 rounded ant-space-compact  css-doxyl0 ant-space-compact-block ant-dropdown-button [&_button]:flex-grow">
                         <button
                           type="button"
-                          className=" ant-btn css-doxyl0 ant-btn-primary ant-btn-compact-item ant-btn-compact-first-item"
+                          className="ant-btn css-doxyl0 ant-btn-primary ant-btn-compact-item ant-btn-compact-first-item hover:cursor-pointer"
                         >
                           <div className="flex gap-2 items-center">
-                            <span
-                              role="img"
-                              aria-label="clock-circle"
-                              className="anticon anticon-clock-circle"
-                            >
+                            <span role="img" aria-label="clock-circle" className="anticon anticon-clock-circle">
                               <svg
                                 viewBox="64 64 896 896"
                                 focusable="false"
@@ -356,14 +334,10 @@ const Editor = () => {
                         </button>
                         <button
                           type="button"
-                          className="ant-btn css-doxyl0 ant-btn-primary ant-btn-icon-only ant-btn-compact-item ant-btn-compact-last-item ant-dropdown-trigger"
+                          className="ant-btn css-doxyl0 ant-btn-primary ant-btn-icon-only ant-btn-compact-item ant-btn-compact-last-item ant-dropdown-trigger hover:cursor-pointer"
                         >
                           <span className="ant-btn-icon">
-                            <span
-                              role="img"
-                              aria-label="down"
-                              className="anticon anticon-down"
-                            >
+                            <span role="img" aria-label="down" className="anticon anticon-down">
                               <svg
                                 viewBox="64 64 896 896"
                                 focusable="false"
@@ -388,7 +362,8 @@ const Editor = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Editor;
+export default Editor
+

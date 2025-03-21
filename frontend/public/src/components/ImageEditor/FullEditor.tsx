@@ -596,7 +596,7 @@ const FullEditor: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         type="button"
-                        className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                        className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
                         onClick={closeModal}
                       >
                         Cancel
@@ -605,7 +605,7 @@ const FullEditor: React.FC = () => {
                       <div className="relative flex text-left">
                         <Listbox>
                           <div className="relative">
-                            <Listbox.Button className="inline-flex items-center rounded-l-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            <Listbox.Button className="inline-flex items-center rounded-l-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-4 w-4 mr-2"
@@ -634,7 +634,7 @@ const FullEditor: React.FC = () => {
                         <Dropdown menu={{ items }} trigger={["click"]}>
                           <button
                             type="button"
-                            className="inline-flex items-center rounded-r border border-gray-300 px-2 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="inline-flex items-center rounded-r border border-gray-300 px-2 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer"
                           >
                             <span className="ant-btn-icon">
                               <DownOutlined />
@@ -645,7 +645,7 @@ const FullEditor: React.FC = () => {
 
                       <button
                         type="button"
-                        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white"
+                        className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:cursor-pointer"
                         onClick={captureDiagramAsImage}
                       >
                         Save and Close
@@ -660,7 +660,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "text" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("text")}
                         >
                           <span className="text-2xl font-semibold">A+</span>
@@ -670,7 +670,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "images" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("images")}
                         >
                           <svg
@@ -693,7 +693,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "elements" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("shapes")}
                         >
                           <svg
@@ -716,7 +716,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "background" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("background")}
                         >
                           <svg
@@ -739,7 +739,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "layers" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("layers")}
                         >
                           <svg
@@ -762,7 +762,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "size" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("size")}
                         >
                           <svg
@@ -785,7 +785,7 @@ const FullEditor: React.FC = () => {
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
                             activeTab === "selectedImage" ? "bg-blue-100" : "hover:bg-gray-100"
-                          }`}
+                          } hover:cursor-pointer`}
                           onClick={() => setActiveTab("selectedImage")}
                         >
                           <svg
@@ -949,14 +949,14 @@ const FullEditor: React.FC = () => {
                           <div className="flex items-center p-2 border-b">
                             <div className="flex space-x-2 mr-4">
                               <button
-                                className="p-2 rounded-md hover:bg-gray-100"
+                                className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={handleUndo}
                                 disabled={historyIndex <= 0}
                               >
                                 <ArrowUturnLeftIcon className="h-5 w-5 text-gray-500" />
                               </button>
                               <button
-                                className="p-2 rounded-md hover:bg-gray-100"
+                                className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={handleRedo}
                                 disabled={historyIndex >= history.length - 1}
                               >
@@ -972,7 +972,7 @@ const FullEditor: React.FC = () => {
                             <div className="relative mr-4">
                               <Listbox>
                                 <div className="relative">
-                                  <Listbox.Button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                  <Listbox.Button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
                                     <span>Palette</span>
                                     <ChevronDownIcon className="ml-2 h-4 w-4" />
                                   </Listbox.Button>
@@ -988,14 +988,14 @@ const FullEditor: React.FC = () => {
                               <span>Background Color</span>
                             </div>
 
-                            <button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            <button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
                               <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
                               Upload
                             </button>
 
                             <div className="ml-auto flex items-center space-x-4">
                               <div className="relative">
-                                <button className="rounded-md hover:bg-gray-100" style={{ backgroundColor }}>
+                                <button className="rounded-md hover:bg-gray-100 hover:cursor-pointer" style={{ backgroundColor }}>
                                   <div className="">
                                     <input
                                       type="color"
@@ -1015,27 +1015,27 @@ const FullEditor: React.FC = () => {
                                 </button>
                               </div>
                               <button
-                                className="p-2 rounded-md hover:bg-gray-100"
+                                className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={handleDuplicateShape}
                                 disabled={!selectedShapeId}
                               >
                                 <DocumentDuplicateIcon className="h-5 w-5 text-gray-500" />
                               </button>
                               <button
-                                className="p-2 rounded-md hover:bg-gray-100"
+                                className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={handleRotateShape}
                                 disabled={!selectedShapeId}
                               >
                                 <ArrowsPointingInIcon className="h-5 w-5 text-gray-500" />
                               </button>
                               <button
-                                className="p-2 rounded-md hover:bg-gray-100"
+                                className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
                                 onClick={() => selectedShapeId && handleDeleteShape(selectedShapeId)}
                                 disabled={!selectedShapeId}
                               >
                                 <TrashIcon className="h-5 w-5 text-gray-500" />
                               </button>
-                              <button className="p-2 rounded-md hover:bg-gray-100" onClick={captureDiagramAsImage}>
+                              <button className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer" onClick={captureDiagramAsImage}>
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   className="h-5 w-5"
@@ -1102,14 +1102,14 @@ const FullEditor: React.FC = () => {
                           {/* Zoom controls */}
                           <div className="absolute bottom-4 right-4 flex items-center bg-white rounded-md shadow-sm">
                             <button
-                              className="p-2 hover:bg-gray-100 rounded-l-md"
+                              className="p-2 hover:bg-gray-100 rounded-l-md hover:cursor-pointer"
                               onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
                             >
                               <MinusIcon className="h-4 w-4" />
                             </button>
                             <div className="px-3 py-1 border-l border-r">{zoomLevel}%</div>
                             <button
-                              className="p-2 hover:bg-gray-100 rounded-r-md"
+                              className="p-2 hover:bg-gray-100 rounded-r-md hover:cursor-pointer"
                               onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
                             >
                               <PlusIcon className="h-4 w-4" />
@@ -1253,10 +1253,10 @@ const SizeTabContent: React.FC = () => {
         <div className="pt-4 border-t">
           <h3 className="text-lg font-medium mb-2">Preset Sizes</h3>
           <div className="grid grid-cols-2 gap-2">
-            <button className="border rounded-md p-2 hover:bg-gray-50">Instagram Post</button>
-            <button className="border rounded-md p-2 hover:bg-gray-50">Facebook Post</button>
-            <button className="border rounded-md p-2 hover:bg-gray-50">Twitter Post</button>
-            <button className="border rounded-md p-2 hover:bg-gray-50">LinkedIn Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Instagram Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Facebook Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Twitter Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">LinkedIn Post</button>
           </div>
         </div>
       </div>
