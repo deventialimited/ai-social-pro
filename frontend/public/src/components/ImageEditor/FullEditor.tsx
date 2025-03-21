@@ -100,15 +100,22 @@ const FullEditor: React.FC = () => {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const [postBody, setPostBody] = useState<string>("");
   const [postBodyActive, setPostBodyActive] = useState<boolean>(false); // New state to track post body activity
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textColor, setTextColor] = useState<string>("#000000"); // New state for text color
   const [isTextAreaActive, setIsTextAreaActive] = useState<boolean>(false); // State to track textarea focus
+  const postData = localStorage.getItem('postdata');
+  if (postData) {
+    var { topic, content, image,post_id } = JSON.parse(postData);
+    // setPostContent(content)
+
+  }
+  const [postBody, setPostBody] = useState<string>(content || "");
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
     try {
+      const postId=post_id;
       const idToUse = postId || "1"; // Use provided postId or a dummy one
       await setDoc(doc(db, "posts", idToUse), {
         shapes,
@@ -127,7 +134,7 @@ const FullEditor: React.FC = () => {
   // Load data from Firebase Firestore
   const loadDataFromFirebase = async () => {
     try {
-      const docRef = doc(db, "posts", "1");
+      const docRef = doc(db, "posts", post_id || "1");
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -1072,9 +1079,9 @@ const FullEditor: React.FC = () => {
                               selectedImage={selectedImage}
                             />
                           </div>
-                          <div className={`absolute top-48 right-[35%] ml-12 p-2 rounded-md ${isTextAreaActive ? 'border border-black-500' : ''}`}>
+                          <div className={` absolute  top-60 ml-[10%] text-center rounded-md ${isTextAreaActive ? 'border border-black-500' : ''}`}>
                             <textarea
-                              className="w-full h-full text-sm resize border-none focus:outline-none"
+                              className="w-[40vw] h-[10vh]    resize border-none focus:outline-none"
                               value={postBody}
                               onChange={(e) => {
                                 setPostBody(e.target.value);

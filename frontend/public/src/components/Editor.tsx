@@ -222,7 +222,7 @@ const Editor = () => {
                     <div className="flex gap-4 mt-3 justify-center">
                       <button
                         type="button"
-                        className="ant-btn css-doxyl0 ant-btn-default ant-btn-sm flex items-center gap-2 border border-gray-300 hover:border-gray-500 p-1 rounded-md"
+                        className="ant-btn css-doxyl0 ant-btn-default ant-btn-sm flex items-center gap-2 border border-gray-300 hover:border-gray-500 p-1 rounded-md hover:cursor-pointer"
                         onClick={handleEditDesignClick}
                       >
                         <span role="img" aria-label="edit" className="anticon anticon-edit">
