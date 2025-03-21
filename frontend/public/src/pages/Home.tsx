@@ -206,7 +206,7 @@ const Home = () => {
   };
 
   const goToProfile = () => {
-    navigate("/profile");
+    navigate("/posts");
   };
 
   return (

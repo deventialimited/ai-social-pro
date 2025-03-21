@@ -11,6 +11,56 @@ import { FaAngleDown } from "react-icons/fa6";
 
 const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
 
+/** Flatten nested domains object => array of { domain: "example.com", ...data } */
+function flattenDomains(domainsObj) {
+  const results = [];
+
+  function recurse(node, path) {
+    if (typeof node !== "object" || node === null) return;
+    const keys = Object.keys(node);
+
+    // If exactly one key and it's an object, keep merging (avoids Mongo . replacements).
+    if (
+      keys.length === 1 &&
+      typeof node[keys[0]] === "object" &&
+      !Array.isArray(node[keys[0]])
+    ) {
+      const nextKey = sanitizeKey(keys[0]);
+      const newPath = path ? `${path}.${nextKey}` : nextKey;
+      recurse(node[keys[0]], newPath);
+    } else {
+      // Leaf node
+      let finalDomain = sanitizeKey(path);
+      // remove protocols
+      finalDomain = finalDomain.replace(/^https?:\/\//, "");
+      // remove trailing slash
+      finalDomain = finalDomain.replace(/\/+$/, "");
+      if (!finalDomain) return;
+
+      results.push({
+        domain: finalDomain,
+        ...node,
+      });
+    }
+  }
+
+  function sanitizeKey(str) {
+    if (!str) return "";
+    return str
+      .replace(/_+dot_+/gi, ".")
+      .replace(/___dot___/gi, ".")
+      .replace(/___DOT___/g, ".")
+      .replace(/_dot_/g, ".")
+      .replace(/\/+$/, "");
+  }
+
+  for (const topKey of Object.keys(domainsObj)) {
+    const cleanTop = sanitizeKey(topKey);
+    recurse(domainsObj[topKey], cleanTop);
+  }
+  return results;
+}
+
 const PostCard = ({
   image = "",
   topic = "",
@@ -21,7 +71,6 @@ const PostCard = ({
   platform = "",
   onPost,
 }) => {
-  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const handleEditClick = () => {
@@ -130,16 +179,22 @@ const PostCard = ({
 };
 
 const Posts = () => {
+  const navigate = useNavigate();
+
+  // We add a refreshToken to trigger the sidebar to re-run localStorage reading
+  const [refreshToken, setRefreshToken] = useState(0);
+
   const [posts, setPosts] = useState([]);
-  const [domainMap, setDomainMap] = useState<any>({});
   const [domains, setDomains] = useState<string[]>([]);
   const [selectedDomain, setSelectedDomain] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBusinessOpen, setIsBusinessOpen] = useState(false);
 
-  const navigate = useNavigate();
+  // Re-trigger the sidebar's effect to read localStorage
+  function refreshSidebar() {
+    setRefreshToken((prev) => prev + 1);
+  }
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -162,7 +217,6 @@ const Posts = () => {
           return;
         }
 
-        // Check if we have a default domain from the "websitename" cookie
         const cookieDomain = Cookies.get("websitename");
         if (cookieDomain) {
           setSelectedDomain(cookieDomain);
@@ -178,15 +232,20 @@ const Posts = () => {
         }
         const data = await resp.json();
 
-        // For the domainMap, you might see them stored as "___DOT___" in the keys, etc.
-        if (data.domains) {
-          setDomainMap(data.domains);
-          // Convert the keys if they have underscores:
-          const keys = Object.keys(data.domains).map((key) =>
-            key.replace(/___DOT___/g, ".").replace(/_dot_/g, ".")
-          );
-          setDomains(keys);
-        }
+        // Flatten the user domains object
+        if (data.domains && typeof data.domains === "object") {
+          const flattened = flattenDomains(data.domains);
+
+          // Save the entire flattened array in localStorage
+          localStorage.setItem("domainforcookies", JSON.stringify(flattened));
+
+          // Also provide a simple array of domain strings
+          const domainNames = flattened.map((obj) => obj.domain);
+          setDomains(domainNames);
+
+          // This is where we can trigger the Sidebar to update if we want
+          refreshSidebar(); 
+        } 
 
         if (data.posts) {
           setPosts(data.posts);
@@ -215,25 +274,16 @@ const Posts = () => {
     navigate("/profile");
   };
 
-  /**
-   * Filter posts by selected domain if it exists
-   */
-  const filteredPosts = (() => {
-    if (!selectedDomain) {
-      return posts;
-    }
-    return posts.filter(
-      (p) =>
-        p.website && p.website.toLowerCase() === selectedDomain.toLowerCase()
-    );
-  })();
+  const filteredPosts = !selectedDomain
+    ? posts
+    : posts.filter(
+        (p) =>
+          p.website && p.website.toLowerCase() === selectedDomain.toLowerCase()
+      );
 
-  /**
-   * When user selects a domain from the sidebar, update our local state + set cookie
-   */
   const handleDomainChange = (domain) => {
     setSelectedDomain(domain);
-    Cookies.set("websitename", domain, { expires: 55 / 60 }); // ~55 minutes
+    Cookies.set("websitename", domain, { expires: 55 / 60 });
   };
 
   return (
@@ -243,7 +293,12 @@ const Posts = () => {
           <div className="sticky top-0 z-[100]">
             <div className="flex fixed top-0 left-0 right-0 z-10">
               <div>
+                {/* 
+                  NOTE: we pass refreshToken to the Sidebar so it re-runs 
+                  its effect whenever we call refreshSidebar(). 
+                */}
                 <Sidebar
+                  refreshToken={refreshToken}
                   isSidebarOpen={isSidebarOpen}
                   toggleSidebar={toggleSidebar}
                   toggleBusiness={toggleBusiness}

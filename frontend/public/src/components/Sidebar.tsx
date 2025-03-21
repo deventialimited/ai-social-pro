@@ -12,11 +12,14 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie"; // For setting the "websitename" cookie
-import { Plus } from "lucide-react";
-import axios from "axios";
 
-
+/**
+ * "refreshToken" is a number passed down by Posts. 
+ * Every time Posts increments refreshToken, 
+ * the effect below will re-run and re-read localStorage domainforcookies.
+ */
 const Sidebar = ({
+  refreshToken = 0, // new prop
   isSidebarOpen,
   toggleSidebar,
   toggleBusiness,
@@ -24,7 +27,7 @@ const Sidebar = ({
   openProfile,
 
   // new props for domain selection
-  domains = [], // array of domain strings from the getPosts user data (for your Posts page)
+  domains = [],
   selectedDomain = "",
   onDomainChange = () => {},
 }) => {
@@ -33,15 +36,19 @@ const Sidebar = ({
   const [displayName, setDisplayName] = useState("");
   const [domainDataList, setDomainDataList] = useState([]);
   const [currentDomainObj, setCurrentDomainObj] = useState(null);
-
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
 
+  // Load displayName from localStorage
   useEffect(() => {
-    // For top-right user name display
     const storedDisplayName = localStorage.getItem("displayName");
     setDisplayName(storedDisplayName || "John Doe");
+  }, []);
 
-    // Load domain data array from localStorage
+  /**
+   * This effect re-runs each time "refreshToken" changes,
+   * re-reading domainforcookies from localStorage.
+   */
+  useEffect(() => {
     const domainDataStr = localStorage.getItem("domainforcookies");
     if (domainDataStr) {
       try {
@@ -50,18 +57,26 @@ const Sidebar = ({
       } catch (err) {
         console.error("Error parsing domainforcookies:", err);
       }
+    } else {
+      setDomainDataList([]);
     }
-  }, []);
+  }, [refreshToken]);
 
+  // On mount or re-render, if no selected domain is set,
+  // see if we have a cookie
   useEffect(() => {
-    // If user has not chosen anything, we see if the "websitename" cookie is set
-    const cookieDomain = Cookies.get("websitename");
-    if (cookieDomain) {
-      onDomainChange(cookieDomain); // also informs parent
+    if (!selectedDomain) {
+      const cookieDomain = Cookies.get("websitename");
+      if (cookieDomain) {
+        onDomainChange(cookieDomain);
+      }
     }
-  }, [onDomainChange]);
+  }, [selectedDomain, onDomainChange]);
 
-  
+  /**
+   * Whenever selectedDomain or domainDataList changes,
+   * figure out which object is the "current" domain.
+   */
   useEffect(() => {
     if (!selectedDomain || domainDataList.length === 0) {
       setCurrentDomainObj(null);
@@ -73,19 +88,21 @@ const Sidebar = ({
     setCurrentDomainObj(found || null);
   }, [selectedDomain, domainDataList]);
 
+  // LOGOUT
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.clear();
     navigate("/login");
   };
 
+  // Domain dropdown toggles
   const toggleDomainDropdown = () => {
     setIsDomainDropdownOpen(!isDomainDropdownOpen);
   };
 
   /**
    * If user picks a domain from the dropdown, we set the cookie
-   * and call onDomainChange so that the parent (Posts, etc.) knows.
+   * and call onDomainChange to let the parent know.
    */
   const handleDomainSelect = (domain) => {
     Cookies.set("websitename", domain, { expires: 55 / 60 });
@@ -96,7 +113,7 @@ const Sidebar = ({
   return (
     <>
       <div className="fixed">
-        {/* Top Menu (for mobile) */}
+        {/* Top Menu (mobile) */}
         <div className="flex md:hidden pl-4 right-2 justify-between items-center mb-2">
           <button
             className="p-4"
@@ -165,7 +182,6 @@ const Sidebar = ({
                                 : "text-gray-600"
                             }`}
                           >
-                            {/* If we have a selected domain, show it; else fallback */}
                             {currentDomainObj?.clientWebsite ||
                               selectedDomain ||
                               "-- All Websites --"}
@@ -178,6 +194,7 @@ const Sidebar = ({
                         />
                       </div>
                     </div>
+
                     {/* The dropdown list itself */}
                     {isDomainDropdownOpen && (
                       <ul className="absolute z-10 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
@@ -187,7 +204,6 @@ const Sidebar = ({
                             className="p-2 hover:bg-gray-100 truncate flex items-center gap-2 cursor-pointer"
                             onClick={() => handleDomainSelect(domObj.domain)}
                           >
-                            {/* logo + name */}
                             {domObj.logoUrl ? (
                               <img
                                 src={domObj.logoUrl}
@@ -201,11 +217,13 @@ const Sidebar = ({
                                 className="w-6 h-6"
                               />
                             )}
-                            <span>{domObj.clientWebsite || domObj.domain}</span>
+                            <span>
+                              {domObj.clientWebsite || domObj.domain}
+                            </span>
                           </li>
                         ))}
 
-                        {/* You could also add an “Add New Business” link: */}
+                        {/* “Add New Business” link */}
                         <li
                           className="p-2 hover:bg-gray-100"
                           onClick={() => handleDomainSelect("")}
