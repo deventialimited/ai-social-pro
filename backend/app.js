@@ -76,7 +76,7 @@ app.use(
 
 // Middleware
 app.use(cors({ origin: true }));
-app.use(express.json({ limit: "50mb" }));
+//app.use(express.json({ limit: "50mb" }));
 
 // Routes
 app.use("/api/auth", authRoutes);
