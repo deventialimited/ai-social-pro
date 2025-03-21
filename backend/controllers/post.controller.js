@@ -246,6 +246,32 @@ export const createPost = async (req, res) => {
 // my old working pubsub
 export const processPubSub = async (req, res) => {
   try {
+    console.log("📥 Raw PubSub Body:", req.rawBody);
+    console.log("📦 Parsed JSON Body:", req.body);
+
+    const jsonData = req.body;
+
+    const userEmail = jsonData.client_email;
+    if (!userEmail) {
+      return res.status(400).send("Post json must contain a client_email key");
+    }
+
+    await User.findOneAndUpdate(
+      { email: userEmail },
+      { $push: { posts: jsonData } },
+      { new: true, upsert: true }
+    );
+
+    console.log("✅ Successfully processed all posts.");
+    return res.status(200).send("All data processed successfully");
+  } catch (error) {
+    console.error("🔥 Error processing message:", error);
+    return res.status(500).send("Error processing message");
+  }
+};
+
+/*export const processPubSub = async (req, res) => {
+  try {
     const jsonData = req.body;
 
 
@@ -272,7 +298,7 @@ export const processPubSub = async (req, res) => {
     console.error("Error processing message:", error);
     return res.status(500).send("Error processing message");
   }
-};
+};*/
 
 //process test
 //getsite test

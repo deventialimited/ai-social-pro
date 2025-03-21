@@ -4,7 +4,8 @@
 import express from "express";
 import cors from "cors";
 import errorHandler from "./middlewares/error.middleware.js";
-
+import getRawBody from "raw-body";
+import typeIs from "type-is";
 // Import routes
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.route.js";
@@ -28,8 +29,25 @@ const allowedOrigins = [
   "*",
   // Deployed frontend
 ];
-
-app.use(
+app.use(async (req, res, next) => {
+  if (typeIs(req, ["json"])) {
+    try {
+      const raw = await getRawBody(req, {
+        length: req.headers["content-length"],
+        limit: "50mb",
+        encoding: true,
+      });
+      req.rawBody = raw;
+      req.body = JSON.parse(raw);
+    } catch (err) {
+      console.error("❌ JSON Parse Error:", err.message);
+      console.error("📝 Raw Body:", req.rawBody || "<no body>");
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+  next();
+});
+/*app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
@@ -41,7 +59,7 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE"], // Explicitly allow these methods
     credentials: true, // Allow cookies/authentication headers
   })
-);
+);*/
 
 app.use(
   cors({
