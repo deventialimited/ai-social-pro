@@ -3,9 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
-// sdkmfl;k
-
-const API_BASE_URL = "https://ai-social-pro.onrender.com"; // "http://localhost:5000";
+import Cookies from "js-cookie";
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000";
 
 function checkTokenValidity(token) {
   try {
@@ -17,6 +16,85 @@ function checkTokenValidity(token) {
   }
 }
 
+/**
+ * Recursively flattens the nested `domains` object from the server
+ * into an array of domain objects: { domain: "www.abc.com", ...data }
+ */
+function flattenDomains(domainsObj) {
+  const results = [];
+
+  /**
+   * @param {object} node - current sub-object in the domains structure
+   * @param {string} path - accumulated path (partial domain)
+   */
+  function recurse(node, path) {
+    if (typeof node !== "object" || node === null) return;
+
+    // Gather keys
+    const keys = Object.keys(node);
+
+    // If there's exactly 1 key and it's an object, keep merging
+    if (
+      keys.length === 1 &&
+      typeof node[keys[0]] === "object" &&
+      !Array.isArray(node[keys[0]])
+    ) {
+      // Clean that key (remove weird placeholders, trailing slashes, etc.)
+      let nextKey = sanitizeKey(keys[0]);
+      const newPath = path ? `${path}.${nextKey}` : nextKey;
+      recurse(node[keys[0]], newPath);
+    } else {
+      // We have arrived at a leaf-level object that presumably contains domain data
+      // Clean up the current path
+      let finalDomain = sanitizeKey(path);
+
+      // Remove leading "http://" or "https://"
+      finalDomain = finalDomain.replace(/^https?:\/\//, "");
+
+      // Remove trailing slash if present
+      finalDomain = finalDomain.replace(/\/+$/, "");
+
+      // If we got an empty finalDomain, skip or handle accordingly
+      if (!finalDomain) {
+        console.warn("No valid domain extracted, skipping:", node);
+        return;
+      }
+
+      // Create the final domain object
+      const domainObj = {
+        domain: finalDomain,
+        ...node,
+      };
+      results.push(domainObj);
+    }
+  }
+
+  // A small helper to transform _dot_, ___DOT___, etc. to '.' and remove extra slashes
+  function sanitizeKey(str) {
+    if (!str) return "";
+    // Replace variations of underscores + 'dot' with '.'
+    // e.g.  "___DOT___" => "."
+    //       "_dot_" => "."
+    //       "some___DOT___thing" => "some.thing"
+    // also remove repeated underscores around 'dot'
+    str = str.replace(/_+dot_+/gi, ".");
+    str = str.replace(/___DOT___/g, ".");
+    // In case there's leftover patterns, unify them:
+    str = str.replace(/_dot_/g, ".");
+    // Possibly we have partial trailing slash
+    str = str.replace(/\/+$/, "");
+    return str;
+  }
+
+  // Kick off recursion
+  for (const topKey of Object.keys(domainsObj)) {
+    const cleanKey = sanitizeKey(topKey);
+    recurse(domainsObj[topKey], cleanKey);
+  }
+
+  return results;
+}
+
 const Home = () => {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
@@ -26,21 +104,20 @@ const Home = () => {
   // On mount, check for token in localStorage
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    console.log("Token from localStorage:", token); // Debugging output
     if (!token || !checkTokenValidity(token)) {
       console.log("Invalid or missing token, redirecting to login...");
       navigate("/login");
     }
   }, [navigate]);
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = (e) => {
     const value = e.target.value;
     setUrl(value);
     setIsValidUrl(validateUrl(value));
   };
 
   // Simple URL validation
-  function validateUrl(v: string) {
+  function validateUrl(v) {
     const urlPattern = new RegExp(
       "^(https?:\\/\\/)?" +
         "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|" +
@@ -53,7 +130,7 @@ const Home = () => {
     return !!urlPattern.test(v);
   }
 
-  function extractDomain(fullUrl: string): string | null {
+  function extractDomain(fullUrl) {
     try {
       const normalized = fullUrl.startsWith("http")
         ? fullUrl
@@ -75,13 +152,13 @@ const Home = () => {
 
     try {
       const token = localStorage.getItem("authToken");
-      console.log("Token from localStorage:", token);
       if (!token || !checkTokenValidity(token)) {
         toast.error("Authentication required. Please login again.");
         navigate("/login");
         return;
       }
 
+      // Call your backend to fetch/parse domain data
       const response = await fetch(`${API_BASE_URL}/api/users/sitedata`, {
         method: "POST",
         headers: {
@@ -93,31 +170,36 @@ const Home = () => {
 
       if (!response.ok) {
         console.error(
-          "Error from /api/site/getSiteData:",
+          "Error from /api/users/sitedata:",
           response.status,
           await response.text()
         );
-        toast.error("Failed to generate posts. Please try again.");
+        toast.error("Failed to generate data. Please try again.");
         return;
       }
 
+      // The server sends back something like:
+      // { message: "Data saved successfully", domains: {...} }
       const data = await response.json();
-      console.log("/api/site/getSiteData response:", data);
+      console.log("/api/users/sitedata response:", data);
 
-      localStorage.setItem(
-        "domainforcookies",
-        JSON.stringify(data.domains)
-      );
-
-      // Store site data in localStorage
+      // Now flatten `data.domains` into an array of domain objects
+      if (data.domains && typeof data.domains === "object") {
+        const domainArray = flattenDomains(data.domains);
+        // Save in localStorage
+        localStorage.setItem("domainforcookies", JSON.stringify(domainArray));
+      } else {
+        console.warn("No domains object returned from server.");
+      }
+      Cookies.set("websitename", domain, { expires: 55 / 60 });
+      // Also store the main domain we just processed
       localStorage.setItem("websiteName", domain);
-     
 
-      toast.success("Posts generated successfully!");
+      toast.success("Domain data processed successfully!");
       navigate("/profile");
     } catch (error) {
       console.error("Error in handleCreatePosts:", error);
-      toast.error("An error occurred while generating posts.");
+      toast.error("An error occurred while generating data.");
     } finally {
       setLoadingPosts(false);
     }
@@ -182,6 +264,7 @@ const Home = () => {
             Transform any website into engaging social media posts
           </p>
         </div>
+
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="mb-6">
             <label
@@ -205,8 +288,8 @@ const Home = () => {
                 onClick={handleCreatePosts}
                 className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
                   url && isValidUrl
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:cursor-pointer"
-                    : "bg-[#d1d5db] text-gray-500 cursor-not-allowed"
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
                 disabled={!url || !isValidUrl || loadingPosts}
               >
