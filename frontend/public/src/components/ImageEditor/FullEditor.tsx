@@ -210,7 +210,7 @@ const FullEditor: React.FC = () => {
       await loadDataFromFirebase();
       
       // Wait a moment for the React state to update and render with the loaded data
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500)); // Increased timeout for reliable rendering
       
       // Get the canvas element
       const diagramElement = document.getElementById("canvas");
@@ -220,23 +220,44 @@ const FullEditor: React.FC = () => {
         return;
       }
       
+      // Add the postBody text directly to the original DOM before capturing
+      // This is more reliable than trying to add it in the onclone callback
+      const tempTextElement = document.createElement("div");
+      tempTextElement.id = "temp-post-body-text";
+      tempTextElement.style.position = "absolute";
+      tempTextElement.style.top = "10px";
+      tempTextElement.style.left = "10px";
+      tempTextElement.style.color = textColor || "#000000";
+      tempTextElement.style.fontSize = "16px";
+      tempTextElement.style.fontFamily = "Arial, sans-serif";
+      tempTextElement.style.zIndex = "1000"; // Ensure it's on top
+      tempTextElement.style.padding = "5px";
+      // tempTextElement.style.backgroundColor = "rgba(255, 255, 255, 0.7)"; // Semi-transparent background for readability
+      tempTextElement.textContent = postBody;
+      
+      // Make sure the container can handle absolute positioning
+      if (diagramElement.style.position !== "absolute" && 
+          diagramElement.style.position !== "relative" && 
+          diagramElement.style.position !== "fixed") {
+        diagramElement.style.position = "relative";
+      }
+      
+      diagramElement.appendChild(tempTextElement);
+      
       // Create a canvas from the HTML element with the loaded Firebase data
       const canvas = await html2canvas(diagramElement, {
         useCORS: true, // This helps with any cross-origin images
         scale: 2, // Increase quality
         backgroundColor: backgroundColor || "#ffffff", // Use the loaded background color
-        logging: false,
-        onclone: (clonedDoc) => {
-          // You can manipulate the cloned document before rendering if needed
-          const clonedElement = clonedDoc.getElementById("canvas");
-          if (clonedElement) {
-            // Apply any additional styles or modifications to the cloned element
-            if (backgroundImage) {
-              clonedElement.style.backgroundImage = `url(${backgroundImage})`;
-            }
-          }
-        }
+        logging: true, // Enable logging for debugging
+        allowTaint: true, // This can help with rendering issues
       });
+      
+      // Clean up by removing the temporary text element
+      const textToRemove = document.getElementById("temp-post-body-text");
+      if (textToRemove && textToRemove.parentNode) {
+        textToRemove.parentNode.removeChild(textToRemove);
+      }
       
       // Convert the canvas to a blob
       const blob = await new Promise<Blob | null>((resolve) => 
