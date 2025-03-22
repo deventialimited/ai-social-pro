@@ -9,7 +9,8 @@ import { MdSaveAlt } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 
-const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
+const API_BASE_URL = "https://ai-social-pro.onrender.com"; 
+// or "http://localhost:5000"
 
 interface DomainData {
   domain: string;
@@ -117,6 +118,22 @@ const PostCard: React.FC<PostCardProps> = ({
     logoUrl: logoUrl || "",
     clientName: clientName || "Anonymous User",
   });
+
+
+  const formatDate = (dateString: string) => {
+    const dateObj = new Date(dateString);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+  
+    return `${year}/${month}/${day} ${hours}:${minutes}`;
+  };
+
+
+
+
 
   useEffect(() => {
     // Get the client domain details from localStorage
@@ -238,10 +255,11 @@ const PostCard: React.FC<PostCardProps> = ({
 
           <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
             <div className="flex items-center">
-              <span className="mr-2">📅 {date || "Mar 10, 2023"}</span>
-              <span className="mr-2"> {post_id} </span>
+              <span className="mr-2">📅 {formatDate(date) || "Mar 10, 2023"}</span>
+             
 
               <span>{platform || "Facebook"}</span>
+              <span className="mr-2 ml-4"> {post_id} </span>
             </div>
             <div className="cursor-pointer">Post Analytics</div>
           </div>
@@ -270,17 +288,7 @@ const Posts: React.FC = () => {
     setRefreshToken((prev) => prev + 1);
   }
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "N/A";
-    const year = date.getFullYear();
-    const month = `0${date.getMonth() + 1}`.slice(-2);
-    const day = `0${date.getDate()}`.slice(-2);
-    const hours = `0${date.getHours()}`.slice(-2);
-    const minutes = `0${date.getMinutes()}`.slice(-2);
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  };
+  
 
   useEffect(() => {
     (async () => {
@@ -439,7 +447,7 @@ const Posts: React.FC = () => {
                       content={post.content || ""}
                       post_id={post.post_id || ""}
                       website={post.website || ""}
-                      date={formatDate(post.date || "")}
+                      date={ (post.date || "")}
                       platform={post.platform || ""}
                       onPost={handlePost}
                     />
