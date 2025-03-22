@@ -14,8 +14,8 @@ import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie"; // For setting the "websitename" cookie
 
 /**
- * "refreshToken" is a number passed down by Posts. 
- * Every time Posts increments refreshToken, 
+ * "refreshToken" is a number passed down by Posts.
+ * Every time Posts increments refreshToken,
  * the effect below will re-run and re-read localStorage domainforcookies.
  */
 const Sidebar = ({
@@ -112,9 +112,9 @@ const Sidebar = ({
 
   return (
     <>
-      <div className="fixed">
+      <div className="fixed ">
         {/* Top Menu (mobile) */}
-        <div className="flex md:hidden pl-4 right-2 justify-between items-center mb-2">
+        <div className="flex md:hidden pl-4 right-2 justify-between items-center">
           <button
             className="p-4"
             onClick={toggleSidebar}
@@ -137,7 +137,7 @@ const Sidebar = ({
 
         {/* Sidebar */}
         <div
-          className={`w-full md:w-64 bg-white h-auto md:h-screen shadow-md ${
+          className={`w-full md:w-72 bg-white h-auto   shadow-md ${
             isSidebarOpen ? "block" : "hidden"
           } md:block`}
         >
@@ -149,97 +149,108 @@ const Sidebar = ({
                 <FaBars className="ml-[138px] text-[26px] text-gray-600" />
               </h1>
 
+</div>
+
+ 
               {/* Domain info / dropdown container */}
-              <div className="flex flex-col border border-gray-300 rounded-lg p-2">
-                <div className="flex items-center justify-between">
-                  {/* Show the currently selected domain’s logo if we have it */}
-                  {currentDomainObj?.logoUrl ? (
-                    <img
-                      src={currentDomainObj.logoUrl}
-                      alt="Logo"
-                      className="mr-2 w-8 h-8"
-                    />
-                  ) : (
-                    <img
-                      src="https://www.w3schools.com/w3images/avatar2.png"
-                      alt="Default"
-                      className="mr-2 w-8 h-8"
-                    />
-                  )}
+              
+             
+  <div className="flex flex-col h-[80vh]  overflow-hidden  border-gray-800 rounded-lg p-2">
+  {/* Wrapper to make the dropdown full width */}
+  <div className="relative w-full">
 
-                  {/* Domain Dropdown Trigger */}
-                  <div className="relative flex-1">
-                    <div
-                      className="w-full bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer"
-                      onClick={toggleDomainDropdown}
-                    >
-                      <div className="flex items-center justify-between p-2">
-                        <div className="flex items-center gap-2 truncate">
-                          <span
-                            className={`truncate ${
-                              isDomainDropdownOpen
-                                ? "text-gray-400 italic"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            {currentDomainObj?.clientWebsite ||
-                              selectedDomain ||
-                              "-- All Websites --"}
-                          </span>
-                        </div>
-                        <FaCaretDown
-                          className={`transform transition-transform ${
-                            isDomainDropdownOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </div>
+    {/* Top section (logo + dropdown trigger) */}
+    <div className="flex items-center rounded-sm py-2  border px-2 justify-between w-full">
+      {currentDomainObj?.logoUrl ? (
+        <img
+          src={currentDomainObj.logoUrl}
+          alt="Logo"
+          className="mr-2 w-8 h-8"
+        />
+      ) : (
+        <img
+          src="https://www.w3schools.com/w3images/avatar2.png"
+          alt="Default"
+          className="mr-2 w-8 h-8"
+        />
+      )}
 
-                    {/* The dropdown list itself */}
-                    {isDomainDropdownOpen && (
-                      <ul className="absolute z-10 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg mt-1">
-                        {domainDataList.map((domObj, idx) => (
-                          <li
-                            key={idx}
-                            className="p-2 hover:bg-gray-100 truncate flex items-center gap-2 cursor-pointer"
-                            onClick={() => handleDomainSelect(domObj.domain)}
-                          >
-                            {domObj.logoUrl ? (
-                              <img
-                                src={domObj.logoUrl}
-                                alt="Domain Logo"
-                                className="w-6 h-6"
-                              />
-                            ) : (
-                              <img
-                                src="https://www.w3schools.com/w3images/avatar2.png"
-                                alt="Default"
-                                className="w-6 h-6"
-                              />
-                            )}
-                            <span>
-                              {domObj.clientWebsite || domObj.domain}
-                            </span>
-                          </li>
-                        ))}
+      {/* Domain Dropdown Trigger */}
+      <div className="flex-1">
+        <div
+          className="w-full bg-white border-gray-300 rounded-lg  overflow-hidden cursor-pointer"
+          onClick={toggleDomainDropdown}
+        >
+          <div className="flex items-center  justify-between p-2">
+            <div className="flex items-center gap-2 truncate">
+              <span
+                className={`truncate ${
+                  isDomainDropdownOpen
+                    ? "text-gray-400 italic"
+                    : "text-gray-900"
+                }`}
+              >
+                {currentDomainObj?.clientWebsite ||
+                  selectedDomain ||
+                  "-- All Websites --"}
+              </span>
+            </div>
+            <FaCaretDown
+              className={`transform transition-transform ${
+                isDomainDropdownOpen ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+        </div>
+      </div>
+     
 
-                        {/* “Add New Business” link */}
-                        <li
-                          className="p-2 hover:bg-gray-100"
-                          onClick={() => handleDomainSelect("")}
-                        >
-                          <Link
-                            to="/"
-                            className="inline-flex items-center gap-2 border border-gray-300 px-4 py-2 text-nowrap rounded-lg text-sm text-black hover:bg-gray-100 transition w-full justify-center"
-                          >
-                            + Add New Business
-                          </Link>
-                        </li>
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              </div>
+    {/* Dropdown now takes full width */}
+    {isDomainDropdownOpen && (
+      <ul className="absolute left-0 top-full w-full
+       max-h-80 overflow-y-auto bg-white  border-gray-900 rounded-b-xl shadow-lg border-t-0">
+          {/* “Add New Business” link */}
+          <li
+          className="p-2 hover:bg-gray-100"
+          onClick={() => handleDomainSelect("")}
+        >
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 border border-gray-300 px-4 py-3 text-nowrap rounded-sm text-sm text-black hover:bg-gray-100 transition w-full justify-center"
+          >
+            + Add New Business
+          </Link>
+        </li>
+        {domainDataList.map((domObj, idx) => (
+          <li
+            key={idx}
+            className="p-2 hover:bg-gray-100 truncate flex items-center gap-2 cursor-pointer"
+            onClick={() => handleDomainSelect(domObj.domain)}
+          >
+            {domObj.logoUrl ? (
+              <img
+                src={domObj.logoUrl}
+                alt="Domain Logo"
+                className="w-6 h-6"
+              />
+            ) : (
+              <img
+                src="https://www.w3schools.com/w3images/avatar2.png"
+                alt="Default"
+                className="w-6 h-6"
+              />
+            )}
+            <span>{domObj.clientWebsite || domObj.domain}</span>
+          </li>
+        ))}
+
+
+      
+      </ul>
+    )}
+  </div>
+            </div>
+ 
               {/* end domain container */}
 
               {/* Sidebar Nav */}
@@ -333,7 +344,9 @@ const Sidebar = ({
             </div>
           </div>
         </div>
-      </div>
+</div>
+
+         
     </>
   );
 };

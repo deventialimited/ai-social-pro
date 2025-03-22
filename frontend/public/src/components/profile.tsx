@@ -197,7 +197,7 @@ const Profile = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen  bg-white">
         <div className="flex fixed top-0 left-0 right-0 z-10">
           <Sidebar
             isSidebarOpen={isSidebarOpen}
@@ -227,7 +227,8 @@ const Profile = () => {
                 </div>
               ) : (
                 <>
-                  <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto mb-6">
+                  <div className="bg-white rounded-lg 
+                  shadow-md p-6 pl-9 max-w-2xl mx-auto mb-6">
                     <h2 className="text-xl font-bold mb-2">Your Business</h2>
                     <p className="text-gray-500 mb-4">
                       Your business details will be referenced in your captions
