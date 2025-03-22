@@ -93,6 +93,8 @@ export const getPosts = async (req, res) => {
   }
 };
 
+
+
 /**
  * Update a post
  * @route POST /api/posts/update

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck is at the top, but let's fix the type issues properly
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
@@ -11,11 +11,34 @@ import { FaAngleDown } from "react-icons/fa6";
 
 const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
 
-/** Flatten nested domains object => array of { domain: "example.com", ...data } */
-function flattenDomains(domainsObj) {
-  const results = [];
+interface DomainData {
+  domain: string;
+  logoUrl?: string;
+  clientName?: string;
+  [key: string]: any;
+}
 
-  function recurse(node, path) {
+interface PostData {
+  image?: string;
+  topic?: string;
+  content?: string;
+  post_id?: string;
+  website?: string;
+  date?: string;
+  platform?: string;
+}
+
+interface ClientBusinessData {
+  domains?: Record<string, any>;
+  posts?: PostData[];
+  [key: string]: any;
+}
+
+/** Flatten nested domains object => array of { domain: "example.com", ...data } */
+function flattenDomains(domainsObj: Record<string, any>): DomainData[] {
+  const results: DomainData[] = [];
+
+  function recurse(node: any, path: string) {
     if (typeof node !== "object" || node === null) return;
     const keys = Object.keys(node);
 
@@ -44,7 +67,7 @@ function flattenDomains(domainsObj) {
     }
   }
 
-  function sanitizeKey(str) {
+  function sanitizeKey(str: string) {
     if (!str) return "";
     return str
       .replace(/_+dot_+/gi, ".")
@@ -61,7 +84,20 @@ function flattenDomains(domainsObj) {
   return results;
 }
 
-const PostCard = ({
+interface PostCardProps {
+  image?: string;
+  topic?: string;
+  content?: string;
+  post_id?: string;
+  website?: string;
+  date?: string;
+  platform?: string;
+  onPost?: (post: PostData) => void;
+  logoUrl?: string;
+  clientName?: string;
+}
+
+const PostCard: React.FC<PostCardProps> = ({
   image = "",
   topic = "",
   content = "",
@@ -70,8 +106,41 @@ const PostCard = ({
   date = "",
   platform = "",
   onPost,
+  logoUrl = "",
+  clientName = "",
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [clientDetails, setClientDetails] = useState<{
+    logoUrl: string;
+    clientName: string;
+  }>({
+    logoUrl: logoUrl || "",
+    clientName: clientName || "Anonymous User",
+  });
+
+  useEffect(() => {
+    // Get the client domain details from localStorage
+    try {
+      const storedDetails = localStorage.getItem("clientDomainDetails");
+      if (storedDetails) {
+        const clientDomainDetails = JSON.parse(storedDetails);
+
+        // Find the client details that match the current post's website
+        const matchingClient = clientDomainDetails.find(
+          (client: any) => client.domain === website
+        );
+
+        if (matchingClient) {
+          setClientDetails({
+            logoUrl: matchingClient.logoUrl || "",
+            clientName: matchingClient.clientName || "Anonymous User",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error retrieving client details:", error);
+    }
+  }, [website]);
 
   const handleEditClick = () => {
     if (onPost) {
@@ -84,7 +153,7 @@ const PostCard = ({
   return (
     <div className="w-full flex flex-col sm:grid sm:grid-cols-[2fr_800px_1fr] gap-x-0 gap-y-4 px-2">
       <div
-        tabIndex="1"
+        tabIndex={1}
         className="post-container relative px-6 group/card col-start-2 h-fit max-w-full"
       >
         <div className="w-full shadow-lg rounded-lg mx-auto p-0 bg-white px-8">
@@ -92,14 +161,17 @@ const PostCard = ({
             <div className="flex items-center">
               <div className="h-10 w-10 rounded-full overflow-hidden bg-purple-600 mr-3 flex-shrink-0 cursor-pointer">
                 <img
-                  src="/api/placeholder/40/40"
+                  src={
+                    clientDetails.logoUrl ||
+                    "https://www.w3schools.com/w3images/avatar2.png"
+                  }
                   alt="Profile"
                   className="h-full w-full object-cover"
                 />
               </div>
               <div>
                 <div className="font-medium text-gray-800 cursor-pointer">
-                  Anonymous User
+                  {clientDetails.clientName || "Anonymous User"}
                 </div>
                 <div className="text-xs text-gray-500">879,873 followers</div>
               </div>
@@ -178,28 +250,29 @@ const PostCard = ({
   );
 };
 
-const Posts = () => {
+const Posts: React.FC = () => {
   const navigate = useNavigate();
 
   // We add a refreshToken to trigger the sidebar to re-run localStorage reading
   const [refreshToken, setRefreshToken] = useState(0);
 
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<PostData[]>([]);
   const [domains, setDomains] = useState<string[]>([]);
   const [selectedDomain, setSelectedDomain] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBusinessOpen, setIsBusinessOpen] = useState(false);
+  const [clientBusiness, setClientBusiness] = useState<ClientBusinessData>({});
 
   // Re-trigger the sidebar's effect to read localStorage
   function refreshSidebar() {
     setRefreshToken((prev) => prev + 1);
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    if (isNaN(date)) return "N/A";
+    if (isNaN(date.getTime())) return "N/A";
     const year = date.getFullYear();
     const month = `0${date.getMonth() + 1}`.slice(-2);
     const day = `0${date.getDate()}`.slice(-2);
@@ -232,6 +305,31 @@ const Posts = () => {
         }
         const data = await resp.json();
 
+        if (data.domains && typeof data.domains === "object") {
+          const domainEntries = Object.entries(data.domains);
+
+          const domainDetails = domainEntries.map(
+            ([domain, values]: [string, any]) => {
+              return {
+                domain,
+                logoUrl: values.logoUrl,
+                clientName: values.clientName,
+              };
+            }
+          );
+
+          console.log(domainDetails);
+
+          // Example: Save or use the extracted data
+          localStorage.setItem(
+            "clientDomainDetails",
+            JSON.stringify(domainDetails)
+          );
+        }
+
+        setClientBusiness(data);
+        console.log(" CLIENT DATA IS ", clientBusiness, "DATA IS ", data);
+
         // Flatten the user domains object
         if (data.domains && typeof data.domains === "object") {
           const flattened = flattenDomains(data.domains);
@@ -244,8 +342,8 @@ const Posts = () => {
           setDomains(domainNames);
 
           // This is where we can trigger the Sidebar to update if we want
-          refreshSidebar(); 
-        } 
+          refreshSidebar();
+        }
 
         if (data.posts) {
           setPosts(data.posts);
@@ -258,7 +356,7 @@ const Posts = () => {
     })();
   }, [navigate]);
 
-  const handlePost = (post) => {
+  const handlePost = (post: PostData) => {
     navigate("/editor", { state: post });
   };
 
@@ -281,7 +379,7 @@ const Posts = () => {
           p.website && p.website.toLowerCase() === selectedDomain.toLowerCase()
       );
 
-  const handleDomainChange = (domain) => {
+  const handleDomainChange = (domain: string) => {
     setSelectedDomain(domain);
     Cookies.set("websitename", domain, { expires: 55 / 60 });
   };
@@ -358,7 +456,7 @@ const Posts = () => {
               willChange: "transform, opacity",
             }}
           >
-            <div className="flex gap-2">
+            <div className="flex gap-2 ">
               <button
                 type="button"
                 className="ant-btn css-doxyl0 ant-btn-default ant-btn-icon-only"
@@ -383,7 +481,8 @@ const Posts = () => {
               </button>
             </div>
             <p className="text-xs text-antd-colorTextSecondary mt-3 text-center">
-              {filteredPosts.length} post{filteredPosts.length !== 1 && "s"} found
+              {filteredPosts.length} post{filteredPosts.length !== 1 && "s"}{" "}
+              found
             </p>
           </div>
         </div>

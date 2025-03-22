@@ -55,6 +55,7 @@ const Sidebar = ({
       try {
         const parsed = JSON.parse(domainDataStr); // an array of domain objects
         setDomainDataList(parsed);
+        console.log("Parsed domainforcookies:", parsed);
       } catch (err) {
         console.error("Error parsing domainforcookies:", err);
       }
