@@ -177,8 +177,8 @@ const Sidebar = ({
               <div className="relative w-full" ref={dropdownRef}>
                 {/* Top section (logo + dropdown trigger) */}
                 <div
-                  className="flex items-center rounded-md  py-2  border 
-                bg-[#EFF6FF] border-[#8da2bd] px-2 justify-between w-full"
+                  className="flex items-center rounded-md  py-2  border-2 
+                border-[#EFF6FF]  px-2 justify-between w-full"
                 >
                   {currentDomainObj?.logoUrl ? (
                     <img
@@ -197,7 +197,7 @@ const Sidebar = ({
                   {/* Domain Dropdown Trigger */}
                   <div className="flex-1">
                     <div
-                      className="w-fullbg-[#EFF6FF] border-gray-300 rounded-lg  overflow-hidden cursor-pointer"
+                      className="w-full     rounded-lg  overflow-hidden cursor-pointer"
                       onClick={toggleDomainDropdown}
                     >
                       <div className="flex items-center  justify-between p-2">
@@ -239,7 +239,7 @@ const Sidebar = ({
                           to="/"
                           className="inline-flex items-center 
             gap-2 border border-gray-300 px-4 py-3 text-nowrap rounded-sm
-             text-sm text-black hover:bg-gray-100 transition w-full justify-center"
+             text-sm text-black  transition w-full justify-center"
                         >
                           + Add New Business
                         </Link>
