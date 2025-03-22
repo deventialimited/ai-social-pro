@@ -9,7 +9,7 @@ import { MdSaveAlt } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaAngleDown } from "react-icons/fa6";
 
-const API_BASE_URL = "https://ai-social-pro.onrender.com"; 
+const API_BASE_URL = "https://ai-social-pro.onrender.com";
 // or "http://localhost:5000"
 
 interface DomainData {
@@ -119,21 +119,18 @@ const PostCard: React.FC<PostCardProps> = ({
     clientName: clientName || "Anonymous User",
   });
 
-
   const formatDate = (dateString: string) => {
     const dateObj = new Date(dateString);
+
     const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const hours = String(dateObj.getHours()).padStart(2, '0');
-    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-  
-    return `${year}/${month}/${day} ${hours}:${minutes}`;
+    const month = dateObj.toLocaleString("en-US", { month: "long" });
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+
+    return `${month} ${day}, ${year} ${hours}:${minutes}`;
   };
-
-
-
-
+  //sadlkfjlskjdflks date formate has been changed
 
   useEffect(() => {
     // Get the client domain details from localStorage
@@ -255,8 +252,9 @@ const PostCard: React.FC<PostCardProps> = ({
 
           <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
             <div className="flex items-center">
-              <span className="mr-2">📅 {formatDate(date) || "Mar 10, 2023"}</span>
-             
+              <span className="mr-2">
+                📅 {formatDate(date) || "Mar 10, 2023"}
+              </span>
 
               <span>{platform || "Facebook"}</span>
               <span className="mr-2 ml-4"> {post_id} </span>
@@ -287,8 +285,6 @@ const Posts: React.FC = () => {
   function refreshSidebar() {
     setRefreshToken((prev) => prev + 1);
   }
-
-  
 
   useEffect(() => {
     (async () => {
@@ -447,7 +443,7 @@ const Posts: React.FC = () => {
                       content={post.content || ""}
                       post_id={post.post_id || ""}
                       website={post.website || ""}
-                      date={ (post.date || "")}
+                      date={post.date || ""}
                       platform={post.platform || ""}
                       onPost={handlePost}
                     />
