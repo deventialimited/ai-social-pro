@@ -110,7 +110,8 @@ const FullEditor: React.FC = () => {
     // setPostContent(content)
 
   }
-  const [postBody, setPostBody] = useState<string>(content || "");
+  // const [postBody, setPostBody] = useState<string>(content || "");
+  const [postBody, setPostBody] = useState<string>( "");
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {

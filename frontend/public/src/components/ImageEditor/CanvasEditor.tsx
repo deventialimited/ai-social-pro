@@ -129,11 +129,11 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     window.removeEventListener("mouseup", stopRotation)
   }
 
-      const postData = localStorage.getItem('postdata');
-      if (postData) {
-        var { topic, content, image,post_id } = JSON.parse(postData);
+  const postData = localStorage.getItem('postdata');
+  if (postData) {
+    var { topic, content, image, post_id } = JSON.parse(postData);
+  }
 
-      }
   // Fixed: Shadow style function to properly apply opacity to the shadow
   const getShadowStyle = (effects?: ShapeEffects) => {
     if (!effects || !effects.shadow) return {}
@@ -420,23 +420,37 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return <div className="w-full h-full bg-current" style={{ ...baseStyle, ...divBorderStyle }}></div>
     }
   }
+
+  const renderImage = (imageSrc: string) => {
+    return (
+      <img
+        src={imageSrc}
+        className="absolute overflow-hidden mx-auto left-3/4 mt-8 transform -translate-x-1/2"
+        style={{
+          backgroundColor,
+          width: "15vw",
+          height: "60%",
+        }}
+        onClick={() => {
+          onSelectShape(null);
+        }}
+      />
+    )
+  }
+
   return (
     <div
       id="canvas"
       className="w-full h-full overflow-hidden"
       style={{
         backgroundColor,
-        backgroundImage: backgroundImage
-          ? `url(${backgroundImage})`
-          : localStorage.getItem('postdata')
-          ? `url(${JSON.parse(localStorage.getItem('postdata')!).image})`
-          : "none",
         backgroundSize: "cover",
         width: "65vw",
         height: "100%",
       }}
       onClick={() => onSelectShape(null)}
     >
+      {renderImage(backgroundImage || (localStorage.getItem('postdata') ? JSON.parse(localStorage.getItem('postdata')!).image : "none"))}
       {shapes.map((shape) => {
         const isSelected = selectedShapeId === shape.id
 
