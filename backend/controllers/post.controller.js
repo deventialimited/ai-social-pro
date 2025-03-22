@@ -255,6 +255,12 @@ export const processPubSub = async (req, res) => {
     if (!userEmail) {
       return res.status(400).send("Post json must contain a client_email key");
     }
+    if(jsonData.image) {
+      const uploadedUrl = await uploadImageFromUrl(jsonData.image, "posts");
+      console.log("Image successfully uploaded to:", uploadedUrl);
+
+      jsonData.image = uploadedUrl;
+    }
 
     await User.findOneAndUpdate(
       { email: userEmail },
