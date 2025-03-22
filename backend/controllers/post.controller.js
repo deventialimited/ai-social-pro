@@ -4,7 +4,7 @@
  */
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
-import { uploadBase64Image } from "../utils/imageUpload.js";
+import { uploadImageFromUrl, uploadBase64Image } from "../utils/imageUpload.js";
 import { verifyToken } from "../config/jwt.js";
 
 /**
@@ -254,6 +254,12 @@ export const processPubSub = async (req, res) => {
     const userEmail = jsonData.client_email;
     if (!userEmail) {
       return res.status(400).send("Post json must contain a client_email key");
+    }
+    if(jsonData.image) {
+      const uploadedUrl = await uploadImageFromUrl(jsonData.image, "posts");
+      console.log("Image successfully uploaded to:", uploadedUrl);
+
+      jsonData.image = uploadedUrl;
     }
 
     await User.findOneAndUpdate(
