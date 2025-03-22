@@ -239,7 +239,8 @@ const PostCard: React.FC<PostCardProps> = ({
           <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
             <div className="flex items-center">
               <span className="mr-2">📅 {date || "Mar 10, 2023"}</span>
-              <span className="mr-2"># rechks</span>
+              <span className="mr-2"> {post_id} </span>
+
               <span>{platform || "Facebook"}</span>
             </div>
             <div className="cursor-pointer">Post Analytics</div>
