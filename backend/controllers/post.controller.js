@@ -4,7 +4,7 @@
  */
 import User from "../models/User.model.js";
 import Post from "../models/Post.model.js";
-import { uploadBase64Image } from "../utils/imageUpload.js";
+import { uploadImageFromUrl, uploadBase64Image } from "../utils/imageUpload.js";
 import { verifyToken } from "../config/jwt.js";
 
 /**
