@@ -1,5 +1,5 @@
 // @ts-nocheck
-"use client";
+"use client"
 import React, { Fragment, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Dialog, Transition, Listbox } from "@headlessui/react";
@@ -110,7 +110,8 @@ const FullEditor: React.FC = () => {
     // setPostContent(content)
 
   }
-  const [postBody, setPostBody] = useState<string>(content || "");
+  // const [postBody, setPostBody] = useState<string>(content || "");
+  const [postBody, setPostBody] = useState<string>( "");
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
@@ -168,40 +169,6 @@ const FullEditor: React.FC = () => {
       loadDataFromFirebase();
     }
   }, [postId]);
-
-  // const captureDiagramAsImage = async () => {
-  //   const diagramElement = document.getElementById("canvas");
-  //   if (diagramElement) {
-  //     const canvas = await html2canvas(diagramElement);
-  //     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve));
-  //     if (blob) {
-  //       // Create a URL for the blob and trigger a download
-  //       const url = URL.createObjectURL(blob);
-  //       const a = document.createElement("a");
-  //       a.href = url;
-  //       a.download = "diagram.png";
-  //       document.body.appendChild(a);
-  //       a.click();
-  //       document.body.removeChild(a);
-  //       URL.revokeObjectURL(url);
-
-  //       // Proceed with the API call
-  //       const formData = new FormData();
-  //       formData.append("image", blob, "diagram.png");
-  //       try {
-  //         await axios.post("/api/update-image", formData, {
-  //           headers: {
-  //             "Content-Type": "multipart/form-data",
-  //           },
-  //         });
-  //         console.log("Image successfully updated in the database");
-  //       } catch (error) {
-  //         console.error("Error updating image in the database:", error);
-  //       }
-  //     }
-  //   }
-  // };
-
 
   const captureDiagramAsImage = async () => {
     try {
@@ -290,6 +257,7 @@ const FullEditor: React.FC = () => {
       console.error("Error downloading image:", error);
     }
   };
+
   useEffect(() => {
     const fetchBackgroundData = async () => {
       try {
@@ -322,13 +290,7 @@ const FullEditor: React.FC = () => {
     fetchBackgroundData();
   }, []);
 
-  // useEffect(() => {
-  //   saveDataToFirebase();
-  // }, [shapes, backgroundColor, backgroundImage, postBody, history, historyIndex, postId]);
-
   const closeModal = () => {
-    // saveDataToFirebase();
-
     setIsOpen(false);
     navigate("/posts");
   };
@@ -368,6 +330,13 @@ const FullEditor: React.FC = () => {
     setShapes(newShapes);
     addToHistory({ shapes: newShapes });
   };
+
+  // Update an image's properties
+    const handleUpdateImage = (imageData) => {
+      localStorage.setItem("imageData", JSON.stringify(imageData));
+      // Update any state if needed
+      // setImageData(imageData);
+    }
 
   // Delete the selected shape
   const handleDeleteShape = (id: string) => {
@@ -574,6 +543,14 @@ const FullEditor: React.FC = () => {
       window.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
+  const handleFitToPage = () => {
+    if (selectedImage) {
+      setBackgroundImage(selectedImage);
+      setSelectedImage(null);
+      addToHistory({ backgroundImage: selectedImage });
+    }
+  };
 
   return (
     <>
@@ -963,6 +940,8 @@ const FullEditor: React.FC = () => {
                             onUpload={() => console.log("Upload action")}
                             onUndo={handleUndo}
                             onRedo={handleRedo}
+                            onFitToPage={handleFitToPage}
+                            // onUpdateImage={handleUpdateImage} // Implemented image update handler
                           />
                         ) : backgroundColor ? (
                           <BackgroundToolbar
@@ -1098,6 +1077,7 @@ const FullEditor: React.FC = () => {
                               backgroundColor={backgroundColor}
                               backgroundImage={backgroundImage}
                               selectedImage={selectedImage}
+                              onUpdateImage={handleUpdateImage}
                             />
                           </div>
                           <div className={` absolute  top-60 ml-[10%] text-center rounded-md ${isTextAreaActive ? 'border border-black-500' : ''}`}>
