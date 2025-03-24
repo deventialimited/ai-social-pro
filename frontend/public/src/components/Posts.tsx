@@ -112,16 +112,23 @@ const PostCard: React.FC<PostCardProps> = ({
 }) => {
   console.log(date);
 
-  const formattedDate = new Date(date).toLocaleString(undefined, {
-    month: "long", // e.g., "March"
-    day: "numeric", // e.g., "22"
-    year: "numeric", // e.g., "2025"
-    hour: "numeric", // e.g., "10"
-    minute: "2-digit", // e.g., "00"
-    hour12: true, // e.g., "PM"
+  // Assuming 'date' is a UTC string (e.g., "2023-10-27T10:30:00.000Z")
+  const utcDate = new Date(date);
+
+  // Format the date without applying local time zone conversions
+  const formattedDate = utcDate.toLocaleString("en-US", {
+    timeZone: "UTC", //force UTC
+    month: "long",
+    day: "2-digit", // Ensure 2-digit day
+    hour: "2-digit", // Ensure 2-digit hour
+    minute: "2-digit", // Ensure 2-digit minute
+    hour12: false, // Use 24-hour format as requested
   });
 
-  console.log(`${formattedDate.replace(",", "")}`);
+  //replace the ',' with a space to achieve the requested format.
+  const finalFormattedDate = formattedDate.replace(",", "");
+
+  console.log(finalFormattedDate);
 
   const [expanded, setExpanded] = useState(false);
   const [clientDetails, setClientDetails] = useState<{
@@ -253,7 +260,9 @@ const PostCard: React.FC<PostCardProps> = ({
           <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
             <div className="flex items-center">
               {/* formated date */}
-              <span className="mr-2">📅 {formattedDate || "Mar 10, 2023"}</span>
+              <span className="mr-2">
+                📅 {finalFormattedDate || "Mar 10, 2023"}
+              </span>
 
               <span>{platform || "Facebook"}</span>
               <span className="mr-2 ml-4"> {post_id} </span>
