@@ -110,6 +110,19 @@ const PostCard: React.FC<PostCardProps> = ({
   logoUrl = "",
   clientName = "",
 }) => {
+  console.log(date);
+
+  const formattedDate = new Date(date).toLocaleString(undefined, {
+    month: "long", // e.g., "March"
+    day: "numeric", // e.g., "22"
+    year: "numeric", // e.g., "2025"
+    hour: "numeric", // e.g., "10"
+    minute: "2-digit", // e.g., "00"
+    hour12: true, // e.g., "PM"
+  });
+
+  console.log(`${formattedDate.replace(",", "")}`);
+
   const [expanded, setExpanded] = useState(false);
   const [clientDetails, setClientDetails] = useState<{
     logoUrl: string;
@@ -118,19 +131,6 @@ const PostCard: React.FC<PostCardProps> = ({
     logoUrl: logoUrl || "",
     clientName: clientName || "Anonymous User",
   });
-
-  // const formatDate = (dateString: string) => {
-  //   const dateObj = new Date(dateString);
-
-  //   const year = dateObj.getFullYear();
-  //   const month = dateObj.toLocaleString("en-US", { month: "long" });
-  //   const day = String(dateObj.getDate()).padStart(2, "0");
-  //   const hours = String(dateObj.getHours()).padStart(2, "0");
-  //   const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-
-  //   return `${month} ${day}, ${year} ${hours}:${minutes}`;
-  // };
-  //sadlkfjlskjdflks date formate has been changed
 
   useEffect(() => {
     // Get the client domain details from localStorage
@@ -252,9 +252,8 @@ const PostCard: React.FC<PostCardProps> = ({
 
           <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
             <div className="flex items-center">
-              <span className="mr-2">
-                📅 {(date) || "Mar 10, 2023"}
-              </span>
+              {/* formated date */}
+              <span className="mr-2">📅 {formattedDate || "Mar 10, 2023"}</span>
 
               <span>{platform || "Facebook"}</span>
               <span className="mr-2 ml-4"> {post_id} </span>
