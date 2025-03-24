@@ -203,18 +203,11 @@ const Profile = () => {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        // Save to localStorage
-        localStorage.setItem(`logo_${selectedDomain}`, base64String);
-        // Update the business state
-        setBusiness((prev) => ({ ...prev, logoUrl: base64String }));
-      };
-      reader.readAsDataURL(file);
+      const imageUrl = URL.createObjectURL(file);
+      setBusiness((prev) => ({ ...prev, logoUrl: imageUrl }));
     }
   };
-
+  const [color, setColor] = useState("#000000");
   return (
     <>
       <div className="min-h-screen  bg-white">
@@ -333,6 +326,21 @@ const Profile = () => {
                             No data available
                           </span>
                         )}
+                        <div>
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => setColor(e.target.value)}
+                          />
+                          <p>Selected Color: {color}</p>
+                          <div
+                            style={{
+                              width: "100px",
+                              height: "100px",
+                              backgroundColor: color,
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
 
