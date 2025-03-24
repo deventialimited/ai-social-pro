@@ -119,17 +119,17 @@ const PostCard: React.FC<PostCardProps> = ({
     clientName: clientName || "Anonymous User",
   });
 
-  const formatDate = (dateString: string) => {
-    const dateObj = new Date(dateString);
+  // const formatDate = (dateString: string) => {
+  //   const dateObj = new Date(dateString);
 
-    const year = dateObj.getFullYear();
-    const month = dateObj.toLocaleString("en-US", { month: "long" });
-    const day = String(dateObj.getDate()).padStart(2, "0");
-    const hours = String(dateObj.getHours()).padStart(2, "0");
-    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+  //   const year = dateObj.getFullYear();
+  //   const month = dateObj.toLocaleString("en-US", { month: "long" });
+  //   const day = String(dateObj.getDate()).padStart(2, "0");
+  //   const hours = String(dateObj.getHours()).padStart(2, "0");
+  //   const minutes = String(dateObj.getMinutes()).padStart(2, "0");
 
-    return `${month} ${day}, ${year} ${hours}:${minutes}`;
-  };
+  //   return `${month} ${day}, ${year} ${hours}:${minutes}`;
+  // };
   //sadlkfjlskjdflks date formate has been changed
 
   useEffect(() => {
@@ -253,7 +253,7 @@ const PostCard: React.FC<PostCardProps> = ({
           <div className="flex items-center justify-between text-xs text-gray-500 p-2 py-6">
             <div className="flex items-center">
               <span className="mr-2">
-                📅 {formatDate(date) || "Mar 10, 2023"}
+                📅 {(date) || "Mar 10, 2023"}
               </span>
 
               <span>{platform || "Facebook"}</span>
