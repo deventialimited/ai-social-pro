@@ -210,9 +210,7 @@ const Sidebar = ({
                                 : "text-gray-900"
                             }`}
                           >
-                            {currentDomainObj?.clientWebsite ||
-                              selectedDomain ||
-                              "-- All Websites --"}
+                            {currentDomainObj?.clientWebsite || selectedDomain}
                           </span>
                         </div>
                         <FaCaretDown
