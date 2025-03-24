@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import axios from "axios";
 import Cookies from "js-cookie";
-
+import { Upload } from "lucide-react";
 const API_BASE_URL = "https://ai-social-pro.onrender.com"; // or "http://localhost:5000"
 
 const DEFAULT_BUSINESS_DATA = {
@@ -82,7 +82,9 @@ const Profile = () => {
 
         // 2. If the array is empty, fallback to backend => /api/users/lastdomain
         if (domainArray.length === 0) {
-          console.log("No domain array found in localStorage => fetching last domain from backend...");
+          console.log(
+            "No domain array found in localStorage => fetching last domain from backend..."
+          );
           const authToken = localStorage.getItem("authToken");
           if (!authToken) {
             console.log("No authToken, cannot fetch lastdomain");
@@ -162,7 +164,9 @@ const Profile = () => {
           audience: foundDomain.audience
             ? Array.isArray(foundDomain.audience)
               ? foundDomain.audience
-              : foundDomain.audience.split(", ").map((item: string) => item.trim())
+              : foundDomain.audience
+                  .split(", ")
+                  .map((item: string) => item.trim())
             : DEFAULT_BUSINESS_DATA.audience,
           audiencePains: foundDomain.audiencePains
             ? Array.isArray(foundDomain.audiencePains)
@@ -193,6 +197,22 @@ const Profile = () => {
   // function for the sidebar
   const openProfile = () => {
     console.log("Already on profile page");
+  };
+
+  // code for logo to store in local storage or fetch from database
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        // Save to localStorage
+        localStorage.setItem(`logo_${selectedDomain}`, base64String);
+        // Update the business state
+        setBusiness((prev) => ({ ...prev, logoUrl: base64String }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -227,26 +247,54 @@ const Profile = () => {
                 </div>
               ) : (
                 <>
-                  <div className="bg-white rounded-lg 
-                  shadow-md p-6 pl-9 max-w-2xl mx-auto mb-6">
+                  <div
+                    className="bg-white rounded-lg 
+                  shadow-md p-6 pl-9 max-w-2xl mx-auto mb-6"
+                  >
                     <h2 className="text-xl font-bold mb-2">Your Business</h2>
                     <p className="text-gray-500 mb-4">
                       Your business details will be referenced in your captions
                       and post designs.
                     </p>
-
+                    {/* logo images */}
                     <div className="mb-4">
-                      {business.logoUrl ? (
-                        <img
-                          src={business.logoUrl}
-                          alt={business.name}
-                          className="h-32 object-contain"
-                        />
-                      ) : (
-                        <p className="text-gray-400">No logo available.</p>
-                      )}
+                      <div className="relative group h-28 w-28 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
+                        {business.logoUrl ? (
+                          <img
+                            src={business.logoUrl}
+                            alt={business.name}
+                            className="w-28 h-28 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <img
+                            src="https://www.w3schools.com/w3images/avatar2.png"
+                            alt="default avatar"
+                            className="w-28 h-28 object-contain rounded-lg"
+                          />
+                        )}
+
+                        {/* Overlay upload */}
+                        <div
+                          className="absolute bottom-0 left-0 w-full h-full bg-black/40 flex items-center justify-center 
+          translate-y-full group-hover:translate-y-0 transition-all duration-300 ease-in-out"
+                        >
+                          <input
+                            type="file"
+                            id="logo-upload"
+                            className="hidden"
+                            onChange={handleFileUpload}
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="cursor-pointer text-white p-2 bg-white/20 rounded-full hover:bg-white/30"
+                          >
+                            <Upload size={20} />
+                          </label>
+                        </div>
+                      </div>
                     </div>
 
+                    {/* logo image div ended here */}
                     <div className="mb-2">
                       <strong className="block mb-1">Business Name:</strong>
                       <span className="text-gray-700">{business.name}</span>
