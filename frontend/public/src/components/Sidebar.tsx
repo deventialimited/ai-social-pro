@@ -116,6 +116,12 @@ const Sidebar = ({
     navigate("/login");
   };
 
+  console.log("current domain data", currentDomainObj);
+
+  let currentdomainwebsite = currentDomainObj?.clientWebsite;
+
+  console.log("selected client website ", currentdomainwebsite);
+
   // Domain dropdown toggles
   const toggleDomainDropdown = () => {
     setIsDomainDropdownOpen(!isDomainDropdownOpen);
@@ -130,6 +136,7 @@ const Sidebar = ({
     onDomainChange(domain);
     setIsDomainDropdownOpen(false);
   };
+  const websiteName = localStorage.getItem("websiteName");
 
   return (
     <>
@@ -210,7 +217,10 @@ const Sidebar = ({
                                 : "text-gray-900"
                             }`}
                           >
-                            {currentDomainObj?.clientWebsite || selectedDomain}
+                            {currentdomainwebsite ||
+                              selectedDomain ||
+                              websiteName ||
+                              "Add a business"}
                           </span>
                         </div>
                         <FaCaretDown
