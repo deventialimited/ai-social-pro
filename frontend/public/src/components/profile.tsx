@@ -159,6 +159,11 @@ const Profile = () => {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(file.type)) {
+        alert("Only JPG, WEBP, and PNG files are allowed.");
+        return;
+      }
       const imageUrl = URL.createObjectURL(file);
       setEditedBusiness((prev) => ({ ...prev, logoUrl: imageUrl }));
     }
@@ -247,7 +252,7 @@ const Profile = () => {
                                 id="logo-upload"
                                 className="hidden"
                                 onChange={handleFileUpload}
-                                accept="image/*"
+                                accept="image/jpeg, image/png, image/webp"
                               />
                               <label
                                 htmlFor="logo-upload"

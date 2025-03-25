@@ -170,11 +170,13 @@ const Sidebar = ({
           } md:block`}
         >
           <div className="p-4 flex flex-col justify-between h-full">
-            <div>
+            <div className="flex items-center gap-2">
               {/* Heading (desktop) */}
-              <h1 className="text-[22px] font-bold text-blue-600 mb-4 items-center hidden md:flex">
-                Profile
-                <FaBars className="ml-[138px] text-[26px] text-gray-600" />
+              <img src="/logoIcon.jpeg" alt="" width={50} height={50} />
+             
+              <h1 className="text-[22px] font-bold text-blue-600   items-center hidden md:flex">
+                OneYearSocial
+                {/* <FaBars className="ml-[138px] text-[26px] text-gray-600" /> */}
               </h1>
             </div>
 
