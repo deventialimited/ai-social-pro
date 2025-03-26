@@ -11,22 +11,15 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie"; // For setting the "websitename" cookie
+import Cookies from "js-cookie";
 
-/**
- * "refreshToken" is a number passed down by Posts.
- * Every time Posts increments refreshToken,
- * the effect below will re-run and re-read localStorage domainforcookies.
- */
 const Sidebar = ({
-  refreshToken = 0, // new prop
+  refreshToken = 0,
   isSidebarOpen,
   toggleSidebar,
   toggleBusiness,
   isBusinessOpen,
   openProfile,
-
-  // new props for domain selection
   domains = [],
   selectedDomain = "",
   onDomainChange = () => {},
@@ -39,21 +32,16 @@ const Sidebar = ({
   const [currentDomainObj, setCurrentDomainObj] = useState(null);
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false);
 
-  // Load displayName from localStorage
   useEffect(() => {
     const storedDisplayName = localStorage.getItem("displayName");
     setDisplayName(storedDisplayName || "John Doe");
   }, []);
 
-  /**
-   * This effect re-runs each time "refreshToken" changes,
-   * re-reading domainforcookies from localStorage.
-   */
   useEffect(() => {
     const domainDataStr = localStorage.getItem("domainforcookies");
     if (domainDataStr) {
       try {
-        const parsed = JSON.parse(domainDataStr); // an array of domain objects
+        const parsed = JSON.parse(domainDataStr);
         setDomainDataList(parsed);
         console.log("Parsed domainforcookies:", parsed);
       } catch (err) {
@@ -64,8 +52,6 @@ const Sidebar = ({
     }
   }, [refreshToken]);
 
-  // On mount or re-render, if no selected domain is set,
-  // see if we have a cookie
   useEffect(() => {
     if (!selectedDomain) {
       const cookieDomain = Cookies.get("websitename");
@@ -75,10 +61,6 @@ const Sidebar = ({
     }
   }, [selectedDomain, onDomainChange]);
 
-  /**
-   * Whenever selectedDomain or domainDataList changes,
-   * figure out which object is the "current" domain.
-   */
   useEffect(() => {
     if (!selectedDomain || domainDataList.length === 0) {
       setCurrentDomainObj(null);
@@ -90,7 +72,6 @@ const Sidebar = ({
     setCurrentDomainObj(found || null);
   }, [selectedDomain, domainDataList]);
 
-  // Add click outside listener
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -98,24 +79,23 @@ const Sidebar = ({
       }
     }
 
-    // Add event listener when dropdown is open
     if (isDomainDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    // Cleanup
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDomainDropdownOpen]);
 
-  // LOGOUT
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.clear();
     navigate("/login");
   };
 
+<<<<<<< HEAD
+=======
   console.log("current domain data", currentDomainObj);
 
   let currentdomainwebsite = currentDomainObj?.clientWebsite;
@@ -123,14 +103,11 @@ const Sidebar = ({
   console.log("selected client website ", currentdomainwebsite);
 
   // Domain dropdown toggles
+>>>>>>> 446b7cc1c7ce271b25181cdd7095867976acc9b7
   const toggleDomainDropdown = () => {
     setIsDomainDropdownOpen(!isDomainDropdownOpen);
   };
 
-  /**
-   * If user picks a domain from the dropdown, we set the cookie
-   * and call onDomainChange to let the parent know.
-   */
   const handleDomainSelect = (domain) => {
     Cookies.set("websitename", domain, { expires: 55 / 60 });
     onDomainChange(domain);
@@ -140,24 +117,24 @@ const Sidebar = ({
 
   return (
     <>
-      <div className="fixed ">
+      <div className="fixed">
         {/* Top Menu (mobile) */}
-        <div className="flex md:hidden pl-4 right-2 justify-between items-center">
+        <div className="flex md:hidden pl-4 right-2 justify-between items-center bg-background text-text">
           <button
             className="p-4"
             onClick={toggleSidebar}
             aria-label="Toggle Sidebar"
           >
-            <FaBars className="text-xl" />
+            <FaBars className="text-xl text-gray-900 dark:text-white" />
           </button>
           <div className="flex items-center gap-44 justify-between w-full">
-            <h2 className="text-lg font-bold text-gray-900">Profile</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Profile</h2>
             <div className="flex items-center">
-              <span className="text-gray-600 text-sm mr-2 mt-1">
+              <span className="text-gray-600 dark:text-gray-300 text-sm mr-2 mt-1">
                 {displayName}
               </span>
-              <div className="bg-blue-100 rounded-full p-2">
-                <FaUserAlt className="text-blue-500" />
+              <div className="bg-blue-100 dark:bg-gray-700 rounded-full p-2">
+                <FaUserAlt className="text-blue-500 dark:text-white" />
               </div>
             </div>
           </div>
@@ -165,30 +142,32 @@ const Sidebar = ({
 
         {/* Sidebar */}
         <div
-          className={`w-full md:w-72 bg-white h-auto   shadow-md ${
+          className={`w-full md:w-72 bg-white dark:bg-gray-900 h-auto shadow-md ${
             isSidebarOpen ? "block" : "hidden"
           } md:block`}
         >
           <div className="p-4 flex flex-col justify-between h-full">
             <div className="flex items-center gap-2">
               {/* Heading (desktop) */}
+<<<<<<< HEAD
+              <h1 className="text-[22px] font-bold text-blue-600 dark:text-blue-400 mb-4 items-center hidden md:flex">
+                Profile
+                <FaBars className="ml-[138px] text-[26px] text-gray-600 dark:text-gray-300" />
+=======
               <img src="/logoIcon.jpeg" alt="" width={50} height={50} />
              
               <h1 className="text-[22px] font-bold text-blue-600   items-center hidden md:flex">
                 OneYearSocial
                 {/* <FaBars className="ml-[138px] text-[26px] text-gray-600" /> */}
+>>>>>>> 446b7cc1c7ce271b25181cdd7095867976acc9b7
               </h1>
             </div>
 
             {/* Domain info / dropdown container */}
-
-            <div className="flex flex-col h-[80vh]  overflow-hidden  border-gray-800 rounded-lg p-2">
-              {/* Wrapper to make the dropdown full width */}
+            <div className="flex flex-col h-[80vh] overflow-hidden border-gray-800 dark:border-gray-600 rounded-lg p-2">
               <div className="relative w-full" ref={dropdownRef}>
-                {/* Top section (logo + dropdown trigger) */}
                 <div
-                  className="flex items-center rounded-md  py-2  border-2 
-                border-[#EFF6FF]  px-2 justify-between w-full"
+                  className="flex items-center rounded-md py-2 border-2 border-[#EFF6FF] dark:border-gray-700 px-2 justify-between w-full bg-white dark:bg-gray-800"
                 >
                   {currentDomainObj?.logoUrl ? (
                     <img
@@ -204,19 +183,16 @@ const Sidebar = ({
                     />
                   )}
 
-                  {/* Domain Dropdown Trigger */}
                   <div className="flex-1">
                     <div
-                      className="w-full     rounded-lg  overflow-hidden cursor-pointer"
+                      className="w-full rounded-lg overflow-hidden cursor-pointer"
                       onClick={toggleDomainDropdown}
                     >
-                      <div className="flex items-center  justify-between p-2">
+                      <div className="flex items-center justify-between p-2">
                         <div className="flex items-center gap-2 truncate">
                           <span
-                            className={`truncate ${
-                              isDomainDropdownOpen
-                                ? "text-gray-400 italic"
-                                : "text-gray-900"
+                            className={`truncate text-gray-900 dark:text-gray-300 ${
+                              isDomainDropdownOpen ? "text-gray-400 dark:text-gray-500 italic" : ""
                             }`}
                           >
                             {currentdomainwebsite ||
@@ -226,7 +202,7 @@ const Sidebar = ({
                           </span>
                         </div>
                         <FaCaretDown
-                          className={`transform transition-transform ${
+                          className={`text-gray-900 dark:text-gray-300 transform transition-transform ${
                             isDomainDropdownOpen ? "rotate-180" : ""
                           }`}
                         />
@@ -234,23 +210,17 @@ const Sidebar = ({
                     </div>
                   </div>
 
-                  {/* Dropdown now takes full width */}
                   {isDomainDropdownOpen && (
                     <ul
-                      className="absolute left-0 top-full w-full
-       max-h-80 overflow-y-auto bg-white  border-gray-900 
-       rounded-b-xl shadow-lg border-t-0"
+                      className="absolute left-0 top-full w-full max-h-80 overflow-y-auto bg-white dark:bg-gray-800 border-gray-900 dark:border-gray-600 rounded-b-xl shadow-lg border-t-0"
                     >
-                      {/* "Add New Business" link */}
                       <li
-                        className="p-2 hover:bg-gray-100"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => handleDomainSelect("")}
                       >
                         <Link
                           to="/"
-                          className="inline-flex items-center 
-            gap-2 border border-gray-300 px-4 py-3 text-nowrap rounded-sm
-             text-sm text-black  transition w-full justify-center"
+                          className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-600 px-4 py-3 text-nowrap rounded-sm text-sm text-black dark:text-white transition w-full justify-center"
                         >
                           + Add New Business
                         </Link>
@@ -258,7 +228,7 @@ const Sidebar = ({
                       {domainDataList.map((domObj, idx) => (
                         <li
                           key={idx}
-                          className="p-2 hover:bg-gray-100 truncate flex items-center gap-2 cursor-pointer"
+                          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 truncate flex items-center gap-2 cursor-pointer"
                           onClick={() => handleDomainSelect(domObj.domain)}
                         >
                           {domObj.logoUrl ? (
@@ -274,7 +244,9 @@ const Sidebar = ({
                               className="w-6 h-6"
                             />
                           )}
-                          <span>{domObj.clientWebsite || domObj.domain}</span>
+                          <span className="text-gray-900 dark:text-gray-300">
+                            {domObj.clientWebsite || domObj.domain}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -282,14 +254,12 @@ const Sidebar = ({
                 </div>
               </div>
 
-              {/* end domain container */}
-
               {/* Sidebar Nav */}
               <ul>
                 <li className="mb-2">
                   <button
                     onClick={() => navigate("/dashboard")}
-                    className="flex items-center p-2 text-blue-600 hover:bg-blue-100 hover:w-full rounded"
+                    className="flex items-center p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 hover:w-full rounded"
                   >
                     <FaTachometerAlt className="mr-2" /> Dashboard
                   </button>
@@ -297,7 +267,7 @@ const Sidebar = ({
                 <li className="mb-2">
                   <button
                     onClick={() => navigate("/posts")}
-                    className="flex items-center p-2 text-gray-700 hover:bg-gray-100 hover:w-full rounded"
+                    className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:w-full rounded"
                   >
                     <FaFileAlt className="mr-2" /> Posts
                   </button>
@@ -305,8 +275,7 @@ const Sidebar = ({
                 <li className="mb-2">
                   <a
                     href="#"
-                    className="flex items-center p-2 text-gray-700
-                   hover:bg-gray-100 rounded"
+                    className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   >
                     <FaCalendarAlt className="mr-2" /> Calendar
                   </a>
@@ -314,11 +283,11 @@ const Sidebar = ({
                 <li className="mb-2">
                   <button
                     onClick={toggleBusiness}
-                    className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded w-full text-left"
+                    className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded w-full text-left"
                   >
                     <FaGift className="mr-2" /> Business
                     <FaCaretDown
-                      className={`ml-auto transform ${
+                      className={`ml-auto text-gray-700 dark:text-gray-300 transform ${
                         isBusinessOpen ? "rotate-180" : ""
                       }`}
                     />
@@ -328,7 +297,7 @@ const Sidebar = ({
                       <li className="mb-2">
                         <button
                           onClick={openProfile}
-                          className="text-purple-600 hover:bg-purple-100 rounded block p-2"
+                          className="text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900 rounded block p-2"
                         >
                           Profile
                         </button>
@@ -336,7 +305,7 @@ const Sidebar = ({
                       <li className="mb-2">
                         <a
                           href="#"
-                          className="text-gray-700 hover:bg-gray-100 rounded block p-2"
+                          className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded block p-2"
                         >
                           Branding
                         </a>
@@ -344,7 +313,7 @@ const Sidebar = ({
                       <li className="mb-2">
                         <a
                           href="#"
-                          className="text-gray-700 hover:bg-gray-100 rounded block p-2"
+                          className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded block p-2"
                         >
                           Socials
                         </a>
@@ -352,7 +321,7 @@ const Sidebar = ({
                       <li className="mb-2">
                         <a
                           href="#"
-                          className="text-gray-700 hover:bg-gray-100 rounded block p-2"
+                          className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded block p-2"
                         >
                           Team
                         </a>
@@ -368,7 +337,7 @@ const Sidebar = ({
               <a
                 href="#"
                 onClick={handleLogout}
-                className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded"
+                className="flex items-center p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
               >
                 <FaSignOutAlt className="mr-2" /> Logout
               </a>

@@ -31,6 +31,7 @@ const DEFAULT_BUSINESS_DATA = {
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme(); // Access the current theme
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isBusinessOpen, setIsBusinessOpen] = useState(false);
   const [business, setBusiness] = useState(DEFAULT_BUSINESS_DATA);
@@ -103,14 +104,10 @@ const Profile = () => {
         setBusiness({
           domain: foundDomain.domain || "",
           name: foundDomain.clientName || DEFAULT_BUSINESS_DATA.name,
-          clientEmail:
-            foundDomain.client_email || DEFAULT_BUSINESS_DATA.clientEmail,
-          clientWebsite:
-            foundDomain.clientWebsite || DEFAULT_BUSINESS_DATA.clientWebsite,
-          clientName:
-            foundDomain.clientName || DEFAULT_BUSINESS_DATA.clientName,
-          description:
-            foundDomain.clientDescription || DEFAULT_BUSINESS_DATA.description,
+          clientEmail: foundDomain.client_email || DEFAULT_BUSINESS_DATA.clientEmail,
+          clientWebsite: foundDomain.clientWebsite || DEFAULT_BUSINESS_DATA.clientWebsite,
+          clientName: foundDomain.clientName || DEFAULT_BUSINESS_DATA.clientName,
+          description: foundDomain.clientDescription || DEFAULT_BUSINESS_DATA.description,
           industry: foundDomain.industry || DEFAULT_BUSINESS_DATA.industry,
           niche: foundDomain.niche || DEFAULT_BUSINESS_DATA.niche,
           colors: [...colors, ...DEFAULT_BUSINESS_DATA.colors].slice(0, 3),
@@ -215,14 +212,14 @@ const Profile = () => {
         </div>
 
         <div className="flex flex-col md:flex-row mt-16">
-          <div className="flex-1 bg-blue-50">
+          <div className="flex-1 bg-blue-50 dark:bg-gray-800">
             <div className="hidden md:flex md:pl-6 pt-4 items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Profile</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Profile</h2>
             </div>
             <div className="p-4">
               {loading ? (
                 <div className="text-center py-8">
-                  <p>Loading business data...</p>
+                  <p className="text-gray-600 dark:text-gray-300">Loading business data...</p>
                 </div>
               ) : (
                 <>

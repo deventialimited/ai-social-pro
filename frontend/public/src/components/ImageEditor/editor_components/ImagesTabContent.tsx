@@ -1,54 +1,78 @@
 // @ts-nocheck
-import { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import {
-  ArrowUpTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
+import  React from "react"
 
-const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
+import { useState, useEffect, useRef } from "react"
+import axios from "axios"
+import { ArrowUpTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline"
 
-export function ImagesTabContent({ onSelectImage }) {
-  const [images, setImages] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"uploaded" | "search">("uploaded");
-  const [page, setPage] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastImageRef = useRef<HTMLImageElement | null>(null);
+const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk"
+
+export function ImagesTabContent({ onSelectImage, canvasEditor, onUploadClick }) { 
+   
+  const [images, setImages] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<"uploaded" | "search">("uploaded")
+  const [page, setPage] = useState<number>(1)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [hasMore, setHasMore] = useState<boolean>(true)
+  const observer = useRef<IntersectionObserver | null>(null)
+  const lastImageRef = useRef<HTMLImageElement | null>(null)
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null)
+  const [isImageLocked, setIsImageLocked] = useState<boolean>(false)
+  const [imageData, setImageData] = useState(null)
 
   type UnsplashImage = {
     urls: {
-      small: string;
-    };
-    alt_description?: string;
-  };
+      small: string
+    }
+    alt_description?: string
+  }
 
-  const [fetchImages, setFetchImages] = useState<UnsplashImage[]>([]);
+  const [fetchImages, setFetchImages] = useState<UnsplashImage[]>([])
+
+  // Load image data from localStorage on component mount
+  useEffect(() => {
+    const storedImageData = localStorage.getItem("imageData")
+    if (storedImageData) {
+      const parsedData = JSON.parse(storedImageData)
+      setImageData(parsedData)
+      if (parsedData.id) {
+        setSelectedImageId(parsedData.id)
+      }
+    }
+  }, [])
 
   // Handle Image Upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) return;
+ const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return
 
-    const files = Array.from(event.target.files);
-    const imageUrls = files.map((file) => URL.createObjectURL(file));
+    const files = Array.from(event.target.files)
+    const imageUrls = files.map((file) => URL.createObjectURL(file))
 
-    setImages((prevImages) => [...prevImages, ...imageUrls]);
-    setActiveTab("uploaded");
-  };
+    // Update local images
+    setImages((prevImages) => [...prevImages, ...imageUrls])
+    
+    // If the first uploaded image should be selected
+    if (imageUrls.length > 0) {
+      handleImageSelect(`uploaded-0`, imageUrls[0])
+      
+      // Also call the parent's onSelectImage if provided
+      onSelectImage(imageUrls[0])
+    }
+
+    setActiveTab("uploaded")
+  }
+
+
 
   // Fetch from Unsplash (random or search)
-  const fetchFromUnsplash = async (
-    e?: React.FormEvent,
-    resetResults: boolean = true
-  ) => {
-    if (e) e.preventDefault();
+  const fetchFromUnsplash = async (e?: React.FormEvent, resetResults = true) => {
+    if (e) e.preventDefault()
 
     try {
-      setLoading(true);
-      const currentPage = resetResults ? 1 : page;
-      let response;
+      setLoading(true)
+      const currentPage = resetResults ? 1 : page
+      let response
 
       if (searchQuery.trim()) {
         // If there's a search query, use search endpoint
@@ -59,20 +83,20 @@ export function ImagesTabContent({ onSelectImage }) {
             page: currentPage,
             per_page: 30,
           },
-        });
+        })
 
-        const fetched_data = response.data.results;
-        console.log("Fetched Search Data:", fetched_data);
+        const fetched_data = response.data.results
+        console.log("Fetched Search Data:", fetched_data)
 
         if (Array.isArray(fetched_data)) {
           if (resetResults) {
-            setFetchImages(fetched_data);
-            setPage(2);
+            setFetchImages(fetched_data)
+            setPage(2)
           } else {
-            setFetchImages((prev) => [...prev, ...fetched_data]);
-            setPage(currentPage + 1);
+            setFetchImages((prev) => [...prev, ...fetched_data])
+            setPage(currentPage + 1)
           }
-          setHasMore(fetched_data.length === 30);
+          setHasMore(fetched_data.length === 30)
         }
       } else {
         // If no search query, fetch random images
@@ -83,97 +107,515 @@ export function ImagesTabContent({ onSelectImage }) {
             per_page: 30,
             order_by: "popular",
           },
-        });
+        })
 
-        const fetched_data = response.data;
-        console.log("Fetched Random Data:", fetched_data);
+        const fetched_data = response.data
+        console.log("Fetched Random Data:", fetched_data)
 
         if (Array.isArray(fetched_data)) {
           if (resetResults) {
-            setFetchImages(fetched_data);
-            setPage(2);
+            setFetchImages(fetched_data)
+            setPage(2)
           } else {
-            setFetchImages((prev) => [...prev, ...fetched_data]);
-            setPage(currentPage + 1);
+            setFetchImages((prev) => [...prev, ...fetched_data])
+            setPage(currentPage + 1)
           }
-          setHasMore(fetched_data.length === 30);
+          setHasMore(fetched_data.length === 30)
         }
       }
 
-      setActiveTab("search");
+      setActiveTab("search")
     } catch (error) {
-      console.error("Error fetching images:", error);
+      console.error("Error fetching images:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Trigger input field focus
   const handleInputClick = () => {
     if (fetchImages.length === 0) {
-      fetchFromUnsplash(undefined, true);
+      fetchFromUnsplash(undefined, true)
     }
-  };
+  }
 
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
     // Disconnect previous observer if exists
     if (observer.current) {
-      observer.current.disconnect();
+      observer.current.disconnect()
     }
 
     observer.current = new IntersectionObserver(
       (entries) => {
         // If last image is visible and we're not currently loading and there's more to load
-        if (
-          entries[0].isIntersecting &&
-          !loading &&
-          hasMore &&
-          activeTab === "search"
-        ) {
-          fetchFromUnsplash(undefined, false);
+        if (entries[0].isIntersecting && !loading && hasMore && activeTab === "search") {
+          fetchFromUnsplash(undefined, false)
         }
       },
       {
         rootMargin: "100px", // Start loading a bit before reaching the end
-      }
-    );
+      },
+    )
 
     // Observe the last image
     if (lastImageRef.current) {
-      observer.current.observe(lastImageRef.current);
+      observer.current.observe(lastImageRef.current)
     }
 
     return () => {
       if (observer.current) {
-        observer.current.disconnect();
+        observer.current.disconnect()
       }
-    };
-  }, [loading, fetchImages, hasMore, activeTab]);
+    }
+  }, [loading, fetchImages, hasMore, activeTab])
 
   // Attach ref to the last image
   const attachRef = (el: HTMLImageElement | null, index: number) => {
-    if (!el) return;
+    if (!el) return
 
     if (activeTab === "search" && index === fetchImages.length - 1) {
-      lastImageRef.current = el;
+      lastImageRef.current = el
     }
-  };
+  }
+
+  // Update image data in localStorage and state
+  const updateImageData = (newData) => {
+    const updatedData = { ...imageData, ...newData }
+    setImageData(updatedData)
+    localStorage.setItem("imageData", JSON.stringify(updatedData))
+
+    // If we have a canvas editor reference, update the image there too
+    if (canvasEditor && canvasEditor.current && canvasEditor.current.onUpdateImage) {
+      canvasEditor.current.onUpdateImage(updatedData)
+    }
+  }
+
+  // Image toolbar action handlers
+  const handleFlip = () => {
+    if (!imageData) return
+
+    // Create a new canvas to flip the image
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+    const img = new Image()
+
+    img.onload = () => {
+      canvas.width = img.width
+      canvas.height = img.height
+
+      // Flip horizontally
+      ctx.translate(img.width, 0)
+      ctx.scale(-1, 1)
+      ctx.drawImage(img, 0, 0)
+
+      // Convert back to data URL
+      const flippedImageUrl = canvas.toDataURL("image/png")
+
+      // Update the image source
+      updateImageData({ src: flippedImageUrl })
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata")
+      if (postData) {
+        const parsedData = JSON.parse(postData)
+        parsedData.image = flippedImageUrl
+        localStorage.setItem("postdata", JSON.stringify(parsedData))
+      }
+    }
+
+    img.src = imageData.src
+  }
+
+  const handleEffects = () => {
+    if (!imageData) return
+
+    // Simple grayscale effect as an example
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+    const img = new Image()
+
+    img.onload = () => {
+      canvas.width = img.width
+      canvas.height = img.height
+
+      // Draw the image
+      ctx.drawImage(img, 0, 0)
+
+      // Apply grayscale effect
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const data = imageData.data
+
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3
+        data[i] = avg // red
+        data[i + 1] = avg // green
+        data[i + 2] = avg // blue
+      }
+
+      ctx.putImageData(imageData, 0, 0)
+
+      // Convert back to data URL
+      const effectImageUrl = canvas.toDataURL("image/png")
+
+      // Update the image source
+      updateImageData({ src: effectImageUrl })
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata")
+      if (postData) {
+        const parsedData = JSON.parse(postData)
+        parsedData.image = effectImageUrl
+        localStorage.setItem("postdata", JSON.stringify(parsedData))
+      }
+    }
+
+    img.src = imageData.src
+  }
+
+  const handleFitToPage = () => {
+    if (!imageData) return
+
+    // Get canvas dimensions
+    const canvas = document.getElementById("canvas")
+    if (!canvas) return
+
+    const canvasWidth = canvas.clientWidth
+    const canvasHeight = canvas.clientHeight
+
+    // Calculate new dimensions while maintaining aspect ratio
+    const aspectRatio = imageData.width / imageData.height
+    let newWidth, newHeight
+
+    if (canvasWidth / canvasHeight > aspectRatio) {
+      // Canvas is wider than the image
+      newHeight = canvasHeight * 0.9
+      newWidth = newHeight * aspectRatio
+    } else {
+      // Canvas is taller than the image
+      newWidth = canvasWidth * 0.9
+      newHeight = newWidth / aspectRatio
+    }
+
+    // Calculate center position
+    const newX = (canvasWidth - newWidth) / 2
+    const newY = (canvasHeight - newHeight) / 2
+
+    // Update image data
+    updateImageData({
+      width: newWidth,
+      height: newHeight,
+      x: newX,
+      y: newY,
+    })
+  }
+
+  const handleApplyMask = () => {
+    if (!imageData) return
+
+    // Simple circular mask as an example
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+    const img = new Image()
+
+    img.onload = () => {
+      canvas.width = img.width
+      canvas.height = img.height
+
+      // Create circular clipping path
+      ctx.beginPath()
+      ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2, 0, Math.PI * 2)
+      ctx.closePath()
+      ctx.clip()
+
+      // Draw the image
+      ctx.drawImage(img, 0, 0)
+
+      // Convert back to data URL
+      const maskedImageUrl = canvas.toDataURL("image/png")
+
+      // Update the image source
+      updateImageData({ src: maskedImageUrl })
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata")
+      if (postData) {
+        const parsedData = JSON.parse(postData)
+        parsedData.image = maskedImageUrl
+        localStorage.setItem("postdata", JSON.stringify(parsedData))
+      }
+    }
+
+    img.src = imageData.src
+  }
+
+  const handleCrop = () => {
+    if (!imageData) return
+
+    // For simplicity, we'll just crop to the center 50% of the image
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+    const img = new Image()
+
+    img.onload = () => {
+      const cropWidth = img.width / 2
+      const cropHeight = img.height / 2
+      const cropX = img.width / 4
+      const cropY = img.height / 4
+
+      canvas.width = cropWidth
+      canvas.height = cropHeight
+
+      // Draw the cropped portion
+      ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+
+      // Convert back to data URL
+      const croppedImageUrl = canvas.toDataURL("image/png")
+
+      // Update the image source
+      updateImageData({ src: croppedImageUrl })
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata")
+      if (postData) {
+        const parsedData = JSON.parse(postData)
+        parsedData.image = croppedImageUrl
+        localStorage.setItem("postdata", JSON.stringify(parsedData))
+      }
+    }
+
+    img.src = imageData.src
+  }
+
+  const handleUpload = () => {
+    // Trigger file input click
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    if (fileInput) fileInput.click()
+  }
+
+  const handleChangeImage = () => {
+    // Open image selection interface
+    setActiveTab("search")
+    if (fetchImages.length === 0) {
+      fetchFromUnsplash(undefined, true)
+    }
+  }
+
+  const handlePosition = () => {
+    if (!imageData) return
+
+    // Center the image on the canvas
+    const canvas = document.getElementById("canvas")
+    if (!canvas) return
+
+    const canvasWidth = canvas.clientWidth
+    const canvasHeight = canvas.clientHeight
+
+    const newX = (canvasWidth - imageData.width) / 2
+    const newY = (canvasHeight - imageData.height) / 2
+
+    updateImageData({ x: newX, y: newY })
+  }
+
+  const handleBorderChange = () => {
+    if (!imageData) return
+
+    // Add a simple border to the image
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+    const img = new Image()
+
+    img.onload = () => {
+      const borderWidth = 10
+      canvas.width = img.width + borderWidth * 2
+      canvas.height = img.height + borderWidth * 2
+
+      // Draw border (white rectangle)
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw the image on top
+      ctx.drawImage(img, borderWidth, borderWidth)
+
+      // Convert back to data URL
+      const borderedImageUrl = canvas.toDataURL("image/png")
+
+      // Update the image source
+      updateImageData({ src: borderedImageUrl })
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata")
+      if (postData) {
+        const parsedData = JSON.parse(postData)
+        parsedData.image = borderedImageUrl
+        localStorage.setItem("postdata", JSON.stringify(parsedData))
+      }
+    }
+
+    img.src = imageData.src
+  }
+
+  const handleCornerChange = () => {
+    if (!imageData) return
+
+    // Round the corners of the image
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+    const img = new Image()
+
+    img.onload = () => {
+      canvas.width = img.width
+      canvas.height = img.height
+
+      // Create rounded rectangle
+      const radius = 20
+      ctx.beginPath()
+      ctx.moveTo(radius, 0)
+      ctx.lineTo(canvas.width - radius, 0)
+      ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius)
+      ctx.lineTo(canvas.width, canvas.height - radius)
+      ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height)
+      ctx.lineTo(radius, canvas.height)
+      ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius)
+      ctx.lineTo(0, radius)
+      ctx.quadraticCurveTo(0, 0, radius, 0)
+      ctx.closePath()
+      ctx.clip()
+
+      // Draw the image
+      ctx.drawImage(img, 0, 0)
+
+      // Convert back to data URL
+      const roundedImageUrl = canvas.toDataURL("image/png")
+
+      // Update the image source
+      updateImageData({ src: roundedImageUrl })
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata")
+      if (postData) {
+        const parsedData = JSON.parse(postData)
+        parsedData.image = roundedImageUrl
+        localStorage.setItem("postdata", JSON.stringify(parsedData))
+      }
+    }
+
+    img.src = imageData.src
+  }
+
+  const handleLock = () => {
+    // Toggle image lock state
+    setIsImageLocked(!isImageLocked)
+
+    // Update the canvas editor if available
+    if (canvasEditor && canvasEditor.current) {
+      // This would need to be implemented in the canvas editor
+      console.log("Image locked:", !isImageLocked)
+    }
+  }
+
+  const handleCopy = () => {
+    if (!imageData) return
+
+    // Create a duplicate of the image with slight offset
+    const newImageData = {
+      ...imageData,
+      id: `${imageData.id}-copy-${Date.now()}`,
+      x: imageData.x + 20,
+      y: imageData.y + 20,
+    }
+
+    // In a real implementation, you would add this to your images array
+    // and update the canvas to show both images
+    console.log("Copied image:", newImageData)
+
+    // For this example, we'll just replace the current image
+    updateImageData(newImageData)
+  }
+
+  const handleDelete = () => {
+    if (!imageData || isImageLocked) return
+
+    // Clear the image data
+    setImageData(null)
+    setSelectedImageId(null)
+    localStorage.removeItem("imageData")
+
+    // Update post data if needed
+    const postData = localStorage.getItem("postdata")
+    if (postData) {
+      const parsedData = JSON.parse(postData)
+      parsedData.image = null
+      localStorage.setItem("postdata", JSON.stringify(parsedData))
+    }
+
+    // Notify the canvas editor
+    if (canvasEditor && canvasEditor.current && canvasEditor.current.onDeleteImage) {
+      canvasEditor.current.onDeleteImage()
+    }
+  }
+
+  const handleUndo = () => {
+    // This would require keeping a history of changes
+    console.log("Undo action")
+  }
+
+  const handleRedo = () => {
+    // This would require keeping a history of changes
+    console.log("Redo action")
+  }
+
+  // Handle image selection
+  const handleImageSelect = (id: string, src: string) => {
+    setSelectedImageId(id)
+
+    // Create or update image data
+    const newImageData = {
+      id: "post-image",
+      src: src,
+      x: imageData ? imageData.x : 0,
+      y: imageData ? imageData.y : 0,
+      width: imageData ? imageData.width : 200,
+      height: imageData ? imageData.height : 300,
+      rotation: imageData ? imageData.rotation : 0,
+      zIndex: imageData ? imageData.zIndex : 1,
+    }
+
+    // Update state and localStorage
+    setImageData(newImageData)
+    localStorage.setItem("imageData", JSON.stringify(newImageData))
+
+    // Update post data
+    const postData = localStorage.getItem("postdata")
+    if (postData) {
+      const parsedData = JSON.parse(postData)
+      parsedData.image = src
+      localStorage.setItem("postdata", JSON.stringify(parsedData))
+    }
+
+    // Pass to parent component
+    onSelectImage(src)
+  }
+
+  // Call handleImageUpload when the upload button in @enhanced-image-toolbar.tsx is clicked
+  useEffect(() => {
+    if (onUploadClick) {
+      onUploadClick(() => {
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+        if (fileInput) fileInput.click()
+      })
+    }
+  }, [onUploadClick])
 
   return (
     <>
+
       <div className="flex flex-col gap-2">
         {/* Upload Button */}
         <label className="flex items-center justify-between py-2 gap-2 px-4 border rounded-md shadow-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
           Upload
           <ArrowUpTrayIcon className="h-5 w-5 text-gray-500" />
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
+          <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
         </label>
 
         {/* Search Input */}
@@ -189,10 +631,7 @@ export function ImagesTabContent({ onSelectImage }) {
             onClick={handleInputClick}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button
-            type="submit"
-            onClick={() => fetchFromUnsplash(undefined, true)}
-          >
+          <button type="submit" onClick={() => fetchFromUnsplash(undefined, true)}>
             <MagnifyingGlassIcon className="w-5 text-gray-500" />
           </button>
         </form>
@@ -207,10 +646,11 @@ export function ImagesTabContent({ onSelectImage }) {
               {images.map((src, i) => (
                 <img
                   key={i}
-                  src={src}
+                  id={`uploaded-${i}`}
+                  src={src || "/placeholder.svg"}
                   alt={`Uploaded ${i}`}
-                  className="w-full h-24 object-cover rounded-md"
-                  onClick={() => onSelectImage(src)}
+                  className={`w-full h-24 object-cover rounded-md ${selectedImageId === `uploaded-${i}` ? "ring-2 ring-blue-500" : ""}`}
+                  onClick={() => handleImageSelect(`uploaded-${i}`, src)}
                 />
               ))}
             </div>
@@ -220,42 +660,33 @@ export function ImagesTabContent({ onSelectImage }) {
         {activeTab === "search" && fetchImages.length > 0 && (
           <div>
             <h3 className="font-medium mb-2">
-              {searchQuery.trim()
-                ? `Results for "${searchQuery}"`
-                : "Popular Images"}
+              {searchQuery.trim() ? `Results for "${searchQuery}"` : "Popular Images"}
             </h3>
             <div className="h-[350px] overflow-y-auto grid grid-cols-3 gap-2 p-1">
               {fetchImages.map((image, i) => (
                 <img
                   key={i}
+                  id={`search-${i}`}
                   ref={(el) => attachRef(el, i)}
-                  src={image.urls.small}
+                  src={image.urls.small || "/placeholder.svg"}
                   alt={image.alt_description || `Image ${i}`}
-                  className="w-full h-24 object-cover rounded-md"
-                  onClick={() => onSelectImage(image.urls.small)}
+                  className={`w-full h-24 object-cover rounded-md ${selectedImageId === `search-${i}` ? "ring-2 ring-blue-500" : ""}`}
+                  onClick={() => handleImageSelect(`search-${i}`, image.urls.small)}
                 />
               ))}
-              {loading && (
-                <div className="col-span-3 text-center py-4">
-                  Loading more images...
-                </div>
-              )}
+              {loading && <div className="col-span-3 text-center py-4">Loading more images...</div>}
             </div>
           </div>
         )}
 
         {activeTab === "search" && fetchImages.length === 0 && !loading && (
-          <div className="text-center py-8 text-gray-500">
-            No images found. Try a different search term.
-          </div>
+          <div className="text-center py-8 text-gray-500">No images found. Try a different search term.</div>
         )}
 
         {activeTab === "search" && fetchImages.length === 0 && loading && (
-          <div className="text-center py-8 text-gray-500">
-            Loading images...
-          </div>
+          <div className="text-center py-8 text-gray-500">Loading images...</div>
         )}
       </div>
     </>
-  );
+  )
 }

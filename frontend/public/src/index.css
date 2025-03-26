@@ -1,3 +1,15 @@
 @import "tailwindcss";
 /* Glow effect for loader */
 
+:root {
+  --bg-color: white;
+  --text-color: black;
+  --primary-color: #007bff;
+}
+
+/* Dark Mode */
+.dark {
+  --bg-color: #121212;
+  --text-color: white;
+  --primary-color: #1e90ff;
+}
