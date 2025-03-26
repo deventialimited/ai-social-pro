@@ -77,6 +77,13 @@ type EditorTab = "text" | "images" | "elements" | "background" | "layers" | "siz
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
+interface ImageData {
+  id: string;
+  url: string;
+  x: number;
+  y: number;
+}
+
 const FullEditor: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -125,6 +132,9 @@ const FullEditor: React.FC = () => {
   }
   // const [postBody, setPostBody] = useState<string>(content || "");
   const [postBody, setPostBody] = useState<string>("");
+
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
@@ -360,27 +370,21 @@ const FullEditor: React.FC = () => {
   };
 
   // Update an image's properties
-  const handleUpdateImage = (imageData) => {
-    localStorage.setItem("imageData", JSON.stringify(imageData));
-
-    // Update state for enhanced image editing
-    if (imageData.rotation !== undefined) setImageRotation(imageData.rotation);
-    if (imageData.scale !== undefined) setImageScale(imageData.scale);
-    if (imageData.x !== undefined && imageData.y !== undefined) {
-      setImagePosition({ x: imageData.x, y: imageData.y });
-    }
-    if (imageData.scaleX !== undefined) setScaleX(imageData.scaleX);
-    if (imageData.scaleY !== undefined) setScaleY(imageData.scaleY);
-
-    // Add to history
-    addToHistory({
-      imageScale,
-      imageRotation,
-      imagePosition,
-      imageFilters,
-      scaleX,
-      scaleY,
+  const handleUpdateImage = (updatedImage: ImageData) => {
+    // Update existing image or add new image
+    setImages(currentImages => {
+      const existingIndex = currentImages.findIndex(img => img.id === updatedImage.id);
+      if (existingIndex !== -1) {
+        const newImages = [...currentImages];
+        newImages[existingIndex] = updatedImage;
+        return newImages;
+      } else {
+        return [...currentImages, updatedImage];
+      }
     });
+    
+    // Also update localStorage for persistence
+    localStorage.setItem("imageData", JSON.stringify(updatedImage));
   };
 
   // Delete the selected shape
@@ -408,6 +412,32 @@ const FullEditor: React.FC = () => {
         addToHistory({ shapes: newShapes });
       }
     }
+  };
+
+  // Duplicate the selected image
+  const handleDuplicateImage = (imageId: string) => {
+    const imageToDuplicate = images.find(img => img.id === imageId);
+    if (imageToDuplicate) {
+      const duplicatedImage: ImageData = {
+        ...imageToDuplicate,
+        id: `${imageToDuplicate.id}-${Date.now()}`, // Create unique ID
+        x: imageToDuplicate.x + 20, // Offset slightly
+        y: imageToDuplicate.y + 20
+      };
+      
+      setImages(currentImages => [...currentImages, duplicatedImage]);
+      localStorage.setItem("imageData", JSON.stringify(duplicatedImage));
+      setSelectedImageId(duplicatedImage.id);
+    }
+  };
+
+  // Delete the selected image
+  const handleDeleteImage = (imageId: string) => {
+    setImages(currentImages => currentImages.filter(img => img.id !== imageId));
+    
+    // Clear image from localStorage
+    localStorage.removeItem("imageData");
+    setSelectedImageId(null);
   };
 
   // Rotate the selected shape
@@ -751,6 +781,8 @@ const FullEditor: React.FC = () => {
             onSelectImage={(image) => {
               setBackgroundImage(image); // Set the image as the background in the canvas
             }}
+            onDuplicateImage={handleDuplicateImage}
+            onDeleteImage={handleDeleteImage}
           />
         );
       case "elements":
@@ -1229,6 +1261,8 @@ const FullEditor: React.FC = () => {
                             onEffects={handleEffects}
                             onUpload={handleUpload}
                             onSelectTool={setSelectedTool}
+                            onDuplicateImage={handleDuplicateImage}
+                            onDeleteImage={handleDeleteImage}
                           />
                         ) : backgroundColor ? (
                           <BackgroundToolbar
@@ -1370,7 +1404,12 @@ const FullEditor: React.FC = () => {
                               backgroundColor={backgroundColor}
                               backgroundImage={backgroundImage}
                               selectedImage={selectedImage}
+                              images={images}
                               onUpdateImage={handleUpdateImage}
+                              onDeleteImage={handleDeleteImage}
+                              onDuplicateImage={handleDuplicateImage}
+                              selectedImageId={selectedImageId}
+                              onSelectImage={setSelectedImageId}
                               selectedTool={selectedTool}
                               isCropping={isCropping}
                               cropArea={cropArea}

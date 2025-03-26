@@ -64,6 +64,8 @@ interface CanvasEditorProps {
   onTransparencyChange?: (transparency: number) => void;
   // New props for image handling
   onUpdateImage?: (imageData: ImageData) => void;
+  onDeleteImage?: (id: string) => void;
+  onDuplicateImage?: (id: string) => void;
   selectedImageId?: string | null;
   onSelectImage?: (id: string | null) => void;
 }
@@ -93,6 +95,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   onBorderWidthChange,
   onBorderColorChange,
   onUpdateImage,
+  onDeleteImage,
+  onDuplicateImage,
   selectedImageId,
   onSelectImage,
 }) => {
@@ -483,7 +487,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     
     // Get image data from localStorage if available
     const storedImageData = localStorage.getItem("imageData");
-    const imageData = storedImageData ? JSON.parse(storedImageData) : defaultImageData;
+    if (!storedImageData) return null;
+    const imageData = JSON.parse(storedImageData);
     
     const isSelected = selectedImageId === "post-image" || backgroundImage === imageSrc;
     
@@ -549,7 +554,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           />
 
           {/* Controls for selected image */}
-          {isSelected && (
+          {isSelected &&  (
             <>
               {/* Rotation handle */}
               <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -585,7 +590,11 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                   className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    onDeleteShape(imageData.id);
+                    if (onDeleteImage) {
+                      onDeleteImage(imageData.id);
+                      // Remove image from local storage
+                      localStorage.removeItem("imageData");
+                    }
                   }}
                 >
                   <TrashIcon className="h-4 w-4 text-gray-700" />
@@ -594,7 +603,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                   className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
                   onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
-                    onDuplicateShape(imageData.id);
+                    if (onDuplicateImage) onDuplicateImage(imageData.id);
                   }}
                 >
                   <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
