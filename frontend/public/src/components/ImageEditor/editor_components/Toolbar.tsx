@@ -13,6 +13,12 @@ import {
   Copy,
   Trash2,
   Droplet,
+  RotateCw , FlipHorizontal,
+  ZoomIn,
+  ZoomOut,
+  Maximize,
+  Filter,
+  ImageIcon,
 } from "lucide-react"
 import BorderStyleDropdown from "./BorderStyleDropdown"
 import TransparencyDropdown from "./TransparencyDropdown"
@@ -543,32 +549,16 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
 
 // ==== IMAGE TOOLBAR ====
 
-interface ImageToolbarProps {
-  onFlip?: () => void;
-  onEffects?: () => void;
-  onFitToPage?: () => void;
-  onApplyMask?: () => void;
-  onCrop?: () => void;
-  onUpload?: () => void;
-  onChangeImage?: () => void;
-  onPosition?: () => void;
-  onBorderChange?: () => void;
-  onCornerChange?: () => void;
-  onLock?: () => void;
-  onCopy?: () => void;
-  onDelete?: () => void;
-  onUndo?: () => void;
-  onRedo?: () => void;
-  isItemSelected?: boolean;
-  isItemLocked?: boolean;
-}
 
-const ImageToolbar: React.FC<ImageToolbarProps> = ({
+// Enhanced ImageToolbar with improved functionality
+const ImageToolbar = ({
   onFlip,
   onEffects,
   onFitToPage,
   onApplyMask,
   onCrop,
+  onCropApply,
+  onCropCancel,
   onUpload,
   onChangeImage,
   onPosition,
@@ -579,203 +569,343 @@ const ImageToolbar: React.FC<ImageToolbarProps> = ({
   onDelete,
   onUndo,
   onRedo,
+  onRotate,
+  onZoomIn,
+  onZoomOut,
   isItemSelected = false,
   isItemLocked = false,
+  isCropping = false,
+  selectedTool = null,
+  onSelectTool,
+  brightness = 100,
+  contrast = 100,
+  saturation = 100,
+  scale = 1,
 }) => {
+  // Handle tool selection
+  const handleToolSelect = (tool) => {
+    if (onSelectTool) {
+      onSelectTool(selectedTool === tool ? null : tool)
+    }
+  }
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" && isItemSelected && !isItemLocked) {
-        onDelete?.();
+        onDelete?.()
       } else if (e.ctrlKey && e.key === "c" && isItemSelected) {
-        onCopy?.();
+        onCopy?.()
       }
-    };
+    }
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown)
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onDelete, onCopy, isItemSelected, isItemLocked]);
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [onDelete, onCopy, isItemSelected, isItemLocked])
 
   return (
-    <div className="flex text-gray-800 items-center p-2 border-b h-14">
-      <div className="flex items-center space-x-1">
-        {/* Undo button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Undo"
-          onClick={onUndo}
+   <div className="flex text-gray-800 items-center p-2 border-b h-14 overflow-x-auto">
+  <div className="flex items-center space-x-1">
+    {/* Undo button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Undo"
+      onClick={onUndo}
+    >
+      <svg
+        stroke="currentColor"
+        fill="currentColor"
+        strokeWidth="0"
+        viewBox="0 0 512 512"
+        height="1em"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M212.333 224.333H12c-6.627 0-12-5.373-12-12V12C0 5.373 5.373 0 12 0h48c6.627 0 12 5.373 12 12v78.112C117.773 39.279 184.26 7.47 258.175 8.007c136.906.994 246.448 111.623 246.157 248.532C504.041 393.258 393.12 504 256.333 504c-64.089 0-122.496-24.313-166.51-64.215-5.099-4.622-5.334-12.554-.467-17.42l33.967-33.967c4.474-4.474 11.662-4.717 16.401-.525C170.76 415.336 211.58 432 256.333 432c97.268 0 176-78.716 176-176 0-97.267-78.716-176-176-176-58.496 0-110.28 28.476-142.274 72.333h98.274c6.627 0 12 5.373 12 12v48c0 6.627-5.373 12-12 12z"></path>
+      </svg>
+    </button>
+
+    {/* Redo button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Redo"
+      onClick={onRedo}
+    >
+      <svg
+        stroke="currentColor"
+        fill="currentColor"
+        strokeWidth="0"
+        viewBox="0 0 512 512"
+        height="1em"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M500.33 0h-47.41a12 12 0 0 0-12 12.57l4 82.76A247.42 247.42 0 0 0 256 8C119.34 8 7.9 119.53 8 256.19 8.1 393.07 119.1 504 256 504a247.1 247.1 0 0 0 166.18-63.91 12 12 0 0 0 .48-17.43l-34-34a12 12 0 0 0-16.38-.55A176 176 0 1 1 402.1 157.8l-101.53-4.87a12 12 0 0 0-12.57 12v47.41a12 12 0 0 0 12 12h200.33a12 12 0 0 0 12-12V12a12 12 0 0 0-12-12z"></path>
+      </svg>
+    </button>
+
+    {/* Move tool */}
+    <button
+      className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${selectedTool === "move" ? "bg-blue-100" : ""}`}
+      title="Move"
+      onClick={() => handleToolSelect("move")}
+    >
+      <Move className="h-5 w-5" />
+    </button>
+
+    {/* Rotate button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Rotate"
+      onClick={onRotate}
+    >
+      <RotateCw className="h-5 w-5" />
+    </button>
+
+    {/* Flip button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Flip"
+      onClick={onFlip}
+    >
+      <FlipHorizontal className="h-5 w-5" />
+    </button>
+
+    {/* Zoom in button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Zoom In"
+      onClick={onZoomIn}
+    >
+      <ZoomIn className="h-5 w-5" />
+    </button>
+
+    {/* Zoom out button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Zoom Out"
+      onClick={onZoomOut}
+    >
+      <ZoomOut className="h-5 w-5" />
+    </button>
+
+    {/* Fit to page button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Fit to page"
+      onClick={onFitToPage}
+    >
+      <Maximize className="h-5 w-5" />
+    </button>
+
+    {/* Apply mask button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Apply mask"
+      onClick={onApplyMask}
+    >
+      <Droplet className="h-5 w-5" />
+    </button>
+
+    {/* Crop button with conditional rendering */}
+    {!isCropping ? (
+      <button
+        className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${selectedTool === "crop" ? "bg-blue-100" : ""}`}
+        title="Crop"
+        onClick={onCrop}
+      >
+        <svg
+          stroke="currentColor"
+          fill="currentColor"
+          strokeWidth="0"
+          viewBox="0 0 24 24"
+          height="1em"
+          width="1em"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-            <path d="M212.333 224.333H12c-6.627 0-12-5.373-12-12V12C0 5.373 5.373 0 12 0h48c6.627 0 12 5.373 12 12v78.112C117.773 39.279 184.26 7.47 258.175 8.007c136.906.994 246.448 111.623 246.157 248.532C504.041 393.258 393.12 504 256.333 504c-64.089 0-122.496-24.313-166.51-64.215-5.099-4.622-5.334-12.554-.467-17.42l33.967-33.967c4.474-4.474 11.662-4.717 16.401-.525C170.76 415.336 211.58 432 256.333 432c97.268 0 176-78.716 176-176 0-97.267-78.716-176-176-176-58.496 0-110.28 28.476-142.274 72.333h98.274c6.627 0 12 5.373 12 12v48c0 6.627-5.373 12-12 12z"></path>
-          </svg>
-        </button>
-        
-        {/* Redo button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Redo"
-          onClick={onRedo}
+          <g id="Crop">
+            <path d="M5.624,6.623l-2.075,-0c-0.276,-0 -0.5,-0.224 -0.5,-0.5c-0,-0.276 0.224,-0.5 0.5,-0.5l2.075,-0l0,-2.073c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5l0,2.073l9.191,-0c1.414,-0 2.561,1.147 2.561,2.561l-0,9.193l2.075,0c0.276,0 0.5,0.224 0.5,0.5c0,0.276 -0.224,0.5 -0.5,0.5l-2.075,0l-0,2.073c-0,0.276 -0.224,0.5 -0.5,0.5c-0.276,-0 -0.5,-0.224 -0.5,-0.5l-0,-2.073l-9.191,0c-1.414,0 -2.561,-1.147 -2.561,-2.561l0,-9.193Zm11.752,10.754l-0,-9.193c-0,-0.862 -0.699,-1.561 -1.561,-1.561l-9.191,-0l0,9.193c0,0.862 0.699,1.561 1.561,1.561l9.191,0Z"></path>
+          </g>
+        </svg>
+      </button>
+    ) : (
+      <>
+        <button
+          className="p-2 rounded bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
+          title="Apply Crop"
+          onClick={onCropApply}
         >
-          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-            <path d="M500.33 0h-47.41a12 12 0 0 0-12 12.57l4 82.76A247.42 247.42 0 0 0 256 8C119.34 8 7.9 119.53 8 256.19 8.1 393.07 119.1 504 256 504a247.1 247.1 0 0 0 166.18-63.91 12 12 0 0 0 .48-17.43l-34-34a12 12 0 0 0-16.38-.55A176 176 0 1 1 402.1 157.8l-101.53-4.87a12 12 0 0 0-12.57 12v47.41a12 12 0 0 0 12 12h200.33a12 12 0 0 0 12-12V12a12 12 0 0 0-12-12z"></path>
-          </svg>
+          <span className="text-xs font-medium">Apply</span>
         </button>
-        
-        {/* Flip button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Flip"
-          onClick={onFlip}
+        <button
+          className="p-2 rounded bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
+          title="Cancel Crop"
+          onClick={onCropCancel}
         >
-          <span className="text-sm font-medium">Flip</span>
+          <span className="text-xs font-medium">Cancel</span>
         </button>
-        
-        {/* Effects button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Effects"
-          onClick={onEffects}
-        >
-          <span className="text-sm font-medium">Effects</span>
-        </button>
-        
-        {/* Fit to page button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Fit to page"
-          onClick={onFitToPage}
-        >
-          <span className="text-sm font-medium">Fit to page</span>
-        </button>
-        
-        {/* Apply mask button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Apply mask"
-          onClick={onApplyMask}
-        >
-          <span className="text-sm font-medium">Apply mask</span>
-        </button>
-        
-        {/* Crop button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer" 
-          title="Crop"
-          onClick={onCrop}
-        >
-          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-            <g id="Crop">
-              <path d="M5.624,6.623l-2.075,-0c-0.276,-0 -0.5,-0.224 -0.5,-0.5c-0,-0.276 0.224,-0.5 0.5,-0.5l2.075,-0l0,-2.073c0,-0.276 0.224,-0.5 0.5,-0.5c0.276,0 0.5,0.224 0.5,0.5l0,2.073l9.191,-0c1.414,-0 2.561,1.147 2.561,2.561l-0,9.193l2.075,0c0.276,0 0.5,0.224 0.5,0.5c0,0.276 -0.224,0.5 -0.5,0.5l-2.075,0l-0,2.073c-0,0.276 -0.224,0.5 -0.5,0.5c-0.276,-0 -0.5,-0.224 -0.5,-0.5l-0,-2.073l-9.191,0c-1.414,0 -2.561,-1.147 -2.561,-2.561l0,-9.193Zm11.752,10.754l-0,-9.193c-0,-0.862 -0.699,-1.561 -1.561,-1.561l-9.191,-0l0,9.193c0,0.862 0.699,1.561 1.561,1.561l9.191,0Z"></path>
-            </g>
-          </svg>
-          <span className="text-sm font-medium ml-1">Crop</span>
-        </button>
-        
-        {/* Upload button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer" 
-          title="Upload"
-          onClick={onUpload}
-        >
-          <svg viewBox="64 64 896 896" focusable="false" data-icon="upload" width="1em" height="1em" fill="currentColor" aria-hidden="true">
-            <path d="M400 317.7h73.9V656c0 4.4 3.6 8 8 8h60c4.4 0 8-3.6 8-8V317.7H624c6.7 0 10.4-7.7 6.3-12.9L518.3 163a8 8 0 00-12.6 0l-112 141.7c-4.1 5.3-.4 13 6.3 13zM878 626h-60c-4.4 0-8 3.6-8 8v154H214V634c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v198c0 17.7 14.3 32 32 32h684c17.7 0 32-14.3 32-32V634c0-4.4-3.6-8-8-8z"></path>
-          </svg>
-          <span className="text-sm font-medium ml-1">Upload</span>
-        </button>
-        
-        {/* Change Image button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer" 
-          title="Change Image"
-          onClick={onChangeImage}
-        >
-          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-            <path fill="none" d="M24 24H0V0h24v24z"></path>
-            <path d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zM5 17l3.5-4.5 2.5 3.01L14.5 11l4.5 6H5z"></path>
-          </svg>
-          <span className="text-sm font-medium ml-1">Change Image</span>
-        </button>
-        
-        {/* Position button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer" 
-          title="Position"
-          onClick={onPosition}
-        >
-          <svg data-icon="layers" height="16" role="img" viewBox="0 0 16 16" width="16">
-            <path d="M.55 4.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3a.998.998 0 00-.06-1.81L8.4.08a1.006 1.006 0 00-.79 0l-6.99 3a.992.992 0 00-.07 1.81zM15 11c-.16 0-.31.04-.45.11L8 14l-6.55-2.9c-.14-.06-.29-.1-.45-.1-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1zm0-4c-.16 0-.31.04-.45.11L8 10 1.45 7.11A.997.997 0 001 7c-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1z" fillRule="evenodd"></path>
-          </svg>
-          <span className="text-sm font-medium ml-1">Position</span>
-        </button>
-        
-        {/* Border Change button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Border"
-          onClick={onBorderChange}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M4 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4zm1 2h10v10H5V5z" clipRule="evenodd" />
-          </svg>
-        </button>
-        
-        {/* Corner Change button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Corners"
-          onClick={onCornerChange}
-        >
-          <svg data-icon="left-join" height="16" role="img" viewBox="0 0 16 16" width="16">
-            <path d="M6.6 3.3C6.1 3.1 5.6 3 5 3 2.2 3 0 5.2 0 8s2.2 5 5 5c.6 0 1.1-.1 1.6-.3C5.3 11.6 4.5 9.9 4.5 8s.8-3.6 2.1-4.7zM8 4c-1.2.9-2 2.4-2 4s.8 3.1 2 4c1.2-.9 2-2.3 2-4s-.8-3.1-2-4zm3-1c2.8 0 5 2.2 5 5s-2.2 5-5 5c-.6 0-1.1-.1-1.6-.3 1.3-1.1 2.1-2.9 2.1-4.7s-.8-3.5-2.1-4.7c.5-.2 1-.3 1.6-.3zm.35 1.02c.73 1.15 1.14 2.52 1.14 3.98s-.42 2.83-1.14 3.98c2.04-.18 3.64-1.9 3.64-3.98s-1.6-3.8-3.64-3.98z" fillRule="evenodd"></path>
-          </svg>
-        </button>
-        
-        {/* Lock button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title={isItemLocked ? "Unlock" : "Lock"}
-          onClick={onLock}
-        >
-          {isItemLocked ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
-            </svg>
-          )}
-        </button>
-        
-        {/* Copy button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Copy"
-          onClick={onCopy}
-          disabled={!isItemSelected}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${!isItemSelected ? 'text-gray-400' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-            <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
-            <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
-          </svg>
-        </button>
-        
-        {/* Delete button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Delete"
-          onClick={onDelete}
-          disabled={!isItemSelected || isItemLocked}
-        >
-          <svg data-icon="trash" height="16" role="img" viewBox="0 0 16 16" width="16" className={`${(!isItemSelected || isItemLocked) ? 'text-gray-400' : ''}`}>
-            <path d="M14.49 3.99h-13c-.28 0-.5.22-.5.5s.22.5.5.5h.5v10c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-10h.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5zm-8.5 9c0 .55-.45 1-1 1s-1-.45-1-1v-6c0-.55.45-1 1-1s1 .45 1 1v6zm3 0c0 .55-.45 1-1 1s-1-.45-1-1v-6c0-.55.45-1 1-1s1 .45 1 1v6zm3 0c0 .55-.45 1-1 1s-1-.45-1-1v-6c0-.55.45-1 1-1s1 .45 1 1v6zm2-12h-4c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1h-4c-.55 0-1 .45-1 1v1h14v-1c0-.55-.45-1-1-1z" fillRule="evenodd"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-};
+      </>
+    )}
+
+    {/* Effects button */}
+    <button
+      className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${selectedTool === "effects" ? "bg-blue-100" : ""}`}
+      title="Effects"
+      onClick={onEffects}
+    >
+      <Filter className="h-5 w-5" />
+    </button>
+
+    {/* Upload button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Upload"
+      onClick={onUpload}
+    >
+      <svg
+        viewBox="64 64 896 896"
+        focusable="false"
+        data-icon="upload"
+        width="1em"
+        height="1em"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M400 317.7h73.9V656c0 4.4 3.6 8 8 8h60c4.4 0 8-3.6 8-8V317.7H624c6.7 0 10.4-7.7 6.3-12.9L518.3 163a8 8 0 00-12.6 0l-112 141.7c-4.1 5.3-.4 13 6.3 13zM878 626h-60c-4.4 0-8 3.6-8 8v154H214V634c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v198c0 17.7 14.3 32 32 32h684c17.7 0 32-14.3 32-32V634c0-4.4-3.6-8-8-8z"></path>
+      </svg>
+    </button>
+
+    {/* Change Image button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Change Image"
+      onClick={onChangeImage}
+    >
+      <svg
+        stroke="currentColor"
+        fill="currentColor"
+        strokeWidth="0"
+        viewBox="0 0 24 24"
+        height="1em"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path fill="none" d="M24 24H0V0h24v24z"></path>
+        <path d="M21 3H3C2 3 1 4 1 5v14c0 1.1.9 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zM5 17l3.5-4.5 2.5 3.01L14.5 11l4.5 6H5z"></path>
+      </svg>
+    </button>
+
+    {/* Position button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Position"
+      onClick={onPosition}
+    >
+      <svg data-icon="layers" height="16" role="img" viewBox="0 0 16 16" width="16">
+        <path
+          d="M.55 4.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3a.998.998 0 00-.06-1.81L8.4.08a1.006 1.006 0 00-.79 0l-6.99 3a.992.992 0 00-.07 1.81zM15 11c-.16 0-.31.04-.45.11L8 14l-6.55-2.9c-.14-.06-.29-.1-.45-.1-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1zm0-4c-.16 0-.31.04-.45.11L8 10 1.45 7.11A.997.997 0 001 7c-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1z"
+          fillRule="evenodd"
+        ></path>
+      </svg>
+    </button>
+
+    {/* Border Change button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Border"
+      onClick={onBorderChange}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path
+          fillRule="evenodd"
+          d="M4 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4zm1 2h10v10H5V5z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </button>
+
+    {/* Corner Change button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Corners"
+      onClick={onCornerChange}
+    >
+      <svg data-icon="left-join" height="16" role="img" viewBox="0 0 16 16" width="16">
+        <path
+          d="M6.6 3.3C6.1 3.1 5.6 3 5 3 2.2 3 0 5.2 0 8s2.2 5 5 5c.6 0 1.1-.1 1.6-.3C5.3 11.6 4.5 9.9 4.5 8s.8-3.6 2.1-4.7zM8 4c-1.2.9-2 2.4-2 4s.8 3.1 2 4c1.2-.9 2-2.3 2-4s-.8-3.1-2-4zm3-1c2.8 0 5 2.2 5 5s-2.2 5-5 5c-.6 0-1.1-.1-1.6-.3 1.3-1.1 2.1-2.9 2.1-4.7s-.8-3.5-2.1-4.7c.5-.2 1-.3 1.6-.3zm.35 1.02c.73 1.15 1.14 2.52 1.14 3.98s-.42 2.83-1.14 3.98c2.04-.18 3.64-1.9 3.64-3.98s-1.6-3.8-3.64-3.98z"
+          fillRule="evenodd"
+        ></path>
+      </svg>
+    </button>
+
+    {/* Lock button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title={isItemLocked ? "Unlock" : "Lock"}
+      onClick={onLock}
+    >
+      {isItemLocked ? (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
+        </svg>
+      )}
+    </button>
+
+    {/* Copy button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Copy"
+      onClick={onCopy}
+      disabled={!isItemSelected}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className={`h-5 w-5 ${!isItemSelected ? "text-gray-400" : ""}`}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+        <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
+      </svg>
+    </button>
+
+    {/* Delete button */}
+    <button
+      className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
+      title="Delete"
+      onClick={onDelete}
+      disabled={!isItemSelected || isItemLocked}
+    >
+      <svg
+        data-icon="trash"
+        height="16"
+        role="img"
+        viewBox="0 0 16 16"
+        width="16"
+        className={`${!isItemSelected || isItemLocked ? "text-gray-400" : ""}`}
+      >
+        <path
+          d="M14.49 3.99h-13c-.28 0-.5.22-.5.5s.22.5.5.5h.5v10c0 .55.45 1 1 1h10c.55 0 1-.45 1-1v-10h.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5zm-8.5 9c0 .55-.45 1-1 1s-1-.45-1-1v-6c0-.55.45-1 1-1s1 .45 1 1v6zm3 0c0 .55-.45 1-1 1s-1-.45-1-1v-6c0-.55.45-1 1-1s1 .45 1 1v6zm3 0c0 .55-.45 1-1 1s-1-.45-1-1v-6c0-.55.45-1 1-1s1 .45 1 1v6zm2-12h-4c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1h-4c-.55 0-1 .45-1 1v1h14v-1c0-.55-.45-1-1-1z"
+          fillRule="evenodd"
+        ></path>
+      </svg>
+    </button>
+  </div>
+
+  {/* Display current scale if needed */}
+  {scale !== 1 && <div className="ml-2 text-xs text-gray-500">{Math.round(scale * 100)}%</div>}
+</div>
+  )
+}
 
 // ==== BACKGROUND TOOLBAR ====
 interface BackgroundToolbarProps {

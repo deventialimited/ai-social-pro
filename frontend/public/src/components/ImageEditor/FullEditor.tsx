@@ -1,5 +1,3 @@
-// @ts-nocheck
-"use client"
 import React, { Fragment, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Dialog, Transition, Listbox } from "@headlessui/react";
@@ -27,6 +25,7 @@ import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
 import { ImagesTabContent } from "./editor_components/ImagesTabContent";
 import { Toolbar, ShapeToolbar, ImageToolbar, BackgroundToolbar } from "./editor_components/Toolbar";
+import { EnhancedImageToolbar } from "./editor_components/enhanced-image-toolbar";
 
 // Define shape types
 type ShapeType =
@@ -100,23 +99,37 @@ const FullEditor: React.FC = () => {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  // New state for enhanced image editing
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
+  const [isCropping, setIsCropping] = useState<boolean>(false);
+  const [cropArea, setCropArea] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [imageScale, setImageScale] = useState<number>(1);
+  const [imageRotation, setImageRotation] = useState<number>(0);
+  const [imagePosition, setImagePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [imageFilters, setImageFilters] = useState<{ brightness: number; contrast: number; saturation: number }>({
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+  });
+  const [scaleX, setScaleX] = useState<number>(1);
+  const [scaleY, setScaleY] = useState<number>(1);
+
   const [postBodyActive, setPostBodyActive] = useState<boolean>(false); // New state to track post body activity
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [textColor, setTextColor] = useState<string>("#000000"); // New state for text color
   const [isTextAreaActive, setIsTextAreaActive] = useState<boolean>(false); // State to track textarea focus
-  const postData = localStorage.getItem('postdata');
+  const postData = localStorage.getItem("postdata");
   if (postData) {
-    var { topic, content, image,post_id } = JSON.parse(postData);
+    var { topic, content, image, post_id } = JSON.parse(postData);
     // setPostContent(content)
-
   }
   // const [postBody, setPostBody] = useState<string>(content || "");
-  const [postBody, setPostBody] = useState<string>( "");
+  const [postBody, setPostBody] = useState<string>("");
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
     try {
-      const postId=post_id;
+      const postId = post_id;
       const idToUse = postId || "1"; // Use provided postId or a dummy one
       await setDoc(doc(db, "posts", idToUse), {
         shapes,
@@ -125,6 +138,12 @@ const FullEditor: React.FC = () => {
         postBody,
         history,
         historyIndex,
+        imageScale,
+        imageRotation,
+        imagePosition,
+        imageFilters,
+        scaleX,
+        scaleY,
       });
       console.log("Data saved successfully to Firebase with postId:", idToUse);
     } catch (e) {
@@ -140,12 +159,20 @@ const FullEditor: React.FC = () => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         console.log("Data retrieved from Firebase:", data);
-        setShapes(data.shapes);
-        setBackgroundColor(data.backgroundColor);
-        setBackgroundImage(data.backgroundImage);
-        setPostBody(data.postBody);
-        setHistory(data.history);
-        setHistoryIndex(data.historyIndex);
+        setShapes(data.shapes || []);
+        setBackgroundColor(data.backgroundColor || "#ffffff");
+        setBackgroundImage(data.backgroundImage || null);
+        setPostBody(data.postBody || "");
+        setHistory(data.history || []);
+        setHistoryIndex(data.historyIndex || -1);
+
+        // Load image editing state if available
+        if (data.imageScale) setImageScale(data.imageScale);
+        if (data.imageRotation) setImageRotation(data.imageRotation);
+        if (data.imagePosition) setImagePosition(data.imagePosition);
+        if (data.imageFilters) setImageFilters(data.imageFilters);
+        if (data.scaleX) setScaleX(data.scaleX);
+        if (data.scaleY) setScaleY(data.scaleY);
       } else {
         console.log("No such document!");
       }
@@ -169,24 +196,25 @@ const FullEditor: React.FC = () => {
       loadDataFromFirebase();
     }
   }, [postId]);
+  // Image editing functions
 
   const captureDiagramAsImage = async () => {
     try {
       // First, load the data from Firebase to ensure we have the latest data
       saveDataToFirebase();
       await loadDataFromFirebase();
-      
+
       // Wait a moment for the React state to update and render with the loaded data
-      await new Promise(resolve => setTimeout(resolve, 500)); // Increased timeout for reliable rendering
-      
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Increased timeout for reliable rendering
+
       // Get the canvas element
       const diagramElement = document.getElementById("canvas");
-      
+
       if (!diagramElement) {
         console.error("Canvas element not found");
         return;
       }
-      
+
       // Add the postBody text directly to the original DOM before capturing
       // This is more reliable than trying to add it in the onclone callback
       const tempTextElement = document.createElement("div");
@@ -201,16 +229,18 @@ const FullEditor: React.FC = () => {
       tempTextElement.style.padding = "5px";
       // tempTextElement.style.backgroundColor = "rgba(255, 255, 255, 0.7)"; // Semi-transparent background for readability
       tempTextElement.textContent = postBody;
-      
+
       // Make sure the container can handle absolute positioning
-      if (diagramElement.style.position !== "absolute" && 
-          diagramElement.style.position !== "relative" && 
-          diagramElement.style.position !== "fixed") {
+      if (
+        diagramElement.style.position !== "absolute" &&
+        diagramElement.style.position !== "relative" &&
+        diagramElement.style.position !== "fixed"
+      ) {
         diagramElement.style.position = "relative";
       }
-      
+
       diagramElement.appendChild(tempTextElement);
-      
+
       // Create a canvas from the HTML element with the loaded Firebase data
       const canvas = await html2canvas(diagramElement, {
         useCORS: true, // This helps with any cross-origin images
@@ -219,39 +249,37 @@ const FullEditor: React.FC = () => {
         logging: true, // Enable logging for debugging
         allowTaint: true, // This can help with rendering issues
       });
-      
+
       // Clean up by removing the temporary text element
       const textToRemove = document.getElementById("temp-post-body-text");
       if (textToRemove && textToRemove.parentNode) {
         textToRemove.parentNode.removeChild(textToRemove);
       }
-      
+
       // Convert the canvas to a blob
-      const blob = await new Promise<Blob | null>((resolve) => 
-        canvas.toBlob(resolve, "image/png", 1.0)
-      );
-      
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", 1.0));
+
       if (!blob) {
         console.error("Failed to create blob from canvas");
         return;
       }
-      
+
       // Create a downloadable link
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      
+
       // Include some Firebase data in the filename
       const timestamp = new Date().getTime();
       const filename = `editor_${postId || "1"}_${timestamp}.png`;
       a.download = filename;
-      
+
       // Trigger download
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       console.log("Image downloaded successfully with Firebase data");
     } catch (error) {
       console.error("Error downloading image:", error);
@@ -332,11 +360,28 @@ const FullEditor: React.FC = () => {
   };
 
   // Update an image's properties
-    const handleUpdateImage = (imageData) => {
-      localStorage.setItem("imageData", JSON.stringify(imageData));
-      // Update any state if needed
-      // setImageData(imageData);
+  const handleUpdateImage = (imageData) => {
+    localStorage.setItem("imageData", JSON.stringify(imageData));
+
+    // Update state for enhanced image editing
+    if (imageData.rotation !== undefined) setImageRotation(imageData.rotation);
+    if (imageData.scale !== undefined) setImageScale(imageData.scale);
+    if (imageData.x !== undefined && imageData.y !== undefined) {
+      setImagePosition({ x: imageData.x, y: imageData.y });
     }
+    if (imageData.scaleX !== undefined) setScaleX(imageData.scaleX);
+    if (imageData.scaleY !== undefined) setScaleY(imageData.scaleY);
+
+    // Add to history
+    addToHistory({
+      imageScale,
+      imageRotation,
+      imagePosition,
+      imageFilters,
+      scaleX,
+      scaleY,
+    });
+  };
 
   // Delete the selected shape
   const handleDeleteShape = (id: string) => {
@@ -405,6 +450,14 @@ const FullEditor: React.FC = () => {
       setShapes(previousState.shapes || []);
       setBackgroundColor(previousState.backgroundColor || "#ffffff");
       setPostBody(previousState.postBody || "");
+
+      // Restore image editing state if available
+      if (previousState.imageScale !== undefined) setImageScale(previousState.imageScale);
+      if (previousState.imageRotation !== undefined) setImageRotation(previousState.imageRotation);
+      if (previousState.imagePosition !== undefined) setImagePosition(previousState.imagePosition);
+      if (previousState.imageFilters !== undefined) setImageFilters(previousState.imageFilters);
+      if (previousState.scaleX !== undefined) setScaleX(previousState.scaleX);
+      if (previousState.scaleY !== undefined) setScaleY(previousState.scaleY);
     }
   };
 
@@ -416,16 +469,266 @@ const FullEditor: React.FC = () => {
       setShapes(nextState.shapes || []);
       setBackgroundColor(nextState.backgroundColor || "#ffffff");
       setPostBody(nextState.postBody || "");
+
+      // Restore image editing state if available
+      if (nextState.imageScale !== undefined) setImageScale(nextState.imageScale);
+      if (nextState.imageRotation !== undefined) setImageRotation(nextState.imageRotation);
+      if (nextState.imagePosition !== undefined) setImagePosition(nextState.imagePosition);
+      if (nextState.imageFilters !== undefined) setImageFilters(nextState.imageFilters);
+      if (nextState.scaleX !== undefined) setScaleX(nextState.scaleX);
+      if (nextState.scaleY !== undefined) setScaleY(nextState.scaleY);
     }
   };
 
   // Initialize history
   useEffect(() => {
     if (history.length === 0) {
-      setHistory([{ shapes: [], backgroundColor: "#ffffff", postBody: "" }]);
+      setHistory([
+        {
+          shapes: [],
+          backgroundColor: "#ffffff",
+          postBody: "",
+          imageScale: 1,
+          imageRotation: 0,
+          imagePosition: { x: 0, y: 0 },
+          imageFilters: { brightness: 100, contrast: 100, saturation: 100 },
+          scaleX: 1,
+          scaleY: 1,
+        },
+      ]);
       setHistoryIndex(0);
     }
   }, [history]);
+
+  // Enhanced image editing functions
+  const handleCrop = () => {
+    setIsCropping(true);
+    setSelectedTool("crop");
+  };
+  const handleRotate = () => {
+    setImageRotation((prev) => (prev + 90) % 360);
+  };
+  const handleFlip = () => {
+    setImageScale((prev) => -prev);
+  };
+  const handleCropStart = (x: number, y: number) => {
+    setCropArea({ x, y, width: 0, height: 0 });
+  };
+
+  const handleCropMove = (width: number, height: number) => {
+    if (cropArea) {
+      setCropArea({ ...cropArea, width, height });
+    }
+  };
+
+  const handleCropComplete = () => {
+    // Finalize crop area
+    if (cropArea && Math.abs(cropArea.width) > 10 && Math.abs(cropArea.height) > 10) {
+      // Normalize crop area (handle negative width/height)
+      const normalizedCropArea = {
+        x: cropArea.width < 0 ? cropArea.x + cropArea.width : cropArea.x,
+        y: cropArea.height < 0 ? cropArea.y + cropArea.height : cropArea.y,
+        width: Math.abs(cropArea.width),
+        height: Math.abs(cropArea.height),
+      };
+
+      setCropArea(normalizedCropArea);
+    } else {
+      // Cancel crop if area is too small
+      handleCropCancel();
+    }
+  };
+
+  const handleCropCancel = () => {
+    setIsCropping(false);
+    setCropArea(null);
+    setSelectedTool(null);
+  };
+
+  const handleCropApply = () => {
+    if (!cropArea || !backgroundImage) return;
+
+    // Create a temporary canvas for cropping
+    const tempCanvas = document.createElement("canvas");
+    const tempCtx = tempCanvas.getContext("2d");
+    if (!tempCtx) return;
+
+    // Create a new image from the background image
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      // Calculate the scale factor between the displayed image and the original
+      const displayedWidth = img.width * imageScale;
+      const displayedHeight = img.height * imageScale;
+
+      // Set canvas size to the crop area
+      tempCanvas.width = cropArea.width;
+      tempCanvas.height = cropArea.height;
+
+      // Draw only the cropped portion to the canvas
+      tempCtx.drawImage(
+        img,
+        (cropArea.x - imagePosition.x) / imageScale,
+        (cropArea.y - imagePosition.y) / imageScale,
+        cropArea.width / imageScale,
+        cropArea.height / imageScale,
+        0,
+        0,
+        cropArea.width,
+        cropArea.height
+      );
+
+      // Get the cropped image as data URL
+      const croppedImageUrl = tempCanvas.toDataURL("image/png");
+
+      // Update the background image
+      setBackgroundImage(croppedImageUrl);
+
+      // Reset crop
+      setIsCropping(false);
+      setCropArea(null);
+      setSelectedTool(null);
+
+      // Reset image position and scale
+      setImagePosition({ x: 0, y: 0 });
+      setImageScale(1);
+      setImageRotation(0);
+      setScaleX(1);
+      setScaleY(1);
+
+      // Add to history
+      addToHistory({
+        backgroundImage: croppedImageUrl,
+        imageScale: 1,
+        imageRotation: 0,
+        imagePosition: { x: 0, y: 0 },
+        scaleX: 1,
+        scaleY: 1,
+      });
+    };
+
+    img.src = backgroundImage;
+  };
+
+  const handleImageDragStart = (x: number, y: number) => {
+    // Store the initial position for drag calculation
+    setImagePosition((prev) => ({
+      ...prev,
+      startX: x,
+      startY: y,
+    }));
+  };
+
+  const handleImageDrag = (deltaX: number, deltaY: number) => {
+    // Update image position based on drag
+    setImagePosition((prev) => ({
+      x: prev.x + deltaX,
+      y: prev.y + deltaY,
+    }));
+  };
+
+  const handleImageDragEnd = () => {
+    // Add to history when drag ends
+    addToHistory({ imagePosition });
+  };
+
+  const handleRotateImage = () => {
+    // Rotate image by 90 degrees
+    const newRotation = (imageRotation + 90) % 360;
+    setImageRotation(newRotation);
+    addToHistory({ imageRotation: newRotation });
+  };
+
+  const handleFlipHorizontal = () => {
+    // Flip image horizontally by inverting horizontal scale
+    const newScaleX = -scaleX;
+    setScaleX(newScaleX);
+    addToHistory({ scaleX: newScaleX });
+  };
+
+  const handleFlipVertical = () => {
+    // Flip image vertically by inverting vertical scale
+    const newScaleY = -scaleY;
+    setScaleY(newScaleY);
+    addToHistory({ scaleY: newScaleY });
+  };
+
+  const handleZoomIn = () => {
+    const newScale = imageScale * 1.1;
+    setImageScale(newScale);
+    addToHistory({ imageScale: newScale });
+  };
+
+  const handleZoomOut = () => {
+    const newScale = Math.max(0.1, imageScale * 0.9);
+    setImageScale(newScale);
+    addToHistory({ imageScale: newScale });
+  };
+
+  const handleFitToPage = () => {
+    if (selectedImage) {
+      setBackgroundImage(selectedImage);
+      setSelectedImage(null);
+
+      // Reset image transformations
+      setImageScale(1);
+      setImageRotation(0);
+      setImagePosition({ x: 0, y: 0 });
+      setScaleX(1);
+      setScaleY(1);
+
+      addToHistory({
+        backgroundImage: selectedImage,
+        imageScale: 1,
+        imageRotation: 0,
+        imagePosition: { x: 0, y: 0 },
+        scaleX: 1,
+        scaleY: 1,
+      });
+    }
+  };
+
+  const handleBrightnessChange = (value: number) => {
+    setImageFilters((prev) => ({
+      ...prev,
+      brightness: value,
+    }));
+  };
+
+  const handleContrastChange = (value: number) => {
+    setImageFilters((prev) => ({
+      ...prev,
+      contrast: value,
+    }));
+  };
+
+  const handleSaturationChange = (value: number) => {
+    setImageFilters((prev) => ({
+      ...prev,
+      saturation: value,
+    }));
+  };
+
+  const handleFilterChangeComplete = () => {
+    addToHistory({ imageFilters });
+  };
+
+  const handleEffects = () => {
+    setSelectedTool(selectedTool === "effects" ? null : "effects");
+  };
+
+  const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        setBackgroundImage(imageUrl);
+        addToHistory({ backgroundImage: imageUrl });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const items = [
     {
@@ -544,12 +847,8 @@ const FullEditor: React.FC = () => {
     };
   }, []);
 
-  const handleFitToPage = () => {
-    if (selectedImage) {
-      setBackgroundImage(selectedImage);
-      setSelectedImage(null);
-      addToHistory({ backgroundImage: selectedImage });
-    }
+  const generateUniqueId = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
   return (
@@ -817,7 +1116,7 @@ const FullEditor: React.FC = () => {
                       {/* Sidebar for active tab */}
                       <div className="w-1/5 p-4 shadow">{renderTabContent()}</div>
 
-                      <div className="flex-1  flex flex-col">
+                      <div className="flex-1 flex flex-col">
                         {/* Toolbar */}
                         {isTextAreaActive ? (
                           <Toolbar
@@ -888,27 +1187,6 @@ const FullEditor: React.FC = () => {
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
-                            onOffsetXChange={(offsetX) => {
-                              const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, offsetX } } : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
-                            }}
-                            onOffsetYChange={(offsetY) => {
-                              const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, offsetY } } : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
-                            }}
-                            onEffectColorChange={(color) => {
-                              const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, effects: { ...shape.effects, color } } : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
-                            }}
                             onBorderStyleChange={(style) => {
                               const updatedShapes = shapes.map((shape) =>
                                 shape.id === selectedShapeId ? { ...shape, borderStyle: style } : shape
@@ -936,12 +1214,21 @@ const FullEditor: React.FC = () => {
                             onRedo={handleRedo}
                           />
                         ) : backgroundImage ? (
-                          <ImageToolbar
-                            onUpload={() => console.log("Upload action")}
+                          <EnhancedImageToolbar
                             onUndo={handleUndo}
                             onRedo={handleRedo}
+                            onCrop={handleCrop}
+                            onCropApply={handleCropApply}
+                            onCropCancel={handleCropCancel}
+                            onRotate={handleRotate}
+                            onFlip={handleFlipHorizontal}
+                            onVerticalFlip={handleFlipVertical}
+                            onZoomIn={handleZoomIn}
+                            onZoomOut={handleZoomOut}
                             onFitToPage={handleFitToPage}
-                            // onUpdateImage={handleUpdateImage} // Implemented image update handler
+                            onEffects={handleEffects}
+                            onUpload={handleUpload}
+                            onSelectTool={setSelectedTool}
                           />
                         ) : backgroundColor ? (
                           <BackgroundToolbar
@@ -1002,7 +1289,10 @@ const FullEditor: React.FC = () => {
 
                             <div className="ml-auto flex items-center space-x-4">
                               <div className="relative">
-                                <button className="rounded-md hover:bg-gray-100 hover:cursor-pointer" style={{ backgroundColor }}>
+                                <button
+                                  className="rounded-md hover:bg-gray-100 hover:cursor-pointer"
+                                  style={{ backgroundColor }}
+                                >
                                   <div className="">
                                     <input
                                       type="color"
@@ -1042,7 +1332,10 @@ const FullEditor: React.FC = () => {
                               >
                                 <TrashIcon className="h-5 w-5 text-gray-500" />
                               </button>
-                              <button className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer" onClick={captureDiagramAsImage}>
+                              <button
+                                className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
+                                onClick={captureDiagramAsImage}
+                              >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   className="h-5 w-5"
@@ -1064,7 +1357,7 @@ const FullEditor: React.FC = () => {
 
                         {/* Editor area */}
                         <div className="flex-1 bg-gray-200 p-4 ">
-                          <div className="bg-white  w-full h-full rounded-md flex items-center justify-center">
+                          <div className="bg-white w-full h-full rounded-md flex items-center justify-center">
                             <CanvasEditor
                               shapes={shapes}
                               onUpdateShape={handleUpdateShape}
@@ -1078,30 +1371,44 @@ const FullEditor: React.FC = () => {
                               backgroundImage={backgroundImage}
                               selectedImage={selectedImage}
                               onUpdateImage={handleUpdateImage}
+                              selectedTool={selectedTool}
+                              isCropping={isCropping}
+                              cropArea={cropArea}
+                              onCropStart={handleCropStart}
+                              onCropMove={handleCropMove}
+                              onCropComplete={handleCropComplete}
+                              imageScale={imageScale}
+                              imageRotation={imageRotation}
+                              imagePosition={imagePosition}
+                              imageFilters={imageFilters}
+                              onImageDragStart={handleImageDragStart}
+                              onImageDrag={handleImageDrag}
+                              onImageDragEnd={handleImageDragEnd}
+                              scaleX={scaleX}
+                              scaleY={scaleY}
                             />
                           </div>
-                          <div className={` absolute  top-60 ml-[10%] text-center rounded-md ${isTextAreaActive ? 'border border-black-500' : ''}`}>
+                          <div
+                            className={`absolute top-60 ml-[10%] text-center rounded-md ${isTextAreaActive ? "border border-black-500" : ""}`}
+                          >
                             <textarea
-                              className="w-[40vw] h-[10vh]    resize border-none focus:outline-none"
+                              className="w-[40vw] h-[10vh] resize border-none focus:outline-none"
                               value={postBody}
                               onChange={(e) => {
-                                setPostBody(e.target.value);
-                                
-                                addToHistory({ postBody: e.target.value });
-
+                                setPostBody(e.target.value)
+                                addToHistory({ postBody: e.target.value })
                               }}
                               onFocus={() => setIsTextAreaActive(true)}
                               onBlur={(e) => {
-                                const toolbarElement = document.getElementById('toolfix');
+                                const toolbarElement = document.getElementById("toolfix")
                                 if (!toolbarElement || !toolbarElement.contains(e.relatedTarget)) {
-                                  setIsTextAreaActive(false);
+                                  setIsTextAreaActive(false)
                                   if (!postBodyActive) {
                                     // Perform any additional actions when clicking outside
-                                    console.log("Clicked outside the textarea");
+                                    console.log("Clicked outside the textarea")
                                   }
                                 }
                               }}
-                            
                               style={{ color: textColor }}
                               draggable="true"
                             />
@@ -1134,8 +1441,8 @@ const FullEditor: React.FC = () => {
         </Dialog>
       </Transition>
     </>
-  );
-};
+  )
+}
 
 // Tab content components
 const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({ onAddText }) => {
@@ -1151,8 +1458,8 @@ const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({ o
         Create body text
       </p>
     </div>
-  );
-};
+  )
+}
 
 const ElementsTabContent: React.FC = () => {
   return (
@@ -1161,17 +1468,22 @@ const ElementsTabContent: React.FC = () => {
         <p className="text-gray-500">Elements will be displayed here</p>
       </div>
     </div>
-  );
-};
-
-interface BackgroundTabContentProps {
-  onColorChange: (color: string) => void;
-  colors: string[];
-  patterns: string[];
-  onPatternSelect: (pattern: string) => void;
+  )
 }
 
-const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({ onColorChange, colors, patterns, onPatternSelect }) => {
+interface BackgroundTabContentProps {
+  onColorChange: (color: string) => void
+  colors: string[]
+  patterns: string[]
+  onPatternSelect: (pattern: string) => void
+}
+
+const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({
+  onColorChange,
+  colors,
+  patterns,
+  onPatternSelect,
+}) => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
       <div className="mb-4" style={{ height: "30%" }}>
@@ -1203,13 +1515,13 @@ const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({ onColorChan
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 interface LayersTabContentProps {
-  shapes: Shape[];
-  onSelectShape: (id: string | null) => void;
-  selectedShapeId: string | null;
+  shapes: Shape[]
+  onSelectShape: (id: string | null) => void
+  selectedShapeId: string | null
 }
 
 const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectShape, selectedShapeId }) => {
@@ -1237,8 +1549,8 @@ const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectSha
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const SizeTabContent: React.FC = () => {
   return (
@@ -1269,7 +1581,7 @@ const SizeTabContent: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FullEditor;
+export default FullEditor

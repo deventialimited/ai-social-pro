@@ -107,6 +107,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     isRotating: false,
     startAngle: 0,
     originalRotation: 0,
+    imageId: "",
   });
 
   const getAngle = (cx: number, cy: number, ex: number, ey: number) => {
@@ -164,39 +165,27 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       isRotating: true,
       startAngle,
       originalRotation: imageData.rotation || 0,
+      imageId: imageData.id,
     };
     window.addEventListener("mousemove", handleImageRotate);
     window.addEventListener("mouseup", stopImageRotation);
   };
 
- const handleImageRotate = (e: MouseEvent) => {
-  if (!imageRotationRef.current.isRotating || !onUpdateImage) return;
-  
-  // Get the current image data from localStorage
-  const storedImageData = localStorage.getItem("imageData");
-  const currentImageData = storedImageData ? JSON.parse(storedImageData) : {
-    id: "post-image",
-    src: image,
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 300,
-    rotation: 0,
-    zIndex: 1
+  const handleImageRotate = (e: MouseEvent) => {
+    if (!imageRotationRef.current.isRotating || !onUpdateImage) return;
+    const imageData = shapes.find((s) => s.id === imageRotationRef.current.imageId) as ImageData;
+    if (!imageData) return;
+    const imageCenterX = imageData.x + imageData.width / 2;
+    const imageCenterY = imageData.y + imageData.height / 2;
+    const currentAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY);
+    const angleDiff = currentAngle - imageRotationRef.current.startAngle;
+    let newRotation = (imageRotationRef.current.originalRotation + angleDiff) % 360;
+    if (newRotation < 0) newRotation += 360;
+    onUpdateImage({
+      ...imageData,
+      rotation: newRotation,
+    });
   };
-  
-  const imageCenterX = currentImageData.x + currentImageData.width / 2;
-  const imageCenterY = currentImageData.y + currentImageData.height / 2;
-  const currentAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY);
-  const angleDiff = currentAngle - imageRotationRef.current.startAngle;
-  let newRotation = (imageRotationRef.current.originalRotation + angleDiff) % 360;
-  if (newRotation < 0) newRotation += 360;
-  
-  onUpdateImage({
-    ...currentImageData,
-    rotation: newRotation,
-  });
-}
 
   const stopImageRotation = () => {
     imageRotationRef.current.isRotating = false;
@@ -499,128 +488,122 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     const isSelected = selectedImageId === "post-image" || backgroundImage === imageSrc;
     
     return (
-      <div
-        className="absolute"
+      <Rnd
+        id="post-image"
+        size={{ width: imageData.width, height: imageData.height }}
+        position={{ x: imageData.x, y: imageData.y }}
+        onDragStart={(e) => {
+          e.stopPropagation();
+          if (onSelectImage) onSelectImage("post-image");
+        }}
+        onDrag={(e, d) => {
+          if (onUpdateImage) {
+            // Update image position
+            onUpdateImage({
+              ...imageData,
+              x: d.x,
+              y: d.y,
+            });
+          }
+        }}
+        onResizeStop={(e, direction, ref, delta, position) => {
+          if (onUpdateImage) {
+            onUpdateImage({
+              ...imageData,
+              width: Math.max(50, parseInt(ref.style.width)),
+              height: Math.max(50, parseInt(ref.style.height)),
+              x: position.x,
+              y: position.y,
+            });
+          }
+        }}
+        className={`${isSelected ? "z-10" : ""}`}
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation();
+          if (onSelectImage) onSelectImage("post-image");
+        }}
+        bounds="#canvas"
+        enableResizing={{
+          top: isSelected,
+          right: isSelected,
+          bottom: isSelected,
+          left: isSelected,
+          topRight: isSelected,
+          bottomRight: isSelected,
+          bottomLeft: isSelected,
+          topLeft: isSelected,
+        }}
+        disableDragging={!isSelected}
         style={{
-          width: imageData.width,
-          height: imageData.height,
-          transform: `translate(${imageData.x}px, ${imageData.y}px) rotate(${imageData.rotation || 0}deg)`,
+          transform: `rotate(${imageData.rotation || 0}deg)`,
           transformOrigin: "center center",
           zIndex: imageData.zIndex || 1,
         }}
       >
-        <Rnd
-          id="post-image"
-          size={{ width: imageData.width, height: imageData.height }}
-          position={{ x: imageData.x, y: imageData.y }}
-          onDragStart={(e) => {
-            e.stopPropagation();
-            if (onSelectImage) onSelectImage("post-image");
-          }}
-          onDrag={(e, d) => {
-            if (onUpdateImage) {
-              // Update image position
-              onUpdateImage({
-                ...imageData,
-                x: imageData.x + d.deltaX,
-                y: imageData.y + d.deltaY,
-              });
-            }
-          }}
-          onResizeStop={(e, direction, ref, delta, position) => {
-            if (onUpdateImage) {
-              onUpdateImage({
-                ...imageData,
-                width: Math.max(50, parseInt(ref.style.width)),
-                height: Math.max(50, parseInt(ref.style.height)),
-                x: position.x,
-                y: position.y,
-              });
-            }
-          }}
-          className={`${isSelected ? "z-10" : ""}`}
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-            if (onSelectImage) onSelectImage("post-image");
-          }}
-          bounds="#canvas"
-          enableResizing={{
-            top: isSelected,
-            right: isSelected,
-            bottom: isSelected,
-            left: isSelected,
-            topRight: isSelected,
-            bottomRight: isSelected,
-            bottomLeft: isSelected,
-            topLeft: isSelected,
-          }}
-          disableDragging={!isSelected}
-        >
-          <div className="relative w-full h-full">
-            {/* Image container */}
-            <img
-              src={imageSrc}
-              alt="Post"
-              className="w-full h-full object-cover"
-            />
+        <div className="relative w-full h-full">
+          {/* Image container */}
+          <img
+            src={imageSrc}
+            alt="Post"
+            className="w-full h-full object-cover"
+          />
 
-            {/* Controls for selected image */}
-            {isSelected && (
-              <>
-                {/* Rotation handle */}
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                  <div
-                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center cursor-move pointer-events-auto"
-                    onMouseDown={(e) => startImageRotation(e, imageData)}
-                  >
-                    <FaSyncAlt className="h-4 w-4 text-blue-500" />
-                  </div>
-                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-px h-4 bg-blue-500 pointer-events-none"></div>
-                </div>
-
-                {/* Border and resize handles */}
+          {/* Controls for selected image */}
+          {isSelected && (
+            <>
+              {/* Rotation handle */}
+              <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                 <div
-                  className="absolute inset-0 border-2 border-blue-500 pointer-events-none"
-                ></div>
-
-                {/* Corner resize handles */}
-                <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
-                <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
-                <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
-                <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
-
-                {/* Middle resize handles */}
-                <div className="absolute top-1/2 -left-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
-                <div className="absolute top-1/2 -right-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
-                <div className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
-                <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
-
-                {/* Delete and duplicate buttons */}
-                <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-                  <button
-                    className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      onDeleteShape(imageData.id);
-                    }}
-                  >
-                    <TrashIcon className="h-4 w-4 text-gray-700" />
-                  </button>
-                  <button
-                    className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
-                    onClick={(e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      onDuplicateShape(imageData.id);
-                    }}
-                  >
-                    <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
-                  </button>
+                  className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center cursor-move pointer-events-auto"
+                  onMouseDown={(e) => startImageRotation(e, imageData)}
+                >
+                  <FaSyncAlt className="h-4 w-4 text-blue-500" />
                 </div>
-              </>
-            )}
-          </div>
-        </Rnd>
-      </div>
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-px h-4 bg-blue-500 pointer-events-none"></div>
+              </div>
+
+              {/* Border and resize handles */}
+              <div
+                className="absolute inset-0 border-2 border-blue-500 pointer-events-none"
+              ></div>
+
+              {/* Corner resize handles */}
+              <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
+              <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
+              <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
+              <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
+
+              {/* Middle resize handles */}
+              <div className="absolute top-1/2 -left-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
+              <div className="absolute top-1/2 -right-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
+              <div className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
+              <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
+
+              {/* Delete and duplicate buttons */}
+              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                <button
+                  className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    onDeleteShape(imageData.id);
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4 text-gray-700" />
+                </button>
+                <button
+                  className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    onDuplicateShape(imageData.id);
+                  }}
+                >
+                  <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Rnd>
     );
   };
 
