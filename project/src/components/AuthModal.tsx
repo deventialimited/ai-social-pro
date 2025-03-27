@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
-
+import { signUpWithEmailPassword,logInWithEmailPassword,GoogleSignUp } from '../lib/authStore'
 interface AuthModalProps {
   onClose: () => void;
   onLogin: () => void;
@@ -13,11 +13,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin }) => {
     email: '',
     password: ''
   });
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (isSignUp) {
+    try {
+      await signUpWithEmailPassword(formData.email, formData.password);
+    } catch (err: any) {
+      console.error("Error:", err.code, err.message);
+      alert(`Signup Failed: ${err.message}`);
+    }
+  } else {
+    try {
+      await logInWithEmailPassword(formData.email, formData.password);
+      onLogin(); // This will navigate to /dashboard
+    } catch (err: any) {
+      console.error("Error:", err.code, err.message);
+      alert(`Signin Failed: ${err.message}`);
+    }
+  }
+};
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onLogin();
-  };
+  const handleGoogleLogin = async()=> {
+  try {
+    await GoogleSignUp();
+  }
+  catch (error: any) {
+    console.error("Error:", error.code, error.message);
+    alert(`Google Signin Failed: ${error.message}`);
+  }
+}
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
@@ -47,6 +71,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin }) => {
           {/* Social Login Buttons */}
           <div className="space-y-3 mb-6">
             <button
+              onClick={handleGoogleLogin}
               type="button"
               className="w-full py-2.5 px-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
