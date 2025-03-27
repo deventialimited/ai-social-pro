@@ -1,5 +1,5 @@
 // @ts-nocheck
-"use client"
+"use client";
 import React, { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import { TrashIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
@@ -49,6 +49,17 @@ interface ShapeEffects {
   color: string;
 }
 
+interface ImageData {
+  id: string;
+  src: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  zIndex: number;
+}
+
 interface CanvasEditorProps {
   shapes: Shape[];
   onUpdateShape: (updatedShape: Shape) => void;
@@ -62,24 +73,17 @@ interface CanvasEditorProps {
   onBorderWidthChange: (width: number) => void;
   onBorderColorChange: (color: string) => void;
   onTransparencyChange?: (transparency: number) => void;
-  // New props for image handling
   onUpdateImage?: (imageData: ImageData) => void;
   onDeleteImage?: (id: string) => void;
   onDuplicateImage?: (id: string) => void;
   selectedImageId?: string | null;
   onSelectImage?: (id: string | null) => void;
-}
-
-// New interface for image data
-interface ImageData {
-  id: string;
-  src: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number;
-  zIndex: number;
+  scaleX?: number;
+  scaleY?: number;
+  imageScale?: number;
+  imageRotation?: number;
+  imagePosition?: { x: number; y: number };
+  imageFilters?: { brightness: number; contrast: number; saturation: number };
 }
 
 const CanvasEditor: React.FC<CanvasEditorProps> = ({
@@ -99,15 +103,21 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   onDuplicateImage,
   selectedImageId,
   onSelectImage,
+  scaleX = 1,
+  scaleY = 1,
+  imageScale = 1,
+  imageRotation = 0,
+  imagePosition = { x: 0, y: 0 },
+  imageFilters,
 }) => {
   const [images, setImages] = useState<ImageData[]>([]);
 
-  // Effect to load images from localStorage on component mount
+  // Effect to load images from localStorage and include backgroundImage
   useEffect(() => {
     const loadImagesFromStorage = () => {
       const postData = localStorage.getItem("postdata");
       const storedImagesData = localStorage.getItem("imagesData");
-      
+
       // Initialize images array
       let initialImages: ImageData[] = [];
 
@@ -123,9 +133,26 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             width: 200,
             height: 300,
             rotation: 0,
-            zIndex: 1
+            zIndex: 1,
           });
         }
+      }
+
+      // Add backgroundImage from props if not already included
+      if (
+        backgroundImage &&
+        !initialImages.some((img) => img.src === backgroundImage)
+      ) {
+        initialImages.push({
+          id: "background-image",
+          src: backgroundImage,
+          x: 0,
+          y: 0,
+          width: 200,
+          height: 300,
+          rotation: 0,
+          zIndex: 0,
+        });
       }
 
       // Add additional images from storage
@@ -138,13 +165,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     };
 
     loadImagesFromStorage();
-  }, []);
+  }, [backgroundImage]);
 
   // Effect to save images to localStorage when images change
   useEffect(() => {
-    // Filter out the original post image
-    const imagesToStore = images.filter(img => img.id !== "post-image");
-    
+    // Filter out the original post image and background image
+    const imagesToStore = images.filter(
+      (img) => img.id !== "post-image" && img.id !== "background-image"
+    );
+
     if (imagesToStore.length > 0) {
       localStorage.setItem("imagesData", JSON.stringify(imagesToStore));
     } else {
@@ -178,7 +207,12 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     e.stopPropagation();
     const shapeCenterX = shape.x + shape.width / 2;
     const shapeCenterY = shape.y + shape.height / 2;
-    const startAngle = getAngle(shapeCenterX, shapeCenterY, e.clientX, e.clientY);
+    const startAngle = getAngle(
+      shapeCenterX,
+      shapeCenterY,
+      e.clientX,
+      e.clientY
+    );
     rotationRef.current = {
       isRotating: true,
       startAngle,
@@ -195,7 +229,12 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     if (!shape) return;
     const shapeCenterX = shape.x + shape.width / 2;
     const shapeCenterY = shape.y + shape.height / 2;
-    const currentAngle = getAngle(shapeCenterX, shapeCenterY, e.clientX, e.clientY);
+    const currentAngle = getAngle(
+      shapeCenterX,
+      shapeCenterY,
+      e.clientX,
+      e.clientY
+    );
     const angleDiff = currentAngle - rotationRef.current.startAngle;
     let newRotation = (rotationRef.current.originalRotation + angleDiff) % 360;
     if (newRotation < 0) newRotation += 360;
@@ -211,12 +250,16 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     window.removeEventListener("mouseup", stopRotation);
   };
 
-  // New function for image rotation
   const startImageRotation = (e: React.MouseEvent, imageData: ImageData) => {
     e.stopPropagation();
     const imageCenterX = imageData.x + imageData.width / 2;
     const imageCenterY = imageData.y + imageData.height / 2;
-    const startAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY);
+    const startAngle = getAngle(
+      imageCenterX,
+      imageCenterY,
+      e.clientX,
+      e.clientY
+    );
     imageRotationRef.current = {
       isRotating: true,
       startAngle,
@@ -229,18 +272,27 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
   const handleImageRotate = (e: MouseEvent) => {
     if (!imageRotationRef.current.isRotating || !onUpdateImage) return;
-    const imageData = images.find((img) => img.id === imageRotationRef.current.imageId);
+    const imageData = images.find(
+      (img) => img.id === imageRotationRef.current.imageId
+    );
     if (!imageData) return;
     const imageCenterX = imageData.x + imageData.width / 2;
     const imageCenterY = imageData.y + imageData.height / 2;
-    const currentAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY);
+    const currentAngle = getAngle(
+      imageCenterX,
+      imageCenterY,
+      e.clientX,
+      e.clientY
+    );
     const angleDiff = currentAngle - imageRotationRef.current.startAngle;
-    let newRotation = (imageRotationRef.current.originalRotation + angleDiff) % 360;
+    let newRotation =
+      (imageRotationRef.current.originalRotation + angleDiff) % 360;
     if (newRotation < 0) newRotation += 360;
-    onUpdateImage({
-      ...imageData,
-      rotation: newRotation,
-    });
+    const updatedImage = { ...imageData, rotation: newRotation };
+    setImages((prevImages) =>
+      prevImages.map((img) => (img.id === imageData.id ? updatedImage : img))
+    );
+    onUpdateImage(updatedImage);
   };
 
   const stopImageRotation = () => {
@@ -261,7 +313,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       const b = Number.parseInt(shadowColor.slice(5, 7), 16);
       shadowColor = `rgba(${r}, ${g}, ${b}, ${opacityDecimal})`;
     } else if (shadowColor.startsWith("rgb(")) {
-      shadowColor = shadowColor.replace("rgb(", "rgba(").replace(")", `, ${opacityDecimal})`);
+      shadowColor = shadowColor
+        .replace("rgb(", "rgba(")
+        .replace(")", `, ${opacityDecimal})`);
     } else if (shadowColor.startsWith("rgba(")) {
       shadowColor = shadowColor.replace(
         /rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/,
@@ -275,7 +329,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const getShapeStyle = (shape: Shape) => {
-    const opacity = shape.transparency !== undefined ? 1 - shape.transparency : 1;
+    const opacity =
+      shape.transparency !== undefined ? 1 - shape.transparency : 1;
 
     return {
       color: shape.color,
@@ -294,14 +349,22 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     const divBorderStyle =
       shape.borderStyle !== "none"
         ? {
-            border: `${shape.borderWidth || 0}px ${shape.borderStyle || "solid"} ${shape.borderColor || "transparent"}`,
+            border: `${shape.borderWidth || 0}px ${
+              shape.borderStyle || "solid"
+            } ${shape.borderColor || "transparent"}`,
           }
         : {};
 
     const svgStrokeProps = {
-      stroke: shape.borderStyle !== "none" ? shape.borderColor || "black" : "none",
+      stroke:
+        shape.borderStyle !== "none" ? shape.borderColor || "black" : "none",
       strokeWidth: shape.borderStyle !== "none" ? shape.borderWidth || 0 : 0,
-      strokeDasharray: shape.borderStyle === "dashed" ? "5,5" : shape.borderStyle === "dotted" ? "1,3" : undefined,
+      strokeDasharray:
+        shape.borderStyle === "dashed"
+          ? "5,5"
+          : shape.borderStyle === "dotted"
+          ? "1,3"
+          : undefined,
     };
 
     const doubleStrokeProps =
@@ -318,10 +381,20 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
     switch (shape.type) {
       case "square":
-        return <div className="w-full h-full bg-current rounded-sm" style={{ ...baseStyle, ...divBorderStyle }}></div>;
+        return (
+          <div
+            className="w-full h-full bg-current rounded-sm"
+            style={{ ...baseStyle, ...divBorderStyle }}
+          ></div>
+        );
 
       case "circle":
-        return <div className="w-full h-full bg-current rounded-full" style={{ ...baseStyle, ...divBorderStyle }}></div>;
+        return (
+          <div
+            className="w-full h-full bg-current rounded-full"
+            style={{ ...baseStyle, ...divBorderStyle }}
+          ></div>
+        );
 
       case "oval":
         return (
@@ -335,8 +408,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -352,11 +434,25 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
-            <path fill="currentColor" d="M1,21H23L12,2L1,21Z" {...svgStrokeProps} {...doubleStrokeProps} />
+            <path
+              fill="currentColor"
+              d="M1,21H23L12,2L1,21Z"
+              {...svgStrokeProps}
+              {...doubleStrokeProps}
+            />
           </svg>
         );
 
@@ -364,8 +460,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -381,8 +486,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -398,8 +512,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -415,8 +538,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -432,8 +564,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -449,8 +590,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -466,8 +616,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -483,8 +642,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -500,8 +668,17 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return (
           <svg viewBox="0 0 24 24" className="w-full h-full" style={baseStyle}>
             <defs>
-              <filter id="doubleStroke" x="-20%" y="-20%" width="140%" height="140%">
-                <feMorphology operator="dilate" radius={shape.borderWidth || 1} />
+              <filter
+                id="doubleStroke"
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feMorphology
+                  operator="dilate"
+                  radius={shape.borderWidth || 1}
+                />
               </filter>
             </defs>
             <path
@@ -514,14 +691,28 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         );
 
       default:
-        return <div className="w-full h-full bg-current" style={{ ...baseStyle, ...divBorderStyle }}></div>;
+        return (
+          <div
+            className="w-full h-full bg-current"
+            style={{ ...baseStyle, ...divBorderStyle }}
+          ></div>
+        );
     }
   };
 
   const renderImage = () => {
     return images.map((imageData) => {
       const isSelected = selectedImageId === imageData.id;
-      
+      const isBackgroundImage = imageData.id === "background-image";
+
+      // Combine all transformations for the container
+      const containerTransform = [
+        `rotate(${imageData.rotation || imageRotation || 0}deg)`,
+      ].join(" ");
+
+      // Scale transformation for the image only
+      const imageTransform = `scale(${scaleX}, ${scaleY})`;
+
       return (
         <Rnd
           key={imageData.id}
@@ -533,26 +724,25 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             if (onSelectImage) onSelectImage(imageData.id);
           }}
           onDrag={(e, d) => {
-            const updatedImages = images.map(img => 
-              img.id === imageData.id 
-                ? { ...img, x: d.x, y: d.y } 
-                : img
+            const updatedImages = images.map((img) =>
+              img.id === imageData.id ? { ...img, x: d.x, y: d.y } : img
             );
             setImages(updatedImages);
+            if (onUpdateImage) onUpdateImage({ ...imageData, x: d.x, y: d.y });
           }}
           onResizeStop={(e, direction, ref, delta, position) => {
-            const updatedImages = images.map(img => 
-              img.id === imageData.id 
-                ? { 
-                    ...img, 
-                    width: Math.max(50, parseInt(ref.style.width)),
-                    height: Math.max(50, parseInt(ref.style.height)),
-                    x: position.x,
-                    y: position.y,
-                  } 
-                : img
+            const updatedImage = {
+              ...imageData,
+              width: Math.max(50, parseInt(ref.style.width)),
+              height: Math.max(50, parseInt(ref.style.height)),
+              x: position.x,
+              y: position.y,
+            };
+            const updatedImages = images.map((img) =>
+              img.id === imageData.id ? updatedImage : img
             );
             setImages(updatedImages);
+            if (onUpdateImage) onUpdateImage(updatedImage);
           }}
           className={`${isSelected ? "z-10" : ""}`}
           onClick={(e: React.MouseEvent) => {
@@ -572,18 +762,34 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           }}
           disableDragging={!isSelected}
           style={{
-            transform: `rotate(${imageData.rotation || 0}deg)`,
             transformOrigin: "center center",
             zIndex: imageData.zIndex || 1,
           }}
         >
-          <div className="relative w-full h-full">
+          <div
+            className="relative w-full h-full"
+            style={{
+              transform: containerTransform,
+              transformOrigin: "center center",
+            }}
+          >
             {/* Image container */}
-            <img
-              src={imageData.src}
-              alt="Post"
-              className="w-full h-full object-cover"
-            />
+            <div className="w-full h-full overflow-hidden">
+              <img
+                src={imageData.src}
+                alt="Post"
+                className="w-full h-full"
+                style={{
+                  filter: imageFilters
+                    ? `brightness(${imageFilters.brightness}%) contrast(${imageFilters.contrast}%) saturate(${imageFilters.saturation}%)`
+                    : undefined,
+                  transform: imageTransform,
+                  transformOrigin: "center center",
+                  objectFit: "contain",
+                }}
+                draggable={false}
+              />
+            </div>
 
             {/* Controls for selected image */}
             {isSelected && (
@@ -614,18 +820,29 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <div className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
                 <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
 
-                {/* Delete and duplicate buttons */}
-                <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                {/* Delete and duplicate buttons - these should NOT rotate */}
+                <div
+                  className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10"
+                  style={{
+                    transform: `rotate(${-(
+                      imageData.rotation ||
+                      imageRotation ||
+                      0
+                    )}deg)`,
+                    transformOrigin: "center bottom",
+                  }}
+                >
                   <button
                     className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
-                      // Prevent deleting the original post image
+                      // Only protect the original post image from deletion
                       if (imageData.id === "post-image") return;
-
-                      // Remove the image from the state
-                      const updatedImages = images.filter(img => img.id !== imageData.id);
+                      const updatedImages = images.filter(
+                        (img) => img.id !== imageData.id
+                      );
                       setImages(updatedImages);
+                      if (onDeleteImage) onDeleteImage(imageData.id);
                     }}
                   >
                     <TrashIcon className="h-4 w-4 text-gray-700" />
@@ -634,7 +851,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
-                      // Create a new image with a unique ID and slightly offset position
                       const newImageId = `image-${Date.now()}`;
                       const newImage = {
                         ...imageData,
@@ -642,9 +858,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                         x: imageData.x + 20,
                         y: imageData.y + 20,
                       };
-                      
-                      // Add the new image to the state
                       setImages([...images, newImage]);
+                      if (onDuplicateImage) onDuplicateImage(newImageId);
                     }}
                   >
                     <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
@@ -674,7 +889,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     >
       {renderImage()}
       {shapes.map((shape) => {
-        const isSelected = selectedShapeId === shape.id
+        const isSelected = selectedShapeId === shape.id;
 
         return (
           <div
@@ -692,35 +907,32 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
               size={{ width: shape.width, height: shape.height }}
               position={{ x: 0, y: 0 }}
               onDragStart={(e) => {
-                e.stopPropagation()
-                onSelectShape(shape.id)
+                e.stopPropagation();
+                onSelectShape(shape.id);
               }}
               onDrag={(e, d) => {
                 // Proper drag handling that accounts for rotation
-                const deltaX = d.x
-                const deltaY = d.y
-
-                // Convert shape rotation to radians
-                const rotationRad = (shape.rotation * Math.PI) / 180
+                const deltaX = d.x;
+                const deltaY = d.y;
 
                 // Update shape position
                 onUpdateShape({
                   ...shape,
                   x: shape.x + deltaX,
                   y: shape.y + deltaY,
-                })
+                });
               }}
               onResizeStop={(e, direction, ref, delta, position) => {
                 onUpdateShape({
                   ...shape,
                   width: Math.max(5, Number.parseInt(ref.style.width)),
                   height: Math.max(5, Number.parseInt(ref.style.height)),
-                })
+                });
               }}
               className={`${isSelected ? "z-10" : ""}`}
               onClick={(e: React.MouseEvent) => {
-                e.stopPropagation()
-                onSelectShape(shape.id)
+                e.stopPropagation();
+                onSelectShape(shape.id);
               }}
               bounds="#canvas"
               enableResizing={{
@@ -737,7 +949,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             >
               <div className="relative w-full h-full">
                 {/* Shape container */}
-                <div className="w-full h-full flex items-center justify-center">{renderShape(shape)}</div>
+                <div className="w-full h-full flex items-center justify-center">
+                  {renderShape(shape)}
+                </div>
 
                 {/* Controls for selected shape */}
                 {isSelected && (
@@ -757,10 +971,10 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     <div
                       className="absolute inset-0 border-2 border-blue-500 pointer-events-none"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        onBorderStyleChange(shape.borderStyle || "solid")
-                        onBorderWidthChange(shape.borderWidth || 1)
-                        onBorderColorChange(shape.borderColor || "#000000")
+                        e.stopPropagation();
+                        onBorderStyleChange(shape.borderStyle || "solid");
+                        onBorderWidthChange(shape.borderWidth || 1);
+                        onBorderColorChange(shape.borderColor || "#000000");
                       }}
                     ></div>
 
@@ -781,8 +995,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                       <button
                         className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
                         onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation()
-                          onDeleteShape(shape.id)
+                          e.stopPropagation();
+                          onDeleteShape(shape.id);
                         }}
                       >
                         <TrashIcon className="h-4 w-4 text-gray-700" />
@@ -790,8 +1004,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                       <button
                         className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
                         onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation()
-                          onDuplicateShape(shape.id)
+                          e.stopPropagation();
+                          onDuplicateShape(shape.id);
                         }}
                       >
                         <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
@@ -802,10 +1016,10 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
               </div>
             </Rnd>
           </div>
-        )
+        );
       })}
     </div>
-  )
-}
+  );
+};
 
-export default CanvasEditor
+export default CanvasEditor;

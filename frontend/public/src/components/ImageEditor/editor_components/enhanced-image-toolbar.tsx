@@ -1,6 +1,6 @@
 // @ts-nocheck
-"use client"
-import { useEffect } from "react"
+"use client";
+import { useEffect, useState } from "react";
 import {
   CornerRightUpIcon as CornerIcon,
   CropIcon,
@@ -15,16 +15,19 @@ import {
   Maximize,
   Filter,
   ImageIcon,
-} from "lucide-react"
+  ArrowLeftRight, // Added for horizontal flip icon
+  ArrowUpDown, // Added for vertical flip icon
+} from "lucide-react";
 
 // Common toolbar style
-const toolbarStyle = "flex items-center h-14 bg-white border border-gray-200 rounded-sm shadow-sm"
+const toolbarStyle =
+  "flex items-center h-14 bg-white border border-gray-200 rounded-sm shadow-sm";
 
 // Utility function to get data from localStorage
 const getLocalStorageData = (key: string, defaultValue: any) => {
-  const storedValue = localStorage.getItem(key)
-  return storedValue ? storedValue : defaultValue
-}
+  const storedValue = localStorage.getItem(key);
+  return storedValue ? storedValue : defaultValue;
+};
 
 // Enhanced ImageToolbar with improved functionality
 export function EnhancedImageToolbar({
@@ -36,7 +39,7 @@ export function EnhancedImageToolbar({
   onCrop,
   onCropApply,
   onCropCancel,
-  upload, // Updated to use upload function
+  upload,
   onChangeImage,
   onPosition,
   onBorderChange,
@@ -61,27 +64,29 @@ export function EnhancedImageToolbar({
   onDrag,
   onResize,
 }) {
+  const [isFlipDropdownOpen, setIsFlipDropdownOpen] = useState(false);
+
   // Handle tool selection
   const handleToolSelect = (tool) => {
     if (onSelectTool) {
-      onSelectTool(selectedTool === tool ? null : tool)
+      onSelectTool(selectedTool === tool ? null : tool);
     }
-  }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" && isItemSelected && !isItemLocked) {
-        onDelete?.()
+        onDelete?.();
       } else if (e.ctrlKey && e.key === "c" && isItemSelected) {
-        onCopy?.()
+        onCopy?.();
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [onDelete, onCopy, isItemSelected, isItemLocked])
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onDelete, onCopy, isItemSelected, isItemLocked]);
 
   return (
     <div className="flex text-gray-800 items-center p-2 border-b h-14">
@@ -126,7 +131,9 @@ export function EnhancedImageToolbar({
 
         {/* Move tool */}
         <button
-          className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${selectedTool === "move" ? "bg-blue-100" : ""}`}
+          className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${
+            selectedTool === "move" ? "bg-blue-100" : ""
+          }`}
           title="Move"
           onClick={() => handleToolSelect("move")}
         >
@@ -142,29 +149,67 @@ export function EnhancedImageToolbar({
           <RotateCw className="h-5 w-5" />
         </button>
 
-        {/* Resize button */}
-
-        {/* Flip button */}
-        <button
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Flip"
-          onClick={onFlip}
-        >
-          <span className="text-sm font-medium">Flip</span>
-        </button>
-        <button
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer" 
-          title="Flip"
-          onClick={onVerticalFlip}
-        >
-          <span className="text-sm font-medium">onVerticalFlip</span>
-        </button>
+        {/* Flip button with dropdown */}
+        <div className="relative">
+          <button
+            className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer flex items-center"
+            title="Flip"
+            onClick={() => setIsFlipDropdownOpen(!isFlipDropdownOpen)}
+          >
+            <span className="text-sm font-medium">Flip</span>
+            <svg
+              className="ml-1 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+          {isFlipDropdownOpen && (
+            <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded shadow-lg">
+              {/* Upward arrow at the top of the dropdown */}
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-t border-l border-gray-200 rotate-45"></div>
+              <button
+                className="flex items-center w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                onClick={() => {
+                  onFlip(); // Calls handleFlipHorizontal
+                  setIsFlipDropdownOpen(false);
+                }}
+              >
+                <ArrowLeftRight className="h-4 w-4 mr-2" />
+                Flip horizontally
+              </button>
+              <button
+                className="flex items-center w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                onClick={() => {
+                  onVerticalFlip(); // Calls handleFlipVertical
+                  setIsFlipDropdownOpen(false);
+                }}
+              >
+                <ArrowUpDown className="h-4 w-4 mr-2" />
+                Flip vertically
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Effects button */}
         <button
-          className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${selectedTool === "effects" ? "bg-blue-100" : ""}`}
+          className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${
+            selectedTool === "effects" ? "bg-blue-100" : ""
+          }`}
           title="Effects"
-          onClick={() => { console.log('@EffectsPanel.tsx'); onEffects(); }}
+          onClick={() => {
+            console.log("@EffectsPanel.tsx");
+            onEffects();
+          }}
         >
           <span className="text-sm font-medium">Effects</span>
         </button>
@@ -190,7 +235,9 @@ export function EnhancedImageToolbar({
         {/* Crop button with conditional rendering */}
         {!isCropping ? (
           <button
-            className={`p-2 rounded flex hover:bg-gray-100 transition-colors cursor-pointer ${selectedTool === "crop" ? "bg-blue-100" : ""}`}
+            className={`p-2 rounded flex hover:bg-gray-100 transition-colors cursor-pointer ${
+              selectedTool === "crop" ? "bg-blue-100" : ""
+            }`}
             title="Crop"
             onClick={onCrop}
           >
@@ -218,24 +265,41 @@ export function EnhancedImageToolbar({
 
         {/* Upload button */}
         <button
-          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer" 
+          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer"
           title="Upload"
-          onClick={upload} // Updated to call upload function
+          onClick={upload}
         >
-          <svg viewBox="64 64 896 896" focusable="false" data-icon="upload" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+          <svg
+            viewBox="64 64 896 896"
+            focusable="false"
+            data-icon="upload"
+            width="1em"
+            height="1em"
+            fill="currentColor"
+            aria-hidden="true"
+          >
             <path d="M400 317.7h73.9V656c0 4.4 3.6 8 8 8h60c4.4 0 8-3.6 8-8V317.7H624c6.7 0 10.4-7.7 6.3-12.9L518.3 163a8 8 0 00-12.6 0l-112 141.7c-4.1 5.3-.4 13 6.3 13zM878 626h-60c-4.4 0-8 3.6-8 8v154H214V634c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v198c0 17.7 14.3 32 32 32h684c17.7 0 32-14.3 32-32V634c0-4.4-3.6-8-8-8z"></path>
           </svg>
           <span className="text-sm font-medium ml-1">Upload</span>
         </button>
 
         {/* Position button */}
-        <button 
-          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer" 
+        <button
+          className="p-2 rounded hover:bg-gray-100 transition-colors flex items-center cursor-pointer"
           title="Position"
           onClick={onPosition}
         >
-          <svg data-icon="layers" height="16" role="img" viewBox="0 0 16 16" width="16">
-            <path d="M.55 4.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3a.998.998 0 00-.06-1.81L8.4.08a1.006 1.006 0 00-.79 0l-6.99 3a.992.992 0 00-.07 1.81zM15 11c-.16 0-.31.04-.45.11L8 14l-6.55-2.9c-.14-.06-.29-.1-.45-.1-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1zm0-4c-.16 0-.31.04-.45.11L8 10 1.45 7.11A.997.997 0 001 7c-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1z" fillRule="evenodd"></path>
+          <svg
+            data-icon="layers"
+            height="16"
+            role="img"
+            viewBox="0 0 16 16"
+            width="16"
+          >
+            <path
+              d="M.55 4.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3a.998.998 0 00-.06-1.81L8.4.08a1.006 1.006 0 00-.79 0l-6.99 3a.992.992 0 00-.07 1.81zM15 11c-.16 0-.31.04-.45.11L8 14l-6.55-2.9c-.14-.06-.29-.1-.45-.1-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1zm0-4c-.16 0-.31.04-.45.11L8 10 1.45 7.11A.997.997 0 001 7c-.55 0-1 .45-1 1 0 .39.23.73.55.89l7 3c.14.07.29.11.45.11.16 0 .31-.04.45-.11l7-3c.32-.16.55-.5.55-.89 0-.55-.45-1-1-1z"
+              fillRule="evenodd"
+            ></path>
           </svg>
           <span className="text-sm font-medium ml-1">Position</span>
         </button>
@@ -246,7 +310,12 @@ export function EnhancedImageToolbar({
           title="Border"
           onClick={onBorderChange}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
             <path
               fillRule="evenodd"
               d="M4 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4zm1 2h10v10H5V5z"
@@ -271,7 +340,12 @@ export function EnhancedImageToolbar({
           onClick={onLock}
         >
           {isItemLocked ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path
                 fillRule="evenodd"
                 d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -279,7 +353,12 @@ export function EnhancedImageToolbar({
               />
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
             </svg>
           )}
@@ -307,9 +386,11 @@ export function EnhancedImageToolbar({
       </div>
 
       {/* Display current scale if needed */}
-      {scale !== 1 && <div className="ml-2 text-xs text-gray-500">{Math.round(scale * 100)}%</div>}
+      {scale !== 1 && (
+        <div className="ml-2 text-xs text-gray-500">
+          {Math.round(scale * 100)}%
+        </div>
+      )}
     </div>
-  )
+  );
 }
-
-// Re-export other toolbar components

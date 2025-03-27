@@ -25,7 +25,12 @@ import { db } from "../../firebase"; // Importing Firebase config
 import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
 import { ImagesTabContent } from "./editor_components/ImagesTabContent";
-import { Toolbar, ShapeToolbar, ImageToolbar, BackgroundToolbar } from "./editor_components/Toolbar";
+import {
+  Toolbar,
+  ShapeToolbar,
+  ImageToolbar,
+  BackgroundToolbar,
+} from "./editor_components/Toolbar";
 import { EnhancedImageToolbar } from "./editor_components/enhanced-image-toolbar";
 
 // Define shape types
@@ -74,7 +79,15 @@ interface ShapeEffects {
   color: string;
 }
 
-type EditorTab = "text" | "images" | "elements" | "background" | "layers" | "size" | "shapes" | "selectedImage";
+type EditorTab =
+  | "text"
+  | "images"
+  | "elements"
+  | "background"
+  | "layers"
+  | "size"
+  | "shapes"
+  | "selectedImage";
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
@@ -110,15 +123,28 @@ const FullEditor: React.FC = () => {
   // New state for enhanced image editing
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isCropping, setIsCropping] = useState<boolean>(false);
-  const [cropArea, setCropArea] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [cropArea, setCropArea] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [imageScale, setImageScale] = useState<number>(1);
   const [imageRotation, setImageRotation] = useState<number>(0);
-  const [imagePosition, setImagePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [imageFilters, setImageFilters] = useState<{ brightness: number; contrast: number; saturation: number }>({
+  const [imagePosition, setImagePosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const [imageFilters, setImageFilters] = useState<{
+    brightness: number;
+    contrast: number;
+    saturation: number;
+  }>({
     brightness: 100,
     contrast: 100,
     saturation: 100,
   });
+
   const [scaleX, setScaleX] = useState<number>(1);
   const [scaleY, setScaleY] = useState<number>(1);
 
@@ -268,7 +294,9 @@ const FullEditor: React.FC = () => {
       }
 
       // Convert the canvas to a blob
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", 1.0));
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/png", 1.0)
+      );
 
       if (!blob) {
         console.error("Failed to create blob from canvas");
@@ -300,14 +328,17 @@ const FullEditor: React.FC = () => {
   useEffect(() => {
     const fetchBackgroundData = async () => {
       try {
-        const response = await axios.get("https://api.unsplash.com/search/photos", {
-          params: {
-            client_id: ACCESS_KEY,
-            query: "abstract gradient background",
-            per_page: 30,
-            orientation: "landscape",
-          },
-        });
+        const response = await axios.get(
+          "https://api.unsplash.com/search/photos",
+          {
+            params: {
+              client_id: ACCESS_KEY,
+              query: "abstract gradient background",
+              per_page: 30,
+              orientation: "landscape",
+            },
+          }
+        );
 
         if (response.data?.results?.length > 0) {
           const images = response.data.results.map((image) => ({
@@ -365,7 +396,9 @@ const FullEditor: React.FC = () => {
 
   // Update a shape's properties
   const handleUpdateShape = (updatedShape: Shape) => {
-    const newShapes = shapes.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape));
+    const newShapes = shapes.map((shape) =>
+      shape.id === updatedShape.id ? updatedShape : shape
+    );
     setShapes(newShapes);
     addToHistory({ shapes: newShapes });
   };
@@ -373,8 +406,10 @@ const FullEditor: React.FC = () => {
   // Update an image's properties
   const handleUpdateImage = (updatedImage: ImageData) => {
     // Update existing image or add new image
-    setImages(currentImages => {
-      const existingIndex = currentImages.findIndex(img => img.id === updatedImage.id);
+    setImages((currentImages) => {
+      const existingIndex = currentImages.findIndex(
+        (img) => img.id === updatedImage.id
+      );
       if (existingIndex !== -1) {
         const newImages = [...currentImages];
         newImages[existingIndex] = updatedImage;
@@ -383,7 +418,7 @@ const FullEditor: React.FC = () => {
         return [...currentImages, updatedImage];
       }
     });
-    
+
     // Also update localStorage for persistence
     localStorage.setItem("imageData", JSON.stringify(updatedImage));
   };
@@ -417,16 +452,16 @@ const FullEditor: React.FC = () => {
 
   // Duplicate the selected image
   const handleDuplicateImage = (imageId: string) => {
-    const imageToDuplicate = images.find(img => img.id === imageId);
+    const imageToDuplicate = images.find((img) => img.id === imageId);
     if (imageToDuplicate) {
       const duplicatedImage: ImageData = {
         ...imageToDuplicate,
         id: `${imageToDuplicate.id}-${Date.now()}`, // Create unique ID
         x: imageToDuplicate.x + 20, // Offset slightly
-        y: imageToDuplicate.y + 20
+        y: imageToDuplicate.y + 20,
       };
-      
-      setImages(currentImages => [...currentImages, duplicatedImage]);
+
+      setImages((currentImages) => [...currentImages, duplicatedImage]);
       localStorage.setItem("imageData", JSON.stringify(duplicatedImage));
       setSelectedImageId(duplicatedImage.id);
 
@@ -437,8 +472,10 @@ const FullEditor: React.FC = () => {
 
   // Delete the selected image
   const handleDeleteImage = (imageId: string) => {
-    setImages(currentImages => currentImages.filter(img => img.id !== imageId));
-    
+    setImages((currentImages) =>
+      currentImages.filter((img) => img.id !== imageId)
+    );
+
     // Clear image from localStorage
     localStorage.removeItem("imageData");
     setSelectedImageId(null);
@@ -486,10 +523,14 @@ const FullEditor: React.FC = () => {
       setPostBody(previousState.postBody || "");
 
       // Restore image editing state if available
-      if (previousState.imageScale !== undefined) setImageScale(previousState.imageScale);
-      if (previousState.imageRotation !== undefined) setImageRotation(previousState.imageRotation);
-      if (previousState.imagePosition !== undefined) setImagePosition(previousState.imagePosition);
-      if (previousState.imageFilters !== undefined) setImageFilters(previousState.imageFilters);
+      if (previousState.imageScale !== undefined)
+        setImageScale(previousState.imageScale);
+      if (previousState.imageRotation !== undefined)
+        setImageRotation(previousState.imageRotation);
+      if (previousState.imagePosition !== undefined)
+        setImagePosition(previousState.imagePosition);
+      if (previousState.imageFilters !== undefined)
+        setImageFilters(previousState.imageFilters);
       if (previousState.scaleX !== undefined) setScaleX(previousState.scaleX);
       if (previousState.scaleY !== undefined) setScaleY(previousState.scaleY);
     }
@@ -505,10 +546,14 @@ const FullEditor: React.FC = () => {
       setPostBody(nextState.postBody || "");
 
       // Restore image editing state if available
-      if (nextState.imageScale !== undefined) setImageScale(nextState.imageScale);
-      if (nextState.imageRotation !== undefined) setImageRotation(nextState.imageRotation);
-      if (nextState.imagePosition !== undefined) setImagePosition(nextState.imagePosition);
-      if (nextState.imageFilters !== undefined) setImageFilters(nextState.imageFilters);
+      if (nextState.imageScale !== undefined)
+        setImageScale(nextState.imageScale);
+      if (nextState.imageRotation !== undefined)
+        setImageRotation(nextState.imageRotation);
+      if (nextState.imagePosition !== undefined)
+        setImagePosition(nextState.imagePosition);
+      if (nextState.imageFilters !== undefined)
+        setImageFilters(nextState.imageFilters);
       if (nextState.scaleX !== undefined) setScaleX(nextState.scaleX);
       if (nextState.scaleY !== undefined) setScaleY(nextState.scaleY);
     }
@@ -542,9 +587,12 @@ const FullEditor: React.FC = () => {
   const handleRotate = () => {
     setImageRotation((prev) => (prev + 90) % 360);
   };
-  const handleFlip = () => {
-    setImageScale((prev) => -prev);
+  const handleFlipHorizontal = () => {
+    const newScaleX = scaleX * -1;
+    setScaleX(newScaleX);
+    addToHistory({ scaleX: newScaleX });
   };
+
   const handleCropStart = (x: number, y: number) => {
     setCropArea({ x, y, width: 0, height: 0 });
   };
@@ -557,7 +605,11 @@ const FullEditor: React.FC = () => {
 
   const handleCropComplete = () => {
     // Finalize crop area
-    if (cropArea && Math.abs(cropArea.width) > 10 && Math.abs(cropArea.height) > 10) {
+    if (
+      cropArea &&
+      Math.abs(cropArea.width) > 10 &&
+      Math.abs(cropArea.height) > 10
+    ) {
       // Normalize crop area (handle negative width/height)
       const normalizedCropArea = {
         x: cropArea.width < 0 ? cropArea.x + cropArea.width : cropArea.x,
@@ -565,7 +617,6 @@ const FullEditor: React.FC = () => {
         width: Math.abs(cropArea.width),
         height: Math.abs(cropArea.height),
       };
-
       setCropArea(normalizedCropArea);
     } else {
       // Cancel crop if area is too small
@@ -673,16 +724,8 @@ const FullEditor: React.FC = () => {
     addToHistory({ imageRotation: newRotation });
   };
 
-  const handleFlipHorizontal = () => {
-    // Flip image horizontally by inverting horizontal scale
-    const newScaleX = -scaleX;
-    setScaleX(newScaleX);
-    addToHistory({ scaleX: newScaleX });
-  };
-
   const handleFlipVertical = () => {
-    // Flip image vertically by inverting vertical scale
-    const newScaleY = -scaleY;
+    const newScaleY = scaleY * -1;
     setScaleY(newScaleY);
     addToHistory({ scaleY: newScaleY });
   };
@@ -782,9 +825,7 @@ const FullEditor: React.FC = () => {
       case "images":
         return (
           <ImagesTabContent
-            onSelectImage={(image) => {
-              setBackgroundImage(image); // Set the image as the background in the canvas
-            }}
+            onSelectImage={handleImageSelect}
             onDuplicateImage={handleDuplicateImage}
             onDeleteImage={handleDeleteImage}
           />
@@ -809,7 +850,13 @@ const FullEditor: React.FC = () => {
           />
         );
       case "layers":
-        return <LayersTabContent shapes={shapes} onSelectShape={setSelectedShapeId} selectedShapeId={selectedShapeId} />;
+        return (
+          <LayersTabContent
+            shapes={shapes}
+            onSelectShape={setSelectedShapeId}
+            selectedShapeId={selectedShapeId}
+          />
+        );
       case "size":
         return <SizeTabContent />;
       case "shapes":
@@ -817,7 +864,11 @@ const FullEditor: React.FC = () => {
       case "selectedImage":
         return (
           <div className="w-full h-full flex items-center justify-center">
-            <img src={selectedImage || ""} alt="Selected" className="max-w-full max-h-full" />
+            <img
+              src={selectedImage || ""}
+              alt="Selected"
+              className="max-w-full max-h-full"
+            />
           </div>
         );
       default:
@@ -884,7 +935,38 @@ const FullEditor: React.FC = () => {
   }, []);
 
   const generateUniqueId = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return (
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    );
+  };
+
+  const handleImageSelect = (image: string) => {
+    setBackgroundImage(image);
+    // Reset all transformations when selecting a new image
+    setImageScale(1);
+    setImageRotation(0);
+    setImagePosition({ x: 0, y: 0 });
+    setScaleX(1);
+    setScaleY(1);
+    setImageFilters({
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+    });
+    addToHistory({
+      backgroundImage: image,
+      imageScale: 1,
+      imageRotation: 0,
+      imagePosition: { x: 0, y: 0 },
+      scaleX: 1,
+      scaleY: 1,
+      imageFilters: {
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+      },
+    });
   };
 
   return (
@@ -916,7 +998,10 @@ const FullEditor: React.FC = () => {
               >
                 <Dialog.Panel className="w-full max-w-[95%] h-[70vh] transform overflow-hidden rounded-lg bg-white shadow-xl transition-all editor-container">
                   <div className="flex justify-between items-center px-4 py-3 border-b">
-                    <Dialog.Title as="h3" className="text-lg font-medium flex items-center">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-medium flex items-center"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5 mr-2"
@@ -999,7 +1084,9 @@ const FullEditor: React.FC = () => {
                       <div className="flex flex-col items-center">
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "text" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "text"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("text")}
                         >
@@ -1009,7 +1096,9 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "images" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "images"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("images")}
                         >
@@ -1032,7 +1121,9 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "elements" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "elements"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("shapes")}
                         >
@@ -1055,7 +1146,9 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "background" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "background"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("background")}
                         >
@@ -1078,7 +1171,9 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "layers" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "layers"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("layers")}
                         >
@@ -1101,7 +1196,9 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "size" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "size"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("size")}
                         >
@@ -1124,7 +1221,9 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "selectedImage" ? "bg-blue-100" : "hover:bg-gray-100"
+                            activeTab === "selectedImage"
+                              ? "bg-blue-100"
+                              : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("selectedImage")}
                         >
@@ -1150,7 +1249,9 @@ const FullEditor: React.FC = () => {
                     {/* Main content */}
                     <div className="flex-1 flex">
                       {/* Sidebar for active tab */}
-                      <div className="w-1/5 p-4 shadow">{renderTabContent()}</div>
+                      <div className="w-1/5 p-4 shadow">
+                        {renderTabContent()}
+                      </div>
 
                       <div className="flex-1 flex flex-col">
                         {/* Toolbar */}
@@ -1158,42 +1259,59 @@ const FullEditor: React.FC = () => {
                           <Toolbar
                             onFontChange={(font) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId ? { ...shape, fontFamily: font } : shape
+                                shape.id === editingTextId
+                                  ? { ...shape, fontFamily: font }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onFontSizeChange={(size) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId ? { ...shape, fontSize: size } : shape
+                                shape.id === editingTextId
+                                  ? { ...shape, fontSize: size }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId ? { ...shape, color } : shape
+                                shape.id === editingTextId
+                                  ? { ...shape, color }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onBackgroundColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId ? { ...shape, backgroundColor: color } : shape
+                                shape.id === editingTextId
+                                  ? { ...shape, backgroundColor: color }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onCopy={() => {
-                              const shapeToCopy = shapes.find((shape) => shape.id === editingTextId);
+                              const shapeToCopy = shapes.find(
+                                (shape) => shape.id === editingTextId
+                              );
                               if (shapeToCopy) {
-                                const copiedShape = { ...shapeToCopy, id: generateUniqueId() };
+                                const copiedShape = {
+                                  ...shapeToCopy,
+                                  id: generateUniqueId(),
+                                };
                                 setShapes([...shapes, copiedShape]);
-                                addToHistory({ shapes: [...shapes, copiedShape] });
+                                addToHistory({
+                                  shapes: [...shapes, copiedShape],
+                                });
                               }
                             }}
                             onDelete={() => {
-                              const updatedShapes = shapes.filter((shape) => shape.id !== editingTextId);
+                              const updatedShapes = shapes.filter(
+                                (shape) => shape.id !== editingTextId
+                              );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
@@ -1204,42 +1322,54 @@ const FullEditor: React.FC = () => {
                           <ShapeToolbar
                             onColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, color } : shape
+                                shape.id === selectedShapeId
+                                  ? { ...shape, color }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onTransparencyChange={(transparency) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, transparency } : shape
+                                shape.id === selectedShapeId
+                                  ? { ...shape, transparency }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onEffectsChange={(effects) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, effects } : shape
+                                shape.id === selectedShapeId
+                                  ? { ...shape, effects }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onBorderStyleChange={(style) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, borderStyle: style } : shape
+                                shape.id === selectedShapeId
+                                  ? { ...shape, borderStyle: style }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onBorderColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, borderColor: color } : shape
+                                shape.id === selectedShapeId
+                                  ? { ...shape, borderColor: color }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
                             }}
                             onBorderWidthChange={(width) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId ? { ...shape, borderWidth: width } : shape
+                                shape.id === selectedShapeId
+                                  ? { ...shape, borderWidth: width }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({ shapes: updatedShapes });
@@ -1338,11 +1468,16 @@ const FullEditor: React.FC = () => {
                                       onChange={(e) => {
                                         const newColor = e.target.value;
                                         if (selectedShapeId) {
-                                          const updatedShapes = shapes.map((shape) =>
-                                            shape.id === selectedShapeId ? { ...shape, color: newColor } : shape
+                                          const updatedShapes = shapes.map(
+                                            (shape) =>
+                                              shape.id === selectedShapeId
+                                                ? { ...shape, color: newColor }
+                                                : shape
                                           );
                                           setShapes(updatedShapes);
-                                          addToHistory({ shapes: updatedShapes });
+                                          addToHistory({
+                                            shapes: updatedShapes,
+                                          });
                                         }
                                       }}
                                     />
@@ -1365,7 +1500,10 @@ const FullEditor: React.FC = () => {
                               </button>
                               <button
                                 className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                                onClick={() => selectedShapeId && handleDeleteShape(selectedShapeId)}
+                                onClick={() =>
+                                  selectedShapeId &&
+                                  handleDeleteShape(selectedShapeId)
+                                }
                                 disabled={!selectedShapeId}
                               >
                                 <TrashIcon className="h-5 w-5 text-gray-500" />
@@ -1432,23 +1570,29 @@ const FullEditor: React.FC = () => {
                             />
                           </div>
                           <div
-                            className={`absolute top-60 ml-[10%] text-center rounded-md ${isTextAreaActive ? "border border-black-500" : ""}`}
+                            className={`absolute top-60 ml-[10%] text-center rounded-md ${
+                              isTextAreaActive ? "border border-black-500" : ""
+                            }`}
                           >
                             <textarea
                               className="w-[40vw] h-[10vh] resize border-none focus:outline-none"
                               value={postBody}
                               onChange={(e) => {
-                                setPostBody(e.target.value)
-                                addToHistory({ postBody: e.target.value })
+                                setPostBody(e.target.value);
+                                addToHistory({ postBody: e.target.value });
                               }}
                               onFocus={() => setIsTextAreaActive(true)}
                               onBlur={(e) => {
-                                const toolbarElement = document.getElementById("toolfix")
-                                if (!toolbarElement || !toolbarElement.contains(e.relatedTarget)) {
-                                  setIsTextAreaActive(false)
+                                const toolbarElement =
+                                  document.getElementById("toolfix");
+                                if (
+                                  !toolbarElement ||
+                                  !toolbarElement.contains(e.relatedTarget)
+                                ) {
+                                  setIsTextAreaActive(false);
                                   if (!postBodyActive) {
                                     // Perform any additional actions when clicking outside
-                                    console.log("Clicked outside the textarea")
+                                    console.log("Clicked outside the textarea");
                                   }
                                 }
                               }}
@@ -1461,14 +1605,20 @@ const FullEditor: React.FC = () => {
                           <div className="absolute bottom-4 right-4 flex items-center bg-white rounded-md shadow-sm">
                             <button
                               className="p-2 hover:bg-gray-100 rounded-l-md hover:cursor-pointer"
-                              onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
+                              onClick={() =>
+                                setZoomLevel(Math.max(25, zoomLevel - 25))
+                              }
                             >
                               <MinusIcon className="h-4 w-4" />
                             </button>
-                            <div className="px-3 py-1 border-l border-r">{zoomLevel}%</div>
+                            <div className="px-3 py-1 border-l border-r">
+                              {zoomLevel}%
+                            </div>
                             <button
                               className="p-2 hover:bg-gray-100 rounded-r-md hover:cursor-pointer"
-                              onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
+                              onClick={() =>
+                                setZoomLevel(Math.min(200, zoomLevel + 25))
+                              }
                             >
                               <PlusIcon className="h-4 w-4" />
                             </button>
@@ -1484,25 +1634,33 @@ const FullEditor: React.FC = () => {
         </Dialog>
       </Transition>
     </>
-  )
-}
+  );
+};
 
 // Tab content components
-const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({ onAddText }) => {
+const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({
+  onAddText,
+}) => {
   return (
     <div className="w-full max-w-lg mx-auto text-center">
-      <h1 className="text-4xl font-bold mb-4 cursor-pointer" onClick={() => onAddText("header")}>
+      <h1
+        className="text-4xl font-bold mb-4 cursor-pointer"
+        onClick={() => onAddText("header")}
+      >
         Create header
       </h1>
-      <h2 className="text-2xl font-medium mb-4 cursor-pointer" onClick={() => onAddText("h2")}>
+      <h2
+        className="text-2xl font-medium mb-4 cursor-pointer"
+        onClick={() => onAddText("h2")}
+      >
         Create sub header
       </h2>
       <p className="text-base cursor-pointer" onClick={() => onAddText("p")}>
         Create body text
       </p>
     </div>
-  )
-}
+  );
+};
 
 const ElementsTabContent: React.FC = () => {
   return (
@@ -1511,14 +1669,14 @@ const ElementsTabContent: React.FC = () => {
         <p className="text-gray-500">Elements will be displayed here</p>
       </div>
     </div>
-  )
-}
+  );
+};
 
 interface BackgroundTabContentProps {
-  onColorChange: (color: string) => void
-  colors: string[]
-  patterns: string[]
-  onPatternSelect: (pattern: string) => void
+  onColorChange: (color: string) => void;
+  colors: string[];
+  patterns: string[];
+  onPatternSelect: (pattern: string) => void;
 }
 
 const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({
@@ -1558,21 +1716,27 @@ const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 interface LayersTabContentProps {
-  shapes: Shape[]
-  onSelectShape: (id: string | null) => void
-  selectedShapeId: string | null
+  shapes: Shape[];
+  onSelectShape: (id: string | null) => void;
+  selectedShapeId: string | null;
 }
 
-const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectShape, selectedShapeId }) => {
+const LayersTabContent: React.FC<LayersTabContentProps> = ({
+  shapes,
+  onSelectShape,
+  selectedShapeId,
+}) => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
       <div className="border rounded-lg divide-y">
         {shapes.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">No shapes added yet</div>
+          <div className="p-4 text-center text-gray-500">
+            No shapes added yet
+          </div>
         ) : (
           shapes.map((shape) => (
             <div
@@ -1584,47 +1748,76 @@ const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectSha
             >
               <div className="flex items-center">
                 <ChevronRightIcon className="h-4 w-4 mr-2" />
-                <span>{shape.type.charAt(0).toUpperCase() + shape.type.slice(1)}</span>
+                <span>
+                  {shape.type.charAt(0).toUpperCase() + shape.type.slice(1)}
+                </span>
               </div>
-              <div className="h-4 w-4 rounded-sm" style={{ backgroundColor: shape.color }}></div>
+              <div
+                className="h-4 w-4 rounded-sm"
+                style={{ backgroundColor: shape.color }}
+              ></div>
             </div>
           ))
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const SizeTabContent: React.FC = () => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Width</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Width
+          </label>
           <div className="flex items-center">
-            <input type="range" min="100" max="1000" defaultValue="500" className="w-full" />
+            <input
+              type="range"
+              min="100"
+              max="1000"
+              defaultValue="500"
+              className="w-full"
+            />
             <span className="ml-2 w-16 text-center">500px</span>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Height
+          </label>
           <div className="flex items-center">
-            <input type="range" min="100" max="1000" defaultValue="500" className="w-full" />
+            <input
+              type="range"
+              min="100"
+              max="1000"
+              defaultValue="500"
+              className="w-full"
+            />
             <span className="ml-2 w-16 text-center">500px</span>
           </div>
         </div>
         <div className="pt-4 border-t">
           <h3 className="text-lg font-medium mb-2">Preset Sizes</h3>
           <div className="grid grid-cols-2 gap-2">
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Instagram Post</button>
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Facebook Post</button>
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Twitter Post</button>
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">LinkedIn Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
+              Instagram Post
+            </button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
+              Facebook Post
+            </button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
+              Twitter Post
+            </button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
+              LinkedIn Post
+            </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FullEditor
+export default FullEditor;
