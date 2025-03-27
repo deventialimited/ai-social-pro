@@ -1,13 +1,13 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export interface Post {
   id: string;
   text: string;
   imageUrl: string;
   scheduledDate: string;
-  platforms: ('facebook' | 'instagram' | 'x' | 'linkedin')[];
+  platforms: ("facebook" | "instagram" | "x" | "linkedin")[];
   businessLogo: string;
-  status: 'generated' | 'draft' | 'scheduled' | 'published';
+  status: "generated" | "draft" | "scheduled" | "published";
 }
 
 export interface Website {
@@ -26,7 +26,7 @@ export interface BusinessData {
   language: string;
   country: string;
   region: string;
-  
+
   // Brand Category
   logo: string;
   logoBackground: string;
@@ -34,7 +34,7 @@ export interface BusinessData {
   brandColor: string;
   backgroundColor: string;
   textColor: string;
-  
+
   // Marketing Strategy Category
   marketingStrategy: {
     audience: string[];
@@ -48,10 +48,16 @@ export interface ThemeState {
   setIsDark: (isDark: boolean) => void;
   toggle: () => void;
 }
+export interface AuthState {
+  isLoginPopup: boolean;
+  isSignupPopup: boolean;
+  setIsLoginPopup: (isLoginPopup: boolean) => void;
+  setIsSignupPopup: (isSignupPopup: boolean) => void;
+}
 
 export interface CanvasElement {
   id: string;
-  type: 'text' | 'image' | 'shape';
+  type: "text" | "image" | "shape";
   content: string;
   style: {
     x: number;
@@ -66,7 +72,7 @@ export interface CanvasElement {
     opacity?: number;
     fontSize?: number;
     fontFamily?: string;
-    textAlign?: 'left' | 'center' | 'right';
+    textAlign?: "left" | "center" | "right";
     zIndex: number;
   };
 }
@@ -78,7 +84,7 @@ export interface CanvasData {
   elements: CanvasElement[];
 }
 
-export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'linkedin';
+export type SocialPlatform = "facebook" | "instagram" | "x" | "linkedin";
 
 export interface PlatformDimensions {
   width: number;
@@ -90,21 +96,21 @@ export const PLATFORM_DIMENSIONS: Record<SocialPlatform, PlatformDimensions> = {
   facebook: {
     width: 1200,
     height: 630,
-    label: 'Facebook Post'
+    label: "Facebook Post",
   },
   instagram: {
     width: 1080,
     height: 1080,
-    label: 'Instagram Square'
+    label: "Instagram Square",
   },
   x: {
     width: 1600,
     height: 900,
-    label: 'X Post'
+    label: "X Post",
   },
   linkedin: {
     width: 1200,
     height: 627,
-    label: 'LinkedIn Post'
-  }
+    label: "LinkedIn Post",
+  },
 };
