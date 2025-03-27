@@ -1,23 +1,68 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { AuthModal } from '../components/AuthModal';
-import { Globe, ArrowRight, Sparkles, Zap, Shield, LayoutDashboard, Calendar } from 'lucide-react';
+// @ts-nocheck
 
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { AuthModal } from "../components/AuthModal";
+import {
+  Globe,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Shield,
+  LayoutDashboard,
+  Calendar,
+} from "lucide-react";
+//
+function extractDomain(fullUrl) {
+  try {
+    const normalized = fullUrl.startsWith("http")
+      ? fullUrl
+      : `https://${fullUrl}`;
+    return new URL(normalized).hostname;
+  } catch (err) {
+    console.error("Error extracting domain:", err);
+    return null;
+  }
+}
+
+const generateCompanyData = async (domain) => {
+  try {
+    // Second API call
+    const secondResponse = await fetch(
+      `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+    );
+
+    if (!secondResponse.ok) {
+      throw new Error(
+        `Second API call failed with status: ${secondResponse.status}`
+      );
+    }
+
+    // Parse second response and return
+    const secondData = await secondResponse.json();
+    // return secondData;
+    console.log(secondData);
+  } catch (error) {
+    console.log("Error in AI App data:", error);
+    return null;
+  }
+};
 export const HomePage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (url) {
-      setShowAuthModal(true);
+      // setShowAuthModal(true);
+      await generateCompanyData(url);
     }
   };
 
   const handleLogin = () => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
@@ -39,7 +84,7 @@ export const HomePage: React.FC = () => {
             <div className="flex items-center gap-4">
               <ThemeToggle />
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate("/dashboard")}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
               >
                 <LayoutDashboard className="w-4 h-4" />
@@ -69,17 +114,19 @@ export const HomePage: React.FC = () => {
             <Sparkles className="w-4 h-4" />
             AI-Powered Social Media Content Creation
           </div>
-          
+
           <div className="space-y-4 mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
               Your Website to
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                {' '}365 Days{' '}
+                {" "}
+                365 Days{" "}
               </span>
               of Social Posts
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Enter your website URL and let AI create a year's worth of engaging social media content, perfectly tailored to your brand
+              Enter your website URL and let AI create a year's worth of
+              engaging social media content, perfectly tailored to your brand
             </p>
           </div>
 
@@ -111,9 +158,18 @@ export const HomePage: React.FC = () => {
 
             <div className="flex items-center justify-center gap-8 mt-8 text-sm text-gray-600 dark:text-gray-400">
               {[
-                { icon: <Calendar className="w-4 h-4" />, text: '365 days of content' },
-                { icon: <Zap className="w-4 h-4" />, text: 'Generated in minutes' },
-                { icon: <Shield className="w-4 h-4" />, text: 'AI-powered optimization' }
+                {
+                  icon: <Calendar className="w-4 h-4" />,
+                  text: "365 days of content",
+                },
+                {
+                  icon: <Zap className="w-4 h-4" />,
+                  text: "Generated in minutes",
+                },
+                {
+                  icon: <Shield className="w-4 h-4" />,
+                  text: "AI-powered optimization",
+                },
               ].map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   {item.icon}
@@ -132,19 +188,22 @@ export const HomePage: React.FC = () => {
             {[
               {
                 icon: <Sparkles className="w-6 h-6" />,
-                title: 'Smart Content Creation',
-                description: 'Our AI analyzes your website and creates engaging posts that match your brand voice'
+                title: "Smart Content Creation",
+                description:
+                  "Our AI analyzes your website and creates engaging posts that match your brand voice",
               },
               {
                 icon: <Zap className="w-6 h-6" />,
-                title: 'Year-Round Coverage',
-                description: 'Get 365 days of social media content generated in just minutes'
+                title: "Year-Round Coverage",
+                description:
+                  "Get 365 days of social media content generated in just minutes",
               },
               {
                 icon: <Shield className="w-6 h-6" />,
-                title: 'Multi-Platform Ready',
-                description: 'Posts are automatically optimized for each social media platform'
-              }
+                title: "Multi-Platform Ready",
+                description:
+                  "Posts are automatically optimized for each social media platform",
+              },
             ].map((feature, index) => (
               <div
                 key={index}
