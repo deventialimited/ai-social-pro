@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
-import { signUpWithEmailPassword,logInWithEmailPassword,GoogleSignUp } from '../lib/authStore'
 interface AuthModalProps {
   onClose: () => void;
   onLogin: () => void;
@@ -17,14 +16,14 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   if (isSignUp) {
     try {
-      await signUpWithEmailPassword(formData.email, formData.password);
+      // await signUpWithEmailPassword(formData.email, formData.password);
     } catch (err: any) {
       console.error("Error:", err.code, err.message);
       alert(`Signup Failed: ${err.message}`);
     }
   } else {
     try {
-      await logInWithEmailPassword(formData.email, formData.password);
+      // await logInWithEmailPassword(formData.email, formData.password);
       onLogin(); // This will navigate to /dashboard
     } catch (err: any) {
       console.error("Error:", err.code, err.message);
@@ -35,7 +34,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const handleGoogleLogin = async()=> {
   try {
-    await GoogleSignUp();
+    // await GoogleSignUp();
   }
   catch (error: any) {
     console.error("Error:", error.code, error.message);
