@@ -94,8 +94,6 @@ const Sidebar = ({
     navigate("/login");
   };
 
-<<<<<<< HEAD
-=======
   console.log("current domain data", currentDomainObj);
 
   let currentdomainwebsite = currentDomainObj?.clientWebsite;
@@ -103,7 +101,6 @@ const Sidebar = ({
   console.log("selected client website ", currentdomainwebsite);
 
   // Domain dropdown toggles
->>>>>>> 446b7cc1c7ce271b25181cdd7095867976acc9b7
   const toggleDomainDropdown = () => {
     setIsDomainDropdownOpen(!isDomainDropdownOpen);
   };
@@ -149,17 +146,11 @@ const Sidebar = ({
           <div className="p-4 flex flex-col justify-between h-full">
             <div className="flex items-center gap-2">
               {/* Heading (desktop) */}
-<<<<<<< HEAD
-              <h1 className="text-[22px] font-bold text-blue-600 dark:text-blue-400 mb-4 items-center hidden md:flex">
-                Profile
-                <FaBars className="ml-[138px] text-[26px] text-gray-600 dark:text-gray-300" />
-=======
               <img src="/logoIcon.jpeg" alt="" width={50} height={50} />
              
               <h1 className="text-[22px] font-bold text-blue-600   items-center hidden md:flex">
                 OneYearSocial
                 {/* <FaBars className="ml-[138px] text-[26px] text-gray-600" /> */}
->>>>>>> 446b7cc1c7ce271b25181cdd7095867976acc9b7
               </h1>
             </div>
 

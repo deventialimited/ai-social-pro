@@ -429,6 +429,9 @@ const FullEditor: React.FC = () => {
       setImages(currentImages => [...currentImages, duplicatedImage]);
       localStorage.setItem("imageData", JSON.stringify(duplicatedImage));
       setSelectedImageId(duplicatedImage.id);
+
+      // Add the duplicated image to the canvas
+      setBackgroundImage(duplicatedImage.url);
     }
   };
 

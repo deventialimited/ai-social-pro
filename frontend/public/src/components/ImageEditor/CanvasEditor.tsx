@@ -1,6 +1,6 @@
 // @ts-nocheck
 "use client"
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import { TrashIcon, DocumentDuplicateIcon } from "@heroicons/react/24/outline";
 import { FaSyncAlt } from "react-icons/fa";
@@ -100,6 +100,58 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   selectedImageId,
   onSelectImage,
 }) => {
+  const [images, setImages] = useState<ImageData[]>([]);
+
+  // Effect to load images from localStorage on component mount
+  useEffect(() => {
+    const loadImagesFromStorage = () => {
+      const postData = localStorage.getItem("postdata");
+      const storedImagesData = localStorage.getItem("imagesData");
+      
+      // Initialize images array
+      let initialImages: ImageData[] = [];
+
+      // Add image from post data if exists
+      if (postData) {
+        const { image } = JSON.parse(postData);
+        if (image && image !== "none") {
+          initialImages.push({
+            id: "post-image",
+            src: image,
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 300,
+            rotation: 0,
+            zIndex: 1
+          });
+        }
+      }
+
+      // Add additional images from storage
+      if (storedImagesData) {
+        const parsedStoredImages = JSON.parse(storedImagesData);
+        initialImages = [...initialImages, ...parsedStoredImages];
+      }
+
+      setImages(initialImages);
+    };
+
+    loadImagesFromStorage();
+  }, []);
+
+  // Effect to save images to localStorage when images change
+  useEffect(() => {
+    // Filter out the original post image
+    const imagesToStore = images.filter(img => img.id !== "post-image");
+    
+    if (imagesToStore.length > 0) {
+      localStorage.setItem("imagesData", JSON.stringify(imagesToStore));
+    } else {
+      localStorage.removeItem("imagesData");
+    }
+  }, [images]);
+
   const rotationRef = useRef({
     isRotating: false,
     startAngle: 0,
@@ -177,7 +229,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
   const handleImageRotate = (e: MouseEvent) => {
     if (!imageRotationRef.current.isRotating || !onUpdateImage) return;
-    const imageData = shapes.find((s) => s.id === imageRotationRef.current.imageId) as ImageData;
+    const imageData = images.find((img) => img.id === imageRotationRef.current.imageId);
     if (!imageData) return;
     const imageCenterX = imageData.x + imageData.width / 2;
     const imageCenterY = imageData.y + imageData.height / 2;
@@ -196,9 +248,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     window.removeEventListener("mousemove", handleImageRotate);
     window.removeEventListener("mouseup", stopImageRotation);
   };
-
-  const postData = localStorage.getItem("postdata");
-  const { topic, content, image, post_id } = postData ? JSON.parse(postData) : {};
 
   const getShadowStyle = (effects?: ShapeEffects) => {
     if (!effects || !effects.shadow) return {};
@@ -469,151 +518,144 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     }
   };
 
-  // Updated renderImage function that wraps the image in Rnd component
-  const renderImage = (imageSrc: string) => {
-    if (!imageSrc || imageSrc === "none") return null;
-    
-    // Default image position and dimensions
-    const defaultImageData = {
-      id: "post-image",
-      src: imageSrc,
-      x: 0,
-      y: 0,
-      width: 200,
-      height: 300,
-      rotation: 0,
-      zIndex: 1
-    };
-    
-    // Get image data from localStorage if available
-    const storedImageData = localStorage.getItem("imageData");
-    if (!storedImageData) return null;
-    const imageData = JSON.parse(storedImageData);
-    
-    const isSelected = selectedImageId === "post-image" || backgroundImage === imageSrc;
-    
-    return (
-      <Rnd
-        id="post-image"
-        size={{ width: imageData.width, height: imageData.height }}
-        position={{ x: imageData.x, y: imageData.y }}
-        onDragStart={(e) => {
-          e.stopPropagation();
-          if (onSelectImage) onSelectImage("post-image");
-        }}
-        onDrag={(e, d) => {
-          if (onUpdateImage) {
-            // Update image position
-            onUpdateImage({
-              ...imageData,
-              x: d.x,
-              y: d.y,
-            });
-          }
-        }}
-        onResizeStop={(e, direction, ref, delta, position) => {
-          if (onUpdateImage) {
-            onUpdateImage({
-              ...imageData,
-              width: Math.max(50, parseInt(ref.style.width)),
-              height: Math.max(50, parseInt(ref.style.height)),
-              x: position.x,
-              y: position.y,
-            });
-          }
-        }}
-        className={`${isSelected ? "z-10" : ""}`}
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
-          if (onSelectImage) onSelectImage("post-image");
-        }}
-        bounds="#canvas"
-        enableResizing={{
-          top: isSelected,
-          right: isSelected,
-          bottom: isSelected,
-          left: isSelected,
-          topRight: isSelected,
-          bottomRight: isSelected,
-          bottomLeft: isSelected,
-          topLeft: isSelected,
-        }}
-        disableDragging={!isSelected}
-        style={{
-          transform: `rotate(${imageData.rotation || 0}deg)`,
-          transformOrigin: "center center",
-          zIndex: imageData.zIndex || 1,
-        }}
-      >
-        <div className="relative w-full h-full">
-          {/* Image container */}
-          <img
-            src={imageSrc}
-            alt="Post"
-            className="w-full h-full object-cover"
-          />
+  const renderImage = () => {
+    return images.map((imageData) => {
+      const isSelected = selectedImageId === imageData.id;
+      
+      return (
+        <Rnd
+          key={imageData.id}
+          id={imageData.id}
+          size={{ width: imageData.width, height: imageData.height }}
+          position={{ x: imageData.x, y: imageData.y }}
+          onDragStart={(e) => {
+            e.stopPropagation();
+            if (onSelectImage) onSelectImage(imageData.id);
+          }}
+          onDrag={(e, d) => {
+            const updatedImages = images.map(img => 
+              img.id === imageData.id 
+                ? { ...img, x: d.x, y: d.y } 
+                : img
+            );
+            setImages(updatedImages);
+          }}
+          onResizeStop={(e, direction, ref, delta, position) => {
+            const updatedImages = images.map(img => 
+              img.id === imageData.id 
+                ? { 
+                    ...img, 
+                    width: Math.max(50, parseInt(ref.style.width)),
+                    height: Math.max(50, parseInt(ref.style.height)),
+                    x: position.x,
+                    y: position.y,
+                  } 
+                : img
+            );
+            setImages(updatedImages);
+          }}
+          className={`${isSelected ? "z-10" : ""}`}
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (onSelectImage) onSelectImage(imageData.id);
+          }}
+          bounds="#canvas"
+          enableResizing={{
+            top: isSelected,
+            right: isSelected,
+            bottom: isSelected,
+            left: isSelected,
+            topRight: isSelected,
+            bottomRight: isSelected,
+            bottomLeft: isSelected,
+            topLeft: isSelected,
+          }}
+          disableDragging={!isSelected}
+          style={{
+            transform: `rotate(${imageData.rotation || 0}deg)`,
+            transformOrigin: "center center",
+            zIndex: imageData.zIndex || 1,
+          }}
+        >
+          <div className="relative w-full h-full">
+            {/* Image container */}
+            <img
+              src={imageData.src}
+              alt="Post"
+              className="w-full h-full object-cover"
+            />
 
-          {/* Controls for selected image */}
-          {isSelected &&  (
-            <>
-              {/* Rotation handle */}
-              <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                <div
-                  className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center cursor-move pointer-events-auto"
-                  onMouseDown={(e) => startImageRotation(e, imageData)}
-                >
-                  <FaSyncAlt className="h-4 w-4 text-blue-500" />
+            {/* Controls for selected image */}
+            {isSelected && (
+              <>
+                {/* Rotation handle */}
+                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                  <div
+                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center cursor-move pointer-events-auto"
+                    onMouseDown={(e) => startImageRotation(e, imageData)}
+                  >
+                    <FaSyncAlt className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-px h-4 bg-blue-500 pointer-events-none"></div>
                 </div>
-                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-px h-4 bg-blue-500 pointer-events-none"></div>
-              </div>
 
-              {/* Border and resize handles */}
-              <div
-                className="absolute inset-0 border-2 border-blue-500 pointer-events-none"
-              ></div>
+                {/* Border and resize handles */}
+                <div className="absolute inset-0 border-2 border-blue-500 pointer-events-none"></div>
 
-              {/* Corner resize handles */}
-              <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
-              <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
-              <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
-              <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
+                {/* Corner resize handles */}
+                <div className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
+                <div className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
+                <div className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nesw-resize"></div>
+                <div className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border border-blue-500 cursor-nwse-resize"></div>
 
-              {/* Middle resize handles */}
-              <div className="absolute top-1/2 -left-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
-              <div className="absolute top-1/2 -right-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
-              <div className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
-              <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
+                {/* Middle resize handles */}
+                <div className="absolute top-1/2 -left-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
+                <div className="absolute top-1/2 -right-1.5 transform -translate-y-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ew-resize"></div>
+                <div className="absolute -top-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
+                <div className="absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-white border border-blue-500 cursor-ns-resize"></div>
 
-              {/* Delete and duplicate buttons */}
-              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-                <button
-                  className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    if (onDeleteImage) {
-                      onDeleteImage(imageData.id);
-                      // Remove image from local storage
-                      localStorage.removeItem("imageData");
-                    }
-                  }}
-                >
-                  <TrashIcon className="h-4 w-4 text-gray-700" />
-                </button>
-                <button
-                  className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    if (onDuplicateImage) onDuplicateImage(imageData.id);
-                  }}
-                >
-                  <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </Rnd>
-    );
+                {/* Delete and duplicate buttons */}
+                <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                  <button
+                    className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      // Prevent deleting the original post image
+                      if (imageData.id === "post-image") return;
+
+                      // Remove the image from the state
+                      const updatedImages = images.filter(img => img.id !== imageData.id);
+                      setImages(updatedImages);
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4 text-gray-700" />
+                  </button>
+                  <button
+                    className="p-1 bg-white rounded-sm shadow hover:bg-gray-100 border border-gray-200"
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      // Create a new image with a unique ID and slightly offset position
+                      const newImageId = `image-${Date.now()}`;
+                      const newImage = {
+                        ...imageData,
+                        id: newImageId,
+                        x: imageData.x + 20,
+                        y: imageData.y + 20,
+                      };
+                      
+                      // Add the new image to the state
+                      setImages([...images, newImage]);
+                    }}
+                  >
+                    <DocumentDuplicateIcon className="h-4 w-4 text-gray-700" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </Rnd>
+      );
+    });
   };
 
   return (
@@ -622,7 +664,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       className="w-full h-full overflow-hidden"
       style={{
         backgroundColor,
-        // backgroundSize: "cover",
         width: "65vw",
         height: "100%",
       }}
@@ -631,7 +672,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         if (onSelectImage) onSelectImage(null);
       }}
     >
-      {renderImage(backgroundImage || (localStorage.getItem('postdata') ? JSON.parse(localStorage.getItem('postdata')!).image : "none"))}
+      {renderImage()}
       {shapes.map((shape) => {
         const isSelected = selectedShapeId === shape.id
 
