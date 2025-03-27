@@ -36,6 +36,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   const handleGoogleLogin = async()=> {
   try {
     await GoogleSignUp();
+    onLogin();
   }
   catch (error: any) {
     console.error("Error:", error.code, error.message);
