@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const databaseName = "Get_Simple"; // Replace with your actual database name
-const databaseUrl = `mongodb+srv://codewithkazmi:codewithkazmi@cluster0.r8c8ixb.mongodb.net/${databaseName}`; // Connection string
+const databaseName = "SocailPro"; // Replace with your actual database name
+const databaseUrl = `mongodb+srv://Mehtab1:mehtab1122@cluster0.ahnmfrc.mongodb.net/${databaseName}`; // Connection string
 // const databaseUrl = `mongodb://127.0.0.1:27017/${databaseName}`;
 module.exports = async () => {
   try {
