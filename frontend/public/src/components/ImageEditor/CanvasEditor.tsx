@@ -837,7 +837,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       // Only protect the original post image from deletion
-                      if (imageData.id === "post-image") return;
+                      // if (imageData.id === "post-image") return;
                       const updatedImages = images.filter(
                         (img) => img.id !== imageData.id
                       );
