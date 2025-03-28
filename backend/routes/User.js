@@ -39,7 +39,6 @@ router.post("/login", login);
 router.post("/google-auth", googleAuth);
 
 // Facebook authentication route
-router.post("/facebook-auth", facebookAuth);
 
 // Send email OTP for verification
 router.post("/send-email-verification-otp", sendEmailVerificationOtp);
@@ -58,12 +57,7 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:id", resetPassword);
 //set-password
 router.post("/set-password/:id", setPassword);
-// Route to update user status (block/activate)
-router.patch("/updateUserStatus/:id", updateUserStatus);
 
-router.delete("/deleteUserByAdmin/:id", deleteUserByAdmin);
-// Route to get user account status
-router.get("/getUserAccountStatus/:id", getUserAccountStatus);
 //edit profile
 router.post("/edit-profile/:id", upload.single("profileImage"), editProfile);
 // Get all users
