@@ -815,7 +815,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     : undefined,
                   transform: imageTransform,
                   transformOrigin: "center center",
-                  objectFit: "contain",
+                  objectFit: "cover",
                 }}
                 draggable={false}
               />
