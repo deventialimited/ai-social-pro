@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+}
+
+/* Light theme colors from the image */
+:root {
+  --bg-light: #f8f9fc;
+  --text-light: #1a1a1a;
+  --sidebar-light: #ffffff;
+  --border-light: #e5e7eb;
+  --hover-light: #f3f4f6;
+}
+
+/* Dark theme colors */
+.dark {
+  --bg-dark: #111827;
+  --text-dark: #ffffff;
+  --sidebar-dark: #1f2937;
+  --border-dark: #374151;
+  --hover-dark: #374151;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apply theme colors */
+body {
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
+
+.dark body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* Sidebar theming */
+.sidebar {
+  background-color: var(--sidebar-light);
+  border-color: var(--border-light);
+}
+
+.dark .sidebar {
+  background-color: var(--sidebar-dark);
+  border-color: var(--border-dark);
+}
+
+/* Hover states */
+.hover-bg {
+  background-color: var(--hover-light);
+}
+
+.dark .hover-bg {
+  background-color: var(--hover-dark);
+}
