@@ -2,23 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, FileText, Briefcase, LogOut, Plus, ChevronDown, Share2, X } from 'lucide-react';
 import { Listbox } from '@headlessui/react';
 import { Link } from './Link';
-import { Website, Post } from '../types';
 import { AddWebsiteModal } from './AddWebsiteModal';
 import { CreatePostStrip } from './CreatePostStrip';
 
-interface LeftMenuProps {
-  websites: Website[];
-  selectedWebsite: string;
-  onWebsiteChange: (id: string) => void;
-  currentTab: string;
-  onTabChange: (tab: string) => void;
-  onAddBusiness: (url: string) => void;
-  isOpen: boolean;
-  onClose: () => void;
-  onNewPost: (post: Post) => void;
-}
-
-export const LeftMenu: React.FC<LeftMenuProps> = ({
+export const LeftMenu = ({
   websites,
   selectedWebsite,
   onWebsiteChange,
@@ -27,11 +14,11 @@ export const LeftMenu: React.FC<LeftMenuProps> = ({
   onAddBusiness,
   isOpen,
   onClose,
-  onNewPost
+  onNewPost,
+  navigate
 }) => {
   const [showAddWebsite, setShowAddWebsite] = useState(false);
-  const selectedWebsiteData = websites.find(w => w.id === selectedWebsite);
-
+  const selectedWebsiteData = websites?.find(w => w?._id === selectedWebsite);
   useEffect(() => {
     // Close mobile menu when switching tabs
     if (isOpen) {
@@ -39,7 +26,7 @@ export const LeftMenu: React.FC<LeftMenuProps> = ({
     }
   }, [currentTab]);
 
-  const handleGeneratePosts = (url: string) => {
+  const handleGeneratePosts = (url) => {
     onAddBusiness(url);
     setShowAddWebsite(false);
   };
@@ -60,7 +47,7 @@ export const LeftMenu: React.FC<LeftMenuProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="h-20 px-6 flex items-center border-b border-gray-200 dark:border-gray-700">
+        <div onClick={()=>navigate("/")} className="h-20 cursor-pointer px-6 flex items-center border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <img
               src="/oneyear-logo.svg"
@@ -81,21 +68,21 @@ export const LeftMenu: React.FC<LeftMenuProps> = ({
               <Listbox.Button className="relative w-full pl-12 pr-12 py-3 text-left rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 <span className="flex items-center">
                   <img
-                    src={selectedWebsiteData?.logo}
+                    src={selectedWebsiteData?.siteLogo}
                     alt="Selected website logo"
                     className="w-5 h-5 rounded-sm absolute left-4"
                   />
-                  <span className="block truncate">{selectedWebsiteData?.name}</span>
+                  <span className="block truncate">{selectedWebsiteData?.clientName}</span>
                 </span>
                 <span className="absolute inset-y-0 right-0 flex items-center pr-4">
                   <ChevronDown className="w-4 h-4 text-gray-400" aria-hidden="true" />
                 </span>
               </Listbox.Button>
               <Listbox.Options className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 py-1 overflow-auto">
-                {websites.map((website) => (
+                {websites?.map((website) => (
                   <Listbox.Option
-                    key={website.id}
-                    value={website.id}
+                    key={website._id}
+                    value={website._id}
                     className={({ active, selected }) =>
                       `relative cursor-pointer select-none py-3 pl-12 pr-4 ${
                         active
@@ -109,12 +96,12 @@ export const LeftMenu: React.FC<LeftMenuProps> = ({
                     {({ selected }) => (
                       <>
                         <img
-                          src={website.logo}
-                          alt={`${website.name} logo`}
+                          src={website.siteLogo}
+                          alt={`${website.clientName} logo`}
                           className="w-5 h-5 rounded-sm absolute left-4"
                         />
                         <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                          {website.name}
+                          {website.clientName}
                         </span>
                       </>
                     )}

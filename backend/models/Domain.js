@@ -32,9 +32,14 @@ const domainSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    siteLogo: {
+        type: String, // URL of the logo
+        trim: true
+    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User', // References the User model
+        index: true // Ensures efficient querying
     }
 }, {
     timestamps: true
@@ -49,24 +54,3 @@ domainSchema.methods.getColorArray = function() {
 const Domain = mongoose.model('Domain', domainSchema);
 
 module.exports = Domain;
-
-// Example usage:
-/*
-const newDomain = new Domain({
-    client_email: "mhm13devlearn@gmail.com",
-    clientWebsite: "youtube.com",
-    clientName: "YouTube",
-    clientDescription: "YouTube is a global video-sharing platform that allows users to upload, watch, share, and comment on videos. It enables creators to share their content with a worldwide audience and provides various monetization opportunities.",
-    industry: "Technology & Media",
-    niche: "Online Video Sharing & Streaming",
-    colors: "#FF0000, #282828, #FFFFFF",
-    user: "507f191e810c19729de860ea" // Example user ObjectId
-});
-
-// With population
-Domain.find()
-    .populate('user')
-    .exec()
-    .then(domains => console.log(domains))
-    .catch(err => console.log(err));
-*/

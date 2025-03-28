@@ -1,36 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PostCard } from "../components/PostCard";
 import { BusinessSection } from "../components/BusinessSection";
 import { LeftMenu } from "../components/LeftMenu";
 import { Header } from "../components/Header";
 import { PostsLoader } from "../components/PostsLoader";
 import { useThemeStore } from "../store/useThemeStore";
-import { Post, BusinessData, Website } from "../types";
 import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
-
-// Sample websites data
-const sampleWebsites: Website[] = [
-  {
-    id: "site-1",
-    name: "Kaz Routes",
-    logo: "/kaz-routes-logo.png",
-  },
-  {
-    id: "site-2",
-    name: "Adventure Tours",
-    logo: "/kaz-routes-logo.png",
-  },
-  {
-    id: "site-3",
-    name: "Local Experiences",
-    logo: "/kaz-routes-logo.png",
-  },
-];
+import { useDomains } from "../libs/domainService";
 
 // Sample posts data
-const samplePosts: Post[] = [
+const samplePosts = [
   // Facebook Posts
   {
     id: "post-1",
@@ -129,7 +110,7 @@ const samplePosts: Post[] = [
 ];
 
 // Sample business data
-const sampleBusinessData: BusinessData = {
+const sampleBusinessData = {
   name: "Kaz Routes",
   description:
     "A company that provides travel and tourism-related services, specializing in routes and guided experiences across Kazakhstan.",
@@ -164,25 +145,34 @@ const sampleBusinessData: BusinessData = {
   },
 };
 
-export const Dashboard: React.FC = () => {
+export const Dashboard = () => {
   const { isDark } = useThemeStore();
-  const [posts, setPosts] = useState<Post[]>(samplePosts);
-  const [selectedWebsite, setSelectedWebsite] = useState(sampleWebsites[0].id);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?._id) {
+      setUserId(storedUser._id);
+    }
+  }, []);
+  const { data: domains, isLoading, isError, error } = useDomains(userId);
+  const [posts, setPosts] = useState(samplePosts);
+  const [selectedWebsite, setSelectedWebsite] = useState(null);
   const [currentTab, setCurrentTab] = useState("posts");
-  const [view, setView] = useState<"grid" | "list">("list");
-  const [filter, setFilter] = useState<string>("all");
-  const [postsTab, setPostsTab] = useState<
-    "generated" | "draft" | "scheduled" | "published"
-  >("generated");
+  const [view, setView] = useState("list");
+  const [filter, setFilter] = useState("all");
+  const [postsTab, setPostsTab] = useState("generated");
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-
+  useEffect(() => {
+    domains?.length > 0 && setSelectedWebsite(domains[0]?._id);
+  }, [domains]);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
-  const handleGeneratePosts = async (url: string) => {
+  const handleGeneratePosts = async (url) => {
     setIsGeneratingPosts(true);
     await new Promise((resolve) => setTimeout(resolve, 4000));
     setPosts((prevPosts) => [...prevPosts]);
@@ -191,35 +181,34 @@ export const Dashboard: React.FC = () => {
     setPostsTab("generated");
   };
 
-  const handleNewPost = (post: Post) => {
+  const handleNewPost = (post) => {
     setPosts((prevPosts) => [post, ...prevPosts]);
     setCurrentTab("posts");
     setPostsTab("generated");
   };
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (id) => {
     console.log("Edit post:", id);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id) => {
     console.log("Delete post:", id);
   };
 
-  const handleReschedule = (id: string) => {
+  const handleReschedule = (id) => {
     console.log("Reschedule post:", id);
   };
 
-  const handleSaveToDraft = (id: string) => {
+  const handleSaveToDraft = (id) => {
     console.log("Save to draft:", id);
   };
 
-  const handleBusinessEdit = (section: string) => {
+  const handleBusinessEdit = (section) => {
     console.log("Edit business section:", section);
   };
 
   const filteredPosts = posts.filter((post) => {
-    const matchesFilter =
-      filter === "all" || post.platforms.includes(filter as any);
+    const matchesFilter = filter === "all" || post.platforms.includes(filter);
     const matchesTab = post.status === postsTab;
     return matchesFilter && matchesTab;
   });
@@ -286,7 +275,7 @@ export const Dashboard: React.FC = () => {
     <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
         <LeftMenu
-          websites={sampleWebsites}
+          websites={domains}
           selectedWebsite={selectedWebsite}
           onWebsiteChange={setSelectedWebsite}
           currentTab={currentTab}
@@ -295,6 +284,7 @@ export const Dashboard: React.FC = () => {
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
           onNewPost={handleNewPost}
+          navigate={navigate}
         />
         <Header
           userName="John Doe"

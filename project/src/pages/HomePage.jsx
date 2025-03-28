@@ -28,7 +28,7 @@ function extractDomain(fullUrl) {
     return null;
   }
 }
-export const HomePage: React.FC = () => {
+export const HomePage = () => {
   const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
     useAuthStore();
   const [url, setUrl] = useState("");
@@ -60,7 +60,7 @@ export const HomePage: React.FC = () => {
       toast.error(error.message || "Failed to generate company data.");
     }
   };
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
     if (url) {

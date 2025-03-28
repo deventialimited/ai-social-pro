@@ -1,4 +1,4 @@
-const Domain =require('../models/Domain');
+const Domain = require("../models/Domain");
 
 // Add a new domain
 exports.addDomain = async (req, res) => {
@@ -25,8 +25,10 @@ exports.addDomain = async (req, res) => {
       colors,
       userId,
     };
-
-    const newDomain = new Domain(domainData);
+    const siteLogo = `https://avatar.iran.liara.run/username?username=${encodeURIComponent(
+      clientWebsite
+    )}`;
+    const newDomain = new Domain({ ...domainData, siteLogo });
     const savedDomain = await newDomain.save();
 
     res.status(201).json({
@@ -35,7 +37,7 @@ exports.addDomain = async (req, res) => {
       data: savedDomain,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -81,6 +83,35 @@ exports.getDomainById = async (req, res) => {
     res.status(200).json({
       success: true,
       data: domain,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// Get all domains by userId
+exports.getDomainsByUserId = async (req, res) => {
+  const userId = req.params.userId; // Get userId from request params
+
+  try {
+    const domains = await Domain.find({ userId })
+      .populate("userId", "username email")
+      .lean()
+      .hint({ userId: 1 });
+
+    if (!domains.length) {
+      return res.status(404).json({
+        success: false,
+        error: "No domains found for this user",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: domains,
     });
   } catch (error) {
     res.status(500).json({

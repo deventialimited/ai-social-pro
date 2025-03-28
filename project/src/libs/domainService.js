@@ -1,6 +1,6 @@
 const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/v1/domains`;
-import axios from 'axios';
-
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 // Add a new domain
 export const addDomain = async (domainData) => {
   try {
@@ -12,7 +12,7 @@ export const addDomain = async (domainData) => {
       industry: domainData.industry,
       niche: domainData.niche,
       colors: domainData.colors,
-      userId: domainData.userId
+      userId: domainData.userId,
     });
 
     return response.data;
@@ -42,6 +42,25 @@ export const getDomainById = async (id) => {
     console.log(error.response.data.error);
     throw error.response?.data.error;
   }
+};
+
+// Get all domains by userId
+export const getDomainsByUserId = async (userId) => {
+  try {
+    const response = await axios.get(`${API_URL}/getDomainsByUserId/${userId}`);
+    return response.data?.data;
+  } catch (error) {
+    console.log(error.response?.data?.error || "Error fetching domains");
+    throw error.response?.data?.error;
+  }
+};
+
+export const useDomains = (userId) => {
+  return useQuery({
+    queryKey: ["domains", userId],
+    queryFn: () => getDomainsByUserId(userId),
+    enabled: !!userId, // Only run if userId exists
+  });
 };
 
 // Delete domain

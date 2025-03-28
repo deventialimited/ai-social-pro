@@ -4,6 +4,7 @@ const {
   getAllDomains,
   getDomainById,
   deleteDomain,
+  getDomainsByUserId,
 } = require("../controllers/Domain");
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.get("/getAllDomains", getAllDomains);
 
 // Get domain by ID
 router.get("/getDomainById/:id", getDomainById);
+
+// Get all domains by userId
+router.get("/getDomainsByUserId/:userId", getDomainsByUserId);
 
 // Delete domain
 router.delete("/deleteDomain/:id", deleteDomain);
