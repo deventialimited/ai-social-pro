@@ -30,6 +30,11 @@ export const LeftMenu = ({
     onAddBusiness(url);
     setShowAddWebsite(false);
   };
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate("/");
+}
 
   return (
     <>
@@ -156,7 +161,7 @@ export const LeftMenu = ({
         </nav>
 
         <div className="absolute bottom-4 w-full px-6">
-          <button className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white w-full px-4 py-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <button onClick={handleLogout} className="flex items-center space-x-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white w-full px-4 py-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <LogOut className="w-5 h-5" />
             <span>Logout</span>
           </button>

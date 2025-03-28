@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AuthModal } from "../components/AuthModal";
+import { Loader2 } from "lucide-react";
 import {
   Globe,
   ArrowRight,
@@ -32,7 +33,10 @@ export const HomePage = () => {
   const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
     useAuthStore();
   const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+  
   const generateCompanyData = async (domain,user) => {
     try {
       // Second API call
@@ -65,7 +69,10 @@ export const HomePage = () => {
     const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
     if (url) {
       if (user) {
-        await generateCompanyData(url,user);
+        setLoading(true)
+        await generateCompanyData(url, user);
+                setLoading(false);
+
       } else {
         setIsSignInPopup(true);
       }
@@ -158,12 +165,27 @@ export const HomePage = () => {
                   />
                 </div>
                 <button
-                  type="submit"
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap"
-                >
-                  Generate Posts
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+  type="submit"
+  disabled={loading} // Disable button when loading
+  className={`px-8 py-4 ${
+    loading
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
+  } text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap`}
+>
+  {loading ? (
+    <>
+      <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full"></div>
+      Generating...
+    </>
+  ) : (
+    <>
+      Generate Posts
+      <ArrowRight className="w-5 h-5" />
+    </>
+  )}
+</button>
+
               </div>
             </div>
 

@@ -148,11 +148,16 @@ const sampleBusinessData = {
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
   const [userId, setUserId] = useState(null);
-
+  const [user, setUser] = useState({
+  username:'',
+})
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?._id) {
       setUserId(storedUser._id);
+      setUser({
+        username: storedUser.username,
+      });
     }
   }, []);
   const { data: domains, isLoading, isError, error } = useDomains(userId);
@@ -287,7 +292,7 @@ export const Dashboard = () => {
           navigate={navigate}
         />
         <Header
-          userName="John Doe"
+          userName={user.username || 'guest'} // Pass the username from state
           onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 

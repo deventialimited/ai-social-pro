@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff ,Loader2} from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
-import { registerUser } from "../libs/authService";
+import { registerUser,loginUser  } from "../libs/authService";
 import toast from "react-hot-toast";
 export const AuthModal = () => {
   const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
     useAuthStore();
+    const [loading, setLoading] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -41,6 +43,8 @@ export const AuthModal = () => {
     e.preventDefault();
     if (!validateForm(formData.email, formData.password)) return;
     if (isSignUpPopup) {
+          setLoading(true);
+
       try {
         const userData = await registerUser(formData.email, formData.password);
         localStorage.setItem("token", JSON.stringify(userData?.token));
@@ -51,9 +55,15 @@ export const AuthModal = () => {
         console.error("Signup Error:", err);
         toast.error(err || "Signup failed. Please try again.");
       }
+      finally {
+        setLoading(false);
+      }
     } else {
+                setLoading(true);
+
       try {
         const userData = await loginUser(formData.email, formData.password);
+        console.log("userdata from auth model",userData);  
         localStorage.setItem("token", JSON.stringify(userData?.token));
         localStorage.setItem("user", JSON.stringify(userData?.user));
         toast.success("Signin successful!");
@@ -61,6 +71,10 @@ export const AuthModal = () => {
       } catch (err) {
         console.error("Signin Error:", err);
         toast.error(err || "Signin failed. Please try again.");
+      }
+      finally {
+                        setLoading(false);
+
       }
     }
   };
@@ -187,20 +201,23 @@ export const AuthModal = () => {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                                      <Eye className="w-5 h-5" />
+
                   ) : (
-                    <Eye className="w-5 h-5" />
+                    <EyeOff className="w-5 h-5" />
                   )}
                 </button>
               </div>
             </div>
 
             <button
-              type="submit"
-              className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
-            >
-              {isSignUpPopup ? "Create Account" : "Sign In"}
-            </button>
+  type="submit"
+  className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity font-medium flex items-center justify-center"
+  disabled={loading}
+>
+  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isSignUpPopup ? "Create Account" : "Sign In"}
+</button>
+
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
