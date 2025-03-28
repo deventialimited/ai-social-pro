@@ -1,18 +1,9 @@
 import React from 'react';
 import { LayoutGrid, List, Filter } from 'lucide-react';
 
-interface PostsHeaderProps {
-  view: 'grid' | 'list';
-  onViewChange: (view: 'grid' | 'list') => void;
-  filter: string;
-  onFilterChange: (filter: string) => void;
-  currentTab: 'generated' | 'draft' | 'scheduled' | 'published';
-  onTabChange: (tab: 'generated' | 'draft' | 'scheduled' | 'published') => void;
-  totalPosts: number;
-  filteredPosts: number;
-}
 
-export const PostsHeader: React.FC<PostsHeaderProps> = ({
+
+export const PostsHeader = ({
   view,
   onViewChange,
   filter,
