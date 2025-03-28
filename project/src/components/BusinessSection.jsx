@@ -1,6 +1,6 @@
 import React, { useState, useRef, ChangeEvent } from 'react';
 import { Edit, Save, X, Upload, Image, Building2 } from 'lucide-react';
-
+import {updateDomainBusiness,updateDomainMarketingStrategy} from '../libs/domainService'
 export const BusinessSection = ({ data, onEdit }) => {
   const [editingSection, setEditingSection] = useState(null);
   const [formData, setFormData] = useState(data);
@@ -17,10 +17,20 @@ export const BusinessSection = ({ data, onEdit }) => {
     onEdit(section);
   };
 
-  const handleSave = () => {
+ const handleSave = async () => {
+  try {
+    if (editingSection === 'business') {
+      await updateDomainBusiness(formData);
+    } else if (editingSection === 'marketing') {
+      await updateDomainMarketingStrategy(formData.marketingStrategy);
+    }
+
     setEditingSection(null);
     console.log('Saving data:', formData);
-  };
+  } catch (error) {
+    console.error('Error updating data:', error);
+  }
+};
 
   const handleCancel = () => {
     setEditingSection(null);

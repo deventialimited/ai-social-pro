@@ -89,6 +89,7 @@ export const updateDomainBusiness = async (domainId, businessData) => {
 
     return response.data;
   } catch (error) {
+    console.log(error)
     console.log(error.response?.data?.error || "An error occurred");
     throw error.response?.data?.error;
   }
