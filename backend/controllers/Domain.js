@@ -149,3 +149,50 @@ exports.deleteDomain = async (req, res) => {
     });
   }
 };
+
+exports.updateDomainBusiness = async (req, res) => {
+    try {
+        const { domainId } = req.params; // Get domain ID from URL params
+        const updates = req.body; // Get updated business details from request body
+
+        const updatedDomain = await Domain.findByIdAndUpdate(domainId, updates, { 
+            new: true, // Return updated document
+            runValidators: true // Ensure validation rules are applied
+        });
+
+        if (!updatedDomain) {
+            return res.status(404).json({ success: false, message: "Domain not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Business updated successfully", data: updatedDomain });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+
+// Update Marketing Strategy
+exports.updateDomainMarketingStrategy = async (req, res) => {
+    try {
+        const { domainId } = req.params; // Get domain ID from URL params
+        const { marketingStrategy } = req.body; // Get marketing strategy updates
+
+        if (!marketingStrategy) {
+            return res.status(400).json({ success: false, message: "No marketing strategy data provided" });
+        }
+
+        const updatedDomain = await Domain.findByIdAndUpdate(
+            domainId, 
+            { marketingStrategy }, 
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedDomain) {
+            return res.status(404).json({ success: false, message: "Domain not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Marketing strategy updated successfully", data: updatedDomain });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
