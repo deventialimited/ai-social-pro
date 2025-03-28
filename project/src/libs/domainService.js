@@ -73,3 +73,42 @@ export const deleteDomain = async (id) => {
     throw error.response?.data.error;
   }
 };
+
+
+//update domain business
+export const updateDomainBusiness = async (domainId, businessData) => {
+  try {
+    const response = await axios.patch(`${API_URL}/business/${domainId}`, {
+      client_email: businessData.client_email,
+      clientWebsite: businessData.clientWebsite,
+      clientName: businessData.clientName,
+      clientDescription: businessData.clientDescription,
+      industry: businessData.industry,
+      niche: businessData.niche,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.log(error.response?.data?.error || "An error occurred");
+    throw error.response?.data?.error;
+  }
+};
+
+
+//update domain marketing strategy
+export const updateDomainMarketingStrategy = async (domainId, marketingStrategy) => {
+  try {
+    const response = await axios.patch(`${API_URL}/marketing-strategy/${domainId}`, {
+      marketingStrategy: {
+        targetAudience: marketingStrategy.targetAudience,
+        audiencePains: marketingStrategy.audiencePains,
+        coreValues: marketingStrategy.coreValues
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.log(error.response?.data?.error || "An error occurred");
+    throw error.response?.data?.error;
+  }
+};

@@ -1,5 +1,15 @@
 const mongoose = require('mongoose');
 
+
+
+
+// Define Marketing Strategy as an embedded object
+
+const marketingStrategySchema = new mongoose.Schema({
+    targetAudience: [{ type: String, trim: true }],  // Array of strings for multiple audiences
+    audiencePains: [{ type: String, trim: true }],   // Array of pains
+    coreValues: [{ type: String, trim: true }]       // Array of values
+}, { _id: false }); // Prevents auto-generating _id for subdocument
 // Define the Domain schema with user reference
 const domainSchema = new mongoose.Schema({
     client_email: {
@@ -40,9 +50,11 @@ const domainSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User', // References the User model
         index: true // Ensures efficient querying
-    }
+    },
+        marketingStrategy: marketingStrategySchema // Embedded marketing strategy
+
 }, {
-    timestamps: true
+    timestamps: true    
 });
 
 // Method to get color array

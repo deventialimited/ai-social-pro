@@ -22,5 +22,10 @@ router.get("/getDomainsByUserId/:userId", getDomainsByUserId);
 
 // Delete domain
 router.delete("/deleteDomain/:id", deleteDomain);
+// Route to update Business Information
+router.patch("/business/:domainId", updateDomainBusiness);
+
+// Route to update Marketing Strategy
+router.patch("/marketing-strategy/:domainId", updateDomainMarketingStrategy);
 
 module.exports = router;
