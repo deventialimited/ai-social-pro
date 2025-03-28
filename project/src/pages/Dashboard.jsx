@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { PostCard } from "../components/PostCard";
 import { BusinessSection } from "../components/BusinessSection";
 import { LeftMenu } from "../components/LeftMenu";
@@ -149,8 +149,8 @@ export const Dashboard = () => {
   const { isDark } = useThemeStore();
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState({
-  username:'',
-})
+    username: "",
+  });
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?._id) {
@@ -170,9 +170,17 @@ export const Dashboard = () => {
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   useEffect(() => {
-    domains?.length > 0 && setSelectedWebsite(domains[0]?._id);
-  }, [domains]);
+    if (location?.state?.domainId) {
+      setSelectedWebsite(location.state.domainId);
+      location.state = {}; // Clear domainId from location state
+      // navigate(location.pathname, { replace: true, state: {} }); // Clear state without reloading
+    } else if (domains?.length > 0) {
+      setSelectedWebsite(domains[0]?._id);
+    }
+  }, [domains, location]);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
@@ -292,7 +300,7 @@ export const Dashboard = () => {
           navigate={navigate}
         />
         <Header
-          userName={user.username || 'guest'} // Pass the username from state
+          userName={user.username || "guest"} // Pass the username from state
           onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 

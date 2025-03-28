@@ -15,8 +15,8 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
-import toast from "react-hot-toast"
-import {addDomain} from "../libs/domainService"
+import toast from "react-hot-toast";
+import { addDomain } from "../libs/domainService";
 //
 function extractDomain(fullUrl) {
   try {
@@ -36,29 +36,34 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  
-  const generateCompanyData = async (domain,user) => {
+
+  const generateCompanyData = async (domain, user) => {
     try {
       // Second API call
       const secondResponse = await fetch(
         `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
       );
-  
+
       if (!secondResponse.ok) {
         throw new Error(
           `Second API call failed with status: ${secondResponse.status}`
         );
       }
-  
+
       // Parse second response and return
       const secondData = await secondResponse.json();
       // return secondData;
       // Call addDomain API to store the data
-      console.log("user",user)
-      const result = await addDomain({...secondData,userId:user?._id});
-  
+      console.log("user", user);
+      const result = await addDomain({ ...secondData, userId: user?._id });
+
       toast.success("Domain successfully added!");
       console.log("Domain added:", result);
+      navigate("/dashboard", {
+        state: {
+          domainId: result?.data?._id,
+        },
+      });
     } catch (error) {
       console.error("Error in AI App data:", error);
       toast.error(error.message || "Failed to generate company data.");
@@ -69,18 +74,13 @@ export const HomePage = () => {
     const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
     if (url) {
       if (user) {
-        setLoading(true)
+        setLoading(true);
         await generateCompanyData(url, user);
-                setLoading(false);
-
+        setLoading(false);
       } else {
         setIsSignInPopup(true);
       }
     }
-  };
-
-  const handleLogin = () => {
-    navigate("/dashboard");
   };
 
   return (
@@ -108,18 +108,22 @@ export const HomePage = () => {
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
               </button>
-              {!localStorage?.getItem("user")&&(<><button
-                onClick={() => setIsSignInPopup(true)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => setIsSignUpPopup(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity"
-              >
-                Sign Up
-              </button></>)}
+              {!localStorage?.getItem("user") && (
+                <>
+                  <button
+                    onClick={() => setIsSignInPopup(true)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setIsSignUpPopup(true)}
+                    className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -165,27 +169,26 @@ export const HomePage = () => {
                   />
                 </div>
                 <button
-  type="submit"
-  disabled={loading} // Disable button when loading
-  className={`px-8 py-4 ${
-    loading
-      ? "bg-gray-400 cursor-not-allowed"
-      : "bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
-  } text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap`}
->
-  {loading ? (
-    <>
-      <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full"></div>
-      Generating...
-    </>
-  ) : (
-    <>
-      Generate Posts
-      <ArrowRight className="w-5 h-5" />
-    </>
-  )}
-</button>
-
+                  type="submit"
+                  disabled={loading} // Disable button when loading
+                  className={`px-8 py-4 ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
+                  } text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap`}
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      Generate Posts
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 

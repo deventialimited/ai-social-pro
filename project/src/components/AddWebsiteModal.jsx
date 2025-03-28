@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
 import { X, Globe, Loader2, Briefcase, Palette, Target, Check, ArrowRight } from 'lucide-react';
-import { BusinessData } from '../types';
-
-interface AddWebsiteModalProps {
-  onClose: () => void;
-  onGenerate: (url: string) => void;
-}
-
-export const AddWebsiteModal: React.FC<AddWebsiteModalProps> = ({ onClose, onGenerate }) => {
+export const AddWebsiteModal = ({ onClose, onGenerate }) => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [businessData, setBusinessData] = useState<BusinessData | null>(null);
+  const [businessData, setBusinessData] = useState(null);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -61,7 +54,7 @@ export const AddWebsiteModal: React.FC<AddWebsiteModalProps> = ({ onClose, onGen
     }
 
     // Simulate fetched business data
-    const mockBusinessData: BusinessData = {
+    const mockBusinessData = {
       name: 'Example Business',
       description: 'A company that provides innovative solutions for modern businesses, focusing on digital transformation and sustainable growth.',
       industry: 'Technology',
@@ -99,7 +92,7 @@ export const AddWebsiteModal: React.FC<AddWebsiteModalProps> = ({ onClose, onGen
     setIsLoading(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (url) {
       if (!businessData) {
@@ -112,10 +105,10 @@ export const AddWebsiteModal: React.FC<AddWebsiteModalProps> = ({ onClose, onGen
   };
 
   const renderBusinessCard = (
-    title: string,
-    icon: React.ReactNode,
-    content: React.ReactNode,
-    className?: string
+    title,
+    icon,
+    content,
+    className
   ) => (
     <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 ${className}`}>
       <div className="flex items-center gap-3 mb-4">

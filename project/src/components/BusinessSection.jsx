@@ -1,24 +1,18 @@
 import React, { useState, useRef, ChangeEvent } from 'react';
 import { Edit, Save, X, Upload, Image, Building2 } from 'lucide-react';
-import { BusinessData } from '../types';
 
-interface BusinessSectionProps {
-  data: BusinessData;
-  onEdit: (section: string) => void;
-}
-
-export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }) => {
-  const [editingSection, setEditingSection] = useState<string | null>(null);
+export const BusinessSection = ({ data, onEdit }) => {
+  const [editingSection, setEditingSection] = useState(null);
   const [formData, setFormData] = useState(data);
-  const logoInputRef = useRef<HTMLInputElement>(null);
-  const headshotInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef(null);
+  const headshotInputRef = useRef(null);
   const colorPickerRefs = {
-    brandColor: useRef<HTMLInputElement>(null),
-    backgroundColor: useRef<HTMLInputElement>(null),
-    textColor: useRef<HTMLInputElement>(null),
+    brandColor: useRef(null),
+    backgroundColor: useRef(null),
+    textColor: useRef(null),
   };
 
-  const handleEdit = (section: string) => {
+  const handleEdit = (section) => {
     setEditingSection(section);
     onEdit(section);
   };
@@ -33,11 +27,11 @@ export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }
     setFormData(data);
   };
 
-  const handleColorClick = (type: 'brandColor' | 'backgroundColor' | 'textColor') => {
+  const handleColorClick = (type) => {
     colorPickerRefs[type].current?.click();
   };
 
-  const handleFileUpload = (event: ChangeEvent<HTMLInputElement>, type: 'logo' | 'headshot') => {
+  const handleFileUpload = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -51,7 +45,7 @@ export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }
     }));
   };
 
-  const renderImageUpload = (type: 'logo' | 'headshot', inputRef: React.RefObject<HTMLInputElement>) => {
+  const renderImageUpload = (type, inputRef) => {
     const isEditing = editingSection === 'brand';
     const imageUrl = type === 'logo' ? '/kaz-routes-logo.png' : formData[type];
     const title = type === 'logo' ? 'Upload Logo' : 'Upload Headshot';
@@ -97,7 +91,7 @@ export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }
     );
   };
 
-  const renderField = (label: string, value: string, field: keyof BusinessData) => {
+  const renderField = (label, value, field) => {
     const isEditing = editingSection === 'business';
 
     return (
@@ -121,7 +115,7 @@ export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }
     );
   };
 
-  const renderList = (title: string, items: string[], field: 'audience' | 'audiencePains' | 'coreValues') => {
+  const renderList = (title, items, field) => {
     const isEditing = editingSection === 'marketing';
 
     return (
@@ -181,14 +175,14 @@ export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }
               <div className="flex items-center gap-2">
                 <div
                   className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                  style={{ backgroundColor: formData[type as keyof typeof formData] || '#000000' }}
-                  onClick={() => isEditing && handleColorClick(type as any)}
+                  style={{ backgroundColor: formData[type] || '#000000' }}
+                  onClick={() => isEditing && handleColorClick(type)}
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
                 <input
-                  ref={colorPickerRefs[type as keyof typeof colorPickerRefs]}
+                  ref={colorPickerRefs[type]}
                   type="color"
-                  value={formData[type as keyof typeof formData] as string || '#000000'}
+                  value={formData[type] || '#000000'}
                   onChange={(e) => setFormData({ ...formData, [type]: e.target.value })}
                   className="hidden"
                   disabled={!isEditing}
@@ -201,7 +195,7 @@ export const BusinessSection: React.FC<BusinessSectionProps> = ({ data, onEdit }
     );
   };
 
-  const renderSection = (title: string, section: string, children: React.ReactNode) => {
+  const renderSection = (title, section, children) => {
     const isEditing = editingSection === section;
 
     return (
