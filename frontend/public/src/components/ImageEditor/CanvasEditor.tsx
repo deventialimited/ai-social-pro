@@ -78,6 +78,7 @@ interface CanvasEditorProps {
   onDuplicateImage?: (id: string) => void;
   selectedImageId?: string | null;
   onSelectImage?: (id: string | null) => void;
+  newImageSrc?: string; // New prop for selected image URL
   scaleX?: number;
   scaleY?: number;
   imageScale?: number;
@@ -109,6 +110,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   imageRotation = 0,
   imagePosition = { x: 0, y: 0 },
   imageFilters,
+  newImageSrc, // New prop
 }) => {
   const [images, setImages] = useState<ImageData[]>([]);
 
@@ -121,7 +123,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       // Initialize images array
       let initialImages: ImageData[] = [];
 
-      // Add image from post data if exists
       if (postData) {
         const { image } = JSON.parse(postData);
         if (image && image !== "none") {
@@ -155,7 +156,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         });
       }
 
-      // Add additional images from storage
       if (storedImagesData) {
         const parsedStoredImages = JSON.parse(storedImagesData);
         initialImages = [...initialImages, ...parsedStoredImages];
@@ -167,13 +167,43 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     loadImagesFromStorage();
   }, [backgroundImage]);
 
-  // Effect to save images to localStorage when images change
+  // Handle new image selection from props
   useEffect(() => {
     // Filter out the original post image and background image
     const imagesToStore = images.filter(
       (img) => img.id !== "post-image" && img.id !== "background-image"
     );
 
+    if (newImageSrc) {
+      const newImage: ImageData = {
+        id: `image-${Date.now()}`, // Unique ID for each new image
+        src: newImageSrc,
+        x: 0,
+        y: 0,
+        width: 200,
+        height: 300,
+        rotation: 0,
+        zIndex: images.length + 1, // Place it above existing images
+      };
+
+      // Add the new image to the state if it doesn't already exist
+      setImages((prevImages) => {
+        if (!prevImages.some((img) => img.src === newImageSrc)) {
+          return [...prevImages, newImage];
+        }
+        return prevImages;
+      });
+
+      // Optionally, trigger onSelectImage to highlight the new image
+      if (onSelectImage) {
+        onSelectImage(newImage.id);
+      }
+    }
+  }, [newImageSrc, onSelectImage]);
+
+  // Save images to localStorage when they change
+  useEffect(() => {
+    const imagesToStore = images.filter((img) => img.id !== "post-image");
     if (imagesToStore.length > 0) {
       localStorage.setItem("imagesData", JSON.stringify(imagesToStore));
     } else {
@@ -837,7 +867,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     onClick={(e: React.MouseEvent) => {
                       e.stopPropagation();
                       // Only protect the original post image from deletion
-                      // if (imageData.id === "post-image") return;
                       const updatedImages = images.filter(
                         (img) => img.id !== imageData.id
                       );
