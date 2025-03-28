@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { Dashboard } from "./pages/Dashboard";
 import { useThemeStore } from "./store/useThemeStore";
+import { Toaster } from "react-hot-toast";
  
 function App() {
   const { isDark } = useThemeStore();
@@ -19,6 +20,7 @@ function App() {
           <Route path="/dashboard/*" element={<Dashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Toaster/>
       </BrowserRouter>
     </div>
   );

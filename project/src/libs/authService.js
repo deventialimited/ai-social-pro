@@ -21,12 +21,11 @@ export const updateProfile = async (userId, formData) => {
   }
 };
 // Register user manually
-export const registerUser = async (email, password, referral) => {
+export const registerUser = async (email, password) => {
   try {
     const response = await axios.post(`${API_URL}/register`, {
       email,
       password,
-      referralId: referral,
     });
 
     return response.data;
@@ -35,7 +34,40 @@ export const registerUser = async (email, password, referral) => {
     throw error.response?.data.error;
   }
 };
+// Google Auth
+export const googleAuth = async (googleId, name, email, picture) => {
+  try {
+    const response = await axios.post(`${API_URL}/google-auth`, {
+      googleId,
+      name,
+      email,
+      picture,
+    });
 
+    return response.data;
+  } catch (error) {
+    console.log(error.response.data.error);
+    throw error.response?.data || { error: "An error occurred during login." };
+  }
+};
+// Login user manually
+export const loginUser = async (email, password) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/login`,
+      { email, password },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // Returns the response from the backend
+  } catch (error) {
+    console.error(error.response?.data?.error || "Login failed.");
+    throw error.response?.data || { error: "An error occurred during login." };
+  }
+};
 export const sendEmailVerificationOtp = async (email) => {
   try {
     const response = await axios.post(
@@ -76,24 +108,6 @@ export const verifyOtp = async (token, otp, method) => {
   }
 };
 
-// Login user manually
-export const loginUser = async (email, password) => {
-  try {
-    const response = await axios.post(
-      `${API_URL}/login`,
-      { email, password },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response.data; // Returns the response from the backend
-  } catch (error) {
-    console.error(error.response?.data?.error || "Login failed.");
-    throw error.response?.data || { error: "An error occurred during login." };
-  }
-};
 // Forgot password request
 export const forgotPassword = async (email) => {
   try {
@@ -170,41 +184,6 @@ export const verifyTwoFactorAuth = async (data) => {
     return response.data;
   } catch (error) {
     console.log(error.response?.data?.error || "Failed to verify 2FA");
-  }
-};
-
-// Google Auth
-export const googleAuth = async (googleId, name, email, picture, referral) => {
-  try {
-    const response = await axios.post(`${API_URL}/google-auth`, {
-      googleId,
-      name,
-      email,
-      picture,
-      referralId: referral,
-    });
-
-    return response.data;
-  } catch (error) {
-    console.log(error.response.data.error);
-    throw error.response?.data || { error: "An error occurred during login." };
-  }
-};
-
-// Facebook Auth
-export const facebookAuth = async (facebookId, name, email, picture) => {
-  try {
-    const response = await axios.post(`${API_URL}/facebook-auth`, {
-      facebookId,
-      name,
-      email,
-      picture,
-    });
-
-    return response.data;
-  } catch (error) {
-    console.log(error.response.data.error);
-    throw error.response?.data.error;
   }
 };
 
