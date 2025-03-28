@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
 // Define the Domain schema with user reference
-const domainSchema = new Schema({
+const domainSchema = new mongoose.Schema({
     client_email: {
         type: String,
         trim: true,
@@ -34,7 +33,7 @@ const domainSchema = new Schema({
         trim: true
     },
     userId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User', // References the User model
     }
 }, {

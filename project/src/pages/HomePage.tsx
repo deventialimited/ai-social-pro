@@ -50,6 +50,7 @@ export const HomePage: React.FC = () => {
       const secondData = await secondResponse.json();
       // return secondData;
       // Call addDomain API to store the data
+      console.log("user",user)
       const result = await addDomain({...secondData,userId:user?._id});
   
       toast.success("Domain successfully added!");

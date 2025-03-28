@@ -1,4 +1,4 @@
-const Domain = require("../routes/Domain"); // Adjust path as needed
+const Domain =require('../models/Domain');
 
 // Add a new domain
 exports.addDomain = async (req, res) => {
@@ -35,6 +35,7 @@ exports.addDomain = async (req, res) => {
       data: savedDomain,
     });
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       success: false,
       error: error.message,
