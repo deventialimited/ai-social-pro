@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Calendar,
 } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 //
 function extractDomain(fullUrl) {
   try {
@@ -49,16 +50,21 @@ const generateCompanyData = async (domain) => {
   }
 };
 export const HomePage: React.FC = () => {
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const {setIsSignInPopup,isSignUpPopup,isSignInPopup,setIsSignUpPopup}=useAuthStore()
   const [url, setUrl] = useState("");
   const navigate = useNavigate();
-
+ console.log(isSignInPopup)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const user = localStorage.getItem("user"); // Check if user exists in localStorage
     if (url) {
-      // setShowAuthModal(true);
-      await generateCompanyData(url);
+      if (user) {
+        await generateCompanyData(url);
+      } else {
+        setIsSignInPopup(true);
+      }
     }
+    
   };
 
   const handleLogin = () => {
@@ -91,13 +97,13 @@ export const HomePage: React.FC = () => {
                 Dashboard
               </button>
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => setIsSignInPopup(true)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 Sign In
               </button>
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => setIsSignUpPopup(true)}
                 className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity"
               >
                 Sign Up
@@ -224,11 +230,8 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {showAuthModal && (
-        <AuthModal
-          onClose={() => setShowAuthModal(false)}
-          onLogin={handleLogin}
-        />
+      {(isSignInPopup||isSignUpPopup) && (
+        <AuthModal/>
       )}
     </div>
   );

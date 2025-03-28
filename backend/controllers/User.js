@@ -134,23 +134,11 @@ exports.editProfile = async (req, res) => {
 
 // Register user
 exports.register = async (req, res) => {
-  const { email, password, referralId } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Check if a user with the provided email already exists
     let user = await User.findOne({ email });
-    if (user?.status === "blocked") {
-      return res.status(403).json({
-        success: false,
-        error: `Your account is blocked, please contact us for more information: <a href="mailto:taxpro@simpple.tax" target="_blank" rel="noopener noreferrer" class="text-blue-500">taxpro@simpple.tax</a>`,
-      });
-    }
-    if (user?.isDeletedByAdmin) {
-      return res.status(403).json({
-        success: false,
-        error: `Your account has been deleted. Please contact us at: <a href="mailto:taxpro@simpple.tax" target="_blank" rel="noopener noreferrer" class="text-blue-500">taxpro@simpple.tax</a>`,
-      });
-    }
     if (user) {
       return res.status(400).json({
         success: false,
@@ -163,7 +151,6 @@ exports.register = async (req, res) => {
     )}`;
     // If user does not exist, create a new user
     user = await User.create({
-      referralId,
       email,
       password,
       profileImage,
@@ -175,7 +162,7 @@ exports.register = async (req, res) => {
       expiresIn: "5m",
     });
 
-    await sendVerificationEmail(email, otp);
+    // await sendVerificationEmail(email, otp);
 
     res.status(201).json({
       success: true,
@@ -352,46 +339,6 @@ exports.googleAuth = async (req, res) => {
   }
 };
 
-exports.facebookAuth = async (req, res) => {
-  const { facebookId, name, email, picture } = req.body;
-
-  try {
-    let user = await User.findOne({ email });
-    let userType;
-    // Generate the image URL using the admin's name
-    const profileImage = `https://avatar.iran.liara.run/username?username=${encodeURIComponent(
-      name
-    )}`;
-    if (!user) {
-      // If the user doesn't exist, create a new user
-      user = await User.create({
-        username: name,
-        email: email,
-        facebookId: facebookId,
-        profileImage: picture || profileImage,
-        emailVerified: true, // Assume Facebook accounts are verified
-      });
-      await sendWelcomeEmail(email);
-      userType = "new";
-    } else {
-      // If user exists but doesn't have facebookId, update facebookId
-      if (!user.facebookId) {
-        user.facebookId = facebookId;
-        user.emailVerified = true; // Mark email as verified if logging in via Google
-        await user.save();
-      }
-    }
-
-    res.status(200).json({
-      success: true,
-      user,
-      userType,
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-};
-
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -404,20 +351,8 @@ exports.login = async (req, res) => {
         error: "Looks like you're new here! Let's get you signed up.",
       });
     }
-    if (user.status === "blocked") {
-      return res.status(403).json({
-        success: false,
-        error: `Your account is blocked, please contact us for more information: <a href="mailto:taxpro@simpple.tax" target="_blank" rel="noopener noreferrer" class="text-blue-500">taxpro@simpple.tax</a>`,
-      });
-    }
-    if (user.isDeletedByAdmin) {
-      return res.status(403).json({
-        success: false,
-        error: `Your account has been deleted. Please contact us at: <a href="mailto:taxpro@simpple.tax" target="_blank" rel="noopener noreferrer" class="text-blue-500">taxpro@simpple.tax</a>`,
-      });
-    }
     // Check if the user has a Facebook or Google account or doesn't have a password set
-    if ((user.facebookId || user.googleId) && !user.password) {
+    if (user.googleId && !user.password) {
       return res.status(400).json({
         success: false,
         error:
@@ -441,7 +376,7 @@ exports.login = async (req, res) => {
         expiresIn: "5m",
       });
 
-      await sendVerificationEmail(email, otp);
+      // await sendVerificationEmail(email, otp);
 
       return res.status(200).json({
         success: true,

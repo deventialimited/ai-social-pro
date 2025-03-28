@@ -1,46 +1,92 @@
-import React, { useState } from 'react';
-import { X, Eye, EyeOff } from 'lucide-react';
-interface AuthModalProps {
-  onClose: () => void;
-  onLogin: () => void;
-}
-
-export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin }) => {
-  const [isSignUp, setIsSignUp] = useState(false);
+import React, { useState } from "react";
+import { X, Eye, EyeOff } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
+import { registerUser } from "../libs/authService";
+import toast from "react-hot-toast";
+export const AuthModal = () => {
+  const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
+    useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (isSignUp) {
-    try {
-      // await signUpWithEmailPassword(formData.email, formData.password);
-    } catch (err: any) {
-      console.error("Error:", err.code, err.message);
-      alert(`Signup Failed: ${err.message}`);
-    }
-  } else {
-    try {
-      // await logInWithEmailPassword(formData.email, formData.password);
-      onLogin(); // This will navigate to /dashboard
-    } catch (err: any) {
-      console.error("Error:", err.code, err.message);
-      alert(`Signin Failed: ${err.message}`);
-    }
-  }
-};
+  const validateForm = (email, password) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  const handleGoogleLogin = async()=> {
-  try {
-    // await GoogleSignUp();
-  }
-  catch (error: any) {
-    console.error("Error:", error.code, error.message);
-    alert(`Google Signin Failed: ${error.message}`);
-  }
-}
+    if (!email) {
+      toast.error("Email is required.");
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      toast.error("Invalid email format.");
+      return false;
+    }
+    if (!password) {
+      toast.error("Password is required.");
+      return false;
+    }
+    if (!passwordRegex.test(password)) {
+      toast.error(
+        "Password must be at least 8 characters, include uppercase, lowercase, number, and special character."
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm(formData.email, formData.password)) return;
+    if (isSignUpPopup) {
+      try {
+        const userData = await registerUser(formData.email, formData.password);
+        localStorage.setItem("user", JSON.stringify(userData));
+        toast.success("Signup successful!");
+      } catch (err) {
+        console.error("Signup Error:", err);
+        toast.error(err || "Signup failed. Please try again.");
+      }
+    } else {
+      try {
+        const userData = await loginUser(formData.email, formData.password);
+        localStorage.setItem("user", JSON.stringify(userData));
+        toast.success("Signin successful!");
+      } catch (err) {
+        console.error("Signin Error:", err);
+        toast.error(err || "Signin failed. Please try again.");
+      }
+    }
+  };
+
+  // const handleGoogleLogin = async () => {
+
+  //   try {
+  //     // Assuming you get user info from Google OAuth response
+  //     const googleUser = {
+  //       googleId: "GOOGLE_ID",
+  //       name: "User Name",
+  //       email: "user@gmail.com",
+  //       picture: "profile.jpg",
+  //       referral: null,
+  //     };
+
+  //     const userData = await googleAuth(
+  //       googleUser.googleId,
+  //       googleUser.name,
+  //       googleUser.email,
+  //       googleUser.picture,
+  //       googleUser.referral
+  //     );
+  //     localStorage.setItem("user", JSON.stringify(userData));
+  //     toast.success("Google Sign-in successful!");
+  //   } catch (error) {
+  //     console.error("Google Sign-in Error:", error);
+  //     toast.error(error?.error || "Google Sign-in failed. Please try again.");
+  //   }
+  // };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
@@ -50,14 +96,19 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isSignUp ? 'Create Account' : 'Welcome Back'}
+                {isSignUpPopup ? "Create Account" : "Welcome Back"}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {isSignUp ? 'Get started with OneYear Social' : 'Sign in to your account'}
+                {isSignUpPopup
+                  ? "Get started with OneYear Social"
+                  : "Sign in to your account"}
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={() => {
+                setIsSignInPopup(false);
+                setIsSignUpPopup(false);
+              }}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
               <X className="w-5 h-5" />
@@ -70,7 +121,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           {/* Social Login Buttons */}
           <div className="space-y-3 mb-6">
             <button
-              onClick={handleGoogleLogin}
+              // onClick={handleGoogleLogin}
               type="button"
               className="w-full py-2.5 px-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
@@ -81,18 +132,6 @@ const handleSubmit = async (e: React.FormEvent) => {
               />
               <span className="text-gray-700 dark:text-gray-300 font-medium">
                 Continue with Google
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="w-full py-2.5 px-4 bg-[#1877F2] hover:bg-[#1874EA] text-white rounded-lg flex items-center justify-center gap-3 transition-colors"
-            >
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              <span className="font-medium">
-                Continue with Facebook
               </span>
             </button>
           </div>
@@ -116,7 +155,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -128,9 +169,11 @@ const handleSubmit = async (e: React.FormEvent) => {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 pr-10"
                   required
                 />
@@ -139,7 +182,11 @@ const handleSubmit = async (e: React.FormEvent) => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -148,17 +195,27 @@ const handleSubmit = async (e: React.FormEvent) => {
               type="submit"
               className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity font-medium"
             >
-              {isSignUp ? 'Create Account' : 'Sign In'}
+              {isSignUpPopup ? "Create Account" : "Sign In"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+            {isSignUpPopup
+              ? "Already have an account?"
+              : "Don't have an account?"}{" "}
             <button
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                if (isSignUpPopup) {
+                  setIsSignUpPopup(false);
+                  setIsSignInPopup(true);
+                } else {
+                  setIsSignUpPopup(true);
+                  setIsSignInPopup(false);
+                }
+              }}
               className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
-              {isSignUp ? 'Sign in' : 'Sign up'}
+              {isSignUpPopup ? "Sign in" : "Sign up"}
             </button>
           </p>
         </div>
