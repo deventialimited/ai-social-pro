@@ -1,136 +1,174 @@
 // @ts-nocheck
-"use client"
-import type React from "react"
-import { Slider } from "@/components/ui/slider"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { X } from "lucide-react"
+"use client";
+import React from "react";
+import { X } from "lucide-react";
 
 interface EffectsPanelProps {
-  brightness: number
-  contrast: number
-  saturation: number
-  blur: number
-  onBrightnessChange: (value: number) => void
-  onContrastChange: (value: number) => void
-  onSaturationChange: (value: number) => void
-  onBlurChange: (value: number) => void
-  onApplyPreset: (preset: { brightness: number; contrast: number; saturation: number; blur: number }) => void
-  onReset: () => void
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  effects: {
+    blur: number;
+    brightness: number;
+    sepia: number;
+    grayscale: number;
+    border: number;
+    cornerRadius: number;
+    shadow: {
+      blur: number;
+      offsetX: number;
+    };
+  };
+  onEffectChange: (effect: string, value: number) => void;
 }
 
-const EffectsPanel: React.FC<EffectsPanelProps> = ({
-  brightness,
-  contrast,
-  saturation,
-  blur = 0,
-  onBrightnessChange,
-  onContrastChange,
-  onSaturationChange,
-  onBlurChange,
-  onApplyPreset,
-  onReset,
+export const EffectsPanel: React.FC<EffectsPanelProps> = ({
+  isOpen,
   onClose,
+  effects,
+  onEffectChange,
 }) => {
-  const presets = [
-    { name: "Vivid", brightness: 110, contrast: 120, saturation: 130, blur: 0 },
-    { name: "Muted", brightness: 90, contrast: 90, saturation: 70, blur: 0 },
-    { name: "B&W", brightness: 100, contrast: 120, saturation: 0, blur: 0 },
-    { name: "Warm", brightness: 105, contrast: 95, saturation: 110, blur: 0 },
-    { name: "Cool", brightness: 95, contrast: 105, saturation: 90, blur: 0 },
-    { name: "Vintage", brightness: 90, contrast: 85, saturation: 70, blur: 0 },
-    { name: "Soft Focus", brightness: 105, contrast: 90, saturation: 95, blur: 5 },
-  ]
+  if (!isOpen) return null;
 
   return (
-    <div className="w-64 border-l bg-white h-full overflow-auto">
-      <div className="flex items-center justify-between p-3 border-b">
-        <h3 className="text-lg font-medium">Effects</h3>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+    <div className="absolute left-0 top-[150px] bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-[300px] z-[100] ml-[100px]">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg">Effects</h3>
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
-      <Tabs defaultValue="adjust" className="w-full">
-        <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="adjust">Adjust</TabsTrigger>
-          <TabsTrigger value="presets">Presets</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="adjust" className="p-4 space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <label className="text-sm font-medium">Brightness</label>
-              <span className="text-sm text-gray-500">{brightness}%</span>
-            </div>
-            <Slider
-              value={[brightness]}
-              min={0}
-              max={200}
-              step={1}
-              onValueChange={(value) => onBrightnessChange(value[0])}
-            />
+      <div className="space-y-4">
+        {/* Blur */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Blur</span>
           </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={effects.blur}
+            onChange={(e) => onEffectChange("blur", Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <label className="text-sm font-medium">Contrast</label>
-              <span className="text-sm text-gray-500">{contrast}%</span>
-            </div>
-            <Slider
-              value={[contrast]}
-              min={0}
-              max={200}
-              step={1}
-              onValueChange={(value) => onContrastChange(value[0])}
-            />
+        {/* Brightness */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Brightness</span>
           </div>
+          <input
+            type="range"
+            min="0"
+            max="200"
+            value={effects.brightness}
+            onChange={(e) =>
+              onEffectChange("brightness", Number(e.target.value))
+            }
+            className="w-full"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <label className="text-sm font-medium">Saturation</label>
-              <span className="text-sm text-gray-500">{saturation}%</span>
-            </div>
-            <Slider
-              value={[saturation]}
-              min={0}
-              max={200}
-              step={1}
-              onValueChange={(value) => onSaturationChange(value[0])}
-            />
+        {/* Sepia */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Sepia</span>
           </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={effects.sepia}
+            onChange={(e) => onEffectChange("sepia", Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <label className="text-sm font-medium">Blur</label>
-              <span className="text-sm text-gray-500">{blur}px</span>
-            </div>
-            <Slider value={[blur]} min={0} max={20} step={1} onValueChange={(value) => onBlurChange(value[0])} />
+        {/* Grayscale */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Grayscale</span>
           </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={effects.grayscale}
+            onChange={(e) =>
+              onEffectChange("grayscale", Number(e.target.value))
+            }
+            className="w-full"
+          />
+        </div>
 
-          <Button variant="outline" className="w-full mt-4" onClick={onReset}>
-            Reset
-          </Button>
-        </TabsContent>
-
-        <TabsContent value="presets" className="p-4">
-          <div className="grid grid-cols-2 gap-2">
-            {presets.map((preset) => (
-              <Button
-                key={preset.name}
-                variant="outline"
-                className="h-auto py-2 justify-start"
-                onClick={() => onApplyPreset(preset)}
-              >
-                {preset.name}
-              </Button>
-            ))}
+        {/* Border */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Border</span>
           </div>
-        </TabsContent>
-      </Tabs>
+          <input
+            type="range"
+            min="0"
+            max="20"
+            value={effects.border}
+            onChange={(e) => onEffectChange("border", Number(e.target.value))}
+            className="w-full"
+          />
+        </div>
+
+        {/* Corner Radius */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Corner Radius</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={effects.cornerRadius}
+            onChange={(e) =>
+              onEffectChange("cornerRadius", Number(e.target.value))
+            }
+            className="w-full"
+          />
+        </div>
+
+        {/* Shadow Blur */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Shadow Blur</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={effects.shadow.blur}
+            onChange={(e) =>
+              onEffectChange("shadow.blur", Number(e.target.value))
+            }
+            className="w-full"
+          />
+        </div>
+
+        {/* Shadow Offset X */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span>Shadow Offset X</span>
+          </div>
+          <input
+            type="range"
+            min="-100"
+            max="100"
+            value={effects.shadow.offsetX}
+            onChange={(e) =>
+              onEffectChange("shadow.offsetX", Number(e.target.value))
+            }
+            className="w-full"
+          />
+        </div>
+      </div>
     </div>
-  )
-}
-
-export default EffectsPanel
+  );
+};

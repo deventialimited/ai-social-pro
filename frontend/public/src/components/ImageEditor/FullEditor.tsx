@@ -32,6 +32,7 @@ import {
   BackgroundToolbar,
 } from "./editor_components/Toolbar";
 import { EnhancedImageToolbar } from "./editor_components/enhanced-image-toolbar";
+import { EffectsPanel } from "./editor_components/EffectsPanel";
 
 // Define shape types
 type ShapeType =
@@ -162,6 +163,17 @@ const FullEditor: React.FC = () => {
 
   const [images, setImages] = useState<ImageData[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+
+  // Add this to your state declarations
+  const [imageEffects, setImageEffects] = useState({
+    blur: false,
+    brightness: false,
+    sepia: false,
+    grayscale: false,
+    border: false,
+    cornerRadius: false,
+    shadow: false,
+  });
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
@@ -969,6 +981,13 @@ const FullEditor: React.FC = () => {
     });
   };
 
+  const handleEffectToggle = (effect: string) => {
+    setImageEffects((prev) => ({
+      ...prev,
+      [effect]: !prev[effect as keyof typeof imageEffects],
+    }));
+  };
+
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
@@ -1633,6 +1652,19 @@ const FullEditor: React.FC = () => {
           </div>
         </Dialog>
       </Transition>
+      {/* Effects Panel */}
+      {selectedTool === "effects" && (
+        <div className="relative">
+          <EffectsPanel
+            isOpen={selectedTool === "effects"}
+            onClose={() => {
+              setSelectedTool(null);
+            }}
+            effects={imageEffects}
+            onEffectToggle={handleEffectToggle}
+          />
+        </div>
+      )}
     </>
   );
 };
