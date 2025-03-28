@@ -195,7 +195,7 @@ export function ImagesTabContent({
   const updateImageData = (newData) => {
     const updatedData = { ...imageData, ...newData };
     setImageData(updatedData);
-    localStorage.setItem("imageData", JSON.stringify(updatedData));
+    localStorage.setItem(`imageData-${Date.now()}`, JSON.stringify(updatedData));
 
     // If we have a canvas editor reference, update the image there too
     if (

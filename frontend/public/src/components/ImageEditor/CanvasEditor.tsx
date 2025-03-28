@@ -145,7 +145,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         !initialImages.some((img) => img.src === backgroundImage)
       ) {
         initialImages.push({
-          id: "background-image",
+          id: `background-image-${Date.now()}`,
           src: backgroundImage,
           x: 0,
           y: 0,
