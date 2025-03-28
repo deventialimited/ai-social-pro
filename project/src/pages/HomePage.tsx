@@ -53,7 +53,6 @@ export const HomePage: React.FC = () => {
   const {setIsSignInPopup,isSignUpPopup,isSignInPopup,setIsSignUpPopup}=useAuthStore()
   const [url, setUrl] = useState("");
   const navigate = useNavigate();
- console.log(isSignInPopup)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const user = localStorage.getItem("user"); // Check if user exists in localStorage
