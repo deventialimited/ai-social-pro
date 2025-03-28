@@ -10,7 +10,7 @@ exports.addDomain = async (req, res) => {
     industry, 
     niche, 
     colors, 
-    user 
+    userId 
   } = req.body;
 
   try {
@@ -23,7 +23,7 @@ exports.addDomain = async (req, res) => {
       industry,
       niche,
       colors,
-      user
+      userId
     };
 
     const newDomain = new Domain(domainData);
@@ -45,7 +45,7 @@ exports.addDomain = async (req, res) => {
 // Get all domains
 exports.getAllDomains = async (req, res) => {
   try {
-    const domains = await Domain.find().populate('user', 'username email');
+    const domains = await Domain.find().populate('userId', 'username email');
 
     res.status(200).json({
       success: true,
@@ -66,7 +66,7 @@ exports.getDomainById = async (req, res) => {
 
   try {
     const domain = await Domain.findById(domainId)
-      .populate('user', 'username email');
+      .populate('userId', 'username email');
 
     if (!domain) {
       return res.status(404).json({
