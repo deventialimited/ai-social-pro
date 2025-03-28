@@ -14,6 +14,8 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import toast from "react-hot-toast"
+import {addDomain} from "../libs/domainService"
 //
 function extractDomain(fullUrl) {
   try {
@@ -26,44 +28,47 @@ function extractDomain(fullUrl) {
     return null;
   }
 }
-
-const generateCompanyData = async (domain) => {
-  try {
-    // Second API call
-    const secondResponse = await fetch(
-      `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
-    );
-
-    if (!secondResponse.ok) {
-      throw new Error(
-        `Second API call failed with status: ${secondResponse.status}`
-      );
-    }
-
-    // Parse second response and return
-    const secondData = await secondResponse.json();
-    // return secondData;
-    console.log(secondData);
-  } catch (error) {
-    console.log("Error in AI App data:", error);
-    return null;
-  }
-};
 export const HomePage: React.FC = () => {
-  const {setIsSignInPopup,isSignUpPopup,isSignInPopup,setIsSignUpPopup}=useAuthStore()
+  const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
+    useAuthStore();
   const [url, setUrl] = useState("");
   const navigate = useNavigate();
+  const generateCompanyData = async (domain,user) => {
+    try {
+      // Second API call
+      const secondResponse = await fetch(
+        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      );
+  
+      if (!secondResponse.ok) {
+        throw new Error(
+          `Second API call failed with status: ${secondResponse.status}`
+        );
+      }
+  
+      // Parse second response and return
+      const secondData = await secondResponse.json();
+      // return secondData;
+      // Call addDomain API to store the data
+      const result = await addDomain({...secondData,userId:user?._id});
+  
+      toast.success("Domain successfully added!");
+      console.log("Domain added:", result);
+    } catch (error) {
+      console.error("Error in AI App data:", error);
+      toast.error(error.message || "Failed to generate company data.");
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = localStorage.getItem("user"); // Check if user exists in localStorage
+    const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
     if (url) {
       if (user) {
-        await generateCompanyData(url);
+        await generateCompanyData(url,user);
       } else {
         setIsSignInPopup(true);
       }
     }
-    
   };
 
   const handleLogin = () => {
@@ -229,9 +234,7 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {(isSignInPopup||isSignUpPopup) && (
-        <AuthModal/>
-      )}
+      {(isSignInPopup || isSignUpPopup) && <AuthModal />}
     </div>
   );
 };

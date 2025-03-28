@@ -12,7 +12,7 @@ export const addDomain = async (domainData) => {
       industry: domainData.industry,
       niche: domainData.niche,
       colors: domainData.colors,
-      user: domainData.user
+      userId: domainData.userId
     });
 
     return response.data;
