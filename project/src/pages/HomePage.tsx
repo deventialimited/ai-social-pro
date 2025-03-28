@@ -100,7 +100,7 @@ export const HomePage: React.FC = () => {
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
               </button>
-              <button
+              {!localStorage?.getItem("user")&&(<><button
                 onClick={() => setIsSignInPopup(true)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
@@ -111,7 +111,7 @@ export const HomePage: React.FC = () => {
                 className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:opacity-90 transition-opacity"
               >
                 Sign Up
-              </button>
+              </button></>)}
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const PORT = process.env.PORT || 4000;
 const UserRoutes = require("./routes/User");
+const DomainRoutes = require("./routes/Domain");
 const { createServer } = require("http");
 
 require("dotenv").config();
@@ -30,6 +31,7 @@ app.use(bodyParser.json({ limit: "500mb" }));
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/v1/users", UserRoutes);
+app.use("/api/v1/domains", DomainRoutes);
 const httpServer = createServer(app);
 
 // Start the server

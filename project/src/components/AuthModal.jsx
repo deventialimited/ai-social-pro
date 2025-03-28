@@ -43,8 +43,10 @@ export const AuthModal = () => {
     if (isSignUpPopup) {
       try {
         const userData = await registerUser(formData.email, formData.password);
-        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", JSON.stringify(userData?.token));
+        localStorage.setItem("user", JSON.stringify(userData?.user));
         toast.success("Signup successful!");
+        setIsSignUpPopup(false);
       } catch (err) {
         console.error("Signup Error:", err);
         toast.error(err || "Signup failed. Please try again.");
@@ -52,8 +54,10 @@ export const AuthModal = () => {
     } else {
       try {
         const userData = await loginUser(formData.email, formData.password);
-        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", JSON.stringify(userData?.token));
+        localStorage.setItem("user", JSON.stringify(userData?.user));
         toast.success("Signin successful!");
+        setIsSignInPopup(false);
       } catch (err) {
         console.error("Signin Error:", err);
         toast.error(err || "Signin failed. Please try again.");

@@ -1,16 +1,16 @@
-const Domain = require('../routes/Domain'); // Adjust path as needed
+const Domain = require("../routes/Domain"); // Adjust path as needed
 
 // Add a new domain
 exports.addDomain = async (req, res) => {
-  const { 
-    client_email, 
-    clientWebsite, 
-    clientName, 
-    clientDescription, 
-    industry, 
-    niche, 
-    colors, 
-    userId 
+  const {
+    client_email,
+    clientWebsite,
+    clientName,
+    clientDescription,
+    industry,
+    niche,
+    colors,
+    userId,
   } = req.body;
 
   try {
@@ -23,7 +23,7 @@ exports.addDomain = async (req, res) => {
       industry,
       niche,
       colors,
-      userId
+      userId,
     };
 
     const newDomain = new Domain(domainData);
@@ -32,12 +32,12 @@ exports.addDomain = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Domain created successfully",
-      data: savedDomain
+      data: savedDomain,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -45,17 +45,17 @@ exports.addDomain = async (req, res) => {
 // Get all domains
 exports.getAllDomains = async (req, res) => {
   try {
-    const domains = await Domain.find().populate('userId', 'username email');
+    const domains = await Domain.find().populate("userId", "username email");
 
     res.status(200).json({
       success: true,
       count: domains.length,
-      data: domains
+      data: domains,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -65,24 +65,26 @@ exports.getDomainById = async (req, res) => {
   const domainId = req.params.id;
 
   try {
-    const domain = await Domain.findById(domainId)
-      .populate('userId', 'username email');
+    const domain = await Domain.findById(domainId).populate(
+      "userId",
+      "username email"
+    );
 
     if (!domain) {
       return res.status(404).json({
         success: false,
-        error: "Domain not found"
+        error: "Domain not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: domain
+      data: domain,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -97,7 +99,7 @@ exports.deleteDomain = async (req, res) => {
     if (!domain) {
       return res.status(404).json({
         success: false,
-        error: "Domain not found"
+        error: "Domain not found",
       });
     }
 
@@ -106,19 +108,12 @@ exports.deleteDomain = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Domain deleted successfully",
-      data: domain
+      data: domain,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
-};
-
-module.exports = {
-  addDomain: exports.addDomain,
-  getAllDomains: exports.getAllDomains,
-  getDomainById: exports.getDomainById,
-  deleteDomain: exports.deleteDomain
 };
