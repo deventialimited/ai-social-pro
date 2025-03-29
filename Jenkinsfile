@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Path to your environment file.
+        // Path to your environment file
         ENV_FILE_PATH = '/var/lib/jenkins/jenkinsEnvs/ai-social-pro'
         DEPLOY_PATH = '/var/lib/jenkins/ai-social-pro'
         FRONTEND_ENV_FILE = 'project/.env' // Frontend env file path
@@ -64,9 +64,9 @@ pipeline {
         stage('Transfer Full Build to Deployment Directory') {
             steps {
                 script {
-                    // Transfer the full build code to the deployment path
+                    // Transfer the full build code to the deployment path, excluding .git directory
                     echo "Transferring full build code to ${DEPLOY_PATH}..."
-                    sh "cp -r . ${DEPLOY_PATH}"  // Copy all files and directories to the deployment path
+                    sh "rsync -av --exclude='.git' ./ ${DEPLOY_PATH}/"  // Use rsync to exclude .git
                 }
             }
         }
