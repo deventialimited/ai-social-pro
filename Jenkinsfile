@@ -66,7 +66,7 @@ pipeline {
                 script {
                     // Transfer the full build code to the deployment path
                     echo "Transferring full build code to ${DEPLOY_PATH}..."
-                    sh "cp -r . ${DEPLOY_PATH}"  // Copy all files and directories to the deployment path
+                  sh "cp -r --exclude='.git' . ${DEPLOY_PATH}"  // Copy all files and directories to the deployment path
                 }
             }
         }
