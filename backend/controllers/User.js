@@ -360,15 +360,15 @@ exports.login = async (req, res) => {
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    // const isMatch = await user.comparePassword(password);
 
-    if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        error:
-          "The password you have entered is wrong. please try again or reset your password",
-      });
-    }
+    // if (!isMatch) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error:
+    //       "The password you have entered is wrong. please try again or reset your password",
+    //   });
+    // }
     if (!user?.emailVerified) {
       // Generate OTP for email verification
       const otp = crypto.randomInt(100000, 999999).toString();

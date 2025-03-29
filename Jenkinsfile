@@ -100,7 +100,7 @@ pipeline {
                 expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
             }
             steps {
-                dir(DEPLOY_PATH) {
+                dir("${DEPLOY_PATH}/backend") {  // CD into the 'backend' directory
                     script {
                         // Check if the backend is already running
                         def processStatus = sh(script: 'pm2 list | grep backend', returnStatus: true)
@@ -112,8 +112,8 @@ pipeline {
                         }
 
                         // Start the backend process with PM2
-                        echo "Starting backend with PM2 from ${DEPLOY_PATH}..."
-                        sh 'pm2 start backend/index.js --name backend --watch -f'
+                        echo "Starting backend with PM2 from ${DEPLOY_PATH}/backend..."
+                        sh 'pm2 start index.js --name backend --watch -f'
                         
                         // Save PM2 process list to ensure persistence
                         sh 'pm2 save'
