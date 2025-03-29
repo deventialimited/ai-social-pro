@@ -150,49 +150,43 @@ exports.deleteDomain = async (req, res) => {
   }
 };
 
-exports.updateDomainBusiness = async (req, res) => {
-    try {
-        const { domainId } = req.params; // Get domain ID from URL params
-        const updates = req.body; // Get updated business details from request body
+// Update domain business data
+exports.updateDomain = async (req, res) => {
+  try {
+    const { domainId } = req.params;
+    const updates = req.body; // Fields sent in the request
 
-        const updatedDomain = await Domain.findByIdAndUpdate(domainId, updates, { 
-            new: true, // Return updated document
-            runValidators: true // Ensure validation rules are applied
-        });
+    console.log("Updating domain:", domainId);
+    console.log("Data received for update:", updates);
 
-        if (!updatedDomain) {
-            return res.status(404).json({ success: false, message: "Domain not found" });
-        }
-
-        res.status(200).json({ success: true, message: "Business updated successfully", data: updatedDomain });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    if (!domainId) {
+      return res.status(400).json({ success: false, message: "Domain ID is required" });
     }
-};
 
-
-// Update Marketing Strategy
-exports.updateDomainMarketingStrategy = async (req, res) => {
-    try {
-        const { domainId } = req.params; // Get domain ID from URL params
-        const { marketingStrategy } = req.body; // Get marketing strategy updates
-
-        if (!marketingStrategy) {
-            return res.status(400).json({ success: false, message: "No marketing strategy data provided" });
-        }
-
-        const updatedDomain = await Domain.findByIdAndUpdate(
-            domainId, 
-            { marketingStrategy }, 
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedDomain) {
-            return res.status(404).json({ success: false, message: "Domain not found" });
-        }
-
-        res.status(200).json({ success: true, message: "Marketing strategy updated successfully", data: updatedDomain });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    // Find the existing domain to keep untouched fields
+    const existingDomain = await Domain.findById(domainId);
+    if (!existingDomain) {
+      return res.status(404).json({ success: false, message: "Domain not found" });
     }
+
+    // Only update fields that are provided in the request
+    const updatedDomain = await Domain.findByIdAndUpdate(
+      domainId,
+      { $set: updates }, // Only updates the provided fields
+      { new: true, runValidators: true } // Returns updated document, applies validation
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Domain updated successfully",
+      data: updatedDomain,
+    });
+  } catch (error) {
+    console.error("Error updating domain:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
 };

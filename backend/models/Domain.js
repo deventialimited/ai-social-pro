@@ -41,7 +41,12 @@ const domainSchema = new mongoose.Schema({
     colors: {
         type: String,
         trim: true
-    },
+    },  
+     // Problems faced by the audience (comma-separated string or JSON)
+  language: { type: String, required: false },
+  country: { type: String, required: false },
+  state: { type: String, required: false },
+    
     siteLogo: {
         type: String, // URL of the logo
         trim: true

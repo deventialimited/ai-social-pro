@@ -75,44 +75,16 @@ export const deleteDomain = async (id) => {
 };
 
 
-//update domain business
-export const updateDomainBusiness = async (domainId, businessData) => {
-  console.log("businessData", businessData);
-
+// update businessDomain
+export const updateDomainData = async (domainId, domainData) => {
   try {
-    const response = await axios.patch(`${API_URL}/business/${domainId}`, {
-      client_email: businessData.client_email,
-      clientWebsite: businessData.clientWebsite,
-      clientName: businessData.clientName,
-      clientDescription: businessData.clientDescription,
-      industry: businessData.industry,
-      niche: businessData.niche,
-    });
+    console.log("Updating domain data:", domainData);
+
+    const response = await axios.patch(`${API_URL}/domain/${domainId}`, domainData);
 
     return response.data;
   } catch (error) {
-    console.log(error)
-    console.log(error.response?.data?.error || "An error occurred");
-    throw error.response?.data?.error;
+    console.error("Error updating domain data:", error.response?.data?.error || error.message);
+    throw error.response?.data?.error || error.message;
   }
-};
-
-
-//update domain marketing strategy
-export const updateDomainMarketingStrategy = async (domainId, marketingStrategy) => {
-  console.log("marketingStrategy", marketingStrategy);
-  try {
-    const response = await axios.patch(`${API_URL}/marketing-strategy/${domainId}`, {
-      marketingStrategy: {
-        targetAudience: marketingStrategy.targetAudience,
-        audiencePains: marketingStrategy.audiencePains,
-        coreValues: marketingStrategy.coreValues
-      }
-    });
-
-    return response.data;
-  } catch (error) {
-    console.log(error.response?.data?.error || "An error occurred");
-    throw error.response?.data?.error;
-  }
-};
+}
