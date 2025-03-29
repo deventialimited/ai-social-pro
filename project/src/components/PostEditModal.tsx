@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { Post } from '../types';
 import { GraphicEditor } from './GraphicEditor';
+import { useNavigate } from 'react-router-dom';
 
 interface PostEditModalProps {
   post: Post;
@@ -12,7 +13,12 @@ interface PostEditModalProps {
 export const PostEditModal: React.FC<PostEditModalProps> = ({ post, onClose, onSave }) => {
   const [editedText, setEditedText] = useState(post.text);
   const [showGraphicEditor, setShowGraphicEditor] = useState(false);
+  const navigate = useNavigate();
 
+const handlenavigate=()=>{
+
+navigate('/fullEditor');
+}
   const handleSave = () => {
     onSave({
       ...post,
@@ -82,7 +88,8 @@ export const PostEditModal: React.FC<PostEditModalProps> = ({ post, onClose, onS
                   Image
                 </label>
                 <button
-                  onClick={() => setShowGraphicEditor(true)}
+                  // onClick={() => setShowGraphicEditor(true)}
+                onClick={handlenavigate}
                   className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
                 >
                   <Pencil className="w-3 h-3" />
