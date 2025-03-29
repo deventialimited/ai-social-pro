@@ -135,7 +135,7 @@ exports.editProfile = async (req, res) => {
 // Register user
 exports.register = async (req, res) => {
   const { email, password } = req.body;
-
+console.log(email, password,"into the req body ")
   try {
     // Check if a user with the provided email already exists
     let user = await User.findOne({ email });

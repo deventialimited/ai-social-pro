@@ -24,7 +24,7 @@ router.get("/getDomainsByUserId/:userId", getDomainsByUserId);
 // Delete domain
 router.delete("/deleteDomain/:id", deleteDomain);
 // Update domain business information
-router.patch("/domain/:domainId", updateDomain);
+router.patch("/UpdateDomain/:domainId", updateDomain);
 
 
 module.exports = router;
