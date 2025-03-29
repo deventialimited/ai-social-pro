@@ -101,7 +101,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
   };
 
   return (
-    <div className="absolute top-43 left-40 bg-white rounded-lg shadow-lg border border-gray-200 p-2 w-[260px] z-[200] max-h-[500px] overflow-y-auto">
+    <div className="absolute top-43 left-40 bg-white rounded-lg shadow-lg border border-gray-200 p-2 w-[265px] z-[200] max-h-[500px] overflow-y-auto">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-sm font-semibold">Effects</h3>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
