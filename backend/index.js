@@ -33,6 +33,10 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/api/v1/users", UserRoutes);
 app.use("/api/v1/domains", DomainRoutes);
+app.get("/", (req, res) => {
+  res.status(200).json({ success: true, message: "Server is running!" });
+});
+
 const httpServer = createServer(app);
 
 // Start the server
