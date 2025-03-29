@@ -166,13 +166,16 @@ const FullEditor: React.FC = () => {
 
   // Add this to your state declarations
   const [imageEffects, setImageEffects] = useState({
-    blur: false,
-    brightness: false,
-    sepia: false,
-    grayscale: false,
-    border: false,
-    cornerRadius: false,
-    shadow: false,
+    blur: 0,
+    brightness: 0,
+    sepia: 0,
+    grayscale: 0,
+    border: 0,
+    cornerRadius: 0,
+    shadow: {
+      blur: 0,
+      offsetX: 0,
+    },
   });
 
   // Save data to Firebase Firestore
@@ -982,10 +985,59 @@ const FullEditor: React.FC = () => {
   };
 
   const handleEffectToggle = (effect: string) => {
-    setImageEffects((prev) => ({
-      ...prev,
-      [effect]: !prev[effect as keyof typeof imageEffects],
-    }));
+    console.log("Effect toggled:", effect);
+
+    // Define default values for each effect
+    const defaultValues = {
+      blur: 5,
+      brightness: 110,
+      sepia: 50,
+      grayscale: 50,
+      border: 3,
+      cornerRadius: 10,
+      shadow: {
+        blur: 15,
+        offsetX: 5,
+      },
+    };
+
+    try {
+      // Construct the new state first
+      let newEffects = { ...imageEffects };
+
+      if (effect.includes(".")) {
+        // Handle nested properties like 'shadow.blur'
+        const [parent, child] = effect.split(".");
+        const currentValue = imageEffects[parent][child];
+        const newValue = currentValue > 0 ? 0 : defaultValues[parent][child];
+
+        newEffects = {
+          ...newEffects,
+          [parent]: {
+            ...newEffects[parent],
+            [child]: newValue,
+          },
+        };
+      } else {
+        // Handle top-level properties
+        const currentValue = imageEffects[effect];
+        const newValue = currentValue > 0 ? 0 : defaultValues[effect];
+
+        newEffects = {
+          ...newEffects,
+          [effect]: newValue,
+        };
+      }
+
+      // Update state
+      setImageEffects(newEffects);
+
+      // Add to history
+      console.log("Adding to history:", newEffects);
+      addToHistory({ imageEffects: newEffects });
+    } catch (error) {
+      console.error("Error toggling effect:", error);
+    }
   };
 
   return (
@@ -1586,6 +1638,7 @@ const FullEditor: React.FC = () => {
                               onImageDragEnd={handleImageDragEnd}
                               scaleX={scaleX}
                               scaleY={scaleY}
+                              imageEffects={imageEffects}
                             />
                           </div>
                           <div
@@ -1661,6 +1714,42 @@ const FullEditor: React.FC = () => {
               setSelectedTool(null);
             }}
             effects={imageEffects}
+            onEffectChange={(effect, value) => {
+              console.log(`Changing ${effect} to ${value}`);
+
+              try {
+                // Create a new state object first
+                let newEffects = { ...imageEffects };
+
+                if (effect.includes(".")) {
+                  // Handle nested properties like 'shadow.blur'
+                  const [parent, child] = effect.split(".");
+
+                  newEffects = {
+                    ...newEffects,
+                    [parent]: {
+                      ...newEffects[parent],
+                      [child]: value,
+                    },
+                  };
+                } else {
+                  // Handle top-level properties
+                  newEffects = {
+                    ...newEffects,
+                    [effect]: value,
+                  };
+                }
+
+                // Update the state with the new effects
+                setImageEffects(newEffects);
+
+                // Add to history
+                console.log("Adding to history:", newEffects);
+                addToHistory({ imageEffects: newEffects });
+              } catch (error) {
+                console.error("Error changing effect:", error);
+              }
+            }}
             onEffectToggle={handleEffectToggle}
           />
         </div>
