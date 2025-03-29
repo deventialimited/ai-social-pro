@@ -1,9 +1,49 @@
-import React, { useState, useRef, ChangeEvent } from 'react';
-import { Edit, Save, X, Upload, Image, Building2 } from 'lucide-react';
-import {updateDomainBusiness,updateDomainMarketingStrategy} from '../libs/domainService'
-export const BusinessSection = ({ data, onEdit }) => {
+import React, { useState, useRef, ChangeEvent, useEffect } from "react";
+import { Edit, Save, X, Upload, Image, Building2 } from "lucide-react";
+import {
+  updateDomainBusiness,
+  updateDomainMarketingStrategy,
+} from "../libs/domainService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+const useUpdateDomainBusiness = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateDomainBusiness,
+    onSuccess: (updatedDomain) => {
+      // Optimistically update UI
+      queryClient.setQueryData(["domains", updatedDomain.userId], (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((domain) =>
+          domain._id === updatedDomain._id ? updatedDomain : domain
+        );
+      });
+
+      // Alternatively, refetch all domains after update
+      // queryClient.invalidateQueries(["domains"]);
+    },
+  });
+};
+export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   const [editingSection, setEditingSection] = useState(null);
-  const [formData, setFormData] = useState(data);
+  console.log(selectedWebsite);
+  const [formData, setFormData] = useState({
+    clientName: "",
+    clientDescription: "",
+    industry: "",
+    niche: "",
+    clientWebsite: "",
+    language: "",
+    country: "",
+    state: "",
+    colors: [],
+    marketingStrategy: {
+      core_values: ["", "", ""],
+      audiencePains: ["", "", ""],
+      audience: ["", "", ""],
+    },
+  });
+  console.log(selectedWebsite);
   const logoInputRef = useRef(null);
   const headshotInputRef = useRef(null);
   const colorPickerRefs = {
@@ -11,31 +51,33 @@ export const BusinessSection = ({ data, onEdit }) => {
     backgroundColor: useRef(null),
     textColor: useRef(null),
   };
-
+  useEffect(() => {
+    if (selectedWebsite) {
+      setFormData({ ...selectedWebsite });
+    }
+  }, [selectedWebsite]);
+  console.log(formData);
   const handleEdit = (section) => {
     setEditingSection(section);
     onEdit(section);
   };
-
+  const updateDomain = useUpdateDomainBusiness();
   const handleSave = async () => {
     try {
-          console.log("Saving data:", formData); // Debugging output
-      if (editingSection === 'business') {
-        await updateDomainBusiness(formData);
-      } else if (editingSection === 'marketing') {
-        await updateDomainMarketingStrategy(formData.marketingStrategy);
-      }
-
+      console.log("Saving data:", formData); // Debugging output
+      await updateDomain.mutateAsync({
+        id: selectedWebsite?._id,
+        data: formData,
+      });
       setEditingSection(null);
-      console.log('Saving data:', formData);
     } catch (error) {
-      console.error('Error updating data:', error);
+      console.error("Error updating data:", error);
     }
   };
 
   const handleCancel = () => {
     setEditingSection(null);
-    setFormData(data);
+    // setFormData(data);
   };
 
   const handleColorClick = (type) => {
@@ -48,25 +90,33 @@ export const BusinessSection = ({ data, onEdit }) => {
 
     // Create a URL for the uploaded file
     const imageUrl = URL.createObjectURL(file);
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
       [type]: imageUrl,
-      ...(type === 'logo' ? { logoBackground: 'white' } : {})
+      ...(type === "logo" ? { logoBackground: "white" } : {}),
     }));
   };
 
   const renderImageUpload = (type, inputRef) => {
-    const isEditing = editingSection === 'brand';
-    const imageUrl = type === 'logo' ? '/kaz-routes-logo.png' : formData[type];
-    const title = type === 'logo' ? 'Upload Logo' : 'Upload Headshot';
+    const isEditing = editingSection === "brand";
+    const imageUrl = type === "logo" ? "/kaz-routes-logo.png" : formData[type];
+    const title = type === "logo" ? "Upload Logo" : "Upload Headshot";
 
     return (
       <div className="space-y-2">
         <div
           className={`relative group cursor-pointer overflow-hidden rounded-lg
-            ${type === 'logo' ? 'w-[100px] h-[100px] bg-white' : 'w-[120px] h-[120px]'}
-            ${!imageUrl ? 'border-2 border-dashed border-gray-300 dark:border-gray-600' : ''}`}
+            ${
+              type === "logo"
+                ? "w-[100px] h-[100px] bg-white"
+                : "w-[120px] h-[120px]"
+            }
+            ${
+              !imageUrl
+                ? "border-2 border-dashed border-gray-300 dark:border-gray-600"
+                : ""
+            }`}
           onClick={() => isEditing && inputRef.current?.click()}
         >
           {imageUrl ? (
@@ -74,21 +124,29 @@ export const BusinessSection = ({ data, onEdit }) => {
               <img
                 src={imageUrl}
                 alt={title}
-                className={`w-full h-full ${type === 'logo' ? 'object-contain p-2' : 'object-cover'}`}
+                className={`w-full h-full ${
+                  type === "logo" ? "object-contain p-2" : "object-cover"
+                }`}
               />
-              <div className={`absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${!isEditing && 'cursor-not-allowed'}`}>
+              <div
+                className={`absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                  !isEditing && "cursor-not-allowed"
+                }`}
+              >
                 <Upload className="w-6 h-6 text-white" />
               </div>
             </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2">
               <Image className="w-6 h-6 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">{title}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {title}
+              </span>
             </div>
           )}
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          {type === 'logo' ? '100x100px' : '120x120px'}
+          {type === "logo" ? "100x100px" : "120x120px"}
         </p>
         <input
           ref={inputRef}
@@ -103,7 +161,7 @@ export const BusinessSection = ({ data, onEdit }) => {
   };
 
   const renderField = (label, value, field) => {
-    const isEditing = editingSection === 'business';
+    const isEditing = editingSection === "business";
 
     return (
       <div className="flex items-center gap-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700">
@@ -115,11 +173,16 @@ export const BusinessSection = ({ data, onEdit }) => {
             <input
               type="text"
               value={value}
-              onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
+              onChange={(e) => {
+                e.preventDefault();
+                setFormData({ ...formData, [field]: e.target.value });
+              }}
               className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm"
             />
           ) : (
-            <span className="text-sm text-gray-900 dark:text-white">{value}</span>
+            <span className="text-sm text-gray-900 dark:text-white">
+              {value}
+            </span>
           )}
         </div>
       </div>
@@ -127,14 +190,16 @@ export const BusinessSection = ({ data, onEdit }) => {
   };
 
   const renderList = (title, items, field) => {
-    const isEditing = editingSection === 'marketing';
+    const isEditing = editingSection === "marketing";
 
     return (
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">{title}</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {title}
+        </h3>
         {isEditing ? (
           <div className="space-y-2">
-            {items.map((item, index) => (
+            {items?.map((item, index) => (
               <input
                 key={index}
                 type="text"
@@ -146,8 +211,8 @@ export const BusinessSection = ({ data, onEdit }) => {
                     ...formData,
                     marketingStrategy: {
                       ...formData.marketingStrategy,
-                      [field]: newItems
-                    }
+                      [field]: newItems,
+                    },
                   });
                 }}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm"
@@ -156,8 +221,11 @@ export const BusinessSection = ({ data, onEdit }) => {
           </div>
         ) : (
           <ul className="space-y-1">
-            {items.map((item, index) => (
-              <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700">
+            {items?.map((item, index) => (
+              <li
+                key={index}
+                className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                 {item}
               </li>
@@ -169,7 +237,7 @@ export const BusinessSection = ({ data, onEdit }) => {
   };
 
   const renderColorPicker = () => {
-    const isEditing = editingSection === 'brand';
+    const isEditing = editingSection === "brand";
 
     return (
       <div className="space-y-4">
@@ -178,23 +246,30 @@ export const BusinessSection = ({ data, onEdit }) => {
         </h3>
         <div className="flex gap-4">
           {[
-            { type: 'brandColor', label: 'Brand Color' },
-            { type: 'backgroundColor', label: 'Background Color' },
-            { type: 'textColor', label: 'Text Color' }
+            { type: "brandColor", label: "Brand Color" },
+            { type: "backgroundColor", label: "Background Color" },
+            { type: "textColor", label: "Text Color" },
           ].map(({ type, label }) => (
-            <div key={type} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700">
+            <div
+              key={type}
+              className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700"
+            >
               <div className="flex items-center gap-2">
                 <div
                   className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                  style={{ backgroundColor: formData[type] || '#000000' }}
+                  style={{ backgroundColor: formData[type] || "#000000" }}
                   onClick={() => isEditing && handleColorClick(type)}
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {label}
+                </span>
                 <input
                   ref={colorPickerRefs[type]}
                   type="color"
-                  value={formData[type] || '#000000'}
-                  onChange={(e) => setFormData({ ...formData, [type]: e.target.value })}
+                  value={formData[type] || "#000000"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [type]: e.target.value })
+                  }
                   className="hidden"
                   disabled={!isEditing}
                 />
@@ -212,7 +287,9 @@ export const BusinessSection = ({ data, onEdit }) => {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h2>
           {isEditing ? (
             <div className="flex gap-2">
               <button
@@ -237,9 +314,7 @@ export const BusinessSection = ({ data, onEdit }) => {
             </button>
           )}
         </div>
-        <div className="p-4 space-y-4">
-          {children}
-        </div>
+        <div className="p-4 space-y-4">{children}</div>
       </div>
     );
   };
@@ -253,44 +328,67 @@ export const BusinessSection = ({ data, onEdit }) => {
             Business Profile
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Manage your business information and branding to ensure consistent messaging across all platforms.
+            Manage your business information and branding to ensure consistent
+            messaging across all platforms.
           </p>
         </div>
 
         <div className="p-8 space-y-6">
           {/* Brand Category */}
-          {renderSection('Brand', 'brand', (
+          {/* {renderSection(
+            "Brand",
+            "brand",
             <div className="space-y-6">
               <div className="flex gap-6">
-                {renderImageUpload('logo', logoInputRef)}
-                {renderImageUpload('headshot', headshotInputRef)}
+                {renderImageUpload("logo", logoInputRef)}
+                {renderImageUpload("headshot", headshotInputRef)}
               </div>
               {renderColorPicker()}
             </div>
-          ))}
+          )} */}
 
           {/* Business Category */}
-          {renderSection('Business', 'business', (
+          {renderSection(
+            "Business",
+            "business",
             <div className="space-y-4">
-              {renderField('Business Name', formData.name, 'name')}
-              {renderField('Description', formData.description, 'description')}
-              {renderField('Industry', formData.industry, 'industry')}
-              {renderField('Niche', formData.niche, 'niche')}
-              {renderField('Website', formData.website, 'website')}
-              {renderField('Language', formData.language, 'language')}
-              {renderField('Country', formData.country, 'country')}
-              {renderField('State/Region', formData.region, 'region')}
+              {renderField("Business Name", formData?.clientName, "clientName")}
+              {renderField(
+                "Description",
+                formData?.clientDescription,
+                "clientDescription"
+              )}
+              {renderField("Industry", formData?.industry, "industry")}
+              {renderField("Niche", formData?.niche, "niche")}
+              {renderField("Website", formData?.clientWebsite, "clientWebsite")}
+              {renderField("Language", formData?.language, "language")}
+              {renderField("Country", formData?.country, "country")}
+              {renderField("State/Region", formData?.state, "state")}
             </div>
-          ))}
+          )}
 
           {/* Marketing Strategy Category */}
-          {renderSection('Marketing Strategy', 'marketing', (
+          {renderSection(
+            "Marketing Strategy",
+            "marketing",
             <div className="space-y-6">
-              {renderList('Target Audience', formData.marketingStrategy.audience, 'audience')}
-              {renderList('Audience Pains', formData.marketingStrategy.audiencePains, 'audiencePains')}
-              {renderList('Core Values', formData.marketingStrategy.coreValues, 'coreValues')}
+              {renderList(
+                "Target Audience",
+                formData?.marketingStrategy?.audience,
+                "audience"
+              )}
+              {renderList(
+                "Audience Pains",
+                formData?.marketingStrategy?.audiencePains,
+                "audiencePains"
+              )}
+              {renderList(
+                "Core Values",
+                formData?.marketingStrategy?.core_values,
+                "core_values"
+              )}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

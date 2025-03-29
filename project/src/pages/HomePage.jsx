@@ -54,16 +54,16 @@ export const HomePage = () => {
       const secondData = await secondResponse.json();
       // return secondData;
       // Call addDomain API to store the data
-      console.log("user", user);
-      const result = await addDomain({ ...secondData, userId: user?._id });
+      console.log("secondData", secondData);
+      // const result = await addDomain({ ...secondData, userId: user?._id });
 
-      toast.success("Domain successfully added!");
-      console.log("Domain added:", result);
-      navigate("/dashboard", {
-        state: {
-          domainId: result?.data?._id,
-        },
-      });
+      // toast.success("Domain successfully added!");
+      // console.log("Domain added:", result);
+      // navigate("/dashboard", {
+      //   state: {
+      //     domainId: result?.data?._id,
+      //   },
+      // });
     } catch (error) {
       console.error("Error in AI App data:", error);
       toast.error(error.message || "Failed to generate company data.");
