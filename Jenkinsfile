@@ -5,6 +5,7 @@ pipeline {
         // Path to your environment file
         ENV_FILE_PATH = '/var/lib/jenkins/jenkinsEnvs/ai-social-pro'
         DEPLOY_PATH = '/var/lib/jenkins/ai-social-pro'
+        FRONTEND_ENV_FILE = 'project/.env' // Frontend env file path
     }
 
     stages {
@@ -24,21 +25,30 @@ pipeline {
             steps {
                 echo "Copying environment file to Backend folder..."
                 sh 'mkdir -p backend'  // Ensure backend directory exists
-                sh "cp ${ENV_FILE_PATH}/.env backend/.env"  // Copy the .env environment file
+                sh "cp ${ENV_FILE_PATH}/.env backend/.env"  // Copy the .env environment file to the backend
             }
         }
 
-        stage('Install Dependencies - Frontend') {
+        stage('Create Frontend .env') {
             steps {
-                dir('frontend') {
+                echo "Creating frontend .env file with VITE_BASE_URL..."
+                sh '''
+                    echo "VITE_BASE_URL=https://api.oneyearsocial.com" > ${FRONTEND_ENV_FILE}
+                '''  // Create .env in frontend with the necessary variable
+            }
+        }
+
+        stage('Install Dependencies - Project') {
+            steps {
+                dir('project') {
                     sh 'npm i --force --legacy-peer-deps'
                 }
             }
         }
 
-        stage('Build - Frontend') {
+        stage('Build - Project') {
             steps {
-                dir('frontend') {
+                dir('project') {
                     script {
                         try {
                             sh 'npm run build'
