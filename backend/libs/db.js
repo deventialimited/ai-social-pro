@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 // const databaseUrl = `mongodb://127.0.0.1:27017/${databaseName}`;
 module.exports = async () => {
