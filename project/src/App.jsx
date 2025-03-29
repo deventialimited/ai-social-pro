@@ -22,7 +22,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard/*" element={<Dashboard />} />
-            <Route path="/fullEditor" element={<FullEditor />} />
+            {/* <Route path="/fullEditor" element={<FullEditor />} /> */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Toaster />
