@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 
-const databaseName = "SocailPro"; // Replace with your actual database name
-const databaseUrl = `mongodb+srv://Mehtab1:mehtab1122@cluster0.ahnmfrc.mongodb.net/${databaseName}`; // Connection string
 // const databaseUrl = `mongodb://127.0.0.1:27017/${databaseName}`;
 module.exports = async () => {
   try {
@@ -18,9 +16,9 @@ module.exports = async () => {
     mongoose.set("strictQuery", false);
 
     // Connect to MongoDB
-    await mongoose.connect(databaseUrl, connectionParams);
+    await mongoose.connect(process.env.Database_URL, connectionParams);
 
-    console.log(`Database '${databaseName}' is successfully connected`);
+    console.log(`Database SocailPro is successfully connected`);
   } catch (error) {
     // Log the error and provide actionable information
     console.error("There are errors in MongoDB connection", error.message);
