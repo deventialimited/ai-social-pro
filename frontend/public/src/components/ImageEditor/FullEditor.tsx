@@ -175,6 +175,7 @@ const FullEditor: React.FC = () => {
     shadow: {
       blur: 0,
       offsetX: 0,
+      offsetY: 0,
     },
   });
 
@@ -998,6 +999,7 @@ const FullEditor: React.FC = () => {
       shadow: {
         blur: 15,
         offsetX: 5,
+        offsetY: 5,
       },
     };
 

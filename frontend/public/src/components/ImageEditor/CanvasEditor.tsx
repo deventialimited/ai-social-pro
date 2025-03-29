@@ -797,7 +797,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     // Shadow from effects
     const boxShadow =
       imageEffects && imageEffects.shadow && imageEffects.shadow.blur > 0
-        ? `${imageEffects.shadow.offsetX}px ${imageEffects.shadow.offsetX}px ${imageEffects.shadow.blur}px rgba(0,0,0,0.5)`
+        ? `${imageEffects.shadow.offsetX}px ${imageEffects.shadow.offsetY}px ${imageEffects.shadow.blur}px rgba(0,0,0,0.5)`
         : undefined;
 
     return images.map((imageData) => {

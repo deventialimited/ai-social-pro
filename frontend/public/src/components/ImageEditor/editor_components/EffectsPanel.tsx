@@ -17,6 +17,7 @@ interface EffectsPanelProps {
     shadow: {
       blur: number;
       offsetX: number;
+      offsetY: number;
     };
   };
   onEffectChange: (effect: string, value: number) => void;
@@ -51,6 +52,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     } else if (effect === "shadow.blur" && effects.shadow.blur === 0) {
       onEffectChange("shadow.blur", 15);
       onEffectChange("shadow.offsetX", 5);
+      onEffectChange("shadow.offsetY", 5);
     }
 
     // This is essential - calls the parent component's toggle function
@@ -68,6 +70,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     if (effect === "shadow.blur" || effect === "shadow") {
       onEffectChange("shadow.blur", 0);
       onEffectChange("shadow.offsetX", 0);
+      onEffectChange("shadow.offsetY", 0);
     } else {
       onEffectChange(effect, 0);
     }
@@ -515,6 +518,34 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 value={effects.shadow.offsetX}
                 onChange={(e) =>
                   onEffectChange("shadow.offsetX", Number(e.target.value))
+                }
+                className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
+              />
+            </div>
+            <div className="flex items-center mt-1">
+              <span className="text-xs mr-1">Offset Y</span>
+              <Box sx={{ width: "100%" }}>
+                <Slider
+                  size="small"
+                  min={-10}
+                  max={10}
+                  value={effects.shadow.offsetY}
+                  onChange={(e, val) =>
+                    handleDirectSliderChange(
+                      "shadow.offsetY",
+                      Array.isArray(val) ? val[0] : val
+                    )
+                  }
+                  valueLabelDisplay="auto"
+                />
+              </Box>
+              <input
+                type="number"
+                min={-10}
+                max={10}
+                value={effects.shadow.offsetY}
+                onChange={(e) =>
+                  onEffectChange("shadow.offsetY", Number(e.target.value))
                 }
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
