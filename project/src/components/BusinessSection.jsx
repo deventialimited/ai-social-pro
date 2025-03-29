@@ -1,29 +1,6 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from "react";
 import { Edit, Save, X, Upload, Image, Building2 } from "lucide-react";
-import {
-  updateDomainBusiness,
-  updateDomainMarketingStrategy,
-} from "../libs/domainService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-const useUpdateDomainBusiness = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: updateDomainBusiness,
-    onSuccess: (updatedDomain) => {
-      // Optimistically update UI
-      queryClient.setQueryData(["domains", updatedDomain.userId], (oldData) => {
-        if (!oldData) return [];
-        return oldData.map((domain) =>
-          domain._id === updatedDomain._id ? updatedDomain : domain
-        );
-      });
-
-      // Alternatively, refetch all domains after update
-      // queryClient.invalidateQueries(["domains"]);
-    },
-  });
-};
+import { useUpdateDomainBusiness } from "../libs/domainService";
 export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   const [editingSection, setEditingSection] = useState(null);
   console.log(selectedWebsite);
@@ -66,8 +43,8 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
     try {
       console.log("Saving data:", formData); // Debugging output
       await updateDomain.mutateAsync({
-        id: selectedWebsite?._id,
-        data: formData,
+        domainId: selectedWebsite?._id,
+        domainData: formData,
       });
       setEditingSection(null);
     } catch (error) {

@@ -23,6 +23,7 @@ export const updateProfile = async (userId, formData) => {
 // Register user manually
 export const registerUser = async (email, password) => {
   try {
+    console.log("Registering user with email:", email, "and password:", password);
     const response = await axios.post(`${API_URL}/register`, {
       email,
       password,
@@ -30,6 +31,7 @@ export const registerUser = async (email, password) => {
 console.log(response.data)
     return response.data;
   } catch (error) {
+    console.log(error)
     console.log(error.response.data.error);
     throw error.response?.data.error;
   }
