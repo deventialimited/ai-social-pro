@@ -4,8 +4,8 @@ pipeline {
 
     environment {
         // Path to your environment file
-        ENV_FILE_PATH = '/home/ubuntu/jenkinsEnvs/ai-social-pro/.env'
-        DEPLOY_PATH = '/home/ubuntu/ai-social-pro'
+        ENV_FILE_PATH = '/var/lib/jenkins/jenkinsEnvs/ai-social-pro'
+        DEPLOY_PATH = '/var/lib/jenkins/ai-social-pro'
     }
 
     stages {
