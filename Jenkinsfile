@@ -1,4 +1,3 @@
-// pipeline
 pipeline {
     agent any
 
@@ -17,8 +16,7 @@ pipeline {
                     userRemoteConfigs: [[
                         credentialsId: 'majidToken',
                         url: 'https://github.com/deventialimited/ai-social-pro.git'
-                    ]]
-                )
+                    ]])
             }
         }
 
@@ -26,7 +24,7 @@ pipeline {
             steps {
                 echo "Copying environment file to Backend folder..."
                 sh 'mkdir -p backend'  // Ensure backend directory exists
-                sh "cp ${ENV_FILE_PATH} backend/.env"  // Copy the environment file
+                sh "cp ${ENV_FILE_PATH}/.env backend/.env"  // Copy the .env environment file
             }
         }
 
