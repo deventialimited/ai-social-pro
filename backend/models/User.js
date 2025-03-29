@@ -77,7 +77,7 @@ const userSchema = new mongoose.Schema(
 userSchema.pre("save", async function (next) {
   // Encrypt the password if it has been modified
   if (this.isModified("password")) {
-    this.password = bcrypt.hash(this.password, 12);
+    this.password = await bcrypt.hash(this.password, 12);
   }
 
   // Update lastModified field

@@ -150,11 +150,12 @@ exports.register = async (req, res) => {
       email
     )}`;
     // If user does not exist, create a new user
-    user = await User.create({
+    user = new User({
       email,
       password,
       profileImage,
     });
+    await user.save(); // Ensures the pre("save") hook runs
 
     // Generate OTP for email verification
     const otp = crypto.randomInt(100000, 999999).toString();
@@ -174,7 +175,89 @@ exports.register = async (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 };
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
 
+  try {
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "Looks like you're new here! Let's get you signed up.",
+      });
+    }
+    // Check if the user has a Facebook or Google account or doesn't have a password set
+    if (user.googleId && !user.password) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "The password you have entered is wrong. please try again or reset your password",
+      });
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "The password you have entered is wrong. please try again or reset your password",
+      });
+    }
+    if (!user?.emailVerified) {
+      // Generate OTP for email verification
+      const otp = crypto.randomInt(100000, 999999).toString();
+      const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
+        expiresIn: "5m",
+      });
+
+      // await sendVerificationEmail(email, otp);
+
+      return res.status(200).json({
+        success: true,
+        message: "You are unverified user. Please verify your email.",
+        emailUnVerified: true,
+        token,
+        user,
+      });
+    }
+    if (user.twoFactorEnabled) {
+      const methods = user.twoFactorMethods;
+      let token;
+
+      // Generate OTP if email 2FA is enabled
+      if (methods.email) {
+        const otp = crypto.randomInt(100000, 999999).toString();
+        token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
+          expiresIn: "5m",
+        });
+
+        await sendTwoFactorOtpEmail(email, otp);
+      }
+
+      // Return the response indicating that 2FA is required
+      return res.status(200).json({
+        success: true,
+        message: "Two-factor authentication required",
+        twoFactorRequired: true,
+        userId: user._id,
+        methods,
+        token: methods.email ? token : undefined, // Include the token if email 2FA is enabled
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 exports.sendEmailVerificationOtp = async (req, res) => {
   const { email } = req.body;
 
@@ -336,90 +419,6 @@ exports.googleAuth = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
-  }
-};
-
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email }).select("+password");
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        error: "Looks like you're new here! Let's get you signed up.",
-      });
-    }
-    // Check if the user has a Facebook or Google account or doesn't have a password set
-    if (user.googleId && !user.password) {
-      return res.status(400).json({
-        success: false,
-        error:
-          "The password you have entered is wrong. please try again or reset your password",
-      });
-    }
-
-    // const isMatch = await user.comparePassword(password);
-
-    // if (!isMatch) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     error:
-    //       "The password you have entered is wrong. please try again or reset your password",
-    //   });
-    // }
-    if (!user?.emailVerified) {
-      // Generate OTP for email verification
-      const otp = crypto.randomInt(100000, 999999).toString();
-      const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
-        expiresIn: "5m",
-      });
-
-      // await sendVerificationEmail(email, otp);
-
-      return res.status(200).json({
-        success: true,
-        message: "You are unverified user. Please verify your email.",
-        emailUnVerified: true,
-        token,
-        user,
-      });
-    }
-    if (user.twoFactorEnabled) {
-      const methods = user.twoFactorMethods;
-      let token;
-
-      // Generate OTP if email 2FA is enabled
-      if (methods.email) {
-        const otp = crypto.randomInt(100000, 999999).toString();
-        token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
-          expiresIn: "5m",
-        });
-
-        await sendTwoFactorOtpEmail(email, otp);
-      }
-
-      // Return the response indicating that 2FA is required
-      return res.status(200).json({
-        success: true,
-        message: "Two-factor authentication required",
-        twoFactorRequired: true,
-        userId: user._id,
-        methods,
-        token: methods.email ? token : undefined, // Include the token if email 2FA is enabled
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      user,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message,
-    });
   }
 };
 
