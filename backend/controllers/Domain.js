@@ -21,11 +21,17 @@ exports.addDomain = async (req, res) => {
   } = req.body;
 
   try {
-    // Convert comma-separated values into arrays
+    // Helper function to split numbered lists correctly
+    const splitNumberedList = (value) => {
+      if (typeof value !== "string") return value; // Return original if not a string
+      return value
+        .split(/(?=\d+\.\s)/) // Split before numbers like "1. ", "2. "
+        .map((v) => v.trim()); // Trim spaces
+    };
     const marketingStrategy = {
-      coreValues: core_values.split(",").map((value) => value.trim()),
-      targetAudience: audience.split(",").map((value) => value.trim()),
-      audiencePains: audiencePains.split(",").map((value) => value.trim()),
+      core_values: splitNumberedList(core_values),
+      audiencePains: splitNumberedList(audiencePains),
+      audience: splitNumberedList(audience),
     };
 
     // Create new domain object
@@ -118,11 +124,10 @@ exports.getDomainsByUserId = async (req, res) => {
   const userId = req.params.userId; // Get userId from request params
 
   try {
-    const domains = await Domain.find({ userId })
-      .populate("userId", "username email")
-      .lean()
-      .hint({ userId: 1 });
-
+    const domains = await Domain.find({ userId }).populate(
+      "userId",
+      "username email"
+    );
     if (!domains.length) {
       return res.status(404).json({
         success: false,
@@ -222,11 +227,11 @@ exports.updateDomain = async (req, res) => {
     // Handle marketing strategy updates
     if (updates.marketingStrategy) {
       updateFields.marketingStrategy = {
-        coreValues:
+        core_values:
           JSON.stringify(updates.marketingStrategy.core_values) !==
-          JSON.stringify(existingDomain.marketingStrategy?.coreValues)
+          JSON.stringify(existingDomain.marketingStrategy?.core_values)
             ? updates.marketingStrategy.core_values
-            : existingDomain.marketingStrategy?.coreValues,
+            : existingDomain.marketingStrategy?.core_values,
 
         audiencePains:
           JSON.stringify(updates.marketingStrategy.audiencePains) !==
@@ -236,9 +241,9 @@ exports.updateDomain = async (req, res) => {
 
         targetAudience:
           JSON.stringify(updates.marketingStrategy.audience) !==
-          JSON.stringify(existingDomain.marketingStrategy?.targetAudience)
+          JSON.stringify(existingDomain.marketingStrategy?.audience)
             ? updates.marketingStrategy.audience
-            : existingDomain.marketingStrategy?.targetAudience,
+            : existingDomain.marketingStrategy?.audience,
       };
     }
 

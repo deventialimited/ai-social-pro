@@ -4,9 +4,9 @@ const mongoose = require("mongoose");
 
 const marketingStrategySchema = new mongoose.Schema(
   {
-    targetAudience: [{ type: String, trim: true }], // Array of strings for multiple audiences
+    audience: [{ type: String, trim: true }], // Array of strings for multiple audiences
     audiencePains: [{ type: String, trim: true }], // Array of pains
-    coreValues: [{ type: String, trim: true }], // Array of values
+    core_values: [{ type: String, trim: true }], // Array of values
   },
   { _id: false }
 ); // Prevents auto-generating _id for subdocument
