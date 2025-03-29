@@ -5,6 +5,8 @@ const {
   getDomainById,
   deleteDomain,
   getDomainsByUserId,
+  updateDomainBusiness,
+  updateDomainMarketingStrategy
 } = require("../controllers/Domain");
 const router = express.Router();
 

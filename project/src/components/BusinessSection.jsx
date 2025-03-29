@@ -17,20 +17,21 @@ export const BusinessSection = ({ data, onEdit }) => {
     onEdit(section);
   };
 
- const handleSave = async () => {
-  try {
-    if (editingSection === 'business') {
-      await updateDomainBusiness(formData);
-    } else if (editingSection === 'marketing') {
-      await updateDomainMarketingStrategy(formData.marketingStrategy);
-    }
+  const handleSave = async () => {
+    try {
+          console.log("Saving data:", formData); // Debugging output
+      if (editingSection === 'business') {
+        await updateDomainBusiness(formData);
+      } else if (editingSection === 'marketing') {
+        await updateDomainMarketingStrategy(formData.marketingStrategy);
+      }
 
-    setEditingSection(null);
-    console.log('Saving data:', formData);
-  } catch (error) {
-    console.error('Error updating data:', error);
-  }
-};
+      setEditingSection(null);
+      console.log('Saving data:', formData);
+    } catch (error) {
+      console.error('Error updating data:', error);
+    }
+  };
 
   const handleCancel = () => {
     setEditingSection(null);

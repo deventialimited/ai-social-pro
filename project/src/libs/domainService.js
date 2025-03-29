@@ -77,6 +77,8 @@ export const deleteDomain = async (id) => {
 
 //update domain business
 export const updateDomainBusiness = async (domainId, businessData) => {
+  console.log("businessData", businessData);
+
   try {
     const response = await axios.patch(`${API_URL}/business/${domainId}`, {
       client_email: businessData.client_email,
@@ -98,6 +100,7 @@ export const updateDomainBusiness = async (domainId, businessData) => {
 
 //update domain marketing strategy
 export const updateDomainMarketingStrategy = async (domainId, marketingStrategy) => {
+  console.log("marketingStrategy", marketingStrategy);
   try {
     const response = await axios.patch(`${API_URL}/marketing-strategy/${domainId}`, {
       marketingStrategy: {
