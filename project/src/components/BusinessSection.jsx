@@ -3,7 +3,6 @@ import { Edit, Save, X, Upload, Image, Building2 } from "lucide-react";
 import { useUpdateDomainBusiness } from "../libs/domainService";
 export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   const [editingSection, setEditingSection] = useState(null);
-  console.log(selectedWebsite);
   const [formData, setFormData] = useState({
     clientName: "",
     clientDescription: "",
@@ -20,7 +19,6 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
       audience: ["", "", ""],
     },
   });
-  console.log(selectedWebsite);
   const logoInputRef = useRef(null);
   const headshotInputRef = useRef(null);
   const colorPickerRefs = {

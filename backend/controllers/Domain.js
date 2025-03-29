@@ -176,20 +176,20 @@ exports.deleteDomain = async (req, res) => {
 // Update domain business data only if values are changed
 exports.updateDomain = async (req, res) => {
   try {
-    const { domainId } = req.params;
+    const { id } = req.params;
     const updates = req.body; // Fields sent in the request
 
-    console.log("Updating domain:", domainId);
+    console.log("Updating domain:", id);
     console.log("Data received for update:", updates);
 
-    if (!domainId) {
+    if (!id) {
       return res
         .status(400)
         .json({ success: false, message: "Domain ID is required" });
     }
 
     // Find the existing domain
-    const existingDomain = await Domain.findById(domainId);
+    const existingDomain = await Domain.findById(id);
     if (!existingDomain) {
       return res
         .status(404)
@@ -220,7 +220,6 @@ exports.updateDomain = async (req, res) => {
       const newColors = updates.colors.join(", ");
       checkAndUpdate("colors", newColors);
     }
-
     // Handle marketing strategy updates
     if (updates.marketingStrategy) {
       updateFields.marketingStrategy = {
@@ -236,7 +235,7 @@ exports.updateDomain = async (req, res) => {
             ? updates.marketingStrategy.audiencePains
             : existingDomain.marketingStrategy?.audiencePains,
 
-        targetAudience:
+        audience:
           JSON.stringify(updates.marketingStrategy.audience) !==
           JSON.stringify(existingDomain.marketingStrategy?.audience)
             ? updates.marketingStrategy.audience
@@ -255,7 +254,7 @@ exports.updateDomain = async (req, res) => {
 
     // Update the document only with changed fields
     const updatedDomain = await Domain.findByIdAndUpdate(
-      domainId,
+      id,
       { $set: updateFields },
       { new: true, runValidators: true }
     );

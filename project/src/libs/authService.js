@@ -1,5 +1,6 @@
 import axios from "axios";
-const baseURL='https://api.oneyearsocial.com'
+const baseURL = "https://api.oneyearsocial.com";
+// const baseURL = "http://localhost:4000";
 // Base URL of your API
 // const API_URL = 'http://localhost:4000/api/v1/users';
 const API_URL = `${baseURL}/api/v1/users`;
@@ -67,7 +68,7 @@ export const loginUser = async (email, password) => {
     return response.data; // Returns the response from the backend
   } catch (error) {
     console.error(error.response?.data?.error || "Login failed.");
-    throw error.response?.data || { error: "An error occurred during login." };
+    throw error.response?.data?.error || { error: "An error occurred during login." };
   }
 };
 export const sendEmailVerificationOtp = async (email) => {

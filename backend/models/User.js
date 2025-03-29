@@ -7,11 +7,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    phone: {
-      type: String,
-      trim: true,
-      maxlength: [15, "Phone number cannot be more than 15 characters"],
-    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -31,16 +26,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    phoneVerified: {
-      type: Boolean,
-      default: false,
-    },
     googleId: {
       type: String,
       unique: true,
       sparse: true,
     },
-
     profileImage: {
       type: String,
       default: "https://via.placeholder.com/150",
@@ -79,7 +69,6 @@ userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 12);
   }
-
   // Update lastModified field
   this.lastModified = Date.now();
   next();
