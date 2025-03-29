@@ -6,7 +6,7 @@ import { useThemeStore } from "./store/useThemeStore";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import FullEditor from "./pages/ImageEditor/FullEditor";
+// import FullEditor from "./pages/ImageEditor/FullEditor";
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
