@@ -61,13 +61,36 @@ pipeline {
             }
         }
 
+        stage('Transfer Full Build to Deployment Directory') {
+            steps {
+                script {
+                    // Transfer the full build code to the deployment path
+                    echo "Transferring full build code to ${DEPLOY_PATH}..."
+                    sh "cp -r . ${DEPLOY_PATH}"  // Copy all files to the deploy directory
+                }
+            }
+        }
+
+        stage('Clean Up Workspace') {
+            steps {
+                script {
+                    // Clean up the workspace after the transfer
+                    echo "Cleaning up workspace..."
+                    sh 'rm -rf *'  // Remove all files in the workspace
+                }
+            }
+        }
+
         stage('Install Dependencies - Backend') {
             when {
                 expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
             }
             steps {
-                dir('backend') {
-                    sh 'npm ci'
+                dir(DEPLOY_PATH) {
+                    script {
+                        echo "Running npm ci in deployment directory..."
+                        sh 'npm ci'  // Run npm ci in the deployment path to install backend dependencies
+                    }
                 }
             }
         }
@@ -77,7 +100,7 @@ pipeline {
                 expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
             }
             steps {
-                dir('backend') {
+                dir(DEPLOY_PATH) {
                     script {
                         // Check if the backend is already running
                         def processStatus = sh(script: 'pm2 list | grep backend', returnStatus: true)
@@ -89,21 +112,12 @@ pipeline {
                         }
 
                         // Start the backend process with PM2
-                        sh 'pm2 start index.js --name backend --watch -f'
+                        echo "Starting backend with PM2 from ${DEPLOY_PATH}..."
+                        sh 'pm2 start backend/index.js --name backend --watch -f'
                         
                         // Save PM2 process list to ensure persistence
                         sh 'pm2 save'
                     }
-                }
-            }
-        }
-
-        stage('Transfer Full Build to Deployment Directory') {
-            steps {
-                script {
-                    // Transfer the full build code to the deployment path
-                    echo "Transferring full build code to ${DEPLOY_PATH}..."
-                    sh "cp -r . ${DEPLOY_PATH}"  // Copy all files to the deploy directory
                 }
             }
         }
