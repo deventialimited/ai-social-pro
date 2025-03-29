@@ -124,10 +124,7 @@ exports.getDomainsByUserId = async (req, res) => {
   const userId = req.params.userId; // Get userId from request params
 
   try {
-    const domains = await Domain.find({ userId }).populate(
-      "userId",
-      "username email"
-    );
+    const domains = await Domain.find({ userId });
     if (!domains.length) {
       return res.status(404).json({
         success: false,

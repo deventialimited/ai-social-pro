@@ -86,11 +86,11 @@ export const deleteDomain = async (id) => {
 };
 
 // update businessDomain
-export const updateDomain = async (domainId, domainData) => {
+export const updateDomain = async (data) => {
   try {
     const response = await axios.patch(
-      `${API_URL}/domain/${domainId}`,
-      domainData
+      `${API_URL}/domain/${data?.domainId}`,
+      data?.domainData
     );
 
     return response.data;
