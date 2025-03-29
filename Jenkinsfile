@@ -66,7 +66,7 @@ pipeline {
                 script {
                     // Transfer the full build code to the deployment path, excluding .git directory
                     echo "Transferring full build code to ${DEPLOY_PATH}..."
-                    sh "cp -r $(find . -path './.git' -prune -o -print) ${DEPLOY_PATH}"  // Exclude .git folder
+                    sh "cp -r \$(find . -path './.git' -prune -o -print) ${DEPLOY_PATH}"  // Exclude .git folder
                 }
             }
         }
