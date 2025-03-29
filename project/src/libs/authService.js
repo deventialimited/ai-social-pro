@@ -1,8 +1,8 @@
 import axios from "axios";
-
+const baseURL='https://api.oneyearsocial.com'
 // Base URL of your API
 // const API_URL = 'http://localhost:4000/api/v1/users';
-const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/v1/users`;
+const API_URL = `${baseURL}/api/v1/users`;
 //edit-profile
 export const updateProfile = async (userId, formData) => {
   try {

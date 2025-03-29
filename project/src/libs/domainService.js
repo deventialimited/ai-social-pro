@@ -1,4 +1,6 @@
-const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/v1/domains`;
+
+const baseURL='https://api.oneyearsocial.com'
+const API_URL = `${baseURL}/api/v1/domains`;
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
