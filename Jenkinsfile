@@ -41,7 +41,7 @@ pipeline {
         stage('Install Dependencies - Project') {
             steps {
                 dir('project') {
-                    sh 'npm i --force --legacy-peer-deps'
+                    sh 'npm install --legacy-peer-deps'
                 }
             }
         }
@@ -64,9 +64,32 @@ pipeline {
         stage('Transfer Full Build to Deployment Directory') {
             steps {
                 script {
-                    // Transfer the full build code to the deployment path
+                    // Use rsync to exclude both .git and node_modules directories
                     echo "Transferring full build code to ${DEPLOY_PATH}..."
-                    sh "cp -r . ${DEPLOY_PATH}"  // Copy all files and directories to the deployment path
+                    sh "rsync -av --exclude='.git' --exclude='node_modules' ./ ${DEPLOY_PATH}"  // Exclude both .git and node_modules
+                }
+            }
+        }
+
+        stage('Install Dependencies - Frontend') {
+            steps {
+                dir("${DEPLOY_PATH}/project") {
+                    sh 'npm install'  // Install frontend dependencies in the deployment directory
+                }
+            }
+        }
+
+        stage('Build - Frontend') {
+            steps {
+                dir("${DEPLOY_PATH}/project") {
+                    script {
+                        try {
+                            sh 'npm run build'  // Build the frontend in the deployment directory
+                        } catch (err) {
+                            echo "Frontend build failed: ${err}"
+                            error("Frontend build failure")
+                        }
+                    }
                 }
             }
         }

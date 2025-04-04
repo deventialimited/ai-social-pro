@@ -46,7 +46,6 @@ export const AuthModal = () => {
           setLoading(true);
 
       try {
-        console.log("formData",formData);
         const userData = await registerUser(formData.email, formData.password);
         localStorage.setItem("token", JSON.stringify(userData?.token));
         localStorage.setItem("user", JSON.stringify(userData?.user));
