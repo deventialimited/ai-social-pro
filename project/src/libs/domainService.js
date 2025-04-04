@@ -11,7 +11,7 @@ export const useUpdateDomainBusiness = () => {
     mutationFn: updateDomain,
     onSuccess: (updatedDomain) => {
       // Optimistically update UI
-      queryClient.setQueryData(["domains", updatedDomain.userId], (oldData) => {
+      queryClient.setQueryData(["domains", updatedDomain?.userId], (oldData) => {
         if (!oldData) return [];
         return oldData.map((domain) =>
           domain._id === updatedDomain._id ? updatedDomain : domain
@@ -95,7 +95,7 @@ export const updateDomain = async (data) => {
       data?.domainData
     );
 
-    return response.data;
+    return response.data?.data;
   } catch (error) {
     console.error(
       "Error updating domain data:",
