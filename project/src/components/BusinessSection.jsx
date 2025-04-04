@@ -350,14 +350,14 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
 
         <div className="p-8 space-y-6">
           {/* Brand Category */}
-          {renderSection(
+          {/* {renderSection(
             "Brand",
             "brand",
             <div className="space-y-6">
               <div className="flex gap-6">{renderImageUpload("logo")}</div>
               {renderColorPicker()}
             </div>
-          )}
+          )} */}
 
           {/* Business Category */}
           {renderSection(
