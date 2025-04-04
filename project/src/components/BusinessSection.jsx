@@ -324,7 +324,7 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
             "Brand",
             "brand",
             <div className="space-y-6">
-              {/* <div className="flex gap-6">{renderImageUpload("logo")}</div> */}
+              <div className="flex gap-6">{renderImageUpload("logo")}</div>
               {renderColorPicker()}
             </div>
           )}
