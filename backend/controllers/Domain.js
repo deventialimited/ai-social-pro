@@ -1,5 +1,8 @@
 const Domain = require("../models/Domain");
-
+const multer = require("multer");
+const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 // Add a new domain
 exports.addDomain = async (req, res) => {
   // Create new domain object
@@ -271,5 +274,37 @@ exports.updateDomain = async (req, res) => {
       message: "Server error",
       error: error.message,
     });
+  }
+};
+
+exports.uploadBrand = async (req, res) => {
+  const domainId = req.params.domainId;
+  const file = req.file;
+  const { colors } = req.body;
+
+  try {
+    const updateData = {};
+
+    if (file) {
+      const logoUrl = await uploadToS3(file);
+      updateData.siteLogo = logoUrl;
+    }
+
+    if (colors) {
+      updateData.colors = colors;
+    }
+
+    const updatedDomain = await Domain.findByIdAndUpdate(domainId, updateData, {
+      new: true,
+    });
+
+    if (!updatedDomain) {
+      return res.status(404).json({ error: "Domain not found" });
+    }
+
+    res.status(200).json({ message: "Update successful", domain: updatedDomain });
+  } catch (error) {
+    console.error("Error uploading logo and updating brand:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

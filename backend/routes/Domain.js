@@ -5,7 +5,8 @@ const {
   getDomainById,
   deleteDomain,
   getDomainsByUserId,
-  updateDomain
+  updateDomain,
+  uploadBrand
 } = require("../controllers/Domain");
 const router = express.Router();
 
@@ -25,6 +26,11 @@ router.get("/getDomainsByUserId/:userId", getDomainsByUserId);
 router.delete("/deleteDomain/:id", deleteDomain);
 // Update domain business information
 router.patch("/UpdateDomain/:domainId", updateDomain);
-
+//update logo
+router.post(
+  "/updateBrand/:domainId",
+  domainController.upload.single("logo"),
+  domainController.uploadBrand
+);
 
 module.exports = router;

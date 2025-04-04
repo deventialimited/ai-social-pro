@@ -1,0 +1,14 @@
+DOMAIN_EMAIL=simple.com
+DOMAIN_EMAIL2=simple2.com
+SENDGRID_API_KEY=yourApikey
+TWILLO_ACCOUNT_SID=yourApikey
+TWILLO_AUTH_TOKEN=yourApitoken
+TWILLO_PHONE_NO=+16465063544
+JWT_SECRET=shdbvjsbdbsu
+AWS_SECRET_ACCESS_KEY=TBfFS+R5wxMcKOOtL/OuSZZjEgfRJN8Lo6B7RXlb
+AWS_ACCESS_KEY_ID=AKIAQIJRSDKREKMV4LJ4
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=one-year-social 
+ Base_User_Url=http://localhost:5173
+#  Base_User_Url=https://dev.oneyearsocial.com
+Database_URL=mongodb+srv://Mehtab1:mehtab1122@cluster0.ahnmfrc.mongodb.net/SocailPro

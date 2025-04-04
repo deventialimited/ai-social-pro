@@ -4,6 +4,7 @@ const API_URL = `${baseURL}/api/v1/domains`;
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 export const useUpdateDomainBusiness = () => {
   const queryClient = useQueryClient();
 
@@ -103,4 +104,26 @@ export const updateDomain = async (data) => {
     );
     throw error.response?.data?.error || error.message;
   }
+};
+
+
+
+export const updateBrandInfo = async ({ domainId, logoFile, colors }) => {
+  const formData = new FormData();
+  if (logoFile) {
+    formData.append("file", logoFile);
+  }
+  if (colors) {
+    formData.append("colors", colors.join(", "));
+  }
+
+  const response = await axios.put(
+    `${API_URL}/updateBrand/${domainId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+
+  return response.data;
 };
