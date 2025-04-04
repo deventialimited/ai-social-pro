@@ -32,6 +32,7 @@ import {
   BackgroundToolbar,
 } from "./editor_components/Toolbar";
 import { EnhancedImageToolbar } from "./editor_components/enhanced-image-toolbar";
+import { EffectsPanel } from "./editor_components/EffectsPanel";
 
 // Define shape types
 type ShapeType =
@@ -162,6 +163,21 @@ const FullEditor: React.FC = () => {
 
   const [images, setImages] = useState<ImageData[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+
+  // Add this to your state declarations
+  const [imageEffects, setImageEffects] = useState({
+    blur: 0,
+    brightness: 0,
+    sepia: 0,
+    grayscale: 0,
+    border: 0,
+    cornerRadius: 0,
+    shadow: {
+      blur: 0,
+      offsetX: 0,
+      offsetY: 0,
+    },
+  });
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
@@ -969,6 +985,63 @@ const FullEditor: React.FC = () => {
     });
   };
 
+  const handleEffectToggle = (effect: string) => {
+    console.log("Effect toggled:", effect);
+
+    // Define default values for each effect
+    const defaultValues = {
+      blur: 5,
+      brightness: 110,
+      sepia: 50,
+      grayscale: 50,
+      border: 3,
+      cornerRadius: 10,
+      shadow: {
+        blur: 15,
+        offsetX: 5,
+        offsetY: 5,
+      },
+    };
+
+    try {
+      // Construct the new state first
+      let newEffects = { ...imageEffects };
+
+      if (effect.includes(".")) {
+        // Handle nested properties like 'shadow.blur'
+        const [parent, child] = effect.split(".");
+        const currentValue = imageEffects[parent][child];
+        const newValue = currentValue > 0 ? 0 : defaultValues[parent][child];
+
+        newEffects = {
+          ...newEffects,
+          [parent]: {
+            ...newEffects[parent],
+            [child]: newValue,
+          },
+        };
+      } else {
+        // Handle top-level properties
+        const currentValue = imageEffects[effect];
+        const newValue = currentValue > 0 ? 0 : defaultValues[effect];
+
+        newEffects = {
+          ...newEffects,
+          [effect]: newValue,
+        };
+      }
+
+      // Update state
+      setImageEffects(newEffects);
+
+      // Add to history
+      console.log("Adding to history:", newEffects);
+      addToHistory({ imageEffects: newEffects });
+    } catch (error) {
+      console.error("Error toggling effect:", error);
+    }
+  };
+
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
@@ -1567,6 +1640,7 @@ const FullEditor: React.FC = () => {
                               onImageDragEnd={handleImageDragEnd}
                               scaleX={scaleX}
                               scaleY={scaleY}
+                              imageEffects={imageEffects}
                             />
                           </div>
                           <div
@@ -1633,6 +1707,55 @@ const FullEditor: React.FC = () => {
           </div>
         </Dialog>
       </Transition>
+      {/* Effects Panel */}
+      {selectedTool === "effects" && (
+        <div className="relative">
+          <EffectsPanel
+            isOpen={selectedTool === "effects"}
+            onClose={() => {
+              setSelectedTool(null);
+            }}
+            effects={imageEffects}
+            onEffectChange={(effect, value) => {
+              console.log(`Changing ${effect} to ${value}`);
+
+              try {
+                // Create a new state object first
+                let newEffects = { ...imageEffects };
+
+                if (effect.includes(".")) {
+                  // Handle nested properties like 'shadow.blur'
+                  const [parent, child] = effect.split(".");
+
+                  newEffects = {
+                    ...newEffects,
+                    [parent]: {
+                      ...newEffects[parent],
+                      [child]: value,
+                    },
+                  };
+                } else {
+                  // Handle top-level properties
+                  newEffects = {
+                    ...newEffects,
+                    [effect]: value,
+                  };
+                }
+
+                // Update the state with the new effects
+                setImageEffects(newEffects);
+
+                // Add to history
+                console.log("Adding to history:", newEffects);
+                addToHistory({ imageEffects: newEffects });
+              } catch (error) {
+                console.error("Error changing effect:", error);
+              }
+            }}
+            onEffectToggle={handleEffectToggle}
+          />
+        </div>
+      )}
     </>
   );
 };

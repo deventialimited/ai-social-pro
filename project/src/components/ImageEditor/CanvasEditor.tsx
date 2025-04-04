@@ -85,6 +85,18 @@ interface CanvasEditorProps {
   imageRotation?: number;
   imagePosition?: { x: number; y: number };
   imageFilters?: { brightness: number; contrast: number; saturation: number };
+  imageEffects?: {
+    blur: number;
+    brightness: number;
+    sepia: number;
+    grayscale: number;
+    border: number;
+    cornerRadius: number;
+    shadow: {
+      blur: number;
+      offsetX: number;
+    };
+  };
 }
 
 const CanvasEditor: React.FC<CanvasEditorProps> = ({
@@ -111,6 +123,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   imagePosition = { x: 0, y: 0 },
   imageFilters,
   newImageSrc, // New prop
+  imageEffects,
 }) => {
   const [images, setImages] = useState<ImageData[]>([]);
 
@@ -731,17 +744,65 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const renderImage = () => {
+    // Generate CSS filter string based on imageFilters prop
+    let filterString = imageFilters
+      ? `brightness(${imageFilters.brightness}%) contrast(${imageFilters.contrast}%) saturate(${imageFilters.saturation}%)`
+      : "";
+
+    // Create additional CSS filter string for effects
+    if (imageEffects) {
+      console.log("Applying effects:", imageEffects);
+
+      // Add blur effect
+      if (imageEffects.blur > 0) {
+        filterString += ` blur(${imageEffects.blur}px)`;
+      }
+
+      // Add brightness effect (only if not handled by imageFilters)
+      if (imageEffects.brightness > 0) {
+        filterString += ` brightness(${imageEffects.brightness}%)`;
+      }
+
+      // Add sepia effect
+      if (imageEffects.sepia > 0) {
+        filterString += ` sepia(${imageEffects.sepia}%)`;
+      }
+
+      // Add grayscale effect
+      if (imageEffects.grayscale > 0) {
+        filterString += ` grayscale(${imageEffects.grayscale}%)`;
+      }
+    }
+
+    // Image container transform (for rotation and flipping)
+    const containerTransform = `scale(${scaleX}, ${scaleY}) rotate(${
+      imageRotation || 0
+    }deg)`;
+
+    // Image transform (for scaling)
+    const imageTransform = `scale(${imageScale || 1})`;
+
+    // Get border style from effects
+    const borderStyle =
+      imageEffects && imageEffects.border > 0
+        ? `${imageEffects.border}px solid black`
+        : undefined;
+
+    // Border radius from effects
+    const borderRadius =
+      imageEffects && imageEffects.cornerRadius > 0
+        ? `${imageEffects.cornerRadius}px`
+        : undefined;
+
+    // Shadow from effects
+    const boxShadow =
+      imageEffects && imageEffects.shadow && imageEffects.shadow.blur > 0
+        ? `${imageEffects.shadow.offsetX}px ${imageEffects.shadow.offsetY}px ${imageEffects.shadow.blur}px rgba(0,0,0,0.5)`
+        : undefined;
+
     return images.map((imageData) => {
       const isSelected = selectedImageId === imageData.id;
       const isBackgroundImage = imageData.id === "background-image";
-
-      // Combine all transformations for the container
-      const containerTransform = [
-        `rotate(${imageData.rotation || imageRotation || 0}deg)`,
-      ].join(" ");
-
-      // Scale transformation for the image only
-      const imageTransform = `scale(${scaleX}, ${scaleY})`;
 
       return (
         <Rnd
@@ -801,18 +862,22 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             style={{
               transform: containerTransform,
               transformOrigin: "center center",
+              boxShadow,
+              border: borderStyle,
+              borderRadius,
             }}
           >
             {/* Image container */}
-            <div className="w-full h-full overflow-hidden">
+            <div
+              className="w-full h-full overflow-hidden"
+              style={{ borderRadius }}
+            >
               <img
                 src={imageData.src}
                 alt="Post"
                 className="w-full h-full"
                 style={{
-                  filter: imageFilters
-                    ? `brightness(${imageFilters.brightness}%) contrast(${imageFilters.contrast}%) saturate(${imageFilters.saturation}%)`
-                    : undefined,
+                  filter: filterString,
                   transform: imageTransform,
                   transformOrigin: "center center",
                   objectFit: "cover",
