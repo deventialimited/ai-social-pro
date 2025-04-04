@@ -21,10 +21,11 @@ export const updateProfile = async (userId, formData) => {
   }
 };
 // Register user manually
-export const registerUser = async (email, password) => {
+export const registerUser = async (username,email, password) => {
   try {
     console.log("Registering user with email:", email, "and password:", password);
     const response = await axios.post(`${API_URL}/register`, {
+      username,
       email,
       password,
     });
