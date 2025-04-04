@@ -12,6 +12,7 @@ export const AuthModal = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    username:"",
   });
   const validateForm = (email, password) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,7 +47,7 @@ export const AuthModal = () => {
           setLoading(true);
 
       try {
-        const userData = await registerUser(formData.email, formData.password);
+        const userData = await registerUser(formData.username,formData.email, formData.password);
         localStorage.setItem("token", JSON.stringify(userData?.token));
         localStorage.setItem("user", JSON.stringify(userData?.user));
         toast.success("Signup successful!");
@@ -166,6 +167,23 @@ export const AuthModal = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {isSignUpPopup && (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      Username
+    </label>
+    <input
+      type="text"
+      value={formData.username}
+      onChange={(e) =>
+        setFormData({ ...formData, username: e.target.value })
+      }
+      className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+      required
+    />
+  </div>
+)}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email

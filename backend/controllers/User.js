@@ -134,8 +134,8 @@ exports.editProfile = async (req, res) => {
 
 // Register user
 exports.register = async (req, res) => {
-  const { email, password } = req.body;
-
+  const {username, email, password } = req.body;
+console.log(username,email, password,"into the req body ")
   try {
     // Check if a user with the provided email already exists
     let user = await User.findOne({ email });
@@ -151,12 +151,12 @@ exports.register = async (req, res) => {
     )}`;
     // If user does not exist, create a new user
     user = new User({
+      username,
       email,
       password,
       profileImage,
     });
     await user.save(); // Ensures the pre("save") hook runs
-
     // Generate OTP for email verification
     const otp = crypto.randomInt(100000, 999999).toString();
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
@@ -241,7 +241,8 @@ exports.login = async (req, res) => {
         success: true,
         message: "Two-factor authentication required",
         twoFactorRequired: true,
-        userId: user._id,
+        user  ,
+      
         methods,
         token: methods.email ? token : undefined, // Include the token if email 2FA is enabled
       });
