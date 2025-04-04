@@ -260,7 +260,7 @@ export const Dashboard = () => {
     <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
         <LeftMenu
-          websites={domains}
+          userId={userId}
           selectedWebsite={selectedWebsite}
           onWebsiteChange={setSelectedWebsite}
           currentTab={currentTab}

@@ -13,9 +13,10 @@ import { Listbox } from "@headlessui/react";
 import { Link } from "./Link";
 import { AddWebsiteModal } from "./AddWebsiteModal";
 import { CreatePostStrip } from "./CreatePostStrip";
+import { useDomains } from "../libs/domainService";
 
 export const LeftMenu = ({
-  websites,
+  userId,
   selectedWebsite,
   onWebsiteChange,
   currentTab,
@@ -26,8 +27,9 @@ export const LeftMenu = ({
   onNewPost,
   navigate,
 }) => {
+  const { data: domains, isLoading } = useDomains(userId);
   const [showAddWebsite, setShowAddWebsite] = useState(false);
-  const selectedWebsiteData = websites?.find((w) => w?._id === selectedWebsite);
+  const selectedWebsiteData = domains?.find((w) => w?._id === selectedWebsite);
   useEffect(() => {
     // Close mobile menu when switching tabs
     if (isOpen) {
@@ -107,38 +109,39 @@ export const LeftMenu = ({
                   </span>
                 </Listbox.Button>
                 <Listbox.Options className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 py-1 overflow-auto">
-                  {websites?.map((website) => (
-                    <Listbox.Option
-                      key={website._id}
-                      value={website._id}
-                      className={({ active, selected }) =>
-                        `relative cursor-pointer select-none py-3 pl-12 pr-4 ${
-                          active
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                            : selected
-                            ? "bg-gray-50 dark:bg-gray-600/50 text-gray-900 dark:text-white"
-                            : "text-gray-900 dark:text-white"
-                        }`
-                      }
-                    >
-                      {({ selected }) => (
-                        <>
-                          <img
-                            src={website.siteLogo}
-                            alt={`${website.clientName} logo`}
-                            className="w-5 h-5 rounded-sm absolute left-4"
-                          />
-                          <span
-                            className={`block truncate ${
-                              selected ? "font-medium" : "font-normal"
-                            }`}
-                          >
-                            {website.clientName}
-                          </span>
-                        </>
-                      )}
-                    </Listbox.Option>
-                  ))}
+                  {!isLoading &&
+                    domains?.map((website) => (
+                      <Listbox.Option
+                        key={website._id}
+                        value={website._id}
+                        className={({ active, selected }) =>
+                          `relative cursor-pointer select-none py-3 pl-12 pr-4 ${
+                            active
+                              ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                              : selected
+                              ? "bg-gray-50 dark:bg-gray-600/50 text-gray-900 dark:text-white"
+                              : "text-gray-900 dark:text-white"
+                          }`
+                        }
+                      >
+                        {({ selected }) => (
+                          <>
+                            <img
+                              src={website.siteLogo}
+                              alt={`${website.clientName} logo`}
+                              className="w-5 h-5 rounded-sm absolute left-4"
+                            />
+                            <span
+                              className={`block truncate ${
+                                selected ? "font-medium" : "font-normal"
+                              }`}
+                            >
+                              {website.clientName}
+                            </span>
+                          </>
+                        )}
+                      </Listbox.Option>
+                    ))}
                 </Listbox.Options>
               </div>
             </Listbox>

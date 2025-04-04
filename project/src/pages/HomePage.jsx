@@ -45,7 +45,7 @@ export const HomePage = () => {
       );
       if (!firstResponse.ok) {
         throw new Error(
-          `Second API call failed with status: ${secondResponse.status}`
+          `Site data extracting with status: ${firstResponse.status}`
         );
       }
       try {
