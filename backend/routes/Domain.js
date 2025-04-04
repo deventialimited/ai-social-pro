@@ -5,10 +5,13 @@ const {
   getDomainById,
   deleteDomain,
   getDomainsByUserId,
-  updateDomain
+  updateDomain,
+  uploadBrand,
 } = require("../controllers/Domain");
 const router = express.Router();
-
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 // Add a new domain
 router.post("/addDomain", addDomain);
 
@@ -25,6 +28,7 @@ router.get("/getDomainsByUserId/:userId", getDomainsByUserId);
 router.delete("/deleteDomain/:id", deleteDomain);
 // Update domain business information
 router.patch("/UpdateDomain/:id", updateDomain);
-
+//update logo
+router.post("/updateBrand/:id", upload.single("logo"), uploadBrand);
 
 module.exports = router;

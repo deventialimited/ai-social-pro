@@ -1,8 +1,14 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from "react";
 import { Edit, Save, X, Upload, Image, Building2 } from "lucide-react";
-import { useUpdateDomainBusiness } from "../libs/domainService";
+import {
+  useUpdateDomainBrandInfo,
+  useUpdateDomainBusiness,
+} from "../libs/domainService";
+import { useMutation } from "@tanstack/react-query";
+
 export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   const [editingSection, setEditingSection] = useState(null);
+  const [selectedLogoFile, setSelectedLogoFile] = useState(null);
   const [formData, setFormData] = useState({
     clientName: "",
     clientDescription: "",
@@ -19,8 +25,6 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
       audience: ["", "", ""],
     },
   });
-  const logoInputRef = useRef(null);
-  const headshotInputRef = useRef(null);
   const colorPickerRefs = {
     brandColor: useRef(null),
     backgroundColor: useRef(null),
@@ -31,7 +35,6 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
       setFormData({ ...selectedWebsite });
     }
   }, [selectedWebsite]);
-  console.log(formData);
   const handleEdit = (section) => {
     setEditingSection(section);
     onEdit(section);
@@ -59,18 +62,25 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
     colorPickerRefs[type].current?.click();
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const updateBrandInfo = useUpdateDomainBrandInfo();
+  const handleFileUpload = async () => {
+    try {
+      const colors = [
+        formData.brandColor,
+        formData.backgroundColor,
+        formData.textColor,
+      ];
 
-    // Create a URL for the uploaded file
-    const imageUrl = URL.createObjectURL(file);
+      await updateBrandInfo.mutateAsync({
+        domainId: selectedWebsite?._id,
+        logoFile: selectedLogoFile, // should be a File object
+        colors,
+      });
 
-    setFormData((prev) => ({
-      ...prev,
-      [type]: imageUrl,
-      ...(type === "logo" ? { logoBackground: "white" } : {}),
-    }));
+      setEditingSection(null);
+    } catch (err) {
+      console.error("Save error:", err);
+    }
   };
 
   const renderImageUpload = (type, inputRef) => {
@@ -82,16 +92,16 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
       <div className="space-y-2">
         <div
           className={`relative group cursor-pointer overflow-hidden rounded-lg
-            ${
-              type === "logo"
-                ? "w-[100px] h-[100px] bg-white"
-                : "w-[120px] h-[120px]"
-            }
-            ${
-              !imageUrl
-                ? "border-2 border-dashed border-gray-300 dark:border-gray-600"
-                : ""
-            }`}
+              ${
+                type === "logo"
+                  ? "w-[100px] h-[100px] bg-white"
+                  : "w-[120px] h-[120px]"
+              }
+              ${
+                !imageUrl
+                  ? "border-2 border-dashed border-gray-300 dark:border-gray-600"
+                  : ""
+              }`}
           onClick={() => isEditing && inputRef.current?.click()}
         >
           {imageUrl ? (
@@ -268,7 +278,7 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
           {isEditing ? (
             <div className="flex gap-2">
               <button
-                onClick={handleSave}
+                onClick={section === "brand" ? handleFileUpload : handleSave}
                 className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
               >
                 <Save className="w-5 h-5" />
@@ -310,17 +320,14 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
 
         <div className="p-8 space-y-6">
           {/* Brand Category */}
-          {/* {renderSection(
+          {renderSection(
             "Brand",
             "brand",
             <div className="space-y-6">
-              <div className="flex gap-6">
-                {renderImageUpload("logo", logoInputRef)}
-                {renderImageUpload("headshot", headshotInputRef)}
-              </div>
+              {/* <div className="flex gap-6">{renderImageUpload("logo")}</div> */}
               {renderColorPicker()}
             </div>
-          )} */}
+          )}
 
           {/* Business Category */}
           {renderSection(

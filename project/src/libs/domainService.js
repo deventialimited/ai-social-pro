@@ -1,9 +1,10 @@
-
-const baseURL='https://api.oneyearsocial.com'
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:4000";
 const API_URL = `${baseURL}/api/v1/domains`;
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 export const useUpdateDomainBusiness = () => {
   const queryClient = useQueryClient();
 
@@ -11,12 +12,37 @@ export const useUpdateDomainBusiness = () => {
     mutationFn: updateDomain,
     onSuccess: (updatedDomain) => {
       // Optimistically update UI
-      queryClient.setQueryData(["domains", updatedDomain?.userId], (oldData) => {
-        if (!oldData) return [];
-        return oldData.map((domain) =>
-          domain._id === updatedDomain._id ? updatedDomain : domain
-        );
-      });
+      queryClient.setQueryData(
+        ["domains", updatedDomain?.userId],
+        (oldData) => {
+          if (!oldData) return [];
+          return oldData.map((domain) =>
+            domain._id === updatedDomain._id ? updatedDomain : domain
+          );
+        }
+      );
+
+      // Alternatively, refetch all domains after update
+      // queryClient.invalidateQueries(["domains"]);
+    },
+  });
+};
+export const useUpdateDomainBrandInfo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateBrandInfo,
+    onSuccess: (updatedDomain) => {
+      // Optimistically update UI
+      queryClient.setQueryData(
+        ["domains", updatedDomain?.userId],
+        (oldData) => {
+          if (!oldData) return [];
+          return oldData.map((domain) =>
+            domain._id === updatedDomain._id ? updatedDomain : domain
+          );
+        }
+      );
 
       // Alternatively, refetch all domains after update
       // queryClient.invalidateQueries(["domains"]);
@@ -103,4 +129,24 @@ export const updateDomain = async (data) => {
     );
     throw error.response?.data?.error || error.message;
   }
+};
+
+export const updateBrandInfo = async ({ domainId, logoFile, colors }) => {
+  const formData = new FormData();
+  if (logoFile) {
+    formData.append("file", logoFile);
+  }
+  if (colors) {
+    formData.append("colors", colors.join(", "));
+  }
+
+  const response = await axios.put(
+    `${API_URL}/updateBrand/${domainId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+
+  return response.data;
 };
