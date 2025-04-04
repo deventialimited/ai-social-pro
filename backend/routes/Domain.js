@@ -29,6 +29,6 @@ router.delete("/deleteDomain/:id", deleteDomain);
 // Update domain business information
 router.patch("/UpdateDomain/:id", updateDomain);
 //update logo
-router.post("/updateBrand/:id", upload.single("logo"), uploadBrand);
+router.patch("/updateBrand/:id", upload.single("logo"), uploadBrand);
 
 module.exports = router;

@@ -1,5 +1,5 @@
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:4000";
 const API_URL = `${baseURL}/api/v1/domains`;
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -134,13 +134,13 @@ export const updateDomain = async (data) => {
 export const updateBrandInfo = async ({ domainId, logoFile, colors }) => {
   const formData = new FormData();
   if (logoFile) {
-    formData.append("file", logoFile);
+    formData.append("logo", logoFile);
   }
   if (colors) {
     formData.append("colors", colors.join(", "));
   }
 
-  const response = await axios.put(
+  const response = await axios.patch(
     `${API_URL}/updateBrand/${domainId}`,
     formData,
     {

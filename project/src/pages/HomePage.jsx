@@ -38,16 +38,16 @@ export const HomePage = () => {
   const navigate = useNavigate();
 
   const generateCompanyData = async (domain, user) => {
-    try {
-      // First API call
-      const firstResponse = await fetch(
-        `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
-      );
-      if (!firstResponse.ok) {
-        throw new Error(
-          `Site data extracting with status: ${firstResponse.status}`
-        );
-      }
+    // try {
+    //   // First API call
+    //   const firstResponse = await fetch(
+    //     `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
+    //   );
+    //   if (!firstResponse.ok) {
+    //     throw new Error(
+    //       `Site data extracting with status: ${firstResponse.status}`
+    //     );
+    //   }
       try {
         // Second API call
         const secondResponse = await fetch(
@@ -78,10 +78,10 @@ export const HomePage = () => {
         console.error("Error in AI App data:", error);
         toast.error(error.message || "Failed to generate company data.");
       }
-    } catch (error) {
-      console.error("Error in AI App data:", error);
-      toast.error(error.message || "Failed to generate company data.");
-    }
+    // } catch (error) {
+    //   console.error("Error in AI App data:", error);
+    //   toast.error(error.message || "Failed to generate company data.");
+    // }
   };
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -18,7 +18,7 @@
     try {
       const s3Params = {
         Bucket: process.env.S3_BUCKET_NAME,
-        Key: `uploaded-taxpayer-files/${Date.now()}_${file.originalname}`,
+        Key: `domains-brand-logo/${Date.now()}_${file.originalname}`,
         Body: file.buffer,
         ContentType: file.mimetype,
       };

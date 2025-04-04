@@ -5,7 +5,7 @@ import {
   useUpdateDomainBusiness,
 } from "../libs/domainService";
 import { useMutation } from "@tanstack/react-query";
-
+import { toast } from "react-hot-toast";
 export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   const [editingSection, setEditingSection] = useState(null);
   const [selectedLogoFile, setSelectedLogoFile] = useState(null);
@@ -63,7 +63,36 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   };
 
   const updateBrandInfo = useUpdateDomainBrandInfo();
+  // const handleFileUpload = async () => {
+  //   try {
+  //     const colors = [
+  //       formData.brandColor,
+  //       formData.backgroundColor,
+  //       formData.textColor,
+  //     ];
+
+  //     await updateBrandInfo.mutateAsync({
+  //       domainId: selectedWebsite?._id,
+  //       logoFile: selectedLogoFile, // should be a File object
+  //       colors,
+  //     });
+
+  //     setEditingSection(null);
+  //   } catch (err) {
+  //     console.error("Save error:", err);
+  //   }
+  // };
+
   const handleFileUpload = async () => {
+     console.log("Selected logo file:", selectedLogoFile); // Debugging output
+    const isLogoChanged = selectedLogoFile !== null;
+    const areColorsChanged = formData.brandColor || formData.backgroundColor || formData.textColor;
+
+    if (!isLogoChanged || !areColorsChanged) {
+      toast.error("No changes detected. Please upload a logo or select brand colors.");
+      return;
+    }
+
     try {
       const colors = [
         formData.brandColor,
@@ -73,71 +102,72 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
 
       await updateBrandInfo.mutateAsync({
         domainId: selectedWebsite?._id,
-        logoFile: selectedLogoFile, // should be a File object
+        logoFile: selectedLogoFile, // File state
         colors,
       });
 
+      toast.success("Brand info updated!");
       setEditingSection(null);
     } catch (err) {
       console.error("Save error:", err);
+      toast.error("Failed to update brand info.");
     }
   };
 
-  const renderImageUpload = (type, inputRef) => {
-    const isEditing = editingSection === "brand";
-    const imageUrl = type === "logo" ? "/kaz-routes-logo.png" : formData[type];
+    const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedLogoFile(file);
+  };
+
+
+ const renderImageUpload = (type) => {
+    const isEditing = editingSection === "brand"; 
+    // const imageUrl = type === "logo" ? "/kaz-routes-logo.png" : formData[type];
     const title = type === "logo" ? "Upload Logo" : "Upload Headshot";
+
+    const handleImageClick = () => {
+      if (isEditing) {
+        document.getElementById(`${type}-file-input`).click();
+      }
+    };
 
     return (
       <div className="space-y-2">
         <div
           className={`relative group cursor-pointer overflow-hidden rounded-lg
-              ${
-                type === "logo"
-                  ? "w-[100px] h-[100px] bg-white"
-                  : "w-[120px] h-[120px]"
-              }
-              ${
-                !imageUrl
-                  ? "border-2 border-dashed border-gray-300 dark:border-gray-600"
-                  : ""
-              }`}
-          onClick={() => isEditing && inputRef.current?.click()}
+            ${type === "logo" ? "w-[100px] h-[100px] bg-white" : "w-[120px] h-[120px]"}`}
+          onClick={handleImageClick}
         >
-          {imageUrl ? (
+          {selectedLogoFile ? (
             <>
               <img
-                src={imageUrl}
+                src={selectedLogoFile ? URL.createObjectURL(selectedLogoFile) : "/default-logo.png"}
                 alt={title}
-                className={`w-full h-full ${
-                  type === "logo" ? "object-contain p-2" : "object-cover"
-                }`}
+                className={`w-full h-full ${type === "logo" ? "object-contain p-2" : "object-cover"}`}
               />
-              <div
-                className={`absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-                  !isEditing && "cursor-not-allowed"
-                }`}
-              >
-                <Upload className="w-6 h-6 text-white" />
-              </div>
+              {isEditing && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+              )}
             </>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2">
               <Image className="w-6 h-6 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {title}
-              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{title}</span>
             </div>
           )}
         </div>
         <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
           {type === "logo" ? "100x100px" : "120x120px"}
         </p>
+
+        {/* File input */}
         <input
-          ref={inputRef}
+          id={`${type}-file-input`} // Add id for easier reference
           type="file"
           accept="image/*"
-          onChange={(e) => handleFileUpload(e, type)}
+          onChange={handleFileChange}
           className="hidden"
           disabled={!isEditing}
         />
