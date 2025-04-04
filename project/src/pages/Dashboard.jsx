@@ -109,42 +109,6 @@ const samplePosts = [
   },
 ];
 
-// Sample business data
-const sampleBusinessData = {
-  name: "Kaz Routes",
-  description:
-    "A company that provides travel and tourism-related services, specializing in routes and guided experiences across Kazakhstan.",
-  industry: "Travel & Tourism",
-  niche: "Kazakhstan Travel Routes & Guided Tours",
-  logo: "/kaz-routes-logo.png",
-  logoBackground: "white",
-  headshot: "",
-  brandColor: "#FF6B6B",
-  backgroundColor: "#FFFFFF",
-  textColor: "#000000",
-  website: "kazroutes.com",
-  language: "English",
-  country: "Kazakhstan",
-  region: "Central Asia",
-  marketingStrategy: {
-    audience: [
-      "Adventure seekers exploring unique routes",
-      "Travel enthusiasts seeking guided tours",
-      "Cultural explorers interested in local experiences",
-    ],
-    audiencePains: [
-      "Difficulty finding reliable travel routes",
-      "Language barriers when navigating",
-      "Limited access to authentic experiences",
-    ],
-    coreValues: [
-      "Authentic Local Experiences",
-      "Customer-Centric Service",
-      "Sustainable Tourism",
-    ],
-  },
-};
-
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
   const [userId, setUserId] = useState(null);
@@ -176,7 +140,11 @@ export const Dashboard = () => {
       setSelectedWebsite(location.state.domainId);
       location.state = {}; // Clear domainId from location state
       // navigate(location.pathname, { replace: true, state: {} }); // Clear state without reloading
-    } else if (domains?.length > 0) {
+    } else if (
+      !selectedWebsite &&
+      !location?.state?.domainId &&
+      domains?.length > 0
+    ) {
       setSelectedWebsite(domains[0]?._id);
     }
   }, [domains, location]);

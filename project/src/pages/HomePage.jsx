@@ -39,31 +39,45 @@ export const HomePage = () => {
 
   const generateCompanyData = async (domain, user) => {
     try {
-      // Second API call
-      const secondResponse = await fetch(
-        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      // First API call
+      const firstResponse = await fetch(
+        `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
       );
-
-      if (!secondResponse.ok) {
+      if (!firstResponse.ok) {
         throw new Error(
           `Second API call failed with status: ${secondResponse.status}`
         );
       }
+      try {
+        // Second API call
+        const secondResponse = await fetch(
+          `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+        );
 
-      // Parse second response and return
-      const secondData = await secondResponse.json();
-      // return secondData;
-      // Call addDomain API to store the data
-      console.log("secondData", secondData);
-      const result = await addDomain({ ...secondData, userId: user?._id });
+        if (!secondResponse.ok) {
+          throw new Error(
+            `Site data extracting failed with status: ${secondResponse.status}`
+          );
+        }
 
-      toast.success("Domain successfully added!");
-      console.log("Domain added:", result);
-      navigate("/dashboard", {
-        state: {
-          domainId: result?.data?._id,
-        },
-      });
+        // Parse second response and return
+        const secondData = await secondResponse.json();
+        // return secondData;
+        // Call addDomain API to store the data
+        console.log("secondData", secondData);
+        const result = await addDomain({ ...secondData, userId: user?._id });
+
+        toast.success("Domain successfully added!");
+        console.log("Domain added:", result);
+        navigate("/dashboard", {
+          state: {
+            domainId: result?.data?._id,
+          },
+        });
+      } catch (error) {
+        console.error("Error in AI App data:", error);
+        toast.error(error.message || "Failed to generate company data.");
+      }
     } catch (error) {
       console.error("Error in AI App data:", error);
       toast.error(error.message || "Failed to generate company data.");
@@ -75,7 +89,7 @@ export const HomePage = () => {
     if (url) {
       if (user) {
         setLoading(true);
-        await generateCompanyData(url, user);
+        await generateCompanyData(extractDomain(url), user);
         setLoading(false);
       } else {
         setIsSignInPopup(true);
