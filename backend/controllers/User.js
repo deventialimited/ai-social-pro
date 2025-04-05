@@ -372,7 +372,7 @@ exports.verifyOtp = async (req, res) => {
 };
 
 exports.googleAuth = async (req, res) => {
-  const { googleId, name, email, picture, referralId } = req.body;
+  const { googleId, name, email, picture } = req.body;
   try {
     let user = await User.findOne({ email });
     let userType;
@@ -383,28 +383,16 @@ exports.googleAuth = async (req, res) => {
     if (!user) {
       // If the user doesn't exist, create a new user
       user = await User.create({
-        referralId,
         username: name,
         email: email,
         googleId: googleId,
         profileImage: picture || profileImage,
         emailVerified: true, // Google accounts are generally verified
       });
-      await sendWelcomeEmail(email);
+      // await sendWelcomeEmail(email);
       userType = "new";
     } else {
-      if (user?.status === "blocked") {
-        return res.status(403).json({
-          success: false,
-          error: `Your account is blocked, please contact us for more information: <a href="mailto:taxpro@simpple.tax" target="_blank" rel="noopener noreferrer" class="text-blue-500">taxpro@simpple.tax</a>`,
-        });
-      }
-      if (user.isDeletedByAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: `Your account has been deleted. Please contact us at: <a href="mailto:taxpro@simpple.tax" target="_blank" rel="noopener noreferrer" class="text-blue-500">taxpro@simpple.tax</a>`,
-        });
-      }
+      
       // If user exists but doesn't have googleId, update googleId and emailVerified
       if (!user.googleId) {
         user.googleId = googleId;
