@@ -241,8 +241,7 @@ exports.login = async (req, res) => {
         success: true,
         message: "Two-factor authentication required",
         twoFactorRequired: true,
-        user  ,
-      
+        user  ,  
         methods,
         token: methods.email ? token : undefined, // Include the token if email 2FA is enabled
       });

@@ -21,38 +21,42 @@ export const updateProfile = async (userId, formData) => {
   }
 };
 // Register user manually
-export const registerUser = async (username,email, password) => {
+export const registerUser = async (username, email, password) => {
   try {
-    console.log("Registering user with email:", email, "and password:", password);
+    console.log(
+      "Registering user with email:",
+      email,
+      "and password:",
+      password
+    );
     const response = await axios.post(`${API_URL}/register`, {
       username,
       email,
       password,
     });
-console.log(response.data)
     return response.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     console.log(error.response.data.error);
     throw error.response?.data.error;
   }
 };
 // Google Auth
 
-
-
-export const googleAuth = async(payload) => {
+export const googleAuth = async (googleId, name, email, picture) => {
   try {
-    const response = await axios.post(`${API_URL}/google-auth`, payload);
-
+    const response = await axios.post(`${API_URL}/google-auth`, {
+      googleId,
+      name,
+      email,
+      picture,
+    });
     return response.data;
   } catch (error) {
     console.log(error.response.data.error);
     throw error.response?.data || { error: "An error occurred during login." };
   }
 };
-
-
 
 // Login user manually
 export const loginUser = async (email, password) => {
@@ -69,7 +73,11 @@ export const loginUser = async (email, password) => {
     return response.data; // Returns the response from the backend
   } catch (error) {
     console.error(error.response?.data?.error || "Login failed.");
-    throw error.response?.data?.error || { error: "An error occurred during login." };
+    throw (
+      error.response?.data?.error || {
+        error: "An error occurred during login.",
+      }
+    );
   }
 };
 export const sendEmailVerificationOtp = async (email) => {
@@ -204,5 +212,3 @@ export const getUserAccountStatus = async (userId) => {
     throw error.response?.data?.error || "Failed to fetch account status.";
   }
 };
-
-
