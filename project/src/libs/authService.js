@@ -38,14 +38,12 @@ console.log(response.data)
   }
 };
 // Google Auth
-export const googleAuth = async (googleId, name, email, picture) => {
+
+
+
+export const googleAuth = async(payload) => {
   try {
-    const response = await axios.post(`${API_URL}/google-auth`, {
-      googleId,
-      name,
-      email,
-      picture,
-    });
+    const response = await axios.post(`${API_URL}/google-auth`, payload);
 
     return response.data;
   } catch (error) {
@@ -53,6 +51,9 @@ export const googleAuth = async (googleId, name, email, picture) => {
     throw error.response?.data || { error: "An error occurred during login." };
   }
 };
+
+
+
 // Login user manually
 export const loginUser = async (email, password) => {
   try {
@@ -203,3 +204,5 @@ export const getUserAccountStatus = async (userId) => {
     throw error.response?.data?.error || "Failed to fetch account status.";
   }
 };
+
+
