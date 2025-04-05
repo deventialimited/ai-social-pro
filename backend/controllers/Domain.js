@@ -179,8 +179,6 @@ exports.updateDomain = async (req, res) => {
     const { id } = req.params;
     const updates = req.body; // Fields sent in the request
 
-    console.log("Updating domain:", id);
-    console.log("Data received for update:", updates);
 
     if (!id) {
       return res

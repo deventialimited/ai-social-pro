@@ -135,7 +135,6 @@ exports.editProfile = async (req, res) => {
 // Register user
 exports.register = async (req, res) => {
   const {username, email, password } = req.body;
-console.log(username,email, password,"into the req body ")
   try {
     // Check if a user with the provided email already exists
     let user = await User.findOne({ email });
@@ -160,9 +159,8 @@ console.log(username,email, password,"into the req body ")
     // Generate OTP for email verification
     const otp = crypto.randomInt(100000, 999999).toString();
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
-      expiresIn: "5m",
+      expiresIn: "1m",
     });
-
     // await sendVerificationEmail(email, otp);
 
     res.status(201).json({
@@ -260,7 +258,6 @@ exports.login = async (req, res) => {
 };
 exports.sendEmailVerificationOtp = async (req, res) => {
   const { email } = req.body;
-
   try {
     // Check if the user exists
     const user = await User.findOne({ email });
@@ -285,8 +282,7 @@ exports.sendEmailVerificationOtp = async (req, res) => {
       expiresIn: "5m",
     });
 
-    await sendVerificationEmail(email, otp);
-
+    // await sendVerificationEmail(email, otp);
     res.status(200).json({
       success: true,
       message: "OTP sent to email successfully.",
@@ -345,9 +341,9 @@ exports.verifyOtp = async (req, res) => {
     }
 
     // If email is verified, send a welcome email
-    if (method === "email") {
-      await sendWelcomeEmail(user.email);
-    }
+    // if (method === "email") {
+    //   await sendWelcomeEmail(user.email);
+    // }
 
     res.status(200).json({
       success: true,
@@ -659,7 +655,6 @@ exports.setupTwoFactorAuth = async (req, res) => {
 
 exports.verifyTwoFactorAuth = async (req, res) => {
   const { userId, otp, method, token } = req.body; // method is either "email" or "authenticatorApp"
-  console.log(method);
   try {
     const user = await User.findById(userId);
 

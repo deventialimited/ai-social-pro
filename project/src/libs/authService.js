@@ -1,6 +1,6 @@
 import axios from "axios";
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:4000";
 // Base URL of your API
 const API_URL = `${baseURL}/api/v1/users`;
 //edit-profile
@@ -23,12 +23,7 @@ export const updateProfile = async (userId, formData) => {
 // Register user manually
 export const registerUser = async (username, email, password) => {
   try {
-    console.log(
-      "Registering user with email:",
-      email,
-      "and password:",
-      password
-    );
+   
     const response = await axios.post(`${API_URL}/register`, {
       username,
       email,
