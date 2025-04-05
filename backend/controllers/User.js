@@ -159,7 +159,7 @@ exports.register = async (req, res) => {
     // Generate OTP for email verification
     const otp = crypto.randomInt(100000, 999999).toString();
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
-      expiresIn: "1m",
+      expiresIn: "5m",
     });
     // await sendVerificationEmail(email, otp);
 
