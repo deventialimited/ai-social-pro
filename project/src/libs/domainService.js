@@ -49,12 +49,25 @@ export const useUpdateDomainBrandInfo = () => {
     },
   });
 };
+export const useAddDomainMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addDomain, // your API call
+    onSuccess: (newDomain) => {
+      queryClient.setQueryData(["domains", newDomain.userId], (oldDomains) => {
+        if (!oldDomains) return [newDomain];
+        return [...oldDomains, newDomain];
+      });
+    },
+  });
+};
 // Add a new domain
 export const addDomain = async (domainData) => {
   try {
     const response = await axios.post(`${API_URL}/addDomain`, domainData);
 
-    return response.data;
+    return response.data?.data;
   } catch (error) {
     console.log(error.response.data.error);
     throw error.response?.data.error;

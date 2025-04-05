@@ -1,208 +1,135 @@
-import React, { useState } from 'react';
-import { X, Globe, Loader2, Briefcase, Palette, Target, Check, ArrowRight } from 'lucide-react';
-import { addDomain } from '../libs/domainService';
-import { json } from 'react-router-dom';
+import React, { useState } from "react";
+import {
+  X,
+  Globe,
+  Loader2,
+  Briefcase,
+  Palette,
+  Target,
+  Check,
+  ArrowRight,
+} from "lucide-react";
+import { useAddDomainMutation } from "../libs/domainService";
+import { json, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { extractDomain } from "../pages/HomePage";
 export const AddWebsiteModal = ({ onClose, onGenerate }) => {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [businessData, setBusinessData] = useState(null);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-const [error, setError] = useState(null);
+  const [error, setError] = useState(null);
   const steps = [
-    { 
-      title: 'Scanning Website',
-      description: 'Analyzing content and structure',
-      icon: '🔍',
-      color: 'from-blue-500 to-cyan-500'
+    {
+      title: "Scanning Website",
+      description: "Analyzing content and structure",
+      icon: "🔍",
+      color: "from-blue-500 to-cyan-500",
     },
-    { 
-      title: 'Extracting Business Data',
-      description: 'Identifying key business information',
-      icon: '💼',
-      color: 'from-purple-500 to-pink-500'
+    {
+      title: "Extracting Business Data",
+      description: "Identifying key business information",
+      icon: "💼",
+      color: "from-purple-500 to-pink-500",
     },
-    { 
-      title: 'Analyzing Brand',
-      description: 'Detecting colors, style, and tone',
-      icon: '🎨',
-      color: 'from-yellow-500 to-orange-500'
+    {
+      title: "Analyzing Brand",
+      description: "Detecting colors, style, and tone",
+      icon: "🎨",
+      color: "from-yellow-500 to-orange-500",
     },
-    { 
-      title: 'Building Strategy',
-      description: 'Creating marketing approach',
-      icon: '🎯',
-      color: 'from-green-500 to-emerald-500'
+    {
+      title: "Building Strategy",
+      description: "Creating marketing approach",
+      icon: "🎯",
+      color: "from-green-500 to-emerald-500",
     },
-    { 
-      title: 'Generating Ideas',
-      description: 'Crafting engaging content suggestions',
-      icon: '✨',
-      color: 'from-indigo-500 to-violet-500'
-    }
+    {
+      title: "Generating Ideas",
+      description: "Crafting engaging content suggestions",
+      icon: "✨",
+      color: "from-indigo-500 to-violet-500",
+    },
   ];
-
-  // const simulateDataExtraction = async () => {
-  //   setIsLoading(true);
-  //   setProgress(0);
-  //   setCurrentStep(0);
-
-  //   for (let i = 0; i < steps.length; i++) {
-  //     setCurrentStep(i);
-  //     for (let p = 0; p <= 100; p += 2) {
-  //       setProgress((i * 100 + p) / steps.length);
-  //       await new Promise(resolve => setTimeout(resolve, 30));
-  //     }
-  //   }
-
-  //   // Simulate fetched business data
-  //   const mockBusinessData = {
-  //     name: 'Example Business',
-  //     description: 'A company that provides innovative solutions for modern businesses, focusing on digital transformation and sustainable growth.',
-  //     industry: 'Technology',
-  //     niche: 'Software Development',
-  //     website: url,
-  //     language: 'English',
-  //     country: 'United States',
-  //     region: 'North America',
-  //     logo: '/kaz-routes-logo.png',
-  //     logoBackground: 'white',
-  //     headshot: '',
-  //     brandColor: '#FF6B6B',
-  //     backgroundColor: '#FFFFFF',
-  //     textColor: '#000000',
-  //     marketingStrategy: {
-  //       audience: [
-  //         'Tech-savvy professionals',
-  //         'Small business owners',
-  //         'Enterprise companies'
-  //       ],
-  //       audiencePains: [
-  //         'Complex software solutions',
-  //         'Integration challenges',
-  //         'Technical support needs'
-  //       ],
-  //       coreValues: [
-  //         'Innovation',
-  //         'Reliability',
-  //         'Customer Success'
-  //       ]
-  //     }
-  //   };
-
-  //   setBusinessData(mockBusinessData);
-  //   setIsLoading(false);
-  // };
-  const user = JSON.parse(localStorage.getItem('user'));
-  console.log(user)
-  const simulateDataExtraction = async () => {
-    setIsLoading(true);
-    setProgress(0);
-    setCurrentStep(0);
-    setError(null); // Reset any previous errors
-
+  const addDomain = useAddDomainMutation();
+  const generateCompanyData = async (domain, user) => {
+    // try {
+    //   // First API call
+    //   const firstResponse = await fetch(
+    //     `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
+    //   );
+    //   if (!firstResponse.ok) {
+    //     throw new Error(
+    //       `Site data extracting with status: ${firstResponse.status}`
+    //     );
+    //   }
     try {
-      // Simulate progress
+      setProgress(0);
+      setCurrentStep(0);
+
       for (let i = 0; i < steps.length; i++) {
         setCurrentStep(i);
         for (let p = 0; p <= 100; p += 2) {
           setProgress((i * 100 + p) / steps.length);
-          await new Promise(resolve => setTimeout(resolve, 30));
+          await new Promise((resolve) => setTimeout(resolve, 30));
         }
       }
+      // Second API call
+      const secondResponse = await fetch(
+        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      );
 
-      // Simulated fetched business data (replace with real API call if needed)
-      const mockBusinessData = {
-        name: 'Example Business',
-        description: 'A company that provides innovative solutions for modern businesses, focusing on digital transformation and sustainable growth.',
-        industry: 'Technology',
-        niche: 'Software Development',
-        website: url,
-        language: 'English',
-        country: 'United States',
-        region: 'North America',
-        logo: '/kaz-routes-logo.png',
-        logoBackground: 'white',
-        headshot: '',
-        brandColor: '#FF6B6B',
-        backgroundColor: '#FFFFFF',
-        textColor: '#000000',
-        marketingStrategy: {
-          audience: ['Tech-savvy professionals', 'Small business owners', 'Enterprise companies'],
-          audiencePains: ['Complex software solutions', 'Integration challenges', 'Technical support needs'],
-          coreValues: ['Innovation', 'Reliability', 'Customer Success'],
-        },
-      };
+      if (!secondResponse.ok) {
+        throw new Error(
+          `Site data extracting failed with status: ${secondResponse.status}`
+        );
+      }
 
-      // Map businessData to the backend schema
-      const domainData = {
-        client_email: user.email, // Add logic to collect email if needed
-        clientWebsite: mockBusinessData.website,
-        clientName: mockBusinessData.name,
-        clientDescription: mockBusinessData.description,
-        industry: mockBusinessData.industry,
-        niche: mockBusinessData.niche,
-       colors: JSON.stringify({
-    brandColor: mockBusinessData.brandColor,
-    backgroundColor: mockBusinessData.backgroundColor,
-    textColor: mockBusinessData.textColor,
-  }),
-        userId: user._id, // Replace with actual user ID (e.g., from auth context)
-        core_values: mockBusinessData.marketingStrategy.coreValues.join('\n'),
-        audience: mockBusinessData.marketingStrategy.audience.join('\n'),
-        audiencePains: mockBusinessData.marketingStrategy.audiencePains.join('\n'),
-        language: mockBusinessData.language,
-        country: mockBusinessData.country,
-        state: mockBusinessData.region, // Mapping region to state
-      };
-
-      // Save to database using addDomain
-      const savedData = await addDomain(domainData);
-      console.log('Data saved to database:', savedData);
-
-      setBusinessData(mockBusinessData); // Display the mock data in UI
-    } catch (err) {
-      setError('Failed to save data to the database. Please try again.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+      // Parse second response and return
+      const secondData = await secondResponse.json();
+      // return secondData;
+      // Call addDomain API to store the data
+      console.log("secondData", secondData);
+      const result = await addDomain.mutateAsync({
+        ...secondData,
+        userId: user?._id,
+      });
+      toast.success("Domain successfully added!");
+      console.log("Domain added:", result);
+    } catch (error) {
+      console.error("Error in AI App data:", error);
+      toast.error(error.message || "Failed to generate company data.");
     }
+    // } catch (error) {
+    //   console.error("Error in AI App data:", error);
+    //   toast.error(error.message || "Failed to generate company data.");
+    // }
   };
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (url) {
-  //     if (!businessData) {
-  //       await simulateDataExtraction();
-  //     } else {
-  //       onGenerate(url); 
-      
-  //       onClose();
-  //     }
-  //   }
-  // };
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
     if (url) {
-      if (!businessData) {
-        await simulateDataExtraction();
-      } else {
-        onGenerate(url); // Proceed to generate posts
-        onClose(); // Close the modal
+      if (user) {
+        setIsLoading(true);
+        await generateCompanyData(extractDomain(url), user);
+        setUrl("");
+        setIsLoading(false);
+        onClose();
       }
     }
   };
-  const renderBusinessCard = (
-    title,
-    icon,
-    content,
-    className
-  ) => (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 ${className}`}>
+  const renderBusinessCard = (title, icon, content, className) => (
+    <div
+      className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 ${className}`}
+    >
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
           {icon}
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {title}
+        </h3>
       </div>
       {content}
     </div>
@@ -236,7 +163,8 @@ const handleSubmit = async (e) => {
                   Enter your website URL
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  We'll analyze your website and create a year's worth of engaging social media content tailored to your brand.
+                  We'll analyze your website and create a year's worth of
+                  engaging social media content tailored to your brand.
                 </p>
                 <div className="relative mt-6">
                   <input
@@ -264,11 +192,11 @@ const handleSubmit = async (e) => {
                     />
                   </div>
                   {/* Floating percentage indicator */}
-                  <div 
+                  <div
                     className="absolute top-1/2 -translate-y-1/2 transition-all duration-300 bg-white dark:bg-gray-800 rounded-full px-2 py-0.5 shadow-lg border border-gray-200 dark:border-gray-700 flex items-center gap-1"
-                    style={{ 
+                    style={{
                       left: `${Math.min(Math.max(progress, 3), 97)}%`,
-                      transform: `translate(-50%, -50%)`
+                      transform: `translate(-50%, -50%)`,
                     }}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
@@ -283,16 +211,21 @@ const handleSubmit = async (e) => {
                     <div
                       key={index}
                       className={`transform transition-all duration-500 ${
-                        index === currentStep 
-                          ? 'scale-100 opacity-100' 
+                        index === currentStep
+                          ? "scale-100 opacity-100"
                           : index < currentStep
-                          ? 'scale-95 opacity-50'
-                          : 'scale-95 opacity-30'
+                          ? "scale-95 opacity-50"
+                          : "scale-95 opacity-30"
                       }`}
                     >
                       <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl
-                          ${index <= currentStep ? `bg-gradient-to-r ${step.color}` : 'bg-gray-100 dark:bg-gray-700'}`}
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl
+                          ${
+                            index <= currentStep
+                              ? `bg-gradient-to-r ${step.color}`
+                              : "bg-gray-100 dark:bg-gray-700"
+                          }`}
                         >
                           {index < currentStep ? (
                             <Check className="w-5 h-5 text-white" />
@@ -318,47 +251,65 @@ const handleSubmit = async (e) => {
             {businessData && (
               <div className="grid grid-cols-2 gap-6">
                 {renderBusinessCard(
-                  'Business Profile',
+                  "Business Profile",
                   <Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" />,
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       {[
-                        { label: 'Name', value: businessData.name },
-                        { label: 'Industry', value: businessData.industry },
-                        { label: 'Country', value: businessData.country },
-                        { label: 'Language', value: businessData.language }
+                        { label: "Name", value: businessData.name },
+                        { label: "Industry", value: businessData.industry },
+                        { label: "Country", value: businessData.country },
+                        { label: "Language", value: businessData.language },
                       ].map((item, i) => (
-                        <div key={i} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{item.label}</div>
-                          <div className="text-gray-900 dark:text-white font-medium">{item.value}</div>
+                        <div
+                          key={i}
+                          className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg"
+                        >
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {item.label}
+                          </div>
+                          <div className="text-gray-900 dark:text-white font-medium">
+                            {item.value}
+                          </div>
                         </div>
                       ))}
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Description</div>
-                      <div className="text-gray-900 dark:text-white">{businessData.description}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Description
+                      </div>
+                      <div className="text-gray-900 dark:text-white">
+                        {businessData.description}
+                      </div>
                     </div>
                   </div>,
-                  'col-span-2'
+                  "col-span-2"
                 )}
 
                 {renderBusinessCard(
-                  'Brand Identity',
+                  "Brand Identity",
                   <Palette className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
                   <div className="space-y-4">
                     <div className="flex items-center gap-6">
                       <div className="w-20 h-20 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                        <img src={businessData.logo} alt="Logo" className="w-16 h-16 object-contain" />
+                        <img
+                          src={businessData.logo}
+                          alt="Logo"
+                          className="w-16 h-16 object-contain"
+                        />
                       </div>
                       <div className="flex gap-3">
                         {[
-                          { color: businessData.brandColor, label: 'Brand' },
-                          { color: businessData.backgroundColor, label: 'Background' },
-                          { color: businessData.textColor, label: 'Text' }
+                          { color: businessData.brandColor, label: "Brand" },
+                          {
+                            color: businessData.backgroundColor,
+                            label: "Background",
+                          },
+                          { color: businessData.textColor, label: "Text" },
                         ].map((item, i) => (
                           <div key={i} className="text-center">
-                            <div 
-                              className="w-12 h-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" 
+                            <div
+                              className="w-12 h-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
                               style={{ backgroundColor: item.color }}
                             />
                             <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block">
@@ -372,25 +323,28 @@ const handleSubmit = async (e) => {
                 )}
 
                 {renderBusinessCard(
-                  'Marketing Strategy',
+                  "Marketing Strategy",
                   <Target className="w-6 h-6 text-green-600 dark:text-green-400" />,
                   <div className="space-y-4">
                     {[
-                      { 
-                        title: 'Target Audience',
+                      {
+                        title: "Target Audience",
                         items: businessData.marketingStrategy.audience,
-                        className: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                        className:
+                          "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
                       },
                       {
-                        title: 'Pain Points',
+                        title: "Pain Points",
                         items: businessData.marketingStrategy.audiencePains,
-                        className: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                        className:
+                          "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300",
                       },
                       {
-                        title: 'Core Values',
+                        title: "Core Values",
                         items: businessData.marketingStrategy.coreValues,
-                        className: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                      }
+                        className:
+                          "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+                      },
                     ].map((section, i) => (
                       <div key={i}>
                         <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

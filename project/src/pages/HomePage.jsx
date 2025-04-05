@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
-import { addDomain } from "../libs/domainService";
+import { useAddDomainMutation } from "../libs/domainService";
 //
-function extractDomain(fullUrl) {
+export function extractDomain(fullUrl) {
   try {
     const normalized = fullUrl.startsWith("http")
       ? fullUrl
@@ -36,7 +36,7 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-
+  const addDomain = useAddDomainMutation();
   const generateCompanyData = async (domain, user) => {
     // try {
     //   // First API call
@@ -48,36 +48,39 @@ export const HomePage = () => {
     //       `Site data extracting with status: ${firstResponse.status}`
     //     );
     //   }
-      try {
-        // Second API call
-        const secondResponse = await fetch(
-          `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+    try {
+      // Second API call
+      const secondResponse = await fetch(
+        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      );
+
+      if (!secondResponse.ok) {
+        throw new Error(
+          `Site data extracting failed with status: ${secondResponse.status}`
         );
-
-        if (!secondResponse.ok) {
-          throw new Error(
-            `Site data extracting failed with status: ${secondResponse.status}`
-          );
-        }
-
-        // Parse second response and return
-        const secondData = await secondResponse.json();
-        // return secondData;
-        // Call addDomain API to store the data
-        console.log("secondData", secondData);
-        const result = await addDomain({ ...secondData, userId: user?._id });
-
-        toast.success("Domain successfully added!");
-        console.log("Domain added:", result);
-        navigate("/dashboard", {
-          state: {
-            domainId: result?.data?._id,
-          },
-        });
-      } catch (error) {
-        console.error("Error in AI App data:", error);
-        toast.error(error.message || "Failed to generate company data.");
       }
+
+      // Parse second response and return
+      const secondData = await secondResponse.json();
+      // return secondData;
+      // Call addDomain API to store the data
+      console.log("secondData", secondData);
+      const result = await addDomain.mutateAsync({
+        ...secondData,
+        userId: user?._id,
+      });
+
+      toast.success("Domain successfully added!");
+      console.log("Domain added:", result);
+      navigate("/dashboard", {
+        state: {
+          domainId: result?.data?._id,
+        },
+      });
+    } catch (error) {
+      console.error("Error in AI App data:", error);
+      toast.error(error.message || "Failed to generate company data.");
+    }
     // } catch (error) {
     //   console.error("Error in AI App data:", error);
     //   toast.error(error.message || "Failed to generate company data.");
