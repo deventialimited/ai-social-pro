@@ -133,17 +133,19 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
 
     return (
       <div className="space-y-2">
-        <div
-          className={`relative group cursor-pointer overflow-hidden rounded-lg
-            ${type === "logo" ? "w-[100px] h-[100px] bg-white" : "w-[120px] h-[120px]"}`}
-          onClick={handleImageClick}
-        >
+       <div
+  className={`relative group cursor-pointer overflow-hidden 
+    ${type === "logo" ? "w-[100px] h-[100px] rounded-full bg-gray-100 border border-gray-300" : "w-[120px] h-[120px] rounded-lg"}`}
+  onClick={handleImageClick}
+>
+
+
           {selectedLogoFile ? (
             <>
               <img
                 src={selectedLogoFile ? URL.createObjectURL(selectedLogoFile) : "/default-logo.png"}
                 alt={title}
-                className={`w-full h-full ${type === "logo" ? "object-contain p-2" : "object-cover"}`}
+className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "object-cover"}`}
               />
               {isEditing && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -158,9 +160,7 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
             </div>
           )}
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          {type === "logo" ? "100x100px" : "120x120px"}
-        </p>
+        
 
         {/* File input */}
         <input
@@ -350,14 +350,14 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
 
         <div className="p-8 space-y-6">
           {/* Brand Category */}
-          {/* {renderSection(
+        {renderSection(
             "Brand",
             "brand",
             <div className="space-y-6">
               <div className="flex gap-6">{renderImageUpload("logo")}</div>
               {renderColorPicker()}
             </div>
-          )} */}
+          )} 
 
           {/* Business Category */}
           {renderSection(
