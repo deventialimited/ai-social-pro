@@ -24,9 +24,9 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-6 h-6" />
           </button>
 
-          <div className="flex items-center gap-6">
+          {/* <div className="flex items-center gap-6">
             <CreatePostStrip />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center gap-4">

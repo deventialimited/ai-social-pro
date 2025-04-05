@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, Globe, Loader2, Briefcase, Palette, Target, Check, ArrowRight } from 'lucide-react';
+import { addDomain } from '../libs/domainService';
+import { json } from 'react-router-dom';
 export const AddWebsiteModal = ({ onClose, onGenerate }) => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [businessData, setBusinessData] = useState(null);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-
+const [error, setError] = useState(null);
   const steps = [
     { 
       title: 'Scanning Website',
@@ -40,70 +42,155 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
     }
   ];
 
+  // const simulateDataExtraction = async () => {
+  //   setIsLoading(true);
+  //   setProgress(0);
+  //   setCurrentStep(0);
+
+  //   for (let i = 0; i < steps.length; i++) {
+  //     setCurrentStep(i);
+  //     for (let p = 0; p <= 100; p += 2) {
+  //       setProgress((i * 100 + p) / steps.length);
+  //       await new Promise(resolve => setTimeout(resolve, 30));
+  //     }
+  //   }
+
+  //   // Simulate fetched business data
+  //   const mockBusinessData = {
+  //     name: 'Example Business',
+  //     description: 'A company that provides innovative solutions for modern businesses, focusing on digital transformation and sustainable growth.',
+  //     industry: 'Technology',
+  //     niche: 'Software Development',
+  //     website: url,
+  //     language: 'English',
+  //     country: 'United States',
+  //     region: 'North America',
+  //     logo: '/kaz-routes-logo.png',
+  //     logoBackground: 'white',
+  //     headshot: '',
+  //     brandColor: '#FF6B6B',
+  //     backgroundColor: '#FFFFFF',
+  //     textColor: '#000000',
+  //     marketingStrategy: {
+  //       audience: [
+  //         'Tech-savvy professionals',
+  //         'Small business owners',
+  //         'Enterprise companies'
+  //       ],
+  //       audiencePains: [
+  //         'Complex software solutions',
+  //         'Integration challenges',
+  //         'Technical support needs'
+  //       ],
+  //       coreValues: [
+  //         'Innovation',
+  //         'Reliability',
+  //         'Customer Success'
+  //       ]
+  //     }
+  //   };
+
+  //   setBusinessData(mockBusinessData);
+  //   setIsLoading(false);
+  // };
+  const user = JSON.parse(localStorage.getItem('user'));
+  console.log(user)
   const simulateDataExtraction = async () => {
     setIsLoading(true);
     setProgress(0);
     setCurrentStep(0);
+    setError(null); // Reset any previous errors
 
-    for (let i = 0; i < steps.length; i++) {
-      setCurrentStep(i);
-      for (let p = 0; p <= 100; p += 2) {
-        setProgress((i * 100 + p) / steps.length);
-        await new Promise(resolve => setTimeout(resolve, 30));
+    try {
+      // Simulate progress
+      for (let i = 0; i < steps.length; i++) {
+        setCurrentStep(i);
+        for (let p = 0; p <= 100; p += 2) {
+          setProgress((i * 100 + p) / steps.length);
+          await new Promise(resolve => setTimeout(resolve, 30));
+        }
       }
+
+      // Simulated fetched business data (replace with real API call if needed)
+      const mockBusinessData = {
+        name: 'Example Business',
+        description: 'A company that provides innovative solutions for modern businesses, focusing on digital transformation and sustainable growth.',
+        industry: 'Technology',
+        niche: 'Software Development',
+        website: url,
+        language: 'English',
+        country: 'United States',
+        region: 'North America',
+        logo: '/kaz-routes-logo.png',
+        logoBackground: 'white',
+        headshot: '',
+        brandColor: '#FF6B6B',
+        backgroundColor: '#FFFFFF',
+        textColor: '#000000',
+        marketingStrategy: {
+          audience: ['Tech-savvy professionals', 'Small business owners', 'Enterprise companies'],
+          audiencePains: ['Complex software solutions', 'Integration challenges', 'Technical support needs'],
+          coreValues: ['Innovation', 'Reliability', 'Customer Success'],
+        },
+      };
+
+      // Map businessData to the backend schema
+      const domainData = {
+        client_email: user.email, // Add logic to collect email if needed
+        clientWebsite: mockBusinessData.website,
+        clientName: mockBusinessData.name,
+        clientDescription: mockBusinessData.description,
+        industry: mockBusinessData.industry,
+        niche: mockBusinessData.niche,
+       colors: JSON.stringify({
+    brandColor: mockBusinessData.brandColor,
+    backgroundColor: mockBusinessData.backgroundColor,
+    textColor: mockBusinessData.textColor,
+  }),
+        userId: user._id, // Replace with actual user ID (e.g., from auth context)
+        core_values: mockBusinessData.marketingStrategy.coreValues.join('\n'),
+        audience: mockBusinessData.marketingStrategy.audience.join('\n'),
+        audiencePains: mockBusinessData.marketingStrategy.audiencePains.join('\n'),
+        language: mockBusinessData.language,
+        country: mockBusinessData.country,
+        state: mockBusinessData.region, // Mapping region to state
+      };
+
+      // Save to database using addDomain
+      const savedData = await addDomain(domainData);
+      console.log('Data saved to database:', savedData);
+
+      setBusinessData(mockBusinessData); // Display the mock data in UI
+    } catch (err) {
+      setError('Failed to save data to the database. Please try again.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Simulate fetched business data
-    const mockBusinessData = {
-      name: 'Example Business',
-      description: 'A company that provides innovative solutions for modern businesses, focusing on digital transformation and sustainable growth.',
-      industry: 'Technology',
-      niche: 'Software Development',
-      website: url,
-      language: 'English',
-      country: 'United States',
-      region: 'North America',
-      logo: '/kaz-routes-logo.png',
-      logoBackground: 'white',
-      headshot: '',
-      brandColor: '#FF6B6B',
-      backgroundColor: '#FFFFFF',
-      textColor: '#000000',
-      marketingStrategy: {
-        audience: [
-          'Tech-savvy professionals',
-          'Small business owners',
-          'Enterprise companies'
-        ],
-        audiencePains: [
-          'Complex software solutions',
-          'Integration challenges',
-          'Technical support needs'
-        ],
-        coreValues: [
-          'Innovation',
-          'Reliability',
-          'Customer Success'
-        ]
-      }
-    };
-
-    setBusinessData(mockBusinessData);
-    setIsLoading(false);
   };
-
-  const handleSubmit = async (e) => {
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (url) {
+  //     if (!businessData) {
+  //       await simulateDataExtraction();
+  //     } else {
+  //       onGenerate(url); 
+      
+  //       onClose();
+  //     }
+  //   }
+  // };
+const handleSubmit = async (e) => {
     e.preventDefault();
     if (url) {
       if (!businessData) {
         await simulateDataExtraction();
       } else {
-        onGenerate(url);
-        onClose();
+        onGenerate(url); // Proceed to generate posts
+        onClose(); // Close the modal
       }
     }
   };
-
   const renderBusinessCard = (
     title,
     icon,

@@ -85,7 +85,7 @@ export const LeftMenu = ({
         </div>
 
         <div className="px-6 py-6">
-          <CreatePostStrip onNewPost={onNewPost} />
+          {/* <CreatePostStrip onNewPost={onNewPost} /> */}
 
           {selectedWebsite && (
             <Listbox value={selectedWebsite} onChange={onWebsiteChange}>

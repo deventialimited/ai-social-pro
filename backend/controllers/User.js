@@ -281,7 +281,6 @@ exports.sendEmailVerificationOtp = async (req, res) => {
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
-
     // await sendVerificationEmail(email, otp);
     res.status(200).json({
       success: true,
