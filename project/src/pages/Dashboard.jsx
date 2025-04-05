@@ -241,11 +241,8 @@ export const Dashboard = () => {
       case "business":
         return (
           <BusinessSection
-            selectedWebsite={
-              selectedWebsite
-                ? domains?.find((item) => item?._id === selectedWebsite)
-                : null
-            }
+            selectedWebsiteId={selectedWebsite}
+            userId={userId}
             onEdit={handleBusinessEdit}
           />
         );

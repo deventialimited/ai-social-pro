@@ -1,12 +1,14 @@
 import React, { useState, useRef, ChangeEvent, useEffect } from "react";
 import { Edit, Save, X, Upload, Image, Building2 } from "lucide-react";
 import {
+  useDomains,
   useUpdateDomainBrandInfo,
   useUpdateDomainBusiness,
 } from "../libs/domainService";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-export const BusinessSection = ({ selectedWebsite, onEdit }) => {
+export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
+  const { data: domains, isLoading } = useDomains(userId);
   const [editingSection, setEditingSection] = useState(null);
   const [selectedLogoFile, setSelectedLogoFile] = useState(null);
   const [formData, setFormData] = useState({
@@ -31,10 +33,19 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
     textColor: useRef(null),
   };
   useEffect(() => {
-    if (selectedWebsite) {
-      setFormData({ ...selectedWebsite });
+    if (domains?.length > 0 && selectedWebsiteId) {
+      const selectedWebsiteData = domains?.find(
+        (w) => w?._id === selectedWebsiteId
+      );
+      setFormData({
+        ...selectedWebsiteData,
+        colors: selectedWebsiteData?.colors
+          ?.split(",")
+          ?.map((color) => color.trim())
+          ?.filter((color) => color !== ""),
+      });
     }
-  }, [selectedWebsite]);
+  }, [domains]);
   const handleEdit = (section) => {
     setEditingSection(section);
     onEdit(section);
@@ -44,7 +55,7 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
     try {
       console.log("Saving data:", formData); // Debugging output
       await updateDomain.mutateAsync({
-        domainId: selectedWebsite?._id,
+        domainId: selectedWebsiteId,
         domainData: formData,
       });
       setEditingSection(null);
@@ -63,65 +74,41 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
   };
 
   const updateBrandInfo = useUpdateDomainBrandInfo();
-  // const handleFileUpload = async () => {
-  //   try {
-  //     const colors = [
-  //       formData.brandColor,
-  //       formData.backgroundColor,
-  //       formData.textColor,
-  //     ];
-
-  //     await updateBrandInfo.mutateAsync({
-  //       domainId: selectedWebsite?._id,
-  //       logoFile: selectedLogoFile, // should be a File object
-  //       colors,
-  //     });
-
-  //     setEditingSection(null);
-  //   } catch (err) {
-  //     console.error("Save error:", err);
-  //   }
-  // };
-
   const handleFileUpload = async () => {
-     console.log("Selected logo file:", selectedLogoFile); // Debugging output
+    console.log("Selected logo file:", selectedLogoFile); // Debugging output
     const isLogoChanged = selectedLogoFile !== null;
-    const areColorsChanged = formData.brandColor || formData.backgroundColor || formData.textColor;
+    const areColorsChanged = formData?.colors?.length;
 
-    if (!isLogoChanged || !areColorsChanged) {
-      toast.error("No changes detected. Please upload a logo or select brand colors.");
+    if (!areColorsChanged) {
+      toast.error(
+        "No changes detected. Please upload a logo or select brand colors."
+      );
       return;
     }
-
+    console.log(formData?.colors);
     try {
-      const colors = [
-        formData.brandColor,
-        formData.backgroundColor,
-        formData.textColor,
-      ];
-
       await updateBrandInfo.mutateAsync({
-        domainId: selectedWebsite?._id,
+        domainId: selectedWebsiteId,
         logoFile: selectedLogoFile, // File state
-        colors,
+        colors: formData?.colors,
       });
 
       toast.success("Brand info updated!");
       setEditingSection(null);
+      setSelectedLogoFile(null);
     } catch (err) {
       console.error("Save error:", err);
       toast.error("Failed to update brand info.");
     }
   };
 
-    const handleFileChange = (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     setSelectedLogoFile(file);
   };
-
-
- const renderImageUpload = (type) => {
-    const isEditing = editingSection === "brand"; 
+  console.log(formData);
+  const renderImageUpload = (type) => {
+    const isEditing = editingSection === "brand";
     // const imageUrl = type === "logo" ? "/kaz-routes-logo.png" : formData[type];
     const title = type === "logo" ? "Upload Logo" : "Upload Headshot";
 
@@ -133,19 +120,29 @@ export const BusinessSection = ({ selectedWebsite, onEdit }) => {
 
     return (
       <div className="space-y-2">
-       <div
-  className={`relative group cursor-pointer overflow-hidden 
-    ${type === "logo" ? "w-[100px] h-[100px] rounded-full bg-gray-100 border border-gray-300" : "w-[120px] h-[120px] rounded-lg"}`}
-  onClick={handleImageClick}
->
-
-
-          {selectedLogoFile ? (
+        <div
+          className={`relative group cursor-pointer overflow-hidden 
+    ${
+      type === "logo"
+        ? "w-[100px] h-[100px] rounded-full bg-gray-100 border border-gray-300"
+        : "w-[120px] h-[120px] rounded-lg"
+    }`}
+          onClick={handleImageClick}
+        >
+          {selectedLogoFile || formData?.siteLogo ? (
             <>
               <img
-                src={selectedLogoFile ? URL.createObjectURL(selectedLogoFile) : "/default-logo.png"}
+                src={
+                  selectedLogoFile
+                    ? URL.createObjectURL(selectedLogoFile)
+                    : formData?.siteLogo
+                    ? formData?.siteLogo
+                    : "/default-logo.png"
+                }
                 alt={title}
-className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "object-cover"}`}
+                className={`w-full h-full ${
+                  type === "logo" ? "object-cover rounded-full" : "object-cover"
+                }`}
               />
               {isEditing && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -156,11 +153,12 @@ className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "obj
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2">
               <Image className="w-6 h-6 text-gray-400" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">{title}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {title}
+              </span>
             </div>
           )}
         </div>
-        
 
         {/* File input */}
         <input
@@ -264,7 +262,7 @@ className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "obj
             { type: "brandColor", label: "Brand Color" },
             { type: "backgroundColor", label: "Background Color" },
             { type: "textColor", label: "Text Color" },
-          ].map(({ type, label }) => (
+          ].map(({ type, label }, index) => (
             <div
               key={type}
               className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700"
@@ -272,7 +270,9 @@ className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "obj
               <div className="flex items-center gap-2">
                 <div
                   className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                  style={{ backgroundColor: formData[type] || "#000000" }}
+                  style={{
+                    backgroundColor: formData?.colors?.[index] || "#000000",
+                  }}
                   onClick={() => isEditing && handleColorClick(type)}
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -281,10 +281,16 @@ className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "obj
                 <input
                   ref={colorPickerRefs[type]}
                   type="color"
-                  value={formData[type] || "#000000"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, [type]: e.target.value })
-                  }
+                  value={formData?.colors?.[index] || "#000000"}
+                  onChange={(e) => {
+                    const newColors = [...(formData?.colors || [])];
+                    newColors[index] = e.target.value;
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      colors: newColors,
+                    }));
+                  }}
                   className="hidden"
                   disabled={!isEditing}
                 />
@@ -350,14 +356,14 @@ className={`w-full h-full ${type === "logo" ? "object-cover rounded-full" : "obj
 
         <div className="p-8 space-y-6">
           {/* Brand Category */}
-        {renderSection(
+          {renderSection(
             "Brand",
             "brand",
             <div className="space-y-6">
               <div className="flex gap-6">{renderImageUpload("logo")}</div>
               {renderColorPicker()}
             </div>
-          )} 
+          )}
 
           {/* Business Category */}
           {renderSection(

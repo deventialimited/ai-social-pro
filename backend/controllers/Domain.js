@@ -280,17 +280,23 @@ exports.uploadBrand = async (req, res) => {
   const { colors } = req.body;
 
   try {
+    // Find the existing domain
+    const existingDomain = await Domain.findById(domainId);
+    if (!existingDomain) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Domain not found" });
+    }
     const updateData = {};
 
     if (file) {
       const logoUrl = await uploadToS3(file);
       updateData.siteLogo = logoUrl;
     }
-
     if (colors) {
       updateData.colors = colors;
     }
-
+    
     const updatedDomain = await Domain.findByIdAndUpdate(domainId, updateData, {
       new: true,
     });
