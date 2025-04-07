@@ -202,14 +202,13 @@ export function EnhancedImageToolbar({
 
         {/* Effects button */}
         <button
-          className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${
-            selectedTool === "effects" ? "bg-blue-100" : ""
-          }`}
+          className={`p-2 rounded-md ${
+            selectedTool === "effects"
+              ? "bg-blue-100 text-blue-600"
+              : "hover:bg-gray-100 text-gray-700"
+          } hover:cursor-pointer`}
           title="Effects"
-          onClick={() => {
-            console.log("@EffectsPanel.tsx");
-            onEffects();
-          }}
+          onClick={onEffects}
         >
           <span className="text-sm font-medium">Effects</span>
         </button>
