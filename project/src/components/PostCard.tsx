@@ -120,7 +120,24 @@ export const PostCard: React.FC<PostCardProps> = ({
             </button>
             <button>
               <Clock className="w-4 h-4" />
+            <div>
+            <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
+              Image
+              <Image className="w-4 h-4" />
             </button>
+            </div>
+             <div>
+            <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
+              Branding
+                <Palette className="w-4 h-4" />
+            </button>
+            </div>
+             <div>
+            <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
+              Slogan
+                <Type className="w-4 h-4" />
+            </button>
+            </div>
             {/* {post.status !== 'draft' && (
               <button
                 onClick={() => onSaveToDraft(post.id)}
