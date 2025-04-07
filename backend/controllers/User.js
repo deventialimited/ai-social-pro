@@ -49,7 +49,7 @@ exports.sendPhoneVerificationOtp = async (req, res) => {
 
     // Generate OTP
     const otp = crypto.randomInt(100000, 999999).toString();
-
+console.log("OTP sent to phone:", otp); // For testing purposes
     // Include userId in the token
     const token = jwt.sign({ userId, phone, otp }, process.env.JWT_SECRET, {
       expiresIn: "5m",
@@ -161,6 +161,7 @@ exports.register = async (req, res) => {
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
+    console.log("OTP sent to email:", otp); // For testing purposes
     // await sendVerificationEmail(email, otp);
 
     res.status(201).json({
@@ -209,7 +210,7 @@ exports.login = async (req, res) => {
       const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
         expiresIn: "5m",
       });
-
+console.log("OTP sent to email:", otp); // For testing purposes
       // await sendVerificationEmail(email, otp);
 
       return res.status(200).json({
@@ -282,6 +283,7 @@ exports.sendEmailVerificationOtp = async (req, res) => {
       expiresIn: "5m",
     });
     // await sendVerificationEmail(email, otp);
+    console.log("OTP sent to email:", otp); // For testing purposes                 
     res.status(200).json({
       success: true,
       message: "OTP sent to email successfully.",
