@@ -3,7 +3,7 @@ import { Calendar, Edit, Trash2, Share2, Clock, Save, Check } from 'lucide-react
 import { Post } from '../types';
 import { format } from 'date-fns';
 import { PostEditModal } from './PostEditModal';
-
+// import { Check } from 'lucide-react';
 interface PostCardProps {
   post: Post;
   onEdit: (id: string) => void;
@@ -72,11 +72,11 @@ export const PostCard: React.FC<PostCardProps> = ({
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Kaz Routes</h3>
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <Calendar className="w-4 h-4" />
-                <span>{format(new Date(post.scheduledDate), 'MMM d, yyyy')}</span>
-                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+                {/* <Calendar className="w-4 h-4" /> */}
+                {/* <span>{format(new Date(post.scheduledDate), 'MMM d, yyyy')}</span> */}
+                {/* <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
                   {primaryPlatform}
-                </span>
+                </span> */}
                 <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
                   ID: {post.id}
                 </span>
@@ -87,7 +87,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
-            <button
+            {/* <button
               onClick={() => setShowEditModal(true)}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Edit post"
@@ -100,8 +100,8 @@ export const PostCard: React.FC<PostCardProps> = ({
               title="Delete post"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => window.open(`#`)}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Share post"
@@ -114,8 +114,63 @@ export const PostCard: React.FC<PostCardProps> = ({
               title="Schedule post"
             >
               <Clock className="w-4 h-4" />
+            </button> */}
+            <button className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
+              Visual
             </button>
-            {post.status !== 'draft' && (
+            <button>
+              <Clock className="w-4 h-4" />
+            </button>
+            {/* {post.status !== 'draft' && (
+              <button
+                onClick={() => onSaveToDraft(post.id)}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                title="Save to drafts"
+              >
+                <Save className="w-4 h-4" />
+              </button>
+            )}
+            {post.status === 'published' && (
+              <div
+                className="p-2 text-green-500 dark:text-green-400"
+                title="Published"
+              >
+                <Check className="w-4 h-4" />
+              </div>
+            )} */}
+          </div>
+        </div>
+
+        {/* Post Content */}
+        <div className={`p-4 space-y-4 ${view === 'grid' ? 'flex-1' : ''}`}>
+          <p className="text-gray-900 dark:text-white whitespace-pre-wrap line-clamp-2">{post.text}</p>
+          <img
+            src={post.imageUrl}
+            alt="Post content"
+            className={`w-full rounded-lg ${view === 'grid' ? 'h-48' : 'h-64'} object-cover`}
+          />
+        </div>
+<div className='flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700'>
+  <div className='flex items-center gap-4 bg-primary p-4 rounded-lg'>
+    <button className='text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2'>
+      Approve
+      <Check className='text-white' />
+    </button>
+    <Calendar />
+    <span>{format(new Date(post.scheduledDate), 'MMM d, yyyy')}</span>
+    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+      {primaryPlatform}
+    </span>
+  </div>
+  <div className='flex items-center gap-2'>
+    <button
+      onClick={() => setShowEditModal(true)}
+      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+      title="Edit post"
+    >
+      <Edit className="w-4 h-4" />
+            </button>
+             {post.status !== 'draft' && (
               <button
                 onClick={() => onSaveToDraft(post.id)}
                 className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -132,18 +187,15 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <Check className="w-4 h-4" />
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Post Content */}
-        <div className={`p-4 space-y-4 ${view === 'grid' ? 'flex-1' : ''}`}>
-          <p className="text-gray-900 dark:text-white whitespace-pre-wrap line-clamp-2">{post.text}</p>
-          <img
-            src={post.imageUrl}
-            alt="Post content"
-            className={`w-full rounded-lg ${view === 'grid' ? 'h-48' : 'h-64'} object-cover`}
-          />
-        </div>
+    <button
+      onClick={() => onDelete(post.id)}
+      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+      title="Delete post"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+  </div>
+</div>
       </div>
 
       {/* Edit Modal */}
