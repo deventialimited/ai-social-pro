@@ -1,6 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const {getAllPosts} = require('../controllers/Post.js');
+const { getAllPosts, processPubSub } = require("../controllers/Post.js");
 
-router.get('/getAllPosts', getAllPosts);
+router.get("/getAllPosts", getAllPosts);
+router.get("/processPubSub", processPubSub);
 module.exports = router;
