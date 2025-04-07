@@ -14,7 +14,11 @@ export const PostCard = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const primaryPlatform = post.platforms[0];
-
+  const [selectedButton, setSelectedButton] = useState('image');
+  // Base styles shared by all buttons
+  const baseStyles = 'flex border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors';
+  const selectedStyles = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800';
+  const unselectedStyles = 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700';
   const getStatusBadge = () => {
     switch (post.status) {
       case 'draft':
@@ -77,7 +81,7 @@ export const PostCard = ({
           </div>
           
           {/* Action Buttons */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 border rounded-3xl bg-gray-300 p-1 bg-gray-50 dark:bg-gray-700">
             {/* <button
               onClick={() => setShowEditModal(true)}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -106,27 +110,51 @@ export const PostCard = ({
             >
               <Clock className="w-4 h-4" />
             </button> */}
-            <button className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
+            <h2 className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
               Visual
-            </button>
+            </h2>
             <div>
-            <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
-              Image
-              <Image className="w-4 h-4" />
-            </button>
-            </div>
-             <div>
-            <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
-              Branding
-                <Palette className="w-4 h-4" />
-            </button>
-            </div>
-             <div>
-            <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
-              Slogan
-                <Type className="w-4 h-4" />
-            </button>
-            </div>
+        
+      </div>
+      <div>
+        <button
+          onClick={() => setSelectedButton('image')}
+          className={`${baseStyles} ${selectedButton === 'image' ? selectedStyles : unselectedStyles}`}
+        >
+          <span className="text-[12px]">Image</span>
+          <Image
+            className={`w-4 h-4 fill-none ${
+              selectedButton === 'image' ? 'stroke-blue-700 dark:stroke-blue-200' : 'stroke-gray-500 dark:stroke-gray-400'
+            }`}
+          />
+        </button>
+      </div>
+      <div>
+        <button
+          onClick={() => setSelectedButton('branding')}
+          className={`${baseStyles} ${selectedButton === 'branding' ? selectedStyles : unselectedStyles}`}
+        >
+          <span className="text-[12px]">Branding</span>
+          <Palette
+            className={`w-4 h-4 fill-none ${
+              selectedButton === 'branding' ? 'stroke-blue-700 dark:stroke-blue-200' : 'stroke-gray-500 dark:stroke-gray-400'
+            }`}
+          />
+        </button>
+      </div>
+      <div>
+        <button
+          onClick={() => setSelectedButton('slogan')}
+          className={`${baseStyles} ${selectedButton === 'slogan' ? selectedStyles : unselectedStyles}`}
+        >
+          <span className="text-[12px]">Slogan</span>
+          <Type
+            className={`w-4 h-4 fill-none ${
+              selectedButton === 'slogan' ? 'stroke-blue-700 dark:stroke-blue-200' : 'stroke-gray-500 dark:stroke-gray-400'
+            }`}
+          />
+        </button>
+      </div>  
             {/* {post.status !== 'draft' && (
               <button
                 onClick={() => onSaveToDraft(post.id)}
