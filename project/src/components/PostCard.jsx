@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
-import { Calendar, Edit, Trash2, Share2, Clock, Save, Check } from 'lucide-react';
-import { Post } from '../types';
+import { Calendar, Edit, Trash2, Share2, Clock, Save, Check ,Image,Palette,Type} from 'lucide-react';
 import { format } from 'date-fns';
 import { PostEditModal } from './PostEditModal';
-// import { Check } from 'lucide-react';
-interface PostCardProps {
-  post: Post;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onReschedule: (id: string) => void;
-  onSaveToDraft: (id: string) => void;
-  view: 'grid' | 'list';
-}
 
-export const PostCard: React.FC<PostCardProps> = ({
+
+export const PostCard = ({
   post,
   onEdit,
   onDelete,
@@ -49,7 +40,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  const handleSave = (updatedPost: Post) => {
+  const handleSave = (updatedPost) => {
     onEdit(updatedPost.id);
     setShowEditModal(false);
   };
@@ -118,8 +109,6 @@ export const PostCard: React.FC<PostCardProps> = ({
             <button className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
               Visual
             </button>
-            <button>
-              <Clock className="w-4 h-4" />
             <div>
             <button className='flex items-center justify-between gap-1 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
               Image
