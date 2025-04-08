@@ -124,7 +124,6 @@ exports.getDomainsByUserId = async (req, res) => {
 
   try {
     const domains = await Domain.find({ userId });
-    console.log("domains", domains);
     if (!domains.length) {
       return res.status(404).json({
         success: false,
