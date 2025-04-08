@@ -30,42 +30,61 @@ exports.getAllPostsBydomainId = async (req, res) => {
 
 exports.processPubSub = async (req, res) => {
   try {
-    const jsonData = req.body;
-    // Find or create domain based on client_email and website
-    let domain = await Domain.findOne({
-      client_email: jsonData?.client_email,
-      clientWebsite: jsonData?.website,
-    });
-    if (!domain) {
-      return res.status(404).json({ message: "Domain not found" });
-    }
+    let rawBody = "";
 
-    // Create new post
-    const newPost = new Post({
-      postId: jsonData.post_id,
-      domainId: domain._id,
-      userId: domain.userId,
-      image: jsonData.image,
-      topic: jsonData.topic,
-      content: jsonData.content,
-      slogan: jsonData.slogan,
-      postDate: new Date(jsonData.date),
-      platform: jsonData.platform,
+    // Collect the data chunks from the request
+    req.on("data", chunk => {
+      rawBody += chunk;
     });
 
-    const savedPost = await newPost.save();
-    console.log("Post saved to database:", savedPost);
-    res.status(201).json({
-      message: "Post saved successfully",
-      postId: savedPost.postId,
-      userId: savedPost.userId,
-      domainId: savedPost.domainId,
+    // Once the data is fully received
+    req.on("end", async () => {
+      let jsonData;
+      try {
+        jsonData = JSON.parse(rawBody);
+      } catch (err) {
+        console.error("Invalid JSON body:", err.message);
+        return res.status(400).json({ message: "Invalid JSON format" });
+      }
+
+      // Proceed with your existing logic
+      const domain = await Domain.findOne({
+        client_email: jsonData?.client_email,
+        clientWebsite: jsonData?.website,
+      });
+
+      if (!domain) {
+        return res.status(404).json({ message: "Domain not found" });
+      }
+
+      const newPost = new Post({
+        postId: jsonData.post_id,
+        domainId: domain._id,
+        userId: domain.userId,
+        image: jsonData.image,
+        topic: jsonData.topic,
+        content: jsonData.content,
+        slogan: jsonData.slogan,
+        postDate: new Date(jsonData.date),
+        platform: jsonData.platform,
+      });
+
+      const savedPost = await newPost.save();
+      console.log("Post saved to database:", savedPost);
+
+      res.status(201).json({
+        message: "Post saved successfully",
+        postId: savedPost.postId,
+        userId: savedPost.userId,
+        domainId: savedPost.domainId,
+      });
     });
   } catch (error) {
-    console.error("Error saving post to database:", error);
+    console.error("Error in processPubSub controller:", error);
     res.status(500).json({
       message: "Internal server error",
       error: error.message,
     });
   }
 };
+
