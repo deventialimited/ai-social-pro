@@ -3,5 +3,5 @@ const router = express.Router();
 const { getAllPosts, processPubSub } = require("../controllers/Post.js");
 
 router.get("/getAllPosts", getAllPosts);
-router.get("/processPubSub", processPubSub);
+router.post("/processPubSub", processPubSub);
 module.exports = router;
