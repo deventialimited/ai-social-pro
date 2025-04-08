@@ -32,7 +32,7 @@ exports.getAllPosts = async (req, res) => {
 exports.processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
-    console.log(jsonData);
+    console.log("Generated Posts", JSON.stringify(jsonData));
   } catch (error) {
     console.error("Error fetching posts from AI DB:", error);
     res.status(500).json({ message: "Internal server error" });
