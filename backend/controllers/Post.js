@@ -31,47 +31,39 @@ exports.getAllPostsBydomainId = async (req, res) => {
 
 exports.processPubSub = async (req, res) => {
   try {
-    const body = await getRawBody(req); // 🟢 this reads raw buffer
-    const pubsubMessage = JSON.parse(body.toString());
+    let { jsonData } = req.body;
+    console.log(JSON.stringify(jsonData));
+    // // Proceed with your existing logic
+    // const domain = await Domain.findOne({
+    //   client_email: jsonData?.client_email,
+    //   clientWebsite: jsonData?.website,
+    // });
 
-    const messageData = JSON.parse(
-      Buffer.from(pubsubMessage.message.data, "base64").toString("utf8")
-    );
+    // if (!domain) {
+    //   return res.status(404).json({ message: "Domain not found" });
+    // }
 
-    console.log("Decoded Pub/Sub Message:", messageData);
-    let { jsonData } = pubsubMessage;
+    // const newPost = new Post({
+    //   postId: jsonData.post_id,
+    //   domainId: domain._id,
+    //   userId: domain.userId,
+    //   image: jsonData.image,
+    //   topic: jsonData.topic,
+    //   content: jsonData.content,
+    //   slogan: jsonData.slogan,
+    //   postDate: new Date(jsonData.date),
+    //   platform: jsonData.platform,
+    // });
 
-    // Proceed with your existing logic
-    const domain = await Domain.findOne({
-      client_email: jsonData?.client_email,
-      clientWebsite: jsonData?.website,
-    });
+    // const savedPost = await newPost.save();
+    // console.log("Post saved to database:", savedPost);
 
-    if (!domain) {
-      return res.status(404).json({ message: "Domain not found" });
-    }
-
-    const newPost = new Post({
-      postId: jsonData.post_id,
-      domainId: domain._id,
-      userId: domain.userId,
-      image: jsonData.image,
-      topic: jsonData.topic,
-      content: jsonData.content,
-      slogan: jsonData.slogan,
-      postDate: new Date(jsonData.date),
-      platform: jsonData.platform,
-    });
-
-    const savedPost = await newPost.save();
-    console.log("Post saved to database:", savedPost);
-
-    res.status(201).json({
-      message: "Post saved successfully",
-      postId: savedPost.postId,
-      userId: savedPost.userId,
-      domainId: savedPost.domainId,
-    });
+    // res.status(201).json({
+    //   message: "Post saved successfully",
+    //   postId: savedPost.postId,
+    //   userId: savedPost.userId,
+    //   domainId: savedPost.domainId,
+    // });
   } catch (error) {
     console.error("Error in processPubSub controller:", error);
     res.status(500).json({
