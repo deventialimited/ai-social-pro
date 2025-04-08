@@ -17,18 +17,23 @@ import {
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import { useAddDomainMutation } from "../libs/domainService";
-//
+
 export function extractDomain(fullUrl) {
   try {
-    const normalized = fullUrl.startsWith("http")
-      ? fullUrl
-      : `https://${fullUrl}`;
-    return new URL(normalized).hostname;
+    // Trim whitespace and normalize input
+    const trimmedUrl = fullUrl.trim();
+    const normalized = trimmedUrl.startsWith("http")
+      ? trimmedUrl
+      : `https://${trimmedUrl}`;
+    const urlObj = new URL(normalized);
+    console.log("Extracted domain:", urlObj.hostname); // Debug log
+    return urlObj.hostname;
   } catch (err) {
-    console.error("Error extracting domain:", err);
+    console.error("Error extracting domain:", err.message); // Debug log
     return null;
   }
 }
+
 export const HomePage = () => {
   const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
     useAuthStore();
@@ -41,7 +46,11 @@ export const HomePage = () => {
 
   const generateCompanyData = async (domain, user) => {
     try {
-      // First API call
+      if (!domain) {
+        throw new Error("Invalid domain extracted from URL.");
+      }
+
+      console.log("Generating data for domain:", domain); // Debug log
       const firstResponse = await fetch(
         `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
       );
@@ -49,62 +58,65 @@ export const HomePage = () => {
         throw new Error(`Try another website`);
       }
 
-      // ✅ Wait 15 seconds before the second API call
       await sleep(15000);
 
-      try {
-        // Second API call
-        const secondResponse = await fetch(
-          `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      const secondResponse = await fetch(
+        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      );
+
+      if (!secondResponse.ok) {
+        throw new Error(
+          `Site data extraction failed with status: ${secondResponse.status}`
         );
-
-        if (!secondResponse.ok) {
-          throw new Error(
-            `Site data extracting failed with status: ${secondResponse.status}`
-          );
-        }
-
-        const secondData = await secondResponse.json();
-        console.log("secondData", secondData);
-        const { client_email, clientWebsite, clientDescription } = secondData;
-
-        if (!client_email || !clientWebsite || !clientDescription) {
-          if (!client_email) toast.error("Client email is required.");
-          if (!clientWebsite) toast.error("Client website is required.");
-          if (!clientDescription)
-            toast.error("Client description is required.");
-          return; // ⛔ Stop execution if any field is missing
-        }
-
-        const result = await addDomain.mutateAsync({
-          ...secondData,
-          userId: user?._id,
-        });
-
-        toast.success("Domain successfully added!");
-        // console.log("Domain added:", result);
-        navigate(`/dashboard?domainId=${result?._id}`);
-      } catch (error) {
-        console.error("Error in AI App data:", error);
-        toast.error(error.message || "Failed to generate company data.");
       }
+
+      const secondData = await secondResponse.json();
+      console.log("Second API response:", secondData); // Debug log
+      const { client_email, clientWebsite, clientDescription } = secondData;
+
+      if (!client_email || !clientWebsite || !clientDescription) {
+        if (!client_email) toast.error("Client email is required.");
+        if (!clientWebsite) toast.error("Client website is required.");
+        if (!clientDescription) toast.error("Client description is required.");
+        return;
+      }
+
+      const result = await addDomain.mutateAsync({
+        ...secondData,
+        userId: user?._id,
+      });
+
+      toast.success("Domain successfully added!");
+      navigate(`/dashboard?domainId=${result?._id}`);
     } catch (error) {
-      console.error("Error in AI App data:", error);
+      console.error("Error in generateCompanyData:", error);
       toast.error(error.message || "Failed to generate company data.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
-    if (url) {
-      if (user) {
-        setLoading(true);
-        await generateCompanyData(extractDomain(url), user);
-        setLoading(false);
-      } else {
-        setIsSignInPopup(true);
-      }
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!url) {
+      toast.error("Please enter a URL.");
+      return;
+    }
+
+    const domain = extractDomain(url);
+    console.log("Domain after extraction:", domain); // Debug log
+
+    if (!domain) {
+      toast.error("Please enter a valid URL (e.g., binance.com).");
+      return;
+    }
+
+    if (user) {
+      setLoading(true);
+      await generateCompanyData(domain, user);
+      setLoading(false);
+    } else {
+      setIsSignInPopup(true);
     }
   };
 
@@ -185,17 +197,17 @@ export const HomePage = () => {
                     <Globe className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                   </div>
                   <input
-                    type="url"
+                    type="text"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://your-website.com"
+                    placeholder="your-website.com"
                     className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={loading} // Disable button when loading
+                  disabled={loading}
                   className={`px-8 py-4 ${
                     loading
                       ? "bg-gray-400 cursor-not-allowed"
