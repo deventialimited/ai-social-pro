@@ -30,16 +30,7 @@ exports.getAllPosts = async (req, res) => {
   }
 };
 
-// exports.processPubSub = async (req, res) => {
-//   try {
-//     const jsonData = req.body;
-    
-//     console.log("Generated Posts", JSON.stringify(jsonData));
-//   } catch (error) {
-//     console.error("Error fetching posts from AI DB:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// };
+
 
 exports.processPubSub = async (req, res) => {
   try {
@@ -53,21 +44,7 @@ exports.processPubSub = async (req, res) => {
       clientWebsite: jsonData.website 
     });
     if (!domain) {
-      // domain = await new Domain({
-      //   client_email: jsonData.client_email,
-      //   clientWebsite: jsonData.website,
-      //   userId: user._id,
-      //   // Optional fields you might want to add from your data:
-      //   // clientName: '',
-      //   // clientDescription: '',
-      //   // industry: '',
-      //   // niche: '',
-      //   // colors: '',
-      //   // language: '',
-      //   // country: '',
-      //   // state: '',
-      //   // siteLogo: ''
-      // }).save();
+    
       return res.status(404).json({ message: "Domain not found" });
     }
 
@@ -85,7 +62,7 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-    
+    console.log("Post saved to database:", savedPost);
     res.status(201).json({
       message: "Post saved successfully",
       postId: savedPost.postId,
