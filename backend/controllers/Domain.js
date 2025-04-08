@@ -76,7 +76,6 @@ exports.addDomain = async (req, res) => {
 exports.getAllDomains = async (req, res) => {
   try {
     const domains = await Domain.find().populate("userId", "username email");
-    console.log(domains);
     res.status(200).json({
       success: true,
       count: domains.length,
@@ -125,6 +124,7 @@ exports.getDomainsByUserId = async (req, res) => {
 
   try {
     const domains = await Domain.find({ userId });
+    console.log("domains", domains);
     if (!domains.length) {
       return res.status(404).json({
         success: false,
