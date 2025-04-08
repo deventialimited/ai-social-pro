@@ -53,6 +53,7 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
     },
   ];
   const addDomain = useAddDomainMutation();
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const generateCompanyData = async (domain, user) => {
     try {
       // First API call
