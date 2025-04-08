@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PostEditModal } from './PostEditModal';
+import { usegetAllPostsByDomainId } from '../libs/postService';
 
 export const PostCard = ({
   post,
