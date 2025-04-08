@@ -66,6 +66,15 @@ export const HomePage = () => {
 
         const secondData = await secondResponse.json();
         console.log("secondData", secondData);
+        const { client_email, clientWebsite, clientDescription } = secondData;
+
+        if (!client_email || !clientWebsite || !clientDescription) {
+          if (!client_email) toast.error("Client email is required.");
+          if (!clientWebsite) toast.error("Client website is required.");
+          if (!clientDescription)
+            toast.error("Client description is required.");
+          return; // ⛔ Stop execution if any field is missing
+        }
 
         const result = await addDomain.mutateAsync({
           ...secondData,
@@ -73,12 +82,8 @@ export const HomePage = () => {
         });
 
         toast.success("Domain successfully added!");
-        console.log("Domain added:", result);
-        navigate("/dashboard", {
-          state: {
-            domainId: result?.data?._id,
-          },
-        });
+        // console.log("Domain added:", result);
+        navigate(`/dashboard?domainId=${result?._id}`);
       } catch (error) {
         console.error("Error in AI App data:", error);
         toast.error(error.message || "Failed to generate company data.");
