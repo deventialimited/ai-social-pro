@@ -141,6 +141,8 @@ export const Dashboard = () => {
       const domainId = searchParams.get("domainId");
       if (domainId) {
         setSelectedWebsite(domainId);
+      } else {
+        setSelectedWebsite(domains[0]?._id);
       }
     }
   }, [domains, searchParams]);
