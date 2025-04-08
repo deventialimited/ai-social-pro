@@ -34,7 +34,7 @@ const PostSchema = new Schema(
       type: [String],
       default: [], // Optional: provides a default empty array
     },
-    status: { type: String, default: "" },
+    status: { type: String, default: "generated" },
     followers: { type: Number, default: 0, min: 0 },
 
     // Design elements

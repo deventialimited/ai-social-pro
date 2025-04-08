@@ -75,18 +75,18 @@ export const PostCard = ({
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <img
-                src={post.businessLogo}
+                src={post.siteLogo}
                 alt="Business logo"
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                Kaz Routes
+                {post.topic}
               </h3>
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                  ID: {post.id}
+                  ID: {post._id}
                 </span>
                 {getStatusBadge()}
               </div>
@@ -157,10 +157,10 @@ export const PostCard = ({
         {/* Content */}
         <div className={`p-4 space-y-4 ${view === 'grid' ? 'flex-1' : ''}`}>
           <p className="text-gray-900 dark:text-white whitespace-pre-wrap line-clamp-2">
-            {post.text}
+            {post.content}
           </p>
           <img
-            src={post.imageUrl}
+            src={post.image}
             alt="Post content"
             className={`w-full rounded-lg ${
               view === 'grid' ? 'h-48' : 'h-64'
@@ -179,7 +179,7 @@ export const PostCard = ({
             <div className="flex items-center">
               <Calendar className="h-3 w-3" />
               <span className="text-xs ml-1">
-                {format(new Date(post.scheduledDate), 'MMM d, yyyy')}
+                {/* {format(new Date(post.scheduledDate), 'MMM d, yyyy')} */}
               </span>
             </div>
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
