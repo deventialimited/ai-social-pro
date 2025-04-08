@@ -1216,15 +1216,7 @@ const FullEditor: React.FC = () => {
       // Get the masked image data
       const maskedImageUrl = canvas.toDataURL("image/png");
 
-      // Replace the existing image with the masked version
-      const existingImage = document.querySelector(
-        'img[src="' + backgroundImage + '"]'
-      );
-      if (existingImage) {
-        existingImage.src = maskedImageUrl;
-      }
-
-      // Update state and history
+      // Only update the main image, not thumbnails
       setBackgroundImage(maskedImageUrl);
       const currentState = history[historyIndex];
       addToHistory({
@@ -1232,13 +1224,7 @@ const FullEditor: React.FC = () => {
         backgroundImage: maskedImageUrl,
       });
 
-      // Update any image references in the DOM
-      const images = document.querySelectorAll(
-        'img[src="' + backgroundImage + '"]'
-      );
-      images.forEach((img) => {
-        img.src = maskedImageUrl;
-      });
+      // Remove the DOM manipulation that was affecting thumbnails
     };
 
     img.src = backgroundImage;
