@@ -27,10 +27,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.set("trust proxy", true);
 
-// Increase the body size limit to 50MB (adjust as needed)
-app.use(express.json({ limit: "500mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));
-app.use(bodyParser.json({ limit: "500mb" }));
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/v1/users", UserRoutes);
@@ -39,7 +35,10 @@ app.use("/api/v1/posts", PostRoutes);
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running!" });
 });
-
+// Increase the body size limit to 50MB (adjust as needed)
+app.use(express.json({ limit: "500mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));
+app.use(bodyParser.json({ limit: "500mb" }));
 const httpServer = createServer(app);
 
 // Start the server
