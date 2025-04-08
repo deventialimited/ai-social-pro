@@ -1,8 +1,7 @@
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
 const User = require("../models/User");
-const Domain = require("../models/Domain");
-exports.getAllPosts = async (req, res) => {
+exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.body; // Extract domainId from query parameters
 
@@ -30,18 +29,15 @@ exports.getAllPosts = async (req, res) => {
   }
 };
 
-
-
 exports.processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
     // Find or create domain based on client_email and website
-    let domain = await Domain.findOne({ 
+    let domain = await Domain.findOne({
       client_email: jsonData.client_email,
-      clientWebsite: jsonData.website 
+      clientWebsite: jsonData.website,
     });
     if (!domain) {
-    
       return res.status(404).json({ message: "Domain not found" });
     }
 
@@ -55,7 +51,7 @@ exports.processPubSub = async (req, res) => {
       content: jsonData.content,
       slogan: jsonData.slogan,
       postDate: new Date(jsonData.date),
-      platform: jsonData.platform
+      platform: jsonData.platform,
     });
 
     const savedPost = await newPost.save();
@@ -64,14 +60,13 @@ exports.processPubSub = async (req, res) => {
       message: "Post saved successfully",
       postId: savedPost.postId,
       userId: savedPost.userId,
-      domainId: savedPost.domainId
+      domainId: savedPost.domainId,
     });
-
   } catch (error) {
     console.error("Error saving post to database:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Internal server error",
-      error: error.message 
+      error: error.message,
     });
   }
 };
