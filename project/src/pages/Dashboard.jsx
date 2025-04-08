@@ -10,6 +10,7 @@ import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
 import { useSearchParams } from "react-router-dom";
+import { useGetAllPostsByDomainId } from "../libs/postService";
 // Sample posts data
 const samplePosts = [
   // Facebook Posts
@@ -124,8 +125,12 @@ export const Dashboard = () => {
       });
     }
   }, []);
-  const { data: domains, isLoading, isError, error } = useDomains(userId);
-  const [posts, setPosts] = useState(samplePosts);
+  const {
+    data: domains,
+    isDomainsLoading,
+    isDomainsError,
+    domainsError,
+  } = useDomains(userId);
   const [selectedWebsite, setSelectedWebsite] = useState(null);
   const [currentTab, setCurrentTab] = useState("posts");
   const [view, setView] = useState("list");
@@ -135,7 +140,13 @@ export const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
+  const {
+    data: posts,
+    isPostsLoading,
+    isPostsError,
+    postsError,
+  } = useGetAllPostsByDomainId(selectedWebsite);
+  console.log(posts);
   useEffect(() => {
     if (domains?.length > 0) {
       const domainId = searchParams.get("domainId");
@@ -153,14 +164,14 @@ export const Dashboard = () => {
   const handleGeneratePosts = async (url) => {
     setIsGeneratingPosts(true);
     await new Promise((resolve) => setTimeout(resolve, 4000));
-    setPosts((prevPosts) => [...prevPosts]);
+    // setPosts((prevPosts) => [...prevPosts]);
     setIsGeneratingPosts(false);
     setCurrentTab("posts");
     setPostsTab("generated");
   };
 
   const handleNewPost = (post) => {
-    setPosts((prevPosts) => [post, ...prevPosts]);
+    // setPosts((prevPosts) => [post, ...prevPosts]);
     setCurrentTab("posts");
     setPostsTab("generated");
   };
@@ -185,7 +196,7 @@ export const Dashboard = () => {
     console.log("Edit business section:", section);
   };
 
-  const filteredPosts = posts.filter((post) => {
+  const filteredPosts = posts?.filter((post) => {
     const matchesFilter = filter === "all" || post.platforms.includes(filter);
     const matchesTab = post.status === postsTab;
     return matchesFilter && matchesTab;
@@ -204,8 +215,8 @@ export const Dashboard = () => {
                 onFilterChange={setFilter}
                 currentTab={postsTab}
                 onTabChange={setPostsTab}
-                totalPosts={posts.length}
-                filteredPosts={filteredPosts.length}
+                totalPosts={posts?.length}
+                filteredPosts={filteredPosts?.length}
               />
             </div>
             <div
@@ -215,7 +226,7 @@ export const Dashboard = () => {
                   : "flex flex-col items-center space-y-6"
               }`}
             >
-              {filteredPosts.map((post) => (
+              {filteredPosts?.map((post) => (
                 <div
                   key={post.id}
                   className={
