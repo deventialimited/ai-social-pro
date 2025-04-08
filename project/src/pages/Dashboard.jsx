@@ -9,7 +9,7 @@ import { useThemeStore } from "../store/useThemeStore";
 import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
-
+import { useSearchParams } from "react-router-dom";
 // Sample posts data
 const samplePosts = [
   // Facebook Posts
@@ -134,21 +134,16 @@ export const Dashboard = () => {
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  useEffect(() => {
-    if (location?.state?.domainId) {
-      setSelectedWebsite(location.state.domainId);
-      location.state = {}; // Clear domainId from location state
-      // navigate(location.pathname, { replace: true, state: {} }); // Clear state without reloading
-    } else if (
-      !selectedWebsite &&
-      !location?.state?.domainId &&
-      domains?.length > 0
-    ) {
-      setSelectedWebsite(domains[0]?._id);
-    }
-  }, [domains, location]);
+  const [searchParams] = useSearchParams();
 
+  useEffect(() => {
+    if (domains?.length > 0) {
+      const domainId = searchParams.get("domainId");
+      if (domainId) {
+        setSelectedWebsite(domainId);
+      }
+    }
+  }, [domains, searchParams]);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);

@@ -54,58 +54,70 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
   ];
   const addDomain = useAddDomainMutation();
   const generateCompanyData = async (domain, user) => {
-    // try {
-    //   // First API call
-    //   const firstResponse = await fetch(
-    //     `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
-    //   );
-    //   if (!firstResponse.ok) {
-    //     throw new Error(
-    //       `Site data extracting with status: ${firstResponse.status}`
-    //     );
-    //   }
     try {
-      setProgress(0);
-      setCurrentStep(0);
-
-      for (let i = 0; i < steps.length; i++) {
-        setCurrentStep(i);
-        for (let p = 0; p <= 100; p += 2) {
-          setProgress((i * 100 + p) / steps.length);
-          await new Promise((resolve) => setTimeout(resolve, 30));
-        }
-      }
-      // Second API call
-      const secondResponse = await fetch(
-        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+      // First API call
+      const firstResponse = await fetch(
+        `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
       );
-
-      if (!secondResponse.ok) {
-        throw new Error(
-          `Site data extracting failed with status: ${secondResponse.status}`
-        );
+      if (!firstResponse.ok) {
+        throw new Error(`Try another website`);
       }
 
-      // Parse second response and return
-      const secondData = await secondResponse.json();
-      // return secondData;
-      // Call addDomain API to store the data
-      console.log("secondData", secondData);
-      const result = await addDomain.mutateAsync({
-        ...secondData,
-        userId: user?._id,
-      });
-      toast.success("Domain successfully added!");
-      console.log("Domain added:", result);
+      // ✅ Wait 15 seconds before the second API call
+      await sleep(15000);
+
+      try {
+        setProgress(0);
+        setCurrentStep(0);
+
+        for (let i = 0; i < steps.length; i++) {
+          setCurrentStep(i);
+          for (let p = 0; p <= 100; p += 2) {
+            setProgress((i * 100 + p) / steps.length);
+            await new Promise((resolve) => setTimeout(resolve, 30));
+          }
+        }
+        // Second API call
+        const secondResponse = await fetch(
+          `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
+        );
+
+        if (!secondResponse.ok) {
+          throw new Error(
+            `Site data extracting failed with status: ${secondResponse.status}`
+          );
+        }
+
+        const secondData = await secondResponse.json();
+        console.log("secondData", secondData);
+        const { client_email, clientWebsite, clientDescription } = secondData;
+
+        if (!client_email || !clientWebsite || !clientDescription) {
+          if (!client_email) toast.error("Client email is required.");
+          if (!clientWebsite) toast.error("Client website is required.");
+          if (!clientDescription)
+            toast.error("Client description is required.");
+          return; // ⛔ Stop execution if any field is missing
+        }
+
+        const result = await addDomain.mutateAsync({
+          ...secondData,
+          userId: user?._id,
+        });
+
+        toast.success("Domain successfully added!");
+        console.log("Domain added:", result);
+        navigate(`/dashboard?domainId=${result?._id}`);
+      } catch (error) {
+        console.error("Error in AI App data:", error);
+        toast.error(error.message || "Failed to generate company data.");
+      }
     } catch (error) {
       console.error("Error in AI App data:", error);
       toast.error(error.message || "Failed to generate company data.");
     }
-    // } catch (error) {
-    //   console.error("Error in AI App data:", error);
-    //   toast.error(error.message || "Failed to generate company data.");
-    // }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage

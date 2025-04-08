@@ -35,9 +35,6 @@ exports.getAllPosts = async (req, res) => {
 exports.processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
-    
-    console.log("Generated Posts", JSON.stringify(jsonData));
-
     // Find or create domain based on client_email and website
     let domain = await Domain.findOne({ 
       client_email: jsonData.client_email,
