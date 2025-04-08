@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import type React from "react";
 import { useEffect, useState } from "react";
 import {
   CornerRightUpIcon as CornerIcon,
@@ -18,6 +19,7 @@ import {
   ArrowLeftRight, // Added for horizontal flip icon
   ArrowUpDown, // Added for vertical flip icon
 } from "lucide-react";
+import MaskPanel from "./MaskPanel";
 
 // Common toolbar style
 const toolbarStyle =
@@ -65,12 +67,20 @@ export function EnhancedImageToolbar({
   onResize,
 }) {
   const [isFlipDropdownOpen, setIsFlipDropdownOpen] = useState(false);
+  const [isMaskPanelOpen, setIsMaskPanelOpen] = useState(false);
 
   // Handle tool selection
   const handleToolSelect = (tool) => {
     if (onSelectTool) {
       onSelectTool(selectedTool === tool ? null : tool);
     }
+  };
+
+  const handleMaskSelect = (maskType: string) => {
+    if (onApplyMask) {
+      onApplyMask(maskType);
+    }
+    setIsMaskPanelOpen(false);
   };
 
   useEffect(() => {
@@ -223,13 +233,19 @@ export function EnhancedImageToolbar({
         </button>
 
         {/* Apply mask button */}
-        <button
-          className="p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer"
-          title="Apply mask"
-          onClick={onApplyMask}
-        >
-          <span className="text-sm font-medium">Apply mask</span>
-        </button>
+        <div className="relative">
+          <button
+            className={`p-2 rounded hover:bg-gray-100 transition-colors cursor-pointer ${
+              isMaskPanelOpen ? "bg-blue-100" : ""
+            }`}
+            title="Apply mask"
+            onClick={() => setIsMaskPanelOpen(!isMaskPanelOpen)}
+          >
+            <Droplet className="h-5 w-5" />
+            <span className="text-sm font-medium ml-1">Mask</span>
+          </button>
+          <MaskPanel isOpen={isMaskPanelOpen} onSelectMask={handleMaskSelect} />
+        </div>
 
         {/* Crop button with conditional rendering */}
         {!isCropping ? (

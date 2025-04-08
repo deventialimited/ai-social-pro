@@ -326,10 +326,9 @@ export function ImagesTabContent({
     });
   };
 
-  const handleApplyMask = () => {
+  const handleApplyMask = (maskType: string) => {
     if (!imageData) return;
 
-    // Simple circular mask as an example
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     const img = new Image();
@@ -337,21 +336,52 @@ export function ImagesTabContent({
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
+      ctx.save();
 
-      // Create circular clipping path
+      // Create clipping path based on mask type
       ctx.beginPath();
-      ctx.arc(
-        canvas.width / 2,
-        canvas.height / 2,
-        Math.min(canvas.width, canvas.height) / 2,
-        0,
-        Math.PI * 2
-      );
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const size = Math.min(canvas.width, canvas.height);
+
+      switch (maskType) {
+        case "circle":
+          ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
+          break;
+        case "square":
+          ctx.rect(centerX - size / 2, centerY - size / 2, size, size);
+          break;
+        case "star":
+          drawStar(ctx, centerX, centerY, 5, size / 2, size / 4);
+          break;
+        case "triangle":
+          drawPolygon(ctx, centerX, centerY, 3, size / 2);
+          break;
+        case "diamond":
+          ctx.moveTo(centerX, centerY - size / 2);
+          ctx.lineTo(centerX + size / 2, centerY);
+          ctx.lineTo(centerX, centerY + size / 2);
+          ctx.lineTo(centerX - size / 2, centerY);
+          break;
+        case "hexagon":
+          drawPolygon(ctx, centerX, centerY, 6, size / 2);
+          break;
+        case "cloud":
+          drawCloud(ctx, centerX, centerY, size / 2);
+          break;
+        case "heart":
+          drawHeart(ctx, centerX, centerY, size / 2);
+          break;
+        default:
+          ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
+      }
+
       ctx.closePath();
       ctx.clip();
 
       // Draw the image
       ctx.drawImage(img, 0, 0);
+      ctx.restore();
 
       // Convert back to data URL
       const maskedImageUrl = canvas.toDataURL("image/png");
@@ -369,6 +399,108 @@ export function ImagesTabContent({
     };
 
     img.src = imageData.src;
+  };
+
+  // Helper functions for drawing complex shapes
+  const drawStar = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    spikes: number,
+    outerRadius: number,
+    innerRadius: number
+  ) => {
+    let rot = (Math.PI / 2) * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+  };
+
+  const drawPolygon = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    sides: number,
+    radius: number
+  ) => {
+    ctx.moveTo(cx + radius * Math.cos(0), cy + radius * Math.sin(0));
+    for (let i = 1; i <= sides; i++) {
+      ctx.lineTo(
+        cx + radius * Math.cos((i * 2 * Math.PI) / sides),
+        cy + radius * Math.sin((i * 2 * Math.PI) / sides)
+      );
+    }
+  };
+
+  const drawHeart = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    size: number
+  ) => {
+    const width = size * 2;
+    const height = size * 2;
+
+    ctx.moveTo(cx, cy + height / 4);
+
+    // Left curve
+    ctx.bezierCurveTo(
+      cx - width / 2,
+      cy - height / 2,
+      cx - width / 2,
+      cy - height / 2,
+      cx,
+      cy - height / 4
+    );
+
+    // Right curve
+    ctx.bezierCurveTo(
+      cx + width / 2,
+      cy - height / 2,
+      cx + width / 2,
+      cy - height / 2,
+      cx,
+      cy + height / 4
+    );
+  };
+
+  const drawCloud = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    size: number
+  ) => {
+    ctx.moveTo(cx - size / 2, cy);
+    ctx.bezierCurveTo(cx - size / 2, cy - size / 2, cx, cy - size / 2, cx, cy);
+    ctx.bezierCurveTo(
+      cx,
+      cy - size / 2,
+      cx + size / 2,
+      cy - size / 2,
+      cx + size / 2,
+      cy
+    );
+    ctx.bezierCurveTo(
+      cx + size / 2,
+      cy + size / 2,
+      cx,
+      cy + size / 2,
+      cx - size / 2,
+      cy
+    );
   };
 
   const handleCrop = () => {
