@@ -329,16 +329,19 @@ export function ImagesTabContent({
   const handleApplyMask = (maskType: string) => {
     if (!imageData) return;
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
     const img = new Image();
-
     img.onload = () => {
+      const canvas = document.createElement("canvas");
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.save();
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-      // Create clipping path based on mask type
+      // Draw the original image
+      ctx.drawImage(img, 0, 0);
+
+      // Apply mask directly
+      ctx.globalCompositeOperation = "destination-in";
       ctx.beginPath();
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
@@ -379,15 +382,23 @@ export function ImagesTabContent({
       ctx.closePath();
       ctx.clip();
 
-      // Draw the image
+      // Apply the mask to the original image
       ctx.drawImage(img, 0, 0);
-      ctx.restore();
 
-      // Convert back to data URL
+      // Get the masked image data
       const maskedImageUrl = canvas.toDataURL("image/png");
 
-      // Update the image source
-      updateImageData({ src: maskedImageUrl });
+      // Replace the existing image directly
+      const existingImage = document.querySelector(
+        `img[src="${imageData.src}"]`
+      );
+      if (existingImage) {
+        existingImage.src = maskedImageUrl;
+      }
+
+      // Update the original image data
+      imageData.src = maskedImageUrl;
+      setImageData({ ...imageData });
 
       // Update post data if needed
       const postData = localStorage.getItem("postdata");
@@ -396,6 +407,17 @@ export function ImagesTabContent({
         parsedData.image = maskedImageUrl;
         localStorage.setItem("postdata", JSON.stringify(parsedData));
       }
+
+      // Update the canvas editor if available
+      if (canvasEditor?.current?.onUpdateImage) {
+        canvasEditor.current.onUpdateImage(imageData);
+      }
+
+      // Update any other image references in the DOM
+      const images = document.querySelectorAll(`img[src="${imageData.src}"]`);
+      images.forEach((img) => {
+        img.src = maskedImageUrl;
+      });
     };
 
     img.src = imageData.src;

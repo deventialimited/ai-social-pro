@@ -967,19 +967,23 @@ const FullEditor: React.FC = () => {
   const handleApplyMask = (maskType: string) => {
     if (!backgroundImage) return;
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
+      const canvas = document.createElement("canvas");
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.save();
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-      // Create clipping path based on mask type
+      // Draw original image
+      ctx.drawImage(img, 0, 0);
+
+      // Apply mask directly to the context
+      ctx.globalCompositeOperation = "destination-in";
+      ctx.fillStyle = "#000000";
       ctx.beginPath();
+
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const size = Math.min(canvas.width, canvas.height);
@@ -1207,21 +1211,33 @@ const FullEditor: React.FC = () => {
       }
 
       ctx.closePath();
-      ctx.clip();
+      ctx.fill();
 
-      // Draw the image
-      ctx.drawImage(img, 0, 0);
-      ctx.restore();
-
-      // Convert back to data URL
+      // Get the masked image data
       const maskedImageUrl = canvas.toDataURL("image/png");
 
-      // Update the image source
-      setBackgroundImage(maskedImageUrl);
+      // Replace the existing image with the masked version
+      const existingImage = document.querySelector(
+        'img[src="' + backgroundImage + '"]'
+      );
+      if (existingImage) {
+        existingImage.src = maskedImageUrl;
+      }
 
-      // Add to history
+      // Update state and history
+      setBackgroundImage(maskedImageUrl);
+      const currentState = history[historyIndex];
       addToHistory({
+        ...currentState,
         backgroundImage: maskedImageUrl,
+      });
+
+      // Update any image references in the DOM
+      const images = document.querySelectorAll(
+        'img[src="' + backgroundImage + '"]'
+      );
+      images.forEach((img) => {
+        img.src = maskedImageUrl;
       });
     };
 
