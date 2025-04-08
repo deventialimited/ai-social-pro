@@ -1,6 +1,7 @@
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
-
+const User = require("../models/User");
+const Domain = require("../models/Domain");
 exports.getAllPosts = async (req, res) => {
   try {
     const { domainId } = req.body; // Extract domainId from query parameters
@@ -29,12 +30,74 @@ exports.getAllPosts = async (req, res) => {
   }
 };
 
+// exports.processPubSub = async (req, res) => {
+//   try {
+//     const jsonData = req.body;
+    
+//     console.log("Generated Posts", JSON.stringify(jsonData));
+//   } catch (error) {
+//     console.error("Error fetching posts from AI DB:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
 exports.processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
+    
     console.log("Generated Posts", JSON.stringify(jsonData));
+
+    // Find or create domain based on client_email and website
+    let domain = await Domain.findOne({ 
+      client_email: jsonData.client_email,
+      clientWebsite: jsonData.website 
+    });
+    if (!domain) {
+      // domain = await new Domain({
+      //   client_email: jsonData.client_email,
+      //   clientWebsite: jsonData.website,
+      //   userId: user._id,
+      //   // Optional fields you might want to add from your data:
+      //   // clientName: '',
+      //   // clientDescription: '',
+      //   // industry: '',
+      //   // niche: '',
+      //   // colors: '',
+      //   // language: '',
+      //   // country: '',
+      //   // state: '',
+      //   // siteLogo: ''
+      // }).save();
+      return res.status(404).json({ message: "Domain not found" });
+    }
+
+    // Create new post
+    const newPost = new Post({
+      postId: jsonData.post_id,
+      domainId: domain._id,
+      userId: domain.userId,
+      image: jsonData.image,
+      topic: jsonData.topic,
+      content: jsonData.content,
+      slogan: jsonData.slogan,
+      postDate: new Date(jsonData.date),
+      platform: jsonData.platform
+    });
+
+    const savedPost = await newPost.save();
+    
+    res.status(201).json({
+      message: "Post saved successfully",
+      postId: savedPost.postId,
+      userId: savedPost.userId,
+      domainId: savedPost.domainId
+    });
+
   } catch (error) {
-    console.error("Error fetching posts from AI DB:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error saving post to database:", error);
+    res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message 
+    });
   }
 };
