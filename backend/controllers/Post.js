@@ -1,6 +1,5 @@
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
-const User = require("../models/User");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.body; // Extract domainId from query parameters
@@ -34,8 +33,8 @@ exports.processPubSub = async (req, res) => {
     const jsonData = req.body;
     // Find or create domain based on client_email and website
     let domain = await Domain.findOne({
-      client_email: jsonData.client_email,
-      clientWebsite: jsonData.website,
+      client_email: jsonData?.client_email,
+      clientWebsite: jsonData?.website,
     });
     if (!domain) {
       return res.status(404).json({ message: "Domain not found" });
