@@ -3,7 +3,6 @@ import { Calendar, Edit, Trash2, Share2, Clock, Save, Check ,Image,Palette,Type}
 import { format } from 'date-fns';
 import { PostEditModal } from './PostEditModal';
 
-
 export const PostCard = ({
   post,
   onEdit,
@@ -17,8 +16,9 @@ export const PostCard = ({
   const [selectedButton, setSelectedButton] = useState('image');
   // Base styles shared by all buttons
   const baseStyles = 'flex border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors';
-  const selectedStyles = 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800';
+  const selectedStyles = 'bg-blue-100 text-blue-700 hover:bg-blue-200'; // adjusted light blue only
   const unselectedStyles = 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700';
+
   const getStatusBadge = () => {
     switch (post.status) {
       case 'draft':
@@ -79,9 +79,9 @@ export const PostCard = ({
               </div>
             </div>
           </div>
-          
+
           {/* Action Buttons */}
-          <div className="flex items-center space-x-2 border rounded-3xl bg-gray-300 p-1 bg-gray-50 dark:bg-gray-700">
+          <div className="flex items-center space-x-2 p-2  ">
             {/* <button
               onClick={() => setShowEditModal(true)}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -110,51 +110,48 @@ export const PostCard = ({
             >
               <Clock className="w-4 h-4" />
             </button> */}
-            <h2 className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors'>
+            <h2 className='text-[12px] text-gray-500 dark:text-gray-400 rounded'>
               Visual
             </h2>
             <div>
-        
-      </div>
-      <div>
-        <button
-          onClick={() => setSelectedButton('image')}
-          className={`${baseStyles} ${selectedButton === 'image' ? selectedStyles : unselectedStyles}`}
-        >
-          <span className="text-[12px]">Image</span>
-          <Image
-            className={`w-4 h-4 fill-none ${
-              selectedButton === 'image' ? 'stroke-blue-700 dark:stroke-blue-200' : 'stroke-gray-500 dark:stroke-gray-400'
-            }`}
-          />
-        </button>
-      </div>
-      <div>
-        <button
-          onClick={() => setSelectedButton('branding')}
-          className={`${baseStyles} ${selectedButton === 'branding' ? selectedStyles : unselectedStyles}`}
-        >
-          <span className="text-[12px]">Branding</span>
-          <Palette
-            className={`w-4 h-4 fill-none ${
-              selectedButton === 'branding' ? 'stroke-blue-700 dark:stroke-blue-200' : 'stroke-gray-500 dark:stroke-gray-400'
-            }`}
-          />
-        </button>
-      </div>
-      <div>
-        <button
-          onClick={() => setSelectedButton('slogan')}
-          className={`${baseStyles} ${selectedButton === 'slogan' ? selectedStyles : unselectedStyles}`}
-        >
-          <span className="text-[12px]">Slogan</span>
-          <Type
-            className={`w-4 h-4 fill-none ${
-              selectedButton === 'slogan' ? 'stroke-blue-700 dark:stroke-blue-200' : 'stroke-gray-500 dark:stroke-gray-400'
-            }`}
-          />
-        </button>
-      </div>  
+              <button
+                onClick={() => setSelectedButton('image')}
+                className={`${baseStyles} ${selectedButton === 'image' ? selectedStyles : unselectedStyles}`}
+              >
+                <span className="text-[12px]">Image</span>
+                <Image
+                  className={`w-4 h-4 fill-none ${
+                    selectedButton === 'image' ? 'stroke-blue-700' : 'stroke-gray-500 dark:stroke-gray-400'
+                  }`}
+                />
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={() => setSelectedButton('branding')}
+                className={`${baseStyles} ${selectedButton === 'branding' ? selectedStyles : unselectedStyles}`}
+              >
+                <span className="text-[12px]">Branding</span>
+                <Palette
+                  className={`w-4 h-4 fill-none ${
+                    selectedButton === 'branding' ? 'stroke-blue-700' : 'stroke-gray-500 dark:stroke-gray-400'
+                  }`}
+                />
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={() => setSelectedButton('slogan')}
+                className={`${baseStyles} ${selectedButton === 'slogan' ? selectedStyles : unselectedStyles}`}
+              >
+                <span className="text-[12px]">Slogan</span>
+                <Type
+                  className={`w-4 h-4 fill-none ${
+                    selectedButton === 'slogan' ? 'stroke-blue-700' : 'stroke-gray-500 dark:stroke-gray-400'
+                  }`}
+                />
+              </button>
+            </div>  
             {/* {post.status !== 'draft' && (
               <button
                 onClick={() => onSaveToDraft(post.id)}
@@ -184,27 +181,29 @@ export const PostCard = ({
             className={`w-full rounded-lg ${view === 'grid' ? 'h-48' : 'h-64'} object-cover`}
           />
         </div>
-<div className='flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700'>
-  <div className='flex items-center gap-4 bg-primary p-4 rounded-lg'>
-    <button className='text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2'>
-      Approve
-      <Check className='text-white' />
-    </button>
-    <Calendar />
-    <span>{format(new Date(post.scheduledDate), 'MMM d, yyyy')}</span>
-    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-      {primaryPlatform}
-    </span>
-  </div>
-  <div className='flex items-center gap-2'>
-    <button
-      onClick={() => setShowEditModal(true)}
-      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-      title="Edit post"
-    >
-      <Edit className="w-4 h-4" />
+        <div className='flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700'>
+          <div className='flex items-center gap-2 bg-primary p-4 rounded-lg'>
+            <button className='text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2'>
+              Approve
+              <Check className='text-white' />
             </button>
-             {post.status !== 'draft' && (
+            <div className='flex items-center'>
+              <Calendar className='h-3 w-3' />
+              <span className='text-xs ml-1'>{format(new Date(post.scheduledDate), 'MMM d, yyyy')}</span>
+            </div>
+            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+              {primaryPlatform}
+            </span>
+          </div>
+          <div className='flex items-center gap-2'>
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Edit post"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+            {post.status !== 'draft' && (
               <button
                 onClick={() => onSaveToDraft(post.id)}
                 className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -221,15 +220,15 @@ export const PostCard = ({
                 <Check className="w-4 h-4" />
               </div>
             )}
-    <button
-      onClick={() => onDelete(post.id)}
-      className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-      title="Delete post"
-    >
-      <Trash2 className="w-4 h-4" />
-    </button>
-  </div>
-</div>
+            <button
+              onClick={() => onDelete(post.id)}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              title="Delete post"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Edit Modal */}
