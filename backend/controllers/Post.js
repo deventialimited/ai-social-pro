@@ -38,39 +38,39 @@ exports.processPubSub = async (req, res) => {
       return res.status(400).json({ message: "Generated posts is required" });
     }
 
-    console.log(JSON.stringify(jsonData));
+    console.log("Generated Posts", JSON.stringify(jsonData));
 
-    // Proceed with your existing logic
-    const domain = await Domain.findOne({
-      client_email: jsonData?.client_email,
-      clientWebsite: jsonData?.website,
-    });
+    // // Proceed with your existing logic
+    // const domain = await Domain.findOne({
+    //   client_email: jsonData?.client_email,
+    //   clientWebsite: jsonData?.website,
+    // });
 
-    if (!domain) {
-      return res.status(404).json({ message: "Domain not found" });
-    }
+    // if (!domain) {
+    //   return res.status(404).json({ message: "Domain not found" });
+    // }
 
-    const newPost = new Post({
-      postId: jsonData?.post_id,
-      domainId: domain._id,
-      userId: domain.userId,
-      image: jsonData?.image,
-      topic: jsonData?.topic,
-      content: jsonData?.content,
-      slogan: jsonData?.slogan,
-      postDate: new Date(jsonData?.date),
-      platform: jsonData?.platform,
-    });
+    // const newPost = new Post({
+    //   postId: jsonData?.post_id,
+    //   domainId: domain._id,
+    //   userId: domain.userId,
+    //   image: jsonData?.image,
+    //   topic: jsonData?.topic,
+    //   content: jsonData?.content,
+    //   slogan: jsonData?.slogan,
+    //   postDate: new Date(jsonData?.date),
+    //   platform: jsonData?.platform,
+    // });
 
-    const savedPost = await newPost.save();
-    console.log("Post saved to database:", savedPost);
+    // const savedPost = await newPost.save();
+    // console.log("Post saved to database:", savedPost);
 
-    res.status(201).json({
-      message: "Post saved successfully",
-      postId: savedPost.postId,
-      userId: savedPost.userId,
-      domainId: savedPost.domainId,
-    });
+    // res.status(201).json({
+    //   message: "Post saved successfully",
+    //   postId: savedPost.postId,
+    //   userId: savedPost.userId,
+    //   domainId: savedPost.domainId,
+    // });
   } catch (error) {
     console.error("Error in processPubSub controller:", error);
     res.status(500).json({
