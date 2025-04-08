@@ -1,5 +1,6 @@
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
+const getRawBody = require("raw-body");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.body; // Extract domainId from query parameters
@@ -30,54 +31,46 @@ exports.getAllPostsBydomainId = async (req, res) => {
 
 exports.processPubSub = async (req, res) => {
   try {
-    let rawBody = "";
+    const body = await getRawBody(req); // 🟢 this reads raw buffer
+    const pubsubMessage = JSON.parse(body.toString());
 
-    // Collect the data chunks from the request
-    req.on("data", chunk => {
-      rawBody += chunk;
+    const messageData = JSON.parse(
+      Buffer.from(pubsubMessage.message.data, "base64").toString("utf8")
+    );
+
+    console.log("Decoded Pub/Sub Message:", messageData);
+    let { jsonData } = pubsubMessage;
+
+    // Proceed with your existing logic
+    const domain = await Domain.findOne({
+      client_email: jsonData?.client_email,
+      clientWebsite: jsonData?.website,
     });
 
-    // Once the data is fully received
-    req.on("end", async () => {
-      let jsonData;
-      try {
-        jsonData = JSON.parse(rawBody);
-      } catch (err) {
-        console.error("Invalid JSON body:", err.message);
-        return res.status(400).json({ message: "Invalid JSON format" });
-      }
+    if (!domain) {
+      return res.status(404).json({ message: "Domain not found" });
+    }
 
-      // Proceed with your existing logic
-      const domain = await Domain.findOne({
-        client_email: jsonData?.client_email,
-        clientWebsite: jsonData?.website,
-      });
+    const newPost = new Post({
+      postId: jsonData.post_id,
+      domainId: domain._id,
+      userId: domain.userId,
+      image: jsonData.image,
+      topic: jsonData.topic,
+      content: jsonData.content,
+      slogan: jsonData.slogan,
+      postDate: new Date(jsonData.date),
+      platform: jsonData.platform,
+    });
 
-      if (!domain) {
-        return res.status(404).json({ message: "Domain not found" });
-      }
+    const savedPost = await newPost.save();
+    console.log("Post saved to database:", savedPost);
 
-      const newPost = new Post({
-        postId: jsonData.post_id,
-        domainId: domain._id,
-        userId: domain.userId,
-        image: jsonData.image,
-        topic: jsonData.topic,
-        content: jsonData.content,
-        slogan: jsonData.slogan,
-        postDate: new Date(jsonData.date),
-        platform: jsonData.platform,
-      });
-
-      const savedPost = await newPost.save();
-      console.log("Post saved to database:", savedPost);
-
-      res.status(201).json({
-        message: "Post saved successfully",
-        postId: savedPost.postId,
-        userId: savedPost.userId,
-        domainId: savedPost.domainId,
-      });
+    res.status(201).json({
+      message: "Post saved successfully",
+      postId: savedPost.postId,
+      userId: savedPost.userId,
+      domainId: savedPost.domainId,
     });
   } catch (error) {
     console.error("Error in processPubSub controller:", error);
@@ -87,4 +80,3 @@ exports.processPubSub = async (req, res) => {
     });
   }
 };
-
