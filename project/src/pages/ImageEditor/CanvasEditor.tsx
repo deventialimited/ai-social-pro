@@ -228,13 +228,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     shapeId: "",
   })
 
-  const imageRotationRef = useRef({
-    isRotating: false,
-    startAngle: 0,
-    originalRotation: 0,
-    imageId: "",
-  })
-
   const getAngle = (cx: number, cy: number, ex: number, ey: number) => {
     const dy = ey - cy
     const dx = ex - cx
@@ -243,22 +236,24 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     return deg
   }
 
-  const startRotation = (e: React.MouseEvent, shape: Shape) => {
+  const startRotation = (e: React.MouseEvent, item: Shape | ImageData, isShape: boolean) => {
     e.stopPropagation()
-    const shapeCenterX = shape.x + shape.width / 2
-    const shapeCenterY = shape.y + shape.height / 2
-    const startAngle = getAngle(shapeCenterX, shapeCenterY, e.clientX, e.clientY)
+    const centerX = item.x + item.width / 2
+    const centerY = item.y + item.height / 2
+    const startAngle = getAngle(centerX, centerY, e.clientX, e.clientY)
     rotationRef.current = {
       isRotating: true,
       startAngle,
-      originalRotation: shape.rotation,
-      shapeId: shape.id,
+      originalRotation: item.rotation,
+      shapeId: item.id,
     }
+    const handleRotate = isShape ? handleShapeRotate : handleImageRotate
+    const stopRotation = isShape ? stopShapeRotation : stopImageRotation
     window.addEventListener("mousemove", handleRotate)
     window.addEventListener("mouseup", stopRotation)
   }
 
-  const handleRotate = (e: MouseEvent) => {
+  const handleShapeRotate = (e: MouseEvent) => {
     if (!rotationRef.current.isRotating) return
     const shape = shapes.find((s) => s.id === rotationRef.current.shapeId)
     if (!shape) return
@@ -274,36 +269,21 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     })
   }
 
-  const stopRotation = () => {
+  const stopShapeRotation = () => {
     rotationRef.current.isRotating = false
-    window.removeEventListener("mousemove", handleRotate)
-    window.removeEventListener("mouseup", stopRotation)
-  }
-
-  const startImageRotation = (e: React.MouseEvent, imageData: ImageData) => {
-    e.stopPropagation()
-    const imageCenterX = imageData.x + imageData.width / 2
-    const imageCenterY = imageData.y + imageData.height / 2
-    const startAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY)
-    imageRotationRef.current = {
-      isRotating: true,
-      startAngle,
-      originalRotation: imageData.rotation || 0,
-      imageId: imageData.id,
-    }
-    window.addEventListener("mousemove", handleImageRotate)
-    window.addEventListener("mouseup", stopImageRotation)
+    window.removeEventListener("mousemove", handleShapeRotate)
+    window.removeEventListener("mouseup", stopShapeRotation)
   }
 
   const handleImageRotate = (e: MouseEvent) => {
-    if (!imageRotationRef.current.isRotating || !onUpdateImage) return
-    const imageData = images.find((img) => img.id === imageRotationRef.current.imageId)
+    if (!rotationRef.current.isRotating || !onUpdateImage) return
+    const imageData = images.find((img) => img.id === rotationRef.current.shapeId)
     if (!imageData) return
     const imageCenterX = imageData.x + imageData.width / 2
     const imageCenterY = imageData.y + imageData.height / 2
     const currentAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY)
-    const angleDiff = currentAngle - imageRotationRef.current.startAngle
-    let newRotation = (imageRotationRef.current.originalRotation + angleDiff) % 360
+    const angleDiff = currentAngle - rotationRef.current.startAngle
+    let newRotation = (rotationRef.current.originalRotation + angleDiff) % 360
     if (newRotation < 0) newRotation += 360
     const updatedImage = { ...imageData, rotation: newRotation }
     setImages((prevImages) => prevImages.map((img) => (img.id === imageData.id ? updatedImage : img)))
@@ -311,7 +291,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   }
 
   const stopImageRotation = () => {
-    imageRotationRef.current.isRotating = false
+    rotationRef.current.isRotating = false
     window.removeEventListener("mousemove", handleImageRotate)
     window.removeEventListener("mouseup", stopImageRotation)
   }
@@ -619,7 +599,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       }
 
       // Image container transform (for rotation and flipping)
-      const containerTransform = `scale(${scaleX}, ${scaleY}) rotate(${imageRotation || 0}deg)`
+      const containerTransform = `scale(${scaleX}, ${scaleY}) rotate(${imageData.rotation || 0}deg)`
 
       // Image transform (for scaling)
       const imageTransform = `scale(${imageScale || 1})`
@@ -719,7 +699,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                   <div
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center cursor-move pointer-events-auto"
-                    onMouseDown={(e) => startImageRotation(e, imageData)}
+                    onMouseDown={(e) => startRotation(e, imageData, false)}
                   >
                     <FaSyncAlt className="h-4 w-4 text-blue-500" />
                   </div>
@@ -872,7 +852,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                     <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                       <div
                         className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-white border border-blue-500 flex items-center justify-center cursor-move pointer-events-auto"
-                        onMouseDown={(e) => startRotation(e, shape)}
+                        onMouseDown={(e) => startRotation(e, shape, true)}
                       >
                         <FaSyncAlt className="h-4 w-4 text-blue-500" />
                       </div>
