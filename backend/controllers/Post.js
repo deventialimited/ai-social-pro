@@ -3,7 +3,7 @@ const Post = require("../models/Post");
 const getRawBody = require("raw-body");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
-    const { domainId } = req.body; // Extract domainId from query parameters
+    const { domainId } = req.params; // Extract domainId from query parameters
 
     // Validate domainId
     if (!domainId) {
