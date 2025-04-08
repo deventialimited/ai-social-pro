@@ -31,7 +31,7 @@ exports.getAllPostsBydomainId = async (req, res) => {
 
 exports.processPubSub = async (req, res) => {
   try {
-    let { jsonData } = req.body;
+    let jsonData = req.body;
     console.log(JSON.stringify(jsonData));
     // // Proceed with your existing logic
     // const domain = await Domain.findOne({
