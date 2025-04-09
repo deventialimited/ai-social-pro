@@ -82,7 +82,7 @@ const MaskPanel: React.FC<MaskPanelProps> = ({
   ];
 
   return (
-    <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64 z-50">
+    <div className="absolute right-[430px] top-[-10px] bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64 z-50">
       <div className="flex items-center justify-between mb-3 border-b pb-2">
         <h3 className="text-sm font-medium text-gray-700">Select Mask Shape</h3>
         <button

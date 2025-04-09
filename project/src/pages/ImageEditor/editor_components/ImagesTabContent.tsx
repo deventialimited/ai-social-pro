@@ -7,6 +7,7 @@ import {
   ArrowUpTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
+import html2canvas from "html2canvas";
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
@@ -707,23 +708,108 @@ export function ImagesTabContent({
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!imageData) return;
 
-    // Create a duplicate of the image with slight offset
-    const newImageData = {
-      ...imageData,
-      id: `${imageData.id}-copy-${Date.now()}`,
-      x: imageData.x + 20,
-      y: imageData.y + 20,
-    };
+    // Get the current image element to ensure we copy the masked version
+    const currentImage = document.querySelector(`img[src="${imageData.src}"]`);
+    if (!currentImage) return;
 
-    // In a real implementation, you would add this to your images array
-    // and update the canvas to show both images
-    console.log("Copied image:", newImageData);
+    // Create a temporary container for the image
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "-9999px";
+    container.style.width = `${currentImage.width}px`;
+    container.style.height = `${currentImage.height}px`;
+    container.style.overflow = "hidden";
 
-    // For this example, we'll just replace the current image
-    updateImageData(newImageData);
+    // Clone the image and add it to the container
+    const clonedImage = currentImage.cloneNode(true) as HTMLImageElement;
+    clonedImage.style.width = "100%";
+    clonedImage.style.height = "100%";
+    container.appendChild(clonedImage);
+
+    // Add the container to the document
+    document.body.appendChild(container);
+
+    try {
+      // Use html2canvas to capture the masked version
+      const canvas = await html2canvas(container, {
+        backgroundColor: null,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+        width: currentImage.width,
+        height: currentImage.height,
+        scale: 1,
+        x: 0,
+        y: 0,
+      });
+
+      // Get the masked image data URL
+      const maskedImageUrl = canvas.toDataURL("image/png");
+
+      // Create a duplicate of the image with slight offset using the masked version
+      const newImageData = {
+        ...imageData,
+        id: `${imageData.id}-copy-${Date.now()}`,
+        x: imageData.x + 20,
+        y: imageData.y + 20,
+        src: maskedImageUrl, // Use the masked version from canvas
+        maskType: imageData.maskType, // Preserve the mask type
+        maskApplied: true, // Mark that a mask is applied
+        originalSrc: imageData.originalSrc || imageData.src, // Store original source
+        width: currentImage.naturalWidth || currentImage.width,
+        height: currentImage.naturalHeight || currentImage.height,
+      };
+
+      // Update the image data with the masked version
+      updateImageData(newImageData);
+
+      // Update post data if needed
+      const postData = localStorage.getItem("postdata");
+      if (postData) {
+        const parsedData = JSON.parse(postData);
+        parsedData.image = maskedImageUrl;
+        localStorage.setItem("postdata", JSON.stringify(parsedData));
+      }
+
+      // Update the canvas editor if available
+      if (canvasEditor?.current?.onUpdateImage) {
+        canvasEditor.current.onUpdateImage(newImageData);
+      }
+
+      // Force a re-render of the image
+      const images = document.querySelectorAll(`img[src="${imageData.src}"]`);
+      images.forEach((img) => {
+        img.src = maskedImageUrl;
+      });
+
+      // Add the new image to the canvas
+      const newImage = new Image();
+      newImage.src = maskedImageUrl;
+      newImage.onload = () => {
+        if (canvasEditor?.current?.addImage) {
+          canvasEditor.current.addImage(newImage, {
+            x: newImageData.x,
+            y: newImageData.y,
+            width: newImageData.width,
+            height: newImageData.height,
+            maskType: newImageData.maskType,
+            maskApplied: true,
+            src: maskedImageUrl, // Ensure we use the masked version
+            originalSrc: newImageData.originalSrc, // Store original source
+            isMasked: true, // Explicitly mark as masked
+          });
+        }
+      };
+    } catch (error) {
+      console.error("Error capturing masked image:", error);
+    } finally {
+      // Clean up the temporary container
+      document.body.removeChild(container);
+    }
   };
 
   const handleDelete = () => {

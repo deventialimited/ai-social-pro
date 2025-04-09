@@ -57,8 +57,13 @@ interface ImageData {
   y: number;
   width: number;
   height: number;
+  originalWidth?: number;
+  originalHeight?: number;
+  maintainAspectRatio?: boolean;
   rotation: number;
   zIndex: number;
+  scaleX?: number;
+  scaleY?: number;
 }
 
 interface CanvasEditorProps {
@@ -190,29 +195,40 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     );
 
     if (newImageSrc) {
-      const newImage: ImageData = {
-        id: `image-${Date.now()}`, // Unique ID for each new image
-        src: newImageSrc,
-        x: 0,
-        y: 0,
-        width: 200,
-        height: 300,
-        rotation: 0,
-        zIndex: images.length + 1, // Place it above existing images
-      };
+      // Create a temporary image to get the natural dimensions
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const newImage: ImageData = {
+          id: `image-${Date.now()}`, // Unique ID for each new image
+          src: newImageSrc,
+          x: 0,
+          y: 0,
+          width: 200,
+          height: 300,
+          originalWidth: img.naturalWidth, // Store original dimensions
+          originalHeight: img.naturalHeight,
+          maintainAspectRatio: true, // Default to maintaining aspect ratio
+          rotation: 0,
+          zIndex: images.length + 1, // Place it above existing images
+          scaleX: 1,
+          scaleY: 1,
+        };
 
-      // Add the new image to the state if it doesn't already exist
-      setImages((prevImages) => {
-        if (!prevImages.some((img) => img.src === newImageSrc)) {
-          return [...prevImages, newImage];
+        // Add the new image to the state if it doesn't already exist
+        setImages((prevImages) => {
+          if (!prevImages.some((img) => img.src === newImageSrc)) {
+            return [...prevImages, newImage];
+          }
+          return prevImages;
+        });
+
+        // Optionally, trigger onSelectImage to highlight the new image
+        if (onSelectImage) {
+          onSelectImage(newImage.id);
         }
-        return prevImages;
-      });
-
-      // Optionally, trigger onSelectImage to highlight the new image
-      if (onSelectImage) {
-        onSelectImage(newImage.id);
-      }
+      };
+      img.src = newImageSrc;
     }
   }, [newImageSrc, onSelectImage]);
 
@@ -231,7 +247,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     startAngle: 0,
     originalRotation: 0,
     shapeId: "",
-  })
+  });
 
   const getAngle = (cx: number, cy: number, ex: number, ey: number) => {
     const dy = ey - cy;
@@ -241,33 +257,42 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     return deg;
   };
 
-  const startRotation = (e: React.MouseEvent, item: Shape | ImageData, isShape: boolean) => {
-    e.stopPropagation()
-    const centerX = item.x + item.width / 2
-    const centerY = item.y + item.height / 2
-    const startAngle = getAngle(centerX, centerY, e.clientX, e.clientY)
+  const startRotation = (
+    e: React.MouseEvent,
+    item: Shape | ImageData,
+    isShape: boolean
+  ) => {
+    e.stopPropagation();
+    const centerX = item.x + item.width / 2;
+    const centerY = item.y + item.height / 2;
+    const startAngle = getAngle(centerX, centerY, e.clientX, e.clientY);
     rotationRef.current = {
       isRotating: true,
       startAngle,
       originalRotation: item.rotation,
       shapeId: item.id,
-    }
-    const handleRotate = isShape ? handleShapeRotate : handleImageRotate
-    const stopRotation = isShape ? stopShapeRotation : stopImageRotation
-    window.addEventListener("mousemove", handleRotate)
-    window.addEventListener("mouseup", stopRotation)
-  }
+    };
+    const handleRotate = isShape ? handleShapeRotate : handleImageRotate;
+    const stopRotation = isShape ? stopShapeRotation : stopImageRotation;
+    window.addEventListener("mousemove", handleRotate);
+    window.addEventListener("mouseup", stopRotation);
+  };
 
   const handleShapeRotate = (e: MouseEvent) => {
-    if (!rotationRef.current.isRotating) return
-    const shape = shapes.find((s) => s.id === rotationRef.current.shapeId)
-    if (!shape) return
-    const shapeCenterX = shape.x + shape.width / 2
-    const shapeCenterY = shape.y + shape.height / 2
-    const currentAngle = getAngle(shapeCenterX, shapeCenterY, e.clientX, e.clientY)
-    const angleDiff = currentAngle - rotationRef.current.startAngle
-    let newRotation = (rotationRef.current.originalRotation + angleDiff) % 360
-    if (newRotation < 0) newRotation += 360
+    if (!rotationRef.current.isRotating) return;
+    const shape = shapes.find((s) => s.id === rotationRef.current.shapeId);
+    if (!shape) return;
+    const shapeCenterX = shape.x + shape.width / 2;
+    const shapeCenterY = shape.y + shape.height / 2;
+    const currentAngle = getAngle(
+      shapeCenterX,
+      shapeCenterY,
+      e.clientX,
+      e.clientY
+    );
+    const angleDiff = currentAngle - rotationRef.current.startAngle;
+    let newRotation = (rotationRef.current.originalRotation + angleDiff) % 360;
+    if (newRotation < 0) newRotation += 360;
     onUpdateShape({
       ...shape,
       rotation: newRotation,
@@ -275,28 +300,15 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const stopShapeRotation = () => {
-    rotationRef.current.isRotating = false
-    window.removeEventListener("mousemove", handleShapeRotate)
-    window.removeEventListener("mouseup", stopShapeRotation)
-  }
+    rotationRef.current.isRotating = false;
+    window.removeEventListener("mousemove", handleShapeRotate);
+    window.removeEventListener("mouseup", stopShapeRotation);
+  };
 
   const handleImageRotate = (e: MouseEvent) => {
-    if (!rotationRef.current.isRotating || !onUpdateImage) return
-    const imageData = images.find((img) => img.id === rotationRef.current.shapeId)
-    if (!imageData) return
-    const imageCenterX = imageData.x + imageData.width / 2
-    const imageCenterY = imageData.y + imageData.height / 2
-    const currentAngle = getAngle(imageCenterX, imageCenterY, e.clientX, e.clientY)
-    const angleDiff = currentAngle - rotationRef.current.startAngle
-    let newRotation = (rotationRef.current.originalRotation + angleDiff) % 360
-    if (newRotation < 0) newRotation += 360
-    const updatedImage = { ...imageData, rotation: newRotation }
-    setImages((prevImages) => prevImages.map((img) => (img.id === imageData.id ? updatedImage : img)))
-    onUpdateImage(updatedImage)
-  }
-    if (!imageRotationRef.current.isRotating || !onUpdateImage) return;
+    if (!rotationRef.current.isRotating || !onUpdateImage) return;
     const imageData = images.find(
-      (img) => img.id === imageRotationRef.current.imageId
+      (img) => img.id === rotationRef.current.shapeId
     );
     if (!imageData) return;
     const imageCenterX = imageData.x + imageData.width / 2;
@@ -307,9 +319,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       e.clientX,
       e.clientY
     );
-    const angleDiff = currentAngle - imageRotationRef.current.startAngle;
-    let newRotation =
-      (imageRotationRef.current.originalRotation + angleDiff) % 360;
+    const angleDiff = currentAngle - rotationRef.current.startAngle;
+    let newRotation = (rotationRef.current.originalRotation + angleDiff) % 360;
     if (newRotation < 0) newRotation += 360;
     const updatedImage = { ...imageData, rotation: newRotation };
     setImages((prevImages) =>
@@ -319,10 +330,10 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const stopImageRotation = () => {
-    rotationRef.current.isRotating = false
-    window.removeEventListener("mousemove", handleImageRotate)
-    window.removeEventListener("mouseup", stopImageRotation)
-  }
+    rotationRef.current.isRotating = false;
+    window.removeEventListener("mousemove", handleImageRotate);
+    window.removeEventListener("mouseup", stopImageRotation);
+  };
 
   const getShadowStyle = (effects?: ShapeEffects) => {
     if (!effects || !effects.shadow) return {};
@@ -723,6 +734,86 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     }
   };
 
+  const handleFlipHorizontal = () => {
+    if (selectedImageId) {
+      const newScaleX = scaleX * -1;
+      setScaleX(newScaleX);
+
+      // Update the specific image's scale
+      const updatedImages = images.map((img) =>
+        img.id === selectedImageId
+          ? { ...img, scaleX: (img.scaleX || 1) * -1 }
+          : img
+      );
+      setImages(updatedImages);
+
+      if (onUpdateImage) {
+        const selectedImage = images.find((img) => img.id === selectedImageId);
+        if (selectedImage) {
+          onUpdateImage({
+            ...selectedImage,
+            scaleX: (selectedImage.scaleX || 1) * -1,
+          });
+        }
+      }
+
+      addToHistory({ scaleX: newScaleX });
+    }
+  };
+
+  const handleFitToPage = () => {
+    if (!selectedImageId) return;
+
+    const selectedImage = images.find((img) => img.id === selectedImageId);
+    if (!selectedImage) return;
+
+    const canvasElement = document.getElementById("canvas");
+    if (!canvasElement) return;
+
+    const canvasWidth = canvasElement.clientWidth;
+    const canvasHeight = canvasElement.clientHeight;
+
+    // Create a temporary image to get the natural dimensions
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const imgWidth = img.naturalWidth;
+      const imgHeight = img.naturalHeight;
+
+      // Calculate the scale to fit the image within the canvas
+      const widthRatio = canvasWidth / imgWidth;
+      const heightRatio = canvasHeight / imgHeight;
+      const scale = Math.min(widthRatio, heightRatio) * 0.9; // 90% of the available space
+
+      // Calculate centered position
+      const x = (canvasWidth - imgWidth * scale) / 2;
+      const y = (canvasHeight - imgHeight * scale) / 2;
+
+      // Update the image
+      const updatedImage = {
+        ...selectedImage,
+        width: imgWidth * scale,
+        height: imgHeight * scale,
+        x: x,
+        y: y,
+        scaleX: 1, // Reset any flipping
+        scaleY: 1,
+      };
+
+      setImages((prevImages) =>
+        prevImages.map((img) =>
+          img.id === selectedImageId ? updatedImage : img
+        )
+      );
+
+      if (onUpdateImage) {
+        onUpdateImage(updatedImage);
+      }
+    };
+
+    img.src = selectedImage.src;
+  };
+
   const renderImage = () => {
     return images.map((imageData) => {
       const isSelected = selectedImageId === imageData.id;
@@ -748,10 +839,12 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         // Add sepia effect
         if (imageEffects.sepia > 0) {
           filterString += ` sepia(${imageEffects.sepia}%)`;
+          filterString += ` sepia(${imageEffects.sepia}%)`;
         }
 
         // Add grayscale effect
         if (imageEffects.grayscale > 0) {
+          filterString += ` grayscale(${imageEffects.grayscale}%)`;
           filterString += ` grayscale(${imageEffects.grayscale}%)`;
         }
       }
@@ -800,6 +893,20 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             if (onUpdateImage) onUpdateImage({ ...imageData, x: d.x, y: d.y });
           }}
           onResizeStop={(e, direction, ref, delta, position) => {
+            // Get original aspect ratio
+            const originalAspectRatio =
+              imageData.originalWidth && imageData.originalHeight
+                ? imageData.originalWidth / imageData.originalHeight
+                : 1;
+
+            const newWidth = Math.max(50, Number.parseInt(ref.style.width));
+            let newHeight = Math.max(50, Number.parseInt(ref.style.height));
+
+            // Maintain aspect ratio if the flag is set
+            if (imageData.maintainAspectRatio) {
+              newHeight = newWidth / originalAspectRatio;
+            }
+
             const updatedImage = {
               ...imageData,
               width: Math.max(50, Number.parseInt(ref.style.width)),
