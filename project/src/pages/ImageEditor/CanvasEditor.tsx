@@ -51,19 +51,21 @@ interface ShapeEffects {
 }
 
 interface ImageData {
-  id: string;
-  src: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  originalWidth?: number;
-  originalHeight?: number;
-  maintainAspectRatio?: boolean;
-  rotation: number;
-  zIndex: number;
-  scaleX?: number;
-  scaleY?: number;
+
+
+  id: string
+  src: string
+  x: number
+  y: number
+  width: number
+  height: number
+  originalWidth?: number
+  originalHeight?: number
+  maintainAspectRatio?: boolean
+  rotation: number
+  zIndex: number
+  scaleX?: number
+  scaleY?: number
 }
 
 interface CanvasEditorProps {
@@ -187,7 +189,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     loadImagesFromStorage();
   }, [backgroundImage]);
 
-  // Handle new image selection from props
+  // Effect to handle new image selection from props
   useEffect(() => {
     // Filter out the original post image and background image
     const imagesToStore = images.filter(
@@ -196,8 +198,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
     if (newImageSrc) {
       // Create a temporary image to get the natural dimensions
-      const img = new Image();
-      img.crossOrigin = "anonymous";
+
+      const img = new Image()
+      img.crossOrigin = "anonymous"
       img.onload = () => {
         const newImage: ImageData = {
           id: `image-${Date.now()}`, // Unique ID for each new image
@@ -213,22 +216,23 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           zIndex: images.length + 1, // Place it above existing images
           scaleX: 1,
           scaleY: 1,
-        };
+
+        }
 
         // Add the new image to the state if it doesn't already exist
         setImages((prevImages) => {
           if (!prevImages.some((img) => img.src === newImageSrc)) {
-            return [...prevImages, newImage];
+            return [...prevImages, newImage]
           }
-          return prevImages;
-        });
+          return prevImages
+        })
 
         // Optionally, trigger onSelectImage to highlight the new image
         if (onSelectImage) {
-          onSelectImage(newImage.id);
+          onSelectImage(newImage.id)
         }
-      };
-      img.src = newImageSrc;
+      }
+      img.src = newImageSrc
     }
   }, [newImageSrc, onSelectImage]);
 
@@ -814,6 +818,80 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     img.src = selectedImage.src;
   };
 
+  const handleFlipHorizontal = () => {
+    if (selectedImageId) {
+      const newScaleX = scaleX * -1
+      setScaleX(newScaleX)
+
+      // Update the specific image's scale
+      const updatedImages = images.map((img) =>
+        img.id === selectedImageId ? { ...img, scaleX: (img.scaleX || 1) * -1 } : img,
+      )
+      setImages(updatedImages)
+
+      if (onUpdateImage) {
+        const selectedImage = images.find((img) => img.id === selectedImageId)
+        if (selectedImage) {
+          onUpdateImage({
+            ...selectedImage,
+            scaleX: (selectedImage.scaleX || 1) * -1,
+          })
+        }
+      }
+
+      addToHistory({ scaleX: newScaleX })
+    }
+  }
+
+  const handleFitToPage = () => {
+    if (!selectedImageId) return
+
+    const selectedImage = images.find((img) => img.id === selectedImageId)
+    if (!selectedImage) return
+
+    const canvasElement = document.getElementById("canvas")
+    if (!canvasElement) return
+
+    const canvasWidth = canvasElement.clientWidth
+    const canvasHeight = canvasElement.clientHeight
+
+    // Create a temporary image to get the natural dimensions
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    img.onload = () => {
+      const imgWidth = img.naturalWidth
+      const imgHeight = img.naturalHeight
+
+      // Calculate the scale to fit the image within the canvas
+      const widthRatio = canvasWidth / imgWidth
+      const heightRatio = canvasHeight / imgHeight
+      const scale = Math.min(widthRatio, heightRatio) * 0.9 // 90% of the available space
+
+      // Calculate centered position
+      const x = (canvasWidth - imgWidth * scale) / 2
+      const y = (canvasHeight - imgHeight * scale) / 2
+
+      // Update the image
+      const updatedImage = {
+        ...selectedImage,
+        width: imgWidth * scale,
+        height: imgHeight * scale,
+        x: x,
+        y: y,
+        scaleX: 1, // Reset any flipping
+        scaleY: 1,
+      }
+
+      setImages((prevImages) => prevImages.map((img) => (img.id === selectedImageId ? updatedImage : img)))
+
+      if (onUpdateImage) {
+        onUpdateImage(updatedImage)
+      }
+    }
+
+    img.src = selectedImage.src
+  }
+
   const renderImage = () => {
     return images.map((imageData) => {
       const isSelected = selectedImageId === imageData.id;
@@ -897,20 +975,21 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             const originalAspectRatio =
               imageData.originalWidth && imageData.originalHeight
                 ? imageData.originalWidth / imageData.originalHeight
-                : 1;
 
-            const newWidth = Math.max(50, Number.parseInt(ref.style.width));
-            let newHeight = Math.max(50, Number.parseInt(ref.style.height));
+                : 1
+
+            const newWidth = Math.max(50, Number.parseInt(ref.style.width))
+            let newHeight = Math.max(50, Number.parseInt(ref.style.height))
 
             // Maintain aspect ratio if the flag is set
             if (imageData.maintainAspectRatio) {
-              newHeight = newWidth / originalAspectRatio;
+              newHeight = newWidth / originalAspectRatio
             }
 
             const updatedImage = {
               ...imageData,
-              width: Math.max(50, Number.parseInt(ref.style.width)),
-              height: Math.max(50, Number.parseInt(ref.style.height)),
+              width: newWidth,
+              height: newHeight,
               x: position.x,
               y: position.y,
             };
@@ -968,7 +1047,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                   filter: filterString,
                   transform: imageTransform,
                   transformOrigin: "center center",
-                  objectFit: "cover",
+                  objectFit: "contain", // Change from "cover" to "contain" to maintain aspect ratio
                   borderRadius,
                 }}
                 draggable={false}
