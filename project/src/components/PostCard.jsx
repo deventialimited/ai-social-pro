@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Calendar,
   Edit,
@@ -10,7 +10,7 @@ import {
   Image,
   Palette,
   Type,
-  Download, // ✅ added
+  Download,
 } from "lucide-react";
 import { format } from "date-fns";
 import { PostEditModal } from "./PostEditModal";
@@ -25,6 +25,9 @@ export const PostCard = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("image");
+  const [showFullText, setShowFullText] = useState(false);
+  const [isClamped, setIsClamped] = useState(false);
+  const contentRef = useRef(null);
   const primaryPlatform = post?.platforms?.[0];
 
   const baseStyles =
@@ -32,6 +35,16 @@ export const PostCard = ({
   const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
   const unselectedStyles =
     "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const lineHeight = parseFloat(
+        getComputedStyle(contentRef.current).lineHeight
+      );
+      const maxHeight = lineHeight * 2;
+      setIsClamped(contentRef.current.scrollHeight > maxHeight);
+    }
+  }, [post.content]);
 
   const getStatusBadge = () => {
     switch (post.status) {
@@ -80,12 +93,12 @@ export const PostCard = ({
                 className="w-full h-full object-cover"
               />
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                {post.topic}
+            <div className="flex flex-col">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-0.5">
+                {post.domainId.clientName}
               </h3>
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+              <div className="flex items-center gap-2 flex-wrap text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
                   ID: {post._id}
                 </span>
                 {getStatusBadge()}
@@ -143,7 +156,7 @@ export const PostCard = ({
                     : unselectedStyles
                 }`}
               >
-                <span className="text-[12px] truncate">{post?.slogan}</span>
+                <span className="text-[12px] truncate">Slogan</span>
                 <Type
                   className={`w-4 h-4 fill-none ${
                     selectedButton === "slogan"
@@ -158,9 +171,22 @@ export const PostCard = ({
 
         {/* Content */}
         <div className={`p-4 space-y-4 ${view === "grid" ? "flex-1" : ""}`}>
-          <p className="text-gray-900 dark:text-white whitespace-pre-wrap line-clamp-2">
-            {post.content}
-          </p>
+          <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
+            <p
+              ref={contentRef}
+              className={`${!showFullText ? "line-clamp-2" : ""}`}
+            >
+              {post.content}
+            </p>
+            {isClamped && (
+              <button
+                onClick={() => setShowFullText(!showFullText)}
+                className="mt-1 text-blue-600 dark:text-blue-400 text-sm underline hover:text-blue-800"
+              >
+                {showFullText ? "Show less" : "Show more"}
+              </button>
+            )}
+          </div>
           <img
             src={post.image}
             alt="Post content"
@@ -181,7 +207,7 @@ export const PostCard = ({
             <div className="flex items-center">
               <Calendar className="h-3 w-3" />
               <span className="text-xs ml-1">
-                {format(new Date(post.postDate), 'MMM d, yyyy')}
+                {format(new Date(post.postDate), "MMM d, yyyy")}
               </span>
             </div>
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
@@ -208,7 +234,7 @@ export const PostCard = ({
               </button>
             )}
 
-            {/* ✅ NEW DOWNLOAD BUTTON */}
+            {/* Download */}
             <button
               onClick={() => console.log("Download clicked")}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
