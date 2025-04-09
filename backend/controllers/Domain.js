@@ -76,6 +76,7 @@ exports.addDomain = async (req, res) => {
 exports.getAllDomains = async (req, res) => {
   try {
     const domains = await Domain.find().populate("userId", "username email");
+
     res.status(200).json({
       success: true,
       count: domains.length,
@@ -177,6 +178,7 @@ exports.updateDomain = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body; // Fields sent in the request
+
 
     if (!id) {
       return res
@@ -292,7 +294,7 @@ exports.uploadBrand = async (req, res) => {
     if (colors) {
       updateData.colors = colors;
     }
-
+    
     const updatedDomain = await Domain.findByIdAndUpdate(domainId, updateData, {
       new: true,
     });

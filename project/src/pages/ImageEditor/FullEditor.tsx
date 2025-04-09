@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
 // @ts-nocheck
-import React from "react";
-import { Fragment, useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Dialog, Transition, Listbox } from "@headlessui/react";
+import type React from "react"
+import { Fragment, useState, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { Dialog, Transition, Listbox } from "@headlessui/react"
 import {
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
@@ -17,24 +17,20 @@ import {
   TrashIcon,
   ChevronRightIcon,
   ArrowsPointingInIcon,
-} from "@heroicons/react/24/outline";
-import { Dropdown } from "antd";
-import { DownOutlined } from "@ant-design/icons";
-import html2canvas from "html2canvas";
-import axios from "axios";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // Importing Firebase config
+} from "@heroicons/react/24/outline"
+import { Dropdown } from "antd"
+import { DownOutlined } from "@ant-design/icons"
+import html2canvas from "html2canvas"
+import axios from "axios"
+import { doc, setDoc, getDoc } from "firebase/firestore"
+import { db } from "../../firebase" // Importing Firebase config
 
-import ShapesTabContent from "./shapTabContent";
-import CanvasEditor from "./CanvasEditor";
-import { ImagesTabContent } from "./editor_components/ImagesTabContent";
-import {
-  Toolbar,
-  ShapeToolbar,
-  BackgroundToolbar,
-} from "./editor_components/Toolbar";
-import { EnhancedImageToolbar } from "./editor_components/enhanced-image-toolbar";
-import { EffectsPanel } from "./editor_components/EffectsPanel"; // Import EffectsPanel
+import ShapesTabContent from "./shapTabContent"
+import CanvasEditor from "./CanvasEditor"
+import { ImagesTabContent } from "./editor_components/ImagesTabContent"
+import { Toolbar, ShapeToolbar, BackgroundToolbar } from "./editor_components/Toolbar"
+import { EnhancedImageToolbar } from "./editor_components/enhanced-image-toolbar"
+import { EffectsPanel } from "./editor_components/EffectsPanel" // Import EffectsPanel
 
 // Define shape types
 type ShapeType =
@@ -52,64 +48,34 @@ type ShapeType =
   | "arrow-right"
   | "arrow-down"
   | "arrow-up"
-  | "textarea"; // Changed text to textarea for text input
+  | "textarea" // Changed text to textarea for text input
 
 // Define shape object structure
 interface Shape {
-  id: string;
-  type: ShapeType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-  zIndex: number;
-  rotation: number; // Added rotation property
-  textContent?: string; // Added text content for text shapes
-  transparency?: number; // Added transparency property
-  effects?: ShapeEffects; // Added effects property
-  borderStyle?: string; // Added border style property
-  borderColor?: string; // Added border color property
-  borderWidth?: number; // Added border width property
+  id: string
+  type: ShapeType
+  x: number
+  y: number
+  width: number
+  height: number
+  color: string
+  zIndex: number
+  rotation: number // Added rotation property
+  textContent?: string // Added text content for text shapes
+  transparency?: number // Added transparency property
+  effects?: ShapeEffects // Added effects property
+  borderStyle?: string // Added border style property
+  borderColor?: string // Added border color property
+  borderWidth?: number // Added border width property
 }
 
 interface ShapeEffects {
-  shadow: boolean;
-  blur: number; // Default blur set to 0
-  offsetX: number;
-  offsetY: number;
-  opacity: number; // Default opacity set to 100
-  color: string;
-}
-
-interface EditorState {
-  shapes: Shape[];
-  backgroundColor: string;
-  backgroundImage: string | null;
-  postBody: string;
-  imageScale: number;
-  imageRotation: number;
-  imagePosition: { x: number; y: number };
-  imageFilters: {
-    brightness: number;
-    contrast: number;
-    saturation: number;
-  };
-  scaleX: number;
-  scaleY: number;
-  imageEffects: {
-    blur: number;
-    brightness: number;
-    sepia: number;
-    grayscale: number;
-    border: number;
-    cornerRadius: number;
-    shadow: {
-      blur: number;
-      offsetX: number;
-      offsetY: number;
-    };
-  };
+  shadow: boolean
+  blur: number // Default blur set to 0
+  offsetX: number
+  offsetY: number
+  opacity: number // Default opacity set to 100
+  color: string
 }
 
 type EditorTab =
@@ -121,76 +87,76 @@ type EditorTab =
   | "size"
   | "shapes"
   | "selectedImage"
-  | "effects"; // Added effects tab
+  | "effects" // Added effects tab
 
-const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
+const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk"
 
 interface ImageData {
-  id: string;
-  url: string;
-  x: number;
-  y: number;
-  rotation: number; // Added rotation property for images
+  id: string
+  url: string
+  x: number
+  y: number
+  rotation: number // Added rotation property for images
 }
 
 const FullEditor: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [postId, setPostId] = useState<string | null>(null);
-  const [postContent, setPostContent] = useState<string>("");
-  const [postImage, setPostImage] = useState<string>("");
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [postId, setPostId] = useState<string | null>(null)
+  const [postContent, setPostContent] = useState<string>("")
+  const [postImage, setPostImage] = useState<string>("")
 
-  const [isOpen, setIsOpen] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<EditorTab>("images");
-  const [zoomLevel, setZoomLevel] = useState<number>(100);
-  const [shapes, setShapes] = useState<Shape[]>([]);
-  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff");
-  const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
-  const [backgroundColors, setBackgroundColors] = useState<string[]>([]);
-  const [colors, setColors] = useState<string[]>([]);
-  const [patterns, setPatterns] = useState<string[]>([]);
-  const [history, setHistory] = useState<EditorState[]>([]);
-  const [historyIndex, setHistoryIndex] = useState<number>(-1);
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState<boolean>(true)
+  const [activeTab, setActiveTab] = useState<EditorTab>("images")
+  const [zoomLevel, setZoomLevel] = useState<number>(100)
+  const [shapes, setShapes] = useState<Shape[]>([])
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null)
+  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff")
+  const [backgroundImages, setBackgroundImages] = useState<string[]>([])
+  const [backgroundColors, setBackgroundColors] = useState<string[]>([])
+  const [colors, setColors] = useState<string[]>([])
+  const [patterns, setPatterns] = useState<string[]>([])
+  const [history, setHistory] = useState<any[]>([])
+  const [historyIndex, setHistoryIndex] = useState<number>(-1)
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   // New state for enhanced image editing
-  const [selectedTool, setSelectedTool] = useState<string | null>(null);
-  const [isCropping, setIsCropping] = useState<boolean>(false);
+  const [selectedTool, setSelectedTool] = useState<string | null>(null)
+  const [isCropping, setIsCropping] = useState<boolean>(false)
   const [cropArea, setCropArea] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
-  const [imageScale, setImageScale] = useState<number>(1);
+    x: number
+    y: number
+    width: number
+    height: number
+  } | null>(null)
+  const [imageScale, setImageScale] = useState<number>(1)
   const [imagePosition, setImagePosition] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
-  });
+  })
   const [imageFilters, setImageFilters] = useState<{
-    brightness: number;
-    contrast: number;
-    saturation: number;
+    brightness: number
+    contrast: number
+    saturation: number
   }>({
     brightness: 100,
     contrast: 100,
     saturation: 100,
-  });
+  })
 
   const [imageEffects, setImageEffects] = useState<{
-    blur: number;
-    brightness: number;
-    sepia: number;
-    grayscale: number;
-    border: number;
-    cornerRadius: number;
+    blur: number
+    brightness: number
+    sepia: number
+    grayscale: number
+    border: number
+    cornerRadius: number
     shadow: {
-      blur: number;
-      offsetX: number;
-      offsetY: number;
-    };
+      blur: number
+      offsetX: number
+      offsetY: number
+    }
   }>({
     blur: 0,
     brightness: 100,
@@ -203,34 +169,31 @@ const FullEditor: React.FC = () => {
       offsetX: 0,
       offsetY: 0,
     },
-  });
+  })
 
-  const [scaleX, setScaleX] = useState<number>(1);
-  const [scaleY, setScaleY] = useState<number>(1);
+  const [scaleX, setScaleX] = useState<number>(1)
+  const [scaleY, setScaleY] = useState<number>(1)
 
-  const [postBodyActive, setPostBodyActive] = useState<boolean>(false); // New state to track post body activity
-  const [editingTextId, setEditingTextId] = useState<string | null>(null);
-  const [textColor, setTextColor] = useState<string>("#000000"); // New state for text color
-  const [isTextAreaActive, setIsTextAreaActive] = useState<boolean>(false); // State to track textarea focus
-  const postData = localStorage.getItem("postdata");
+  const [postBodyActive, setPostBodyActive] = useState<boolean>(false) // New state to track post body activity
+  const [editingTextId, setEditingTextId] = useState<string | null>(null)
+  const [textColor, setTextColor] = useState<string>("#000000") // New state for text color
+  const [isTextAreaActive, setIsTextAreaActive] = useState<boolean>(false) // State to track textarea focus
+  const postData = localStorage.getItem("postdata")
   if (postData) {
-    var { topic, content, image, post_id } = JSON.parse(postData);
+    var { topic, content, image, post_id } = JSON.parse(postData)
     // setPostContent(content)
   }
   // const [postBody, setPostBody] = useState<string>(content || "");
-  const [postBody, setPostBody] = useState<string>("");
+  const [postBody, setPostBody] = useState<string>("")
 
-  const [images, setImages] = useState<ImageData[]>([]);
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-
-  // Add state to store original images
-  const [originalImages, setOriginalImages] = useState({});
+  const [images, setImages] = useState<ImageData[]>([])
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null)
 
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
     try {
-      const postId = post_id;
-      const idToUse = postId || "1"; // Use provided postId or a dummy one
+      const postId = post_id
+      const idToUse = postId || "1" // Use provided postId or a dummy one
       await setDoc(doc(db, "posts", idToUse), {
         shapes,
         backgroundColor,
@@ -245,92 +208,92 @@ const FullEditor: React.FC = () => {
         scaleY,
         imageEffects,
         images, // Save images with rotation
-      });
-      console.log("Data saved successfully to Firebase with postId:", idToUse);
+      })
+      console.log("Data saved successfully to Firebase with postId:", idToUse)
     } catch (e) {
-      console.error("Error saving document: ", e);
+      console.error("Error saving document: ", e)
     }
-  };
+  }
 
   // Load data from Firebase Firestore
   const loadDataFromFirebase = async () => {
     try {
-      const docRef = doc(db, "posts", post_id || "1");
-      const docSnap = await getDoc(docRef);
+      const docRef = doc(db, "posts", post_id || "1")
+      const docSnap = await getDoc(docRef)
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        console.log("Data retrieved from Firebase:", data);
-        setShapes(data.shapes || []);
-        setBackgroundColor(data.backgroundColor || "#ffffff");
-        setBackgroundImage(data.backgroundImage || null);
-        setPostBody(data.postBody || "");
-        setHistory(data.history || []);
-        setHistoryIndex(data.historyIndex || -1);
+        const data = docSnap.data()
+        console.log("Data retrieved from Firebase:", data)
+        setShapes(data.shapes || [])
+        setBackgroundColor(data.backgroundColor || "#ffffff")
+        setBackgroundImage(data.backgroundImage || null)
+        setPostBody(data.postBody || "")
+        setHistory(data.history || [])
+        setHistoryIndex(data.historyIndex || -1)
 
         // Load image editing state if available
-        if (data.imageScale) setImageScale(data.imageScale);
-        if (data.imagePosition) setImagePosition(data.imagePosition);
-        if (data.imageFilters) setImageFilters(data.imageFilters);
-        if (data.scaleX) setScaleX(data.scaleX);
-        if (data.scaleY) setScaleY(data.scaleY);
-        if (data.imageEffects) setImageEffects(data.imageEffects);
-        if (data.images) setImages(data.images);
+        if (data.imageScale) setImageScale(data.imageScale)
+        if (data.imagePosition) setImagePosition(data.imagePosition)
+        if (data.imageFilters) setImageFilters(data.imageFilters)
+        if (data.scaleX) setScaleX(data.scaleX)
+        if (data.scaleY) setScaleY(data.scaleY)
+        if (data.imageEffects) setImageEffects(data.imageEffects)
+        if (data.images) setImages(data.images)
       } else {
-        console.log("No such document!");
+        console.log("No such document!")
       }
     } catch (e) {
-      console.error("Error getting document: ", e);
+      console.error("Error getting document: ", e)
     }
-  };
+  }
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const id = queryParams.get("postId");
+    const queryParams = new URLSearchParams(location.search)
+    const id = queryParams.get("postId")
     if (id) {
-      setPostId(id);
+      setPostId(id)
     }
-  }, [location]);
+  }, [location])
 
   useEffect(() => {
     if (!postId) {
-      setPostId("1");
+      setPostId("1")
     } else {
-      loadDataFromFirebase();
+      loadDataFromFirebase()
     }
-  }, [postId]);
+  }, [postId])
   // Image editing functions
 
   const captureDiagramAsImage = async () => {
     try {
       // First, load the data from Firebase to ensure we have the latest data
-      saveDataToFirebase();
-      await loadDataFromFirebase();
+      saveDataToFirebase()
+      await loadDataFromFirebase()
 
       // Wait a moment for the React state to update and render with the loaded data
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Increased timeout for reliable rendering
+      await new Promise((resolve) => setTimeout(resolve, 500)) // Increased timeout for reliable rendering
 
       // Get the canvas element
-      const diagramElement = document.getElementById("canvas");
+      const diagramElement = document.getElementById("canvas")
 
       if (!diagramElement) {
-        console.error("Canvas element not found");
-        return;
+        console.error("Canvas element not found")
+        return
       }
 
       // Add the postBody text directly to the original DOM before capturing
       // This is more reliable than trying to add it in the onclone callback
-      const tempTextElement = document.createElement("div");
-      tempTextElement.id = "temp-post-body-text";
-      tempTextElement.style.position = "absolute";
-      tempTextElement.style.top = "10px";
-      tempTextElement.style.left = "10px";
-      tempTextElement.style.color = textColor || "#000000";
-      tempTextElement.style.fontSize = "16px";
-      tempTextElement.style.fontFamily = "Arial, sans-serif";
-      tempTextElement.style.zIndex = "1000"; // Ensure it's on top
-      tempTextElement.style.padding = "5px";
+      const tempTextElement = document.createElement("div")
+      tempTextElement.id = "temp-post-body-text"
+      tempTextElement.style.position = "absolute"
+      tempTextElement.style.top = "10px"
+      tempTextElement.style.left = "10px"
+      tempTextElement.style.color = textColor || "#000000"
+      tempTextElement.style.fontSize = "16px"
+      tempTextElement.style.fontFamily = "Arial, sans-serif"
+      tempTextElement.style.zIndex = "1000" // Ensure it's on top
+      tempTextElement.style.padding = "5px"
       // tempTextElement.style.backgroundColor = "rgba(255, 255, 255, 0.7)"; // Semi-transparent background for readability
-      tempTextElement.textContent = postBody;
+      tempTextElement.textContent = postBody
 
       // Make sure the container can handle absolute positioning
       if (
@@ -338,10 +301,10 @@ const FullEditor: React.FC = () => {
         diagramElement.style.position !== "relative" &&
         diagramElement.style.position !== "fixed"
       ) {
-        diagramElement.style.position = "relative";
+        diagramElement.style.position = "relative"
       }
 
-      diagramElement.appendChild(tempTextElement);
+      diagramElement.appendChild(tempTextElement)
 
       // Create a canvas from the HTML element with the loaded Firebase data
       const canvas = await html2canvas(diagramElement, {
@@ -350,94 +313,89 @@ const FullEditor: React.FC = () => {
         backgroundColor: backgroundColor || "#ffffff", // Use the loaded background color
         logging: true, // Enable logging for debugging
         allowTaint: true, // This can help with rendering issues
-      });
+      })
 
       // Clean up by removing the temporary text element
-      const textToRemove = document.getElementById("temp-post-body-text");
+      const textToRemove = document.getElementById("temp-post-body-text")
       if (textToRemove && textToRemove.parentNode) {
-        textToRemove.parentNode.removeChild(textToRemove);
+        textToRemove.parentNode.removeChild(textToRemove)
       }
 
       // Convert the canvas to a blob
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, "image/png", 1.0)
-      );
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png", 1.0))
 
       if (!blob) {
-        console.error("Failed to create blob from canvas");
-        return;
+        console.error("Failed to create blob from canvas")
+        return
       }
 
       // Create a downloadable link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
 
       // Include some Firebase data in the filename
-      const timestamp = new Date().getTime();
-      const filename = `editor_${postId || "1"}_${timestamp}.png`;
-      a.download = filename;
+      const timestamp = new Date().getTime()
+      const filename = `editor_${postId || "1"}_${timestamp}.png`
+      a.download = filename
 
       // Trigger download
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
 
-      console.log("Image downloaded successfully with Firebase data");
+      console.log("Image downloaded successfully with Firebase data")
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error("Error downloading image:", error)
     }
-  };
+  }
 
   useEffect(() => {
     const fetchBackgroundData = async () => {
       try {
-        const response = await axios.get(
-          "https://api.unsplash.com/search/photos",
-          {
-            params: {
-              client_id: ACCESS_KEY,
-              query: "abstract gradient background",
-              per_page: 30,
-              orientation: "landscape",
-            },
-          }
-        );
+        const response = await axios.get("https://api.unsplash.com/search/photos", {
+          params: {
+            client_id: ACCESS_KEY,
+            query: "abstract gradient background",
+            per_page: 30,
+            orientation: "landscape",
+          },
+        })
 
         if (response.data?.results?.length > 0) {
           const images = response.data.results.map((image) => ({
             url: image.urls.regular,
             color: image.color || "#ffffff",
             pattern: image.urls.thumb,
-          }));
+          }))
 
-          setBackgroundImages(images.map((image) => image.url));
-          setBackgroundColors(images.map((image) => image.color));
-          setColors(images.map((image) => image.color));
-          setPatterns(images.map((image) => image.pattern));
+          setBackgroundImages(images.map((image) => image.url))
+          setBackgroundColors(images.map((image) => image.color))
+          setColors(images.map((image) => image.color))
+          setPatterns(images.map((image) => image.pattern))
         }
       } catch (error) {
-        console.error("Error fetching backgrounds from Unsplash:", error);
+        console.error("Error fetching backgrounds from Unsplash:", error)
       }
-    };
+    }
 
-    fetchBackgroundData();
-  }, []);
+    fetchBackgroundData()
+  }, [])
 
   const closeModal = () => {
-    setIsOpen(false);
-    navigate("/posts");
-  };
+    setIsOpen(false)
+    navigate("/posts")
+  }
 
   const openModal = () => {
-    setIsOpen(true);
-  };
+    setIsOpen(true)
+  }
 
   // Add a shape to the canvas
   const handleAddShape = (shape: Shape) => {
-    const lastShape = shapes[shapes.length - 1];
-    const offset = lastShape ? 15 : 40; // First shape should have 40 offset
+    const lastShape = shapes[shapes.length - 1]
+    const offset = lastShape ? 15 : 40 // First shape should have 40 offset
     const newShape = {
       ...shape,
       x: lastShape ? lastShape.x + offset : offset,
@@ -453,71 +411,67 @@ const FullEditor: React.FC = () => {
       borderStyle: "solid", // Default border style
       borderColor: "#000000", // Default border color
       borderWidth: 0, // Default border width
-    };
-    const newShapes = [...shapes, newShape];
-    setShapes(newShapes);
-    addToHistory({ shapes: newShapes });
-  };
+    }
+    const newShapes = [...shapes, newShape]
+    setShapes(newShapes)
+    addToHistory({ shapes: newShapes })
+  }
 
   // Update a shape's properties
   const handleUpdateShape = (updatedShape: Shape) => {
-    const newShapes = shapes.map((shape) =>
-      shape.id === updatedShape.id ? updatedShape : shape
-    );
-    setShapes(newShapes);
-    addToHistory({ shapes: newShapes });
-  };
+    const newShapes = shapes.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape))
+    setShapes(newShapes)
+    addToHistory({ shapes: newShapes })
+  }
 
   // Update an image's properties
   const handleUpdateImage = (updatedImage: ImageData) => {
     // Update existing image or add new image
     setImages((currentImages) => {
-      const existingIndex = currentImages.findIndex(
-        (img) => img.id === updatedImage.id
-      );
+      const existingIndex = currentImages.findIndex((img) => img.id === updatedImage.id)
       if (existingIndex !== -1) {
-        const newImages = [...currentImages];
-        newImages[existingIndex] = updatedImage;
-        return newImages;
+        const newImages = [...currentImages]
+        newImages[existingIndex] = updatedImage
+        return newImages
       } else {
-        return [...currentImages, updatedImage];
+        return [...currentImages, updatedImage]
       }
-    });
+    })
 
     // Also update localStorage for persistence
-    localStorage.setItem("imageData", JSON.stringify(updatedImage));
-  };
+    localStorage.setItem("imageData", JSON.stringify(updatedImage))
+  }
 
   // Delete the selected shape
   const handleDeleteShape = (id: string) => {
-    const newShapes = shapes.filter((shape) => shape.id !== id);
-    setShapes(newShapes);
-    setSelectedShapeId(null);
-    addToHistory({ shapes: newShapes });
-  };
+    const newShapes = shapes.filter((shape) => shape.id !== id)
+    setShapes(newShapes)
+    setSelectedShapeId(null)
+    addToHistory({ shapes: newShapes })
+  }
 
   // Duplicate the selected shape
   const handleDuplicateShape = () => {
     if (selectedShapeId) {
-      const shapeToClone = shapes.find((shape) => shape.id === selectedShapeId);
+      const shapeToClone = shapes.find((shape) => shape.id === selectedShapeId)
       if (shapeToClone) {
         const newShape = {
           ...shapeToClone,
           id: `${shapeToClone.id}-copy-${Date.now()}`,
           x: shapeToClone.x + 20,
           y: shapeToClone.y + 20,
-        };
-        const newShapes = [...shapes, newShape];
-        setShapes(newShapes);
-        setSelectedShapeId(newShape.id);
-        addToHistory({ shapes: newShapes });
+        }
+        const newShapes = [...shapes, newShape]
+        setShapes(newShapes)
+        setSelectedShapeId(newShape.id)
+        addToHistory({ shapes: newShapes })
       }
     }
-  };
+  }
 
   // Duplicate the selected image
   const handleDuplicateImage = (imageId: string) => {
-    const imageToDuplicate = images.find((img) => img.id === imageId);
+    const imageToDuplicate = images.find((img) => img.id === imageId)
     if (imageToDuplicate) {
       const duplicatedImage: ImageData = {
         ...imageToDuplicate,
@@ -525,92 +479,90 @@ const FullEditor: React.FC = () => {
         x: imageToDuplicate.x + 20, // Offset slightly
         y: imageToDuplicate.y + 20,
         rotation: imageToDuplicate.rotation, // Preserve rotation
-      };
+      }
 
-      setImages((currentImages) => [...currentImages, duplicatedImage]);
-      localStorage.setItem("imageData", JSON.stringify(duplicatedImage));
-      setSelectedImageId(duplicatedImage.id);
+      setImages((currentImages) => [...currentImages, duplicatedImage])
+      localStorage.setItem("imageData", JSON.stringify(duplicatedImage))
+      setSelectedImageId(duplicatedImage.id)
 
       // Add the duplicated image to the canvas
-      setBackgroundImage(duplicatedImage.url);
+      setBackgroundImage(duplicatedImage.url)
     }
-  };
+  }
 
   // Delete the selected image
   const handleDeleteImage = (imageId: string) => {
-    setImages((currentImages) =>
-      currentImages.filter((img) => img.id !== imageId)
-    );
+    setImages((currentImages) => currentImages.filter((img) => img.id !== imageId))
 
     // Clear image from localStorage
-    localStorage.removeItem("imageData");
-    setSelectedImageId(null);
-  };
+    localStorage.removeItem("imageData")
+    setSelectedImageId(null)
+  }
 
   // Rotate the selected shape
   const handleRotateShape = () => {
     if (!selectedShapeId) {
-      console.error("No shape selected for rotation");
-      return;
+      console.error("No shape selected for rotation")
+      return
     }
 
-    const shapeToRotate = shapes.find((shape) => shape.id === selectedShapeId);
+    const shapeToRotate = shapes.find((shape) => shape.id === selectedShapeId)
     if (!shapeToRotate) {
-      console.error("Shape to rotate not found");
-      return;
+      console.error("Shape to rotate not found")
+      return
     }
 
-    const currentRotation = shapeToRotate.rotation;
+    const currentRotation = shapeToRotate.rotation
     if (typeof currentRotation !== "number" || isNaN(currentRotation)) {
-      console.error("Current rotation value is not a valid number");
-      return;
+      console.error("Current rotation value is not a valid number")
+      return
     }
 
-    const newRotation = (currentRotation + 45) % 360;
-    const updatedShape = { ...shapeToRotate, rotation: newRotation };
-    handleUpdateShape(updatedShape);
-  };
+    const newRotation = (currentRotation + 45) % 360
+    const updatedShape = { ...shapeToRotate, rotation: newRotation }
+    handleUpdateShape(updatedShape)
+  }
 
   // Rotate the selected image
   const handleRotateImage = () => {
     if (!selectedImageId) {
-      console.error("No image selected for rotation");
-      return;
+      console.error("No image selected for rotation")
+      return
     }
 
-    const imageToRotate = images.find((img) => img.id === selectedImageId);
+    const imageToRotate = images.find((img) => img.id === selectedImageId)
     if (!imageToRotate) {
-      console.error("Image to rotate not found");
-      return;
+      console.error("Image to rotate not found")
+      return
     }
 
-    const currentRotation = imageToRotate.rotation;
+    const currentRotation = imageToRotate.rotation
     if (typeof currentRotation !== "number" || isNaN(currentRotation)) {
-      console.error("Current rotation value is not a valid number");
-      return;
+      console.error("Current rotation value is not a valid number")
+      return
     }
 
-    const newRotation = (currentRotation + 45) % 360;
-    const updatedImage = { ...imageToRotate, rotation: newRotation };
-    handleUpdateImage(updatedImage);
-  };
+    const newRotation = (currentRotation + 45) % 360
+    const updatedImage = { ...imageToRotate, rotation: newRotation }
+    handleUpdateImage(updatedImage)
+  }
 
   const handleEffectChange = (effect: string, value: number) => {
     // Handle nested properties like shadow.blur
     if (effect.includes(".")) {
-      const [parent, child] = effect.split(".");
+      const [parent, child] = effect.split(".")
       setImageEffects((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
           [child]: value,
         },
-      }));
+      }))
     } else {
       setImageEffects((prev) => ({
         ...prev,
         [effect]: value,
-      }));
+      }))
     }
 
     // Add to history
@@ -619,64 +571,56 @@ const FullEditor: React.FC = () => {
         ...imageEffects,
         [effect]: value,
       },
-    });
-  };
+    })
+  }
 
   // Add to history
   const addToHistory = (state: any) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(state);
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
+    const newHistory = history.slice(0, historyIndex + 1)
+    newHistory.push(state)
+    setHistory(newHistory)
+    setHistoryIndex(newHistory.length - 1)
+  }
 
   // Undo action
   const handleUndo = () => {
     if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      const previousState = history[historyIndex - 1];
-      setShapes(previousState.shapes || []);
-      setBackgroundColor(previousState.backgroundColor || "#ffffff");
-      setPostBody(previousState.postBody || "");
+      setHistoryIndex(historyIndex - 1)
+      const previousState = history[historyIndex - 1]
+      setShapes(previousState.shapes || [])
+      setBackgroundColor(previousState.backgroundColor || "#ffffff")
+      setPostBody(previousState.postBody || "")
 
       // Restore image editing state if available
-      if (previousState.imageScale !== undefined)
-        setImageScale(previousState.imageScale);
-      if (previousState.imagePosition !== undefined)
-        setImagePosition(previousState.imagePosition);
-      if (previousState.imageFilters !== undefined)
-        setImageFilters(previousState.imageFilters);
-      if (previousState.scaleX !== undefined) setScaleX(previousState.scaleX);
-      if (previousState.scaleY !== undefined) setScaleY(previousState.scaleY);
-      if (previousState.imageEffects !== undefined)
-        setImageEffects(previousState.imageEffects);
-      if (previousState.images !== undefined) setImages(previousState.images);
+      if (previousState.imageScale !== undefined) setImageScale(previousState.imageScale)
+      if (previousState.imagePosition !== undefined) setImagePosition(previousState.imagePosition)
+      if (previousState.imageFilters !== undefined) setImageFilters(previousState.imageFilters)
+      if (previousState.scaleX !== undefined) setScaleX(previousState.scaleX)
+      if (previousState.scaleY !== undefined) setScaleY(previousState.scaleY)
+      if (previousState.imageEffects !== undefined) setImageEffects(previousState.imageEffects)
+      if (previousState.images !== undefined) setImages(previousState.images)
     }
-  };
+  }
 
   // Redo action
   const handleRedo = () => {
     if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      const nextState = history[historyIndex + 1];
-      setShapes(nextState.shapes || []);
-      setBackgroundColor(nextState.backgroundColor || "#ffffff");
-      setPostBody(nextState.postBody || "");
+      setHistoryIndex(historyIndex + 1)
+      const nextState = history[historyIndex + 1]
+      setShapes(nextState.shapes || [])
+      setBackgroundColor(nextState.backgroundColor || "#ffffff")
+      setPostBody(nextState.postBody || "")
 
       // Restore image editing state if available
-      if (nextState.imageScale !== undefined)
-        setImageScale(nextState.imageScale);
-      if (nextState.imagePosition !== undefined)
-        setImagePosition(nextState.imagePosition);
-      if (nextState.imageFilters !== undefined)
-        setImageFilters(nextState.imageFilters);
-      if (nextState.scaleX !== undefined) setScaleX(nextState.scaleX);
-      if (nextState.scaleY !== undefined) setScaleY(nextState.scaleY);
-      if (nextState.imageEffects !== undefined)
-        setImageEffects(nextState.imageEffects);
-      if (nextState.images !== undefined) setImages(nextState.images);
+      if (nextState.imageScale !== undefined) setImageScale(nextState.imageScale)
+      if (nextState.imagePosition !== undefined) setImagePosition(nextState.imagePosition)
+      if (nextState.imageFilters !== undefined) setImageFilters(nextState.imageFilters)
+      if (nextState.scaleX !== undefined) setScaleX(nextState.scaleX)
+      if (nextState.scaleY !== undefined) setScaleY(nextState.scaleY)
+      if (nextState.imageEffects !== undefined) setImageEffects(nextState.imageEffects)
+      if (nextState.images !== undefined) setImages(nextState.images)
     }
-  };
+  }
 
   // Initialize history
   useEffect(() => {
@@ -706,78 +650,74 @@ const FullEditor: React.FC = () => {
           },
           images: [],
         },
-      ]);
-      setHistoryIndex(0);
+      ])
+      setHistoryIndex(0)
     }
-  }, [history]);
+  }, [history])
 
   // Enhanced image editing functions
   const handleCrop = () => {
-    setIsCropping(true);
-    setSelectedTool("crop");
-  };
+    setIsCropping(true)
+    setSelectedTool("crop")
+  }
   const handleFlipHorizontal = () => {
-    const newScaleX = scaleX * -1;
-    setScaleX(newScaleX);
-    addToHistory({ scaleX: newScaleX });
-  };
+    const newScaleX = scaleX * -1
+    setScaleX(newScaleX)
+    addToHistory({ scaleX: newScaleX })
+  }
 
   const handleCropStart = (x: number, y: number) => {
-    setCropArea({ x, y, width: 0, height: 0 });
-  };
+    setCropArea({ x, y, width: 0, height: 0 })
+  }
 
   const handleCropMove = (width: number, height: number) => {
     if (cropArea) {
-      setCropArea({ ...cropArea, width, height });
+      setCropArea({ ...cropArea, width, height })
     }
-  };
+  }
 
   const handleCropComplete = () => {
     // Finalize crop area
-    if (
-      cropArea &&
-      Math.abs(cropArea.width) > 10 &&
-      Math.abs(cropArea.height) > 10
-    ) {
+    if (cropArea && Math.abs(cropArea.width) > 10 && Math.abs(cropArea.height) > 10) {
       // Normalize crop area (handle negative width/height)
       const normalizedCropArea = {
         x: cropArea.width < 0 ? cropArea.x + cropArea.width : cropArea.x,
         y: cropArea.height < 0 ? cropArea.y + cropArea.height : cropArea.y,
         width: Math.abs(cropArea.width),
         height: Math.abs(cropArea.height),
-      };
-      setCropArea(normalizedCropArea);
+      }
+      setCropArea(normalizedCropArea)
     } else {
       // Cancel crop if area is too small
-      handleCropCancel();
+      handleCropCancel()
     }
-  };
+  }
 
   const handleCropCancel = () => {
-    setIsCropping(false);
-    setCropArea(null);
-    setSelectedTool(null);
-  };
+    setIsCropping(false)
+    setCropArea(null)
+    setSelectedTool(null)
+  }
 
   const handleCropApply = () => {
-    if (!cropArea || !backgroundImage) return;
+    if (!cropArea || !backgroundImage) return
 
     // Create a temporary canvas for cropping
-    const tempCanvas = document.createElement("canvas");
-    const tempCtx = tempCanvas.getContext("2d");
-    if (!tempCtx) return;
+    const tempCanvas = document.createElement("canvas")
+    const tempCtx = tempCanvas.getContext("2d")
+    if (!tempCtx) return
 
     // Create a new image from the background image
-    const img = new Image();
-    img.crossOrigin = "anonymous";
+    const img = new Image()
+    img.crossOrigin = "anonymous"
     img.onload = () => {
       // Calculate the scale factor between the displayed image and the original
-      const displayedWidth = img.width * imageScale;
-      const displayedHeight = img.height * imageScale;
+      const displayedWidth = img.width * imageScale
+      const displayedHeight = img.height * imageScale
 
       // Set canvas size to the crop area
-      tempCanvas.width = cropArea.width;
-      tempCanvas.height = cropArea.height;
+      tempCanvas.width = cropArea.width
+      tempCanvas.height = cropArea.height
 
       // Draw only the cropped portion to the canvas
       tempCtx.drawImage(
@@ -789,25 +729,25 @@ const FullEditor: React.FC = () => {
         0,
         0,
         cropArea.width,
-        cropArea.height
-      );
+        cropArea.height,
+      )
 
       // Get the cropped image as data URL
-      const croppedImageUrl = tempCanvas.toDataURL("image/png");
+      const croppedImageUrl = tempCanvas.toDataURL("image/png")
 
       // Update the background image
-      setBackgroundImage(croppedImageUrl);
+      setBackgroundImage(croppedImageUrl)
 
       // Reset crop
-      setIsCropping(false);
-      setCropArea(null);
-      setSelectedTool(null);
+      setIsCropping(false)
+      setCropArea(null)
+      setSelectedTool(null)
 
       // Reset image position and scale
-      setImagePosition({ x: 0, y: 0 });
-      setImageScale(1);
-      setScaleX(1);
-      setScaleY(1);
+      setImagePosition({ x: 0, y: 0 })
+      setImageScale(1)
+      setScaleX(1)
+      setScaleY(1)
 
       // Add to history
       addToHistory({
@@ -816,11 +756,11 @@ const FullEditor: React.FC = () => {
         imagePosition: { x: 0, y: 0 },
         scaleX: 1,
         scaleY: 1,
-      });
-    };
+      })
+    }
 
-    img.src = backgroundImage;
-  };
+    img.src = backgroundImage
+  }
 
   const handleImageDragStart = (x: number, y: number) => {
     // Store the initial position for drag calculation
@@ -828,55 +768,55 @@ const FullEditor: React.FC = () => {
       ...prev,
       startX: x,
       startY: y,
-    }));
-  };
+    }))
+  }
 
   const handleImageDrag = (deltaX: number, deltaY: number) => {
     // Update image position based on drag
     setImagePosition((prev) => ({
       x: prev.x + deltaX,
       y: prev.y + deltaY,
-    }));
-  };
+    }))
+  }
 
   const handleImageDragEnd = () => {
     // Add to history when drag ends
-    addToHistory({ imagePosition });
-  };
+    addToHistory({ imagePosition })
+  }
 
   const handleFlipVertical = () => {
-    const newScaleY = scaleY * -1;
-    setScaleY(newScaleY);
-    addToHistory({ scaleY: newScaleY });
-  };
+    const newScaleY = scaleY * -1
+    setScaleY(newScaleY)
+    addToHistory({ scaleY: newScaleY })
+  }
 
   const handleZoomIn = () => {
-    const newScale = imageScale * 1.1;
-    setImageScale(newScale);
-    addToHistory({ imageScale: newScale });
-  };
+    const newScale = imageScale * 1.1
+    setImageScale(newScale)
+    addToHistory({ imageScale: newScale })
+  }
 
   const handleZoomOut = () => {
-    const newScale = Math.max(0.1, imageScale * 0.9);
-    setImageScale(newScale);
-    addToHistory({ imageScale: newScale });
-  };
+    const newScale = Math.max(0.1, imageScale * 0.9)
+    setImageScale(newScale)
+    addToHistory({ imageScale: newScale })
+  }
 
   const handleFitToPage = () => {
     if (selectedImage) {
-      setBackgroundImage(selectedImage);
-      setSelectedImage(null);
+      setBackgroundImage(selectedImage)
+      setSelectedImage(null)
 
       // Reset all transformations
-      setImageScale(1);
-      setImagePosition({ x: 0, y: 0 });
-      setScaleX(1);
-      setScaleY(1);
+      setImageScale(1)
+      setImagePosition({ x: 0, y: 0 })
+      setScaleX(1)
+      setScaleY(1)
       setImageFilters({
         brightness: 100,
         contrast: 100,
         saturation: 100,
-      });
+      })
       addToHistory({
         backgroundImage: selectedImage,
         imageScale: 1,
@@ -888,372 +828,79 @@ const FullEditor: React.FC = () => {
           contrast: 100,
           saturation: 100,
         },
-      });
+      })
 
       // Apply fit to page logic
-      const canvasElement = document.getElementById("canvas");
+      const canvasElement = document.getElementById("canvas")
       if (canvasElement) {
-        const canvasWidth = canvasElement.clientWidth;
-        const canvasHeight = canvasElement.clientHeight;
-        const imageElement = new Image();
-        imageElement.src = selectedImage;
+        const canvasWidth = canvasElement.clientWidth
+        const canvasHeight = canvasElement.clientHeight
+        const imageElement = new Image()
+        imageElement.src = selectedImage
         imageElement.onload = () => {
-          const imageWidth = imageElement.width;
-          const imageHeight = imageElement.height;
-          const widthRatio = canvasWidth / imageWidth;
-          const heightRatio = canvasHeight / imageHeight;
-          const fitScale = Math.min(widthRatio, heightRatio);
-          setImageScale(fitScale);
+          const imageWidth = imageElement.width
+          const imageHeight = imageElement.height
+          const widthRatio = canvasWidth / imageWidth
+          const heightRatio = canvasHeight / imageHeight
+          const fitScale = Math.min(widthRatio, heightRatio)
+          setImageScale(fitScale)
           setImagePosition({
             x: (canvasWidth - imageWidth * fitScale) / 2,
             y: (canvasHeight - imageHeight * fitScale) / 2,
-          });
+          })
           addToHistory({
             imageScale: fitScale,
             imagePosition: {
               x: (canvasWidth - imageWidth * fitScale) / 2,
               y: (canvasHeight - imageHeight * fitScale) / 2,
             },
-          });
-        };
+          })
+        }
       }
     }
-  };
+  }
 
   const handleBrightnessChange = (value: number) => {
     setImageFilters((prev) => ({
       ...prev,
       brightness: value,
-    }));
-  };
+    }))
+  }
 
   const handleContrastChange = (value: number) => {
     setImageFilters((prev) => ({
       ...prev,
       contrast: value,
-    }));
-  };
+    }))
+  }
 
   const handleSaturationChange = (value: number) => {
     setImageFilters((prev) => ({
       ...prev,
       saturation: value,
-    }));
-  };
+    }))
+  }
 
   const handleFilterChangeComplete = () => {
-    addToHistory({ imageFilters });
-  };
+    addToHistory({ imageFilters })
+  }
 
   const handleEffects = () => {
-    setActiveTab(activeTab === "effects" ? "images" : "effects");
-  };
+    setActiveTab(activeTab === "effects" ? "images" : "effects")
+  }
 
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        setBackgroundImage(imageUrl);
-        addToHistory({ backgroundImage: imageUrl });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleApplyMask = (maskType: string) => {
-    if (!backgroundImage) return;
-
-    // Get the currently selected image element in the editor
-    const selectedImageElement =
-      document.querySelector("#canvas img.selected") ||
-      document.querySelector("#canvas img");
-    if (!selectedImageElement) return;
-
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      // Draw original image
-      ctx.drawImage(img, 0, 0);
-
-      // Apply mask directly to the context
-      ctx.globalCompositeOperation = "destination-in";
-      ctx.fillStyle = "#000000";
-      ctx.beginPath();
-
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const size = Math.min(canvas.width, canvas.height);
-
-      switch (maskType) {
-        case "circle":
-          ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
-          break;
-        case "square":
-          ctx.rect(centerX - size / 2, centerY - size / 2, size, size);
-          break;
-        case "rectangle":
-          const rectWidth = size;
-          const rectHeight = size * 0.75;
-          ctx.rect(
-            centerX - rectWidth / 2,
-            centerY - rectHeight / 2,
-            rectWidth,
-            rectHeight
-          );
-          break;
-        case "triangle":
-          ctx.moveTo(centerX, centerY - size / 2);
-          ctx.lineTo(centerX + size / 2, centerY + size / 2);
-          ctx.lineTo(centerX - size / 2, centerY + size / 2);
-          break;
-        case "diamond":
-          ctx.moveTo(centerX, centerY - size / 2);
-          ctx.lineTo(centerX + size / 2, centerY);
-          ctx.lineTo(centerX, centerY + size / 2);
-          ctx.lineTo(centerX - size / 2, centerY);
-          break;
-        case "pentagon":
-          for (let i = 0; i < 5; i++) {
-            const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
-            const x = centerX + (size / 2) * Math.cos(angle);
-            const y = centerY + (size / 2) * Math.sin(angle);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          break;
-        case "hexagon":
-          for (let i = 0; i < 6; i++) {
-            const angle = (i * 2 * Math.PI) / 6;
-            const x = centerX + (size / 2) * Math.cos(angle);
-            const y = centerY + (size / 2) * Math.sin(angle);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          break;
-        case "octagon":
-          for (let i = 0; i < 8; i++) {
-            const angle = (i * 2 * Math.PI) / 8;
-            const x = centerX + (size / 2) * Math.cos(angle);
-            const y = centerY + (size / 2) * Math.sin(angle);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          break;
-        case "star":
-          for (let i = 0; i < 10; i++) {
-            const angle = (i * Math.PI) / 5 - Math.PI / 2;
-            const radius = i % 2 === 0 ? size / 2 : size / 4;
-            const x = centerX + radius * Math.cos(angle);
-            const y = centerY + radius * Math.sin(angle);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          break;
-        case "heart":
-          const topCurveHeight = size * 0.3;
-          ctx.moveTo(centerX, centerY + size / 4);
-          ctx.bezierCurveTo(
-            centerX,
-            centerY,
-            centerX - size / 2,
-            centerY,
-            centerX - size / 2,
-            centerY - topCurveHeight
-          );
-          ctx.bezierCurveTo(
-            centerX - size / 2,
-            centerY - size / 2,
-            centerX,
-            centerY - size / 3,
-            centerX,
-            centerY - size / 3
-          );
-          ctx.bezierCurveTo(
-            centerX,
-            centerY - size / 3,
-            centerX + size / 2,
-            centerY - size / 2,
-            centerX + size / 2,
-            centerY - topCurveHeight
-          );
-          ctx.bezierCurveTo(
-            centerX + size / 2,
-            centerY,
-            centerX,
-            centerY,
-            centerX,
-            centerY + size / 4
-          );
-          break;
-        case "cloud":
-          const radius = size / 4;
-          ctx.arc(centerX - radius, centerY, radius, Math.PI, 0, true);
-          ctx.arc(
-            centerX,
-            centerY - radius,
-            radius,
-            Math.PI * 1.5,
-            Math.PI * 0.5,
-            true
-          );
-          ctx.arc(centerX + radius, centerY, radius, Math.PI, 0, true);
-          ctx.arc(
-            centerX + radius,
-            centerY + radius,
-            radius,
-            Math.PI * 1.5,
-            Math.PI * 0.5,
-            true
-          );
-          ctx.arc(
-            centerX - radius,
-            centerY + radius,
-            radius,
-            Math.PI * 1.5,
-            Math.PI * 0.5,
-            true
-          );
-          break;
-        case "cross":
-          const armWidth = size / 3;
-          const armLength = size / 2;
-          ctx.rect(centerX - armWidth / 2, centerY - armLength, armWidth, size);
-          ctx.rect(centerX - armLength, centerY - armWidth / 2, size, armWidth);
-          break;
-        case "shield":
-          ctx.moveTo(centerX, centerY - size / 2);
-          ctx.lineTo(centerX + size / 2, centerY - size / 4);
-          ctx.quadraticCurveTo(
-            centerX + size / 2,
-            centerY + size / 2,
-            centerX,
-            centerY + size / 2
-          );
-          ctx.quadraticCurveTo(
-            centerX - size / 2,
-            centerY + size / 2,
-            centerX - size / 2,
-            centerY - size / 4
-          );
-          break;
-        case "blob1":
-          ctx.moveTo(centerX, centerY - size / 2);
-          ctx.bezierCurveTo(
-            centerX + size / 3,
-            centerY - size / 2,
-            centerX + size / 2,
-            centerY - size / 3,
-            centerX + size / 2,
-            centerY
-          );
-          ctx.bezierCurveTo(
-            centerX + size / 2,
-            centerY + size / 3,
-            centerX + size / 3,
-            centerY + size / 2,
-            centerX,
-            centerY + size / 2
-          );
-          ctx.bezierCurveTo(
-            centerX - size / 3,
-            centerY + size / 2,
-            centerX - size / 2,
-            centerY + size / 3,
-            centerX - size / 2,
-            centerY
-          );
-          ctx.bezierCurveTo(
-            centerX - size / 2,
-            centerY - size / 3,
-            centerX - size / 3,
-            centerY - size / 2,
-            centerX,
-            centerY - size / 2
-          );
-          break;
-        case "blob2":
-          ctx.moveTo(centerX, centerY - size / 2);
-          ctx.bezierCurveTo(
-            centerX + size / 2,
-            centerY - size / 3,
-            centerX + size / 3,
-            centerY + size / 3,
-            centerX,
-            centerY + size / 2
-          );
-          ctx.bezierCurveTo(
-            centerX - size / 3,
-            centerY + size / 3,
-            centerX - size / 2,
-            centerY - size / 3,
-            centerX,
-            centerY - size / 2
-          );
-          break;
-        case "wave":
-          const amplitude = size / 4;
-          const frequency = Math.PI * 2;
-          ctx.moveTo(0, centerY);
-          for (let x = 0; x < canvas.width; x++) {
-            const y =
-              centerY + amplitude * Math.sin((x / canvas.width) * frequency);
-            ctx.lineTo(x, y);
-          }
-          ctx.lineTo(canvas.width, canvas.height);
-          ctx.lineTo(0, canvas.height);
-          break;
-        default:
-          ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
+        const imageUrl = e.target?.result as string
+        setBackgroundImage(imageUrl)
+        addToHistory({ backgroundImage: imageUrl })
       }
-
-      ctx.closePath();
-      ctx.fill();
-
-      // Get the masked image data
-      const maskedImageUrl = canvas.toDataURL("image/png");
-
-      // Update only the selected image in the editor
-      selectedImageElement.src = maskedImageUrl;
-
-      // Update the background image state only if it's the main image
-      if (selectedImageElement.classList.contains("main-image")) {
-        setBackgroundImage(maskedImageUrl);
-      }
-
-      // Add to history
-      addToHistory({
-        backgroundImage: maskedImageUrl,
-        imageScale,
-        imageRotation,
-        imagePosition,
-        scaleX,
-        scaleY,
-        imageFilters,
-      });
-    };
-
-    // Use the original image source if available, otherwise use current source
-    const imageId = selectedImageElement.dataset.imageId;
-    if (!originalImages[imageId]) {
-      // Store the original image when first applying a mask
-      setOriginalImages((prev) => ({
-        ...prev,
-        [imageId]: selectedImageElement.src,
-      }));
-      img.src = selectedImageElement.src;
-    } else {
-      // Use the original image for subsequent masks
-      img.src = originalImages[imageId];
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const items = [
     {
@@ -1264,12 +911,12 @@ const FullEditor: React.FC = () => {
       key: "2",
       label: "Option 2",
     },
-  ];
+  ]
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "text":
-        return <TextTabContent onAddText={handleAddText} />;
+        return <TextTabContent onAddText={handleAddText} />
       case "images":
         return (
           <ImagesTabContent
@@ -1277,48 +924,38 @@ const FullEditor: React.FC = () => {
             onDuplicateImage={handleDuplicateImage}
             onDeleteImage={handleDeleteImage}
           />
-        );
+        )
       case "elements":
-        return <ElementsTabContent />;
+        return <ElementsTabContent />
       case "background":
         return (
           <BackgroundTabContent
             onColorChange={(color) => {
-              setBackgroundImage(null); // Clear pattern when color is selected
-              setBackgroundColor(color);
-              addToHistory({ backgroundColor: color });
+              setBackgroundImage(null) // Clear pattern when color is selected
+              setBackgroundColor(color)
+              addToHistory({ backgroundColor: color })
             }}
             colors={colors}
             patterns={patterns}
             onPatternSelect={(pattern) => {
-              setBackgroundColor("#ffffff"); // Reset color when pattern is selected
-              setBackgroundImage(pattern);
-              addToHistory({ backgroundImage: pattern });
+              setBackgroundColor("#ffffff") // Reset color when pattern is selected
+              setBackgroundImage(pattern)
+              addToHistory({ backgroundImage: pattern })
             }}
           />
-        );
+        )
       case "layers":
-        return (
-          <LayersTabContent
-            shapes={shapes}
-            onSelectShape={setSelectedShapeId}
-            selectedShapeId={selectedShapeId}
-          />
-        );
+        return <LayersTabContent shapes={shapes} onSelectShape={setSelectedShapeId} selectedShapeId={selectedShapeId} />
       case "size":
-        return <SizeTabContent />;
+        return <SizeTabContent />
       case "shapes":
-        return <ShapesTabContent onAddShape={handleAddShape} />;
+        return <ShapesTabContent onAddShape={handleAddShape} />
       case "selectedImage":
         return (
           <div className="w-full h-full flex items-center justify-center">
-            <img
-              src={selectedImage || ""}
-              alt="Selected"
-              className="max-w-full max-h-full"
-            />
+            <img src={selectedImage || ""} alt="Selected" className="max-w-full max-h-full" />
           </div>
-        );
+        )
       case "effects":
         return (
           <EffectsPanel
@@ -1327,92 +964,89 @@ const FullEditor: React.FC = () => {
             effects={imageEffects}
             onEffectChange={handleEffectChange}
             onEffectToggle={(effect) => {
-              console.log(`Effect ${effect} toggled`);
+              console.log(`Effect ${effect} toggled`)
             }}
           />
-        );
+        )
       default:
-        return <TextTabContent onAddText={handleAddText} />;
+        return <TextTabContent onAddText={handleAddText} />
     }
-  };
+  }
 
   const handleAddText = (textType: string) => {
-    const newTextArea = createTextArea(textType);
-    setPostBody((prevBody) => prevBody + "\n" + newTextArea.textContent); // Append new text content to the existing post body
-  };
+    const newTextArea = createTextArea(textType)
+    setPostBody((prevBody) => prevBody + "\n" + newTextArea.textContent) // Append new text content to the existing post body
+  }
 
   const createTextArea = (textType: string) => {
-    let defaultText = "";
+    let defaultText = ""
 
     // Set default text based on type
     switch (textType) {
       case "header":
-        defaultText = "Header";
-        break;
+        defaultText = "Header"
+        break
       case "h2":
-        defaultText = "Sub Header";
-        break;
+        defaultText = "Sub Header"
+        break
       case "p":
-        defaultText = "Body Text";
-        break;
+        defaultText = "Body Text"
+        break
       default:
-        defaultText = "New Text";
+        defaultText = "New Text"
     }
 
     return {
       id: `textarea-${Date.now()}`,
       textContent: defaultText, // This sets the initial visible text
-    };
-  };
+    }
+  }
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Delete" && selectedShapeId) {
-      handleDeleteShape(selectedShapeId);
+      handleDeleteShape(selectedShapeId)
     } else if (event.ctrlKey && event.key === "c" && selectedShapeId) {
-      handleDuplicateShape();
+      handleDuplicateShape()
     }
-  };
+  }
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown)
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedShapeId]);
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [selectedShapeId])
 
   const handleClickOutside = (event: MouseEvent) => {
-    const editorElement = document.querySelector(".editor-container");
+    const editorElement = document.querySelector(".editor-container")
     if (editorElement && !editorElement.contains(event.target as Node)) {
-      navigate("/posts");
+      navigate("/posts")
     }
-  };
+  }
 
   useEffect(() => {
-    window.addEventListener("click", handleClickOutside);
+    window.addEventListener("click", handleClickOutside)
     return () => {
-      window.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
+      window.removeEventListener("click", handleClickOutside)
+    }
+  }, [])
 
   const generateUniqueId = () => {
-    return (
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15)
-    );
-  };
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  }
 
   const handleImageSelect = (image: string) => {
-    setBackgroundImage(image);
+    setBackgroundImage(image)
     // Reset all transformations when selecting a new image
-    setImageScale(1);
-    setImagePosition({ x: 0, y: 0 });
-    setScaleX(1);
-    setScaleY(1);
+    setImageScale(1)
+    setImagePosition({ x: 0, y: 0 })
+    setScaleX(1)
+    setScaleY(1)
     setImageFilters({
       brightness: 100,
       contrast: 100,
       saturation: 100,
-    });
+    })
     addToHistory({
       backgroundImage: image,
       imageScale: 1,
@@ -1424,8 +1058,8 @@ const FullEditor: React.FC = () => {
         contrast: 100,
         saturation: 100,
       },
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -1456,10 +1090,7 @@ const FullEditor: React.FC = () => {
               >
                 <Dialog.Panel className="w-full max-w-[95%] h-[70vh] transform overflow-hidden rounded-lg bg-white shadow-xl transition-all editor-container">
                   <div className="flex justify-between items-center px-4 py-3 border-b">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium flex items-center"
-                    >
+                    <Dialog.Title as="h3" className="text-lg font-medium flex items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5 mr-2"
@@ -1542,9 +1173,7 @@ const FullEditor: React.FC = () => {
                       <div className="flex flex-col items-center">
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "text"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "text" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("text")}
                         >
@@ -1554,9 +1183,7 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "images"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "images" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("images")}
                         >
@@ -1579,9 +1206,7 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "elements"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "elements" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("shapes")}
                         >
@@ -1604,9 +1229,7 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "background"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "background" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("background")}
                         >
@@ -1629,9 +1252,7 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "layers"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "layers" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("layers")}
                         >
@@ -1654,9 +1275,7 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "size"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "size" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("size")}
                         >
@@ -1679,9 +1298,7 @@ const FullEditor: React.FC = () => {
 
                         <button
                           className={`w-full py-4 flex flex-col items-center justify-center ${
-                            activeTab === "selectedImage"
-                              ? "bg-blue-100"
-                              : "hover:bg-gray-100"
+                            activeTab === "selectedImage" ? "bg-blue-100" : "hover:bg-gray-100"
                           } hover:cursor-pointer`}
                           onClick={() => setActiveTab("selectedImage")}
                         >
@@ -1707,9 +1324,7 @@ const FullEditor: React.FC = () => {
                     {/* Main content */}
                     <div className="flex-1 flex">
                       {/* Sidebar for active tab */}
-                      <div className="w-1/5 p-4 shadow">
-                        {renderTabContent()}
-                      </div>
+                      <div className="w-1/5 p-4 shadow">{renderTabContent()}</div>
 
                       <div className="flex-1 flex flex-col">
                         {/* Toolbar */}
@@ -1717,61 +1332,49 @@ const FullEditor: React.FC = () => {
                           <Toolbar
                             onFontChange={(font) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId
-                                  ? { ...shape, fontFamily: font }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === editingTextId ? { ...shape, fontFamily: font } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onFontSizeChange={(size) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId
-                                  ? { ...shape, fontSize: size }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === editingTextId ? { ...shape, fontSize: size } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId
-                                  ? { ...shape, color }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === editingTextId ? { ...shape, color } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onBackgroundColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === editingTextId
-                                  ? { ...shape, backgroundColor: color }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === editingTextId ? { ...shape, backgroundColor: color } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onCopy={() => {
-                              const shapeToCopy = shapes.find(
-                                (shape) => shape.id === editingTextId
-                              );
+                              const shapeToCopy = shapes.find((shape) => shape.id === editingTextId)
                               if (shapeToCopy) {
                                 const copiedShape = {
                                   ...shapeToCopy,
                                   id: generateUniqueId(),
-                                };
-                                setShapes([...shapes, copiedShape]);
+                                }
+                                setShapes([...shapes, copiedShape])
                                 addToHistory({
                                   shapes: [...shapes, copiedShape],
-                                });
+                                })
                               }
                             }}
                             onDelete={() => {
-                              const updatedShapes = shapes.filter(
-                                (shape) => shape.id !== editingTextId
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                              const updatedShapes = shapes.filter((shape) => shape.id !== editingTextId)
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onUndo={handleUndo}
                             onRedo={handleRedo}
@@ -1780,57 +1383,45 @@ const FullEditor: React.FC = () => {
                           <ShapeToolbar
                             onColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, color }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === selectedShapeId ? { ...shape, color } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onTransparencyChange={(transparency) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, transparency }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === selectedShapeId ? { ...shape, transparency } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onEffectsChange={(effects) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, effects }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === selectedShapeId ? { ...shape, effects } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onBorderStyleChange={(style) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, borderStyle: style }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === selectedShapeId ? { ...shape, borderStyle: style } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onBorderColorChange={(color) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, borderColor: color }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === selectedShapeId ? { ...shape, borderColor: color } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onBorderWidthChange={(width) => {
                               const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, borderWidth: width }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({ shapes: updatedShapes });
+                                shape.id === selectedShapeId ? { ...shape, borderWidth: width } : shape,
+                              )
+                              setShapes(updatedShapes)
+                              addToHistory({ shapes: updatedShapes })
                             }}
                             onCopy={handleDuplicateShape}
                             onDelete={() => handleDeleteShape(selectedShapeId)}
@@ -1851,7 +1442,6 @@ const FullEditor: React.FC = () => {
                             onZoomOut={handleZoomOut}
                             onFitToPage={handleFitToPage}
                             onEffects={handleEffects}
-                            onApplyMask={handleApplyMask}
                             onUpload={handleUpload}
                             onSelectTool={setSelectedTool}
                             onDuplicateImage={handleDuplicateImage}
@@ -1860,8 +1450,8 @@ const FullEditor: React.FC = () => {
                         ) : backgroundColor ? (
                           <BackgroundToolbar
                             onColorChange={(color) => {
-                              setBackgroundColor(color);
-                              addToHistory({ backgroundColor: color });
+                              setBackgroundColor(color)
+                              addToHistory({ backgroundColor: color })
                             }}
                             onUndo={handleUndo}
                             onRedo={handleRedo}
@@ -1925,18 +1515,15 @@ const FullEditor: React.FC = () => {
                                       type="color"
                                       className="cursor-pointer w-8 rounded h-7"
                                       onChange={(e) => {
-                                        const newColor = e.target.value;
+                                        const newColor = e.target.value
                                         if (selectedShapeId) {
-                                          const updatedShapes = shapes.map(
-                                            (shape) =>
-                                              shape.id === selectedShapeId
-                                                ? { ...shape, color: newColor }
-                                                : shape
-                                          );
-                                          setShapes(updatedShapes);
+                                          const updatedShapes = shapes.map((shape) =>
+                                            shape.id === selectedShapeId ? { ...shape, color: newColor } : shape,
+                                          )
+                                          setShapes(updatedShapes)
                                           addToHistory({
                                             shapes: updatedShapes,
-                                          });
+                                          })
                                         }
                                       }}
                                     />
@@ -1959,10 +1546,7 @@ const FullEditor: React.FC = () => {
                               </button>
                               <button
                                 className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                                onClick={() =>
-                                  selectedShapeId &&
-                                  handleDeleteShape(selectedShapeId)
-                                }
+                                onClick={() => selectedShapeId && handleDeleteShape(selectedShapeId)}
                                 disabled={!selectedShapeId}
                               >
                                 <TrashIcon className="h-5 w-5 text-gray-500" />
@@ -2037,21 +1621,17 @@ const FullEditor: React.FC = () => {
                               className="w-[40vw] h-[10vh] resize border-none focus:outline-none"
                               value={postBody}
                               onChange={(e) => {
-                                setPostBody(e.target.value);
-                                addToHistory({ postBody: e.target.value });
+                                setPostBody(e.target.value)
+                                addToHistory({ postBody: e.target.value })
                               }}
                               onFocus={() => setIsTextAreaActive(true)}
                               onBlur={(e) => {
-                                const toolbarElement =
-                                  document.getElementById("toolfix");
-                                if (
-                                  !toolbarElement ||
-                                  !toolbarElement.contains(e.relatedTarget)
-                                ) {
-                                  setIsTextAreaActive(false);
+                                const toolbarElement = document.getElementById("toolfix")
+                                if (!toolbarElement || !toolbarElement.contains(e.relatedTarget)) {
+                                  setIsTextAreaActive(false)
                                   if (!postBodyActive) {
                                     // Perform any additional actions when clicking outside
-                                    console.log("Clicked outside the textarea");
+                                    console.log("Clicked outside the textarea")
                                   }
                                 }
                               }}
@@ -2064,20 +1644,14 @@ const FullEditor: React.FC = () => {
                           <div className="absolute bottom-4 right-4 flex items-center bg-white rounded-md shadow-sm">
                             <button
                               className="p-2 hover:bg-gray-100 rounded-l-md hover:cursor-pointer"
-                              onClick={() =>
-                                setZoomLevel(Math.max(25, zoomLevel - 25))
-                              }
+                              onClick={() => setZoomLevel(Math.max(25, zoomLevel - 25))}
                             >
                               <MinusIcon className="h-4 w-4" />
                             </button>
-                            <div className="px-3 py-1 border-l border-r">
-                              {zoomLevel}%
-                            </div>
+                            <div className="px-3 py-1 border-l border-r">{zoomLevel}%</div>
                             <button
                               className="p-2 hover:bg-gray-100 rounded-r-md hover:cursor-pointer"
-                              onClick={() =>
-                                setZoomLevel(Math.min(200, zoomLevel + 25))
-                              }
+                              onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
                             >
                               <PlusIcon className="h-4 w-4" />
                             </button>
@@ -2093,33 +1667,25 @@ const FullEditor: React.FC = () => {
         </Dialog>
       </Transition>
     </>
-  );
-};
+  )
+}
 
 // Tab content components
-const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({
-  onAddText,
-}) => {
+const TextTabContent: React.FC<{ onAddText: (textType: string) => void }> = ({ onAddText }) => {
   return (
     <div className="w-full max-w-lg mx-auto text-center">
-      <h1
-        className="text-4xl font-bold mb-4 cursor-pointer"
-        onClick={() => onAddText("header")}
-      >
+      <h1 className="text-4xl font-bold mb-4 cursor-pointer" onClick={() => onAddText("header")}>
         Create header
       </h1>
-      <h2
-        className="text-2xl font-medium mb-4 cursor-pointer"
-        onClick={() => onAddText("h2")}
-      >
+      <h2 className="text-2xl font-medium mb-4 cursor-pointer" onClick={() => onAddText("h2")}>
         Create sub header
       </h2>
       <p className="text-base cursor-pointer" onClick={() => onAddText("p")}>
         Create body text
       </p>
     </div>
-  );
-};
+  )
+}
 
 const ElementsTabContent: React.FC = () => {
   return (
@@ -2128,14 +1694,14 @@ const ElementsTabContent: React.FC = () => {
         <p className="text-gray-500">Elements will be displayed here</p>
       </div>
     </div>
-  );
-};
+  )
+}
 
 interface BackgroundTabContentProps {
-  onColorChange: (color: string) => void;
-  colors: string[];
-  patterns: string[];
-  onPatternSelect: (pattern: string) => void;
+  onColorChange: (color: string) => void
+  colors: string[]
+  patterns: string[]
+  onPatternSelect: (pattern: string) => void
 }
 
 const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({
@@ -2175,27 +1741,21 @@ const BackgroundTabContent: React.FC<BackgroundTabContentProps> = ({
         </div>
       </div>
     </div>
-  );
-};
-
-interface LayersTabContentProps {
-  shapes: Shape[];
-  onSelectShape: (id: string | null) => void;
-  selectedShapeId: string | null;
+  )
 }
 
-const LayersTabContent: React.FC<LayersTabContentProps> = ({
-  shapes,
-  onSelectShape,
-  selectedShapeId,
-}) => {
+interface LayersTabContentProps {
+  shapes: Shape[]
+  onSelectShape: (id: string | null) => void
+  selectedShapeId: string | null
+}
+
+const LayersTabContent: React.FC<LayersTabContentProps> = ({ shapes, onSelectShape, selectedShapeId }) => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
       <div className="border rounded-lg divide-y">
         {shapes.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            No shapes added yet
-          </div>
+          <div className="p-4 text-center text-gray-500">No shapes added yet</div>
         ) : (
           shapes.map((shape) => (
             <div
@@ -2207,76 +1767,47 @@ const LayersTabContent: React.FC<LayersTabContentProps> = ({
             >
               <div className="flex items-center">
                 <ChevronRightIcon className="h-4 w-4 mr-2" />
-                <span>
-                  {shape.type.charAt(0).toUpperCase() + shape.type.slice(1)}
-                </span>
+                <span>{shape.type.charAt(0).toUpperCase() + shape.type.slice(1)}</span>
               </div>
-              <div
-                className="h-4 w-4 rounded-sm"
-                style={{ backgroundColor: shape.color }}
-              ></div>
+              <div className="h-4 w-4 rounded-sm" style={{ backgroundColor: shape.color }}></div>
             </div>
           ))
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const SizeTabContent: React.FC = () => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Width
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Width</label>
           <div className="flex items-center">
-            <input
-              type="range"
-              min="100"
-              max="1000"
-              defaultValue="500"
-              className="w-full"
-            />
+            <input type="range" min="100" max="1000" defaultValue="500" className="w-full" />
             <span className="ml-2 w-16 text-center">500px</span>
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Height
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
           <div className="flex items-center">
-            <input
-              type="range"
-              min="100"
-              max="1000"
-              defaultValue="500"
-              className="w-full"
-            />
+            <input type="range" min="100" max="1000" defaultValue="500" className="w-full" />
             <span className="ml-2 w-16 text-center">500px</span>
           </div>
         </div>
         <div className="pt-4 border-t">
           <h3 className="text-lg font-medium mb-2">Preset Sizes</h3>
           <div className="grid grid-cols-2 gap-2">
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
-              Instagram Post
-            </button>
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
-              Facebook Post
-            </button>
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
-              Twitter Post
-            </button>
-            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">
-              LinkedIn Post
-            </button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Instagram Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Facebook Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">Twitter Post</button>
+            <button className="border rounded-md p-2 hover:bg-gray-50 hover:cursor-pointer">LinkedIn Post</button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FullEditor;
+export default FullEditor

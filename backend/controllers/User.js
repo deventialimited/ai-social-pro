@@ -161,7 +161,8 @@ exports.register = async (req, res) => {
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
-    await sendVerificationEmail(email, otp);
+    console.log("OTP sent to email:", otp); // For testing purposes
+    // await sendVerificationEmail(email, otp);
 
     res.status(201).json({
       success: true,
@@ -281,8 +282,8 @@ exports.sendEmailVerificationOtp = async (req, res) => {
     const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
       expiresIn: "5m",
     });
-    await sendVerificationEmail(email, otp);
-    // console.log("OTP sent to email:", otp); // For testing purposes                 
+    // await sendVerificationEmail(email, otp);
+    console.log("OTP sent to email:", otp); // For testing purposes                 
     res.status(200).json({
       success: true,
       message: "OTP sent to email successfully.",
@@ -341,9 +342,9 @@ exports.verifyOtp = async (req, res) => {
     }
 
     // If email is verified, send a welcome email
-    if (method === "email") {
-      await sendWelcomeEmail(user.email);
-    }
+    // if (method === "email") {
+    //   await sendWelcomeEmail(user.email);
+    // }
 
     res.status(200).json({
       success: true,
@@ -384,7 +385,7 @@ exports.googleAuth = async (req, res) => {
         profileImage: picture || profileImage,
         emailVerified: true, // Google accounts are generally verified
       });
-      await sendWelcomeEmail(email);
+      // await sendWelcomeEmail(email);
       userType = "new";
     } else {
       

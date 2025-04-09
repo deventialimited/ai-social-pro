@@ -7,7 +7,6 @@ import {
   ArrowUpTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import html2canvas from "html2canvas";
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
@@ -327,79 +326,38 @@ export function ImagesTabContent({
     });
   };
 
-  const handleApplyMask = (maskType: string) => {
+  const handleApplyMask = () => {
     if (!imageData) return;
 
+    // Simple circular mask as an example
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     const img = new Image();
+
     img.onload = () => {
-      const canvas = document.createElement("canvas");
       canvas.width = img.width;
       canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
 
-      // Draw the original image
-      ctx.drawImage(img, 0, 0);
-
-      // Apply mask directly
-      ctx.globalCompositeOperation = "destination-in";
+      // Create circular clipping path
       ctx.beginPath();
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const size = Math.min(canvas.width, canvas.height);
-
-      switch (maskType) {
-        case "circle":
-          ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
-          break;
-        case "square":
-          ctx.rect(centerX - size / 2, centerY - size / 2, size, size);
-          break;
-        case "star":
-          drawStar(ctx, centerX, centerY, 5, size / 2, size / 4);
-          break;
-        case "triangle":
-          drawPolygon(ctx, centerX, centerY, 3, size / 2);
-          break;
-        case "diamond":
-          ctx.moveTo(centerX, centerY - size / 2);
-          ctx.lineTo(centerX + size / 2, centerY);
-          ctx.lineTo(centerX, centerY + size / 2);
-          ctx.lineTo(centerX - size / 2, centerY);
-          break;
-        case "hexagon":
-          drawPolygon(ctx, centerX, centerY, 6, size / 2);
-          break;
-        case "cloud":
-          drawCloud(ctx, centerX, centerY, size / 2);
-          break;
-        case "heart":
-          drawHeart(ctx, centerX, centerY, size / 2);
-          break;
-        default:
-          ctx.arc(centerX, centerY, size / 2, 0, Math.PI * 2);
-      }
-
+      ctx.arc(
+        canvas.width / 2,
+        canvas.height / 2,
+        Math.min(canvas.width, canvas.height) / 2,
+        0,
+        Math.PI * 2
+      );
       ctx.closePath();
       ctx.clip();
 
-      // Apply the mask to the original image
+      // Draw the image
       ctx.drawImage(img, 0, 0);
 
-      // Get the masked image data
+      // Convert back to data URL
       const maskedImageUrl = canvas.toDataURL("image/png");
 
-      // Replace the existing image directly
-      const existingImage = document.querySelector(
-        `img[src="${imageData.src}"]`
-      );
-      if (existingImage) {
-        existingImage.src = maskedImageUrl;
-      }
-
-      // Update the original image data
-      imageData.src = maskedImageUrl;
-      setImageData({ ...imageData });
+      // Update the image source
+      updateImageData({ src: maskedImageUrl });
 
       // Update post data if needed
       const postData = localStorage.getItem("postdata");
@@ -408,122 +366,9 @@ export function ImagesTabContent({
         parsedData.image = maskedImageUrl;
         localStorage.setItem("postdata", JSON.stringify(parsedData));
       }
-
-      // Update the canvas editor if available
-      if (canvasEditor?.current?.onUpdateImage) {
-        canvasEditor.current.onUpdateImage(imageData);
-      }
-
-      // Update any other image references in the DOM
-      const images = document.querySelectorAll(`img[src="${imageData.src}"]`);
-      images.forEach((img) => {
-        img.src = maskedImageUrl;
-      });
     };
 
     img.src = imageData.src;
-  };
-
-  // Helper functions for drawing complex shapes
-  const drawStar = (
-    ctx: CanvasRenderingContext2D,
-    cx: number,
-    cy: number,
-    spikes: number,
-    outerRadius: number,
-    innerRadius: number
-  ) => {
-    let rot = (Math.PI / 2) * 3;
-    let x = cx;
-    let y = cy;
-    const step = Math.PI / spikes;
-
-    ctx.moveTo(cx, cy - outerRadius);
-    for (let i = 0; i < spikes; i++) {
-      x = cx + Math.cos(rot) * outerRadius;
-      y = cy + Math.sin(rot) * outerRadius;
-      ctx.lineTo(x, y);
-      rot += step;
-
-      x = cx + Math.cos(rot) * innerRadius;
-      y = cy + Math.sin(rot) * innerRadius;
-      ctx.lineTo(x, y);
-      rot += step;
-    }
-  };
-
-  const drawPolygon = (
-    ctx: CanvasRenderingContext2D,
-    cx: number,
-    cy: number,
-    sides: number,
-    radius: number
-  ) => {
-    ctx.moveTo(cx + radius * Math.cos(0), cy + radius * Math.sin(0));
-    for (let i = 1; i <= sides; i++) {
-      ctx.lineTo(
-        cx + radius * Math.cos((i * 2 * Math.PI) / sides),
-        cy + radius * Math.sin((i * 2 * Math.PI) / sides)
-      );
-    }
-  };
-
-  const drawHeart = (
-    ctx: CanvasRenderingContext2D,
-    cx: number,
-    cy: number,
-    size: number
-  ) => {
-    const width = size * 2;
-    const height = size * 2;
-
-    ctx.moveTo(cx, cy + height / 4);
-
-    // Left curve
-    ctx.bezierCurveTo(
-      cx - width / 2,
-      cy - height / 2,
-      cx - width / 2,
-      cy - height / 2,
-      cx,
-      cy - height / 4
-    );
-
-    // Right curve
-    ctx.bezierCurveTo(
-      cx + width / 2,
-      cy - height / 2,
-      cx + width / 2,
-      cy - height / 2,
-      cx,
-      cy + height / 4
-    );
-  };
-
-  const drawCloud = (
-    ctx: CanvasRenderingContext2D,
-    cx: number,
-    cy: number,
-    size: number
-  ) => {
-    ctx.moveTo(cx - size / 2, cy);
-    ctx.bezierCurveTo(cx - size / 2, cy - size / 2, cx, cy - size / 2, cx, cy);
-    ctx.bezierCurveTo(
-      cx,
-      cy - size / 2,
-      cx + size / 2,
-      cy - size / 2,
-      cx + size / 2,
-      cy
-    );
-    ctx.bezierCurveTo(
-      cx + size / 2,
-      cy + size / 2,
-      cx,
-      cy + size / 2,
-      cx - size / 2,
-      cy
-    );
   };
 
   const handleCrop = () => {
@@ -708,108 +553,23 @@ export function ImagesTabContent({
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (!imageData) return;
 
-    // Get the current image element to ensure we copy the masked version
-    const currentImage = document.querySelector(`img[src="${imageData.src}"]`);
-    if (!currentImage) return;
+    // Create a duplicate of the image with slight offset
+    const newImageData = {
+      ...imageData,
+      id: `${imageData.id}-copy-${Date.now()}`,
+      x: imageData.x + 20,
+      y: imageData.y + 20,
+    };
 
-    // Create a temporary container for the image
-    const container = document.createElement("div");
-    container.style.position = "absolute";
-    container.style.left = "-9999px";
-    container.style.top = "-9999px";
-    container.style.width = `${currentImage.width}px`;
-    container.style.height = `${currentImage.height}px`;
-    container.style.overflow = "hidden";
+    // In a real implementation, you would add this to your images array
+    // and update the canvas to show both images
+    console.log("Copied image:", newImageData);
 
-    // Clone the image and add it to the container
-    const clonedImage = currentImage.cloneNode(true) as HTMLImageElement;
-    clonedImage.style.width = "100%";
-    clonedImage.style.height = "100%";
-    container.appendChild(clonedImage);
-
-    // Add the container to the document
-    document.body.appendChild(container);
-
-    try {
-      // Use html2canvas to capture the masked version
-      const canvas = await html2canvas(container, {
-        backgroundColor: null,
-        logging: false,
-        useCORS: true,
-        allowTaint: true,
-        width: currentImage.width,
-        height: currentImage.height,
-        scale: 1,
-        x: 0,
-        y: 0,
-      });
-
-      // Get the masked image data URL
-      const maskedImageUrl = canvas.toDataURL("image/png");
-
-      // Create a duplicate of the image with slight offset using the masked version
-      const newImageData = {
-        ...imageData,
-        id: `${imageData.id}-copy-${Date.now()}`,
-        x: imageData.x + 20,
-        y: imageData.y + 20,
-        src: maskedImageUrl, // Use the masked version from canvas
-        maskType: imageData.maskType, // Preserve the mask type
-        maskApplied: true, // Mark that a mask is applied
-        originalSrc: imageData.originalSrc || imageData.src, // Store original source
-        width: currentImage.naturalWidth || currentImage.width,
-        height: currentImage.naturalHeight || currentImage.height,
-      };
-
-      // Update the image data with the masked version
-      updateImageData(newImageData);
-
-      // Update post data if needed
-      const postData = localStorage.getItem("postdata");
-      if (postData) {
-        const parsedData = JSON.parse(postData);
-        parsedData.image = maskedImageUrl;
-        localStorage.setItem("postdata", JSON.stringify(parsedData));
-      }
-
-      // Update the canvas editor if available
-      if (canvasEditor?.current?.onUpdateImage) {
-        canvasEditor.current.onUpdateImage(newImageData);
-      }
-
-      // Force a re-render of the image
-      const images = document.querySelectorAll(`img[src="${imageData.src}"]`);
-      images.forEach((img) => {
-        img.src = maskedImageUrl;
-      });
-
-      // Add the new image to the canvas
-      const newImage = new Image();
-      newImage.src = maskedImageUrl;
-      newImage.onload = () => {
-        if (canvasEditor?.current?.addImage) {
-          canvasEditor.current.addImage(newImage, {
-            x: newImageData.x,
-            y: newImageData.y,
-            width: newImageData.width,
-            height: newImageData.height,
-            maskType: newImageData.maskType,
-            maskApplied: true,
-            src: maskedImageUrl, // Ensure we use the masked version
-            originalSrc: newImageData.originalSrc, // Store original source
-            isMasked: true, // Explicitly mark as masked
-          });
-        }
-      };
-    } catch (error) {
-      console.error("Error capturing masked image:", error);
-    } finally {
-      // Clean up the temporary container
-      document.body.removeChild(container);
-    }
+    // For this example, we'll just replace the current image
+    updateImageData(newImageData);
   };
 
   const handleDelete = () => {

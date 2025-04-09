@@ -10,29 +10,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useAddDomainMutation } from "../libs/domainService";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
-export function extractDomain(fullUrl) {
-  try {
-    const trimmedUrl = fullUrl.trim();
-    const normalized = trimmedUrl.startsWith("http")
-      ? trimmedUrl
-      : `https://${trimmedUrl}`;
-    const urlObj = new URL(normalized);
-    console.log("Extracted domain:", urlObj.hostname); // Debug log
-    return urlObj.hostname;
-  } catch (err) {
-    console.error("Error extracting domain:", err.message); // Debug log
-    // Fallback: assume it's a domain if it matches a basic pattern
-    if (trimmedUrl.match(/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/)) {
-      console.log("Fallback domain:", trimmedUrl); // Debug log
-      return trimmedUrl;
-    }
-    return null;
-  }
-}
-
+import { extractDomain } from "../pages/HomePage";
 export const AddWebsiteModal = ({ onClose, onGenerate }) => {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +20,6 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState(null);
-
   const steps = [
     {
       title: "Scanning Website",
@@ -73,30 +52,19 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
       color: "from-indigo-500 to-violet-500",
     },
   ];
-
   const addDomain = useAddDomainMutation();
-  const navigate = useNavigate();
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const generateCompanyData = async (domain, user) => {
+    // try {
+    //   // First API call
+    //   const firstResponse = await fetch(
+    //     `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
+    //   );
+    //   if (!firstResponse.ok) {
+    //     throw new Error(
+    //       `Site data extracting with status: ${firstResponse.status}`
+    //     );
+    //   }
     try {
-      if (!domain) {
-        throw new Error("Invalid domain extracted from URL.");
-      }
-
-      console.log("Generating data for domain:", domain); // Debug log
-
-      // First API call
-      const firstResponse = await fetch(
-        `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
-      );
-      if (!firstResponse.ok) {
-        throw new Error("Try another website");
-      }
-
-      // Wait 15 seconds before the second API call
-      await sleep(15000);
-
       setProgress(0);
       setCurrentStep(0);
 
@@ -107,7 +75,6 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
           await new Promise((resolve) => setTimeout(resolve, 30));
         }
       }
-
       // Second API call
       const secondResponse = await fetch(
         `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
@@ -115,65 +82,43 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
 
       if (!secondResponse.ok) {
         throw new Error(
-          `Site data extraction failed with status: ${secondResponse.status}`
+          `Site data extracting failed with status: ${secondResponse.status}`
         );
       }
 
+      // Parse second response and return
       const secondData = await secondResponse.json();
-      console.log("Second API response:", secondData); // Debug log
-      const { client_email, clientWebsite, clientDescription } = secondData;
-
-      if (!client_email || !clientWebsite || !clientDescription) {
-        if (!client_email) toast.error("Client email is required.");
-        if (!clientWebsite) toast.error("Client website is required.");
-        if (!clientDescription) toast.error("Client description is required.");
-        return;
-      }
-
+      // return secondData;
+      // Call addDomain API to store the data
+      console.log("secondData", secondData);
       const result = await addDomain.mutateAsync({
         ...secondData,
         userId: user?._id,
       });
-
       toast.success("Domain successfully added!");
-      console.log("Domain added:", result); // Debug log
-      navigate(`/dashboard?domainId=${result?._id}`);
+      console.log("Domain added:", result);
     } catch (error) {
-      console.error("Error in generateCompanyData:", error);
+      console.error("Error in AI App data:", error);
       toast.error(error.message || "Failed to generate company data.");
-      setError(error.message || "Failed to generate company data.");
     }
+    // } catch (error) {
+    //   console.error("Error in AI App data:", error);
+    //   toast.error(error.message || "Failed to generate company data.");
+    // }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!url) {
-      toast.error("Please enter a URL.");
-      return;
-    }
-
-    const domain = extractDomain(url);
-    console.log("Domain after extraction:", domain); // Debug log
-
-    if (!domain) {
-      toast.error("Please enter a valid URL (e.g., binance.com).");
-      return;
-    }
-
-    if (user) {
-      setIsLoading(true);
-      setError(null); // Reset any previous errors
-      await generateCompanyData(domain, user);
-      setUrl("");
-      setIsLoading(false);
-      onClose();
-    } else {
-      toast.error("Please sign in to add a website.");
+    const user = JSON.parse(localStorage.getItem("user")); // Check if user exists in localStorage
+    if (url) {
+      if (user) {
+        setIsLoading(true);
+        await generateCompanyData(extractDomain(url), user);
+        setUrl("");
+        setIsLoading(false);
+        onClose();
+      }
     }
   };
-
   const renderBusinessCard = (title, icon, content, className) => (
     <div
       className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 ${className}`}
@@ -223,10 +168,10 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                 </p>
                 <div className="relative mt-6">
                   <input
-                    type="text" // Changed to "text" for flexibility
+                    type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="your-website.com"
+                    placeholder="https://example.com"
                     className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-lg"
                     required
                   />
@@ -238,12 +183,15 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
             {isLoading && (
               <div className="max-w-2xl mx-auto space-y-4">
                 <div className="relative h-6">
+                  {/* Progress bar container */}
                   <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    {/* Animated progress bar */}
                     <div
                       className="h-full transition-all duration-300 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient relative"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
+                  {/* Floating percentage indicator */}
                   <div
                     className="absolute top-1/2 -translate-y-1/2 transition-all duration-300 bg-white dark:bg-gray-800 rounded-full px-2 py-0.5 shadow-lg border border-gray-200 dark:border-gray-700 flex items-center gap-1"
                     style={{

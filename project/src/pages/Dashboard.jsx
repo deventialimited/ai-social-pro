@@ -9,9 +9,105 @@ import { useThemeStore } from "../store/useThemeStore";
 import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
-import { useSearchParams } from "react-router-dom";
-import { useGetAllPostsByDomainId } from "../libs/postService";
 
+// Sample posts data
+const samplePosts = [
+  // Facebook Posts
+  {
+    id: "post-1",
+    text: "Experience the magic of Kazakh hospitality in our traditional yurt stays 🏕️ Book your authentic cultural experience today! #KazakhCulture #Travel",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-03-27T10:00:00Z",
+    platforms: ["facebook"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "draft",
+  },
+  {
+    id: "post-2",
+    text: "Join us for a culinary journey through Kazakhstan's finest dishes! From traditional beshbarmak to modern fusion cuisine, let your taste buds explore 🍜 #KazakhFood #Foodie",
+    imageUrl:
+      "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-03-31T10:00:00Z",
+    platforms: ["facebook"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "scheduled",
+  },
+  {
+    id: "post-3",
+    text: "Special summer discount! 🌞 Book your Kazakhstan adventure before May and get 20% off on all our premium tour packages. Tag a friend who needs this adventure! #SummerTravel #Discount",
+    imageUrl:
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-04-01T08:00:00Z",
+    platforms: ["facebook"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "generated",
+  },
+
+  // Twitter (X) Posts
+  {
+    id: "post-4",
+    text: "🏔️ Did you know? The Tian Shan mountains in Kazakhstan are home to some of the world's most spectacular hiking trails! Plan your trek with us: https://kazroutes.com/tian-shan #Adventure #Hiking",
+    imageUrl:
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-03-28T14:00:00Z",
+    platforms: ["x"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "published",
+  },
+  {
+    id: "post-5",
+    text: "🦅 The ancient art of eagle hunting is alive in Kazakhstan! Join our special cultural tour to witness this magnificent tradition firsthand. #CulturalHeritage #Travel",
+    imageUrl:
+      "https://images.unsplash.com/photo-1516054575922-f0b8eeadec1a?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-03-29T16:00:00Z",
+    platforms: ["x"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "scheduled",
+  },
+  {
+    id: "post-6",
+    text: "💫 New: Night sky photography tours in the Kazakh steppes! Capture the Milky Way like never before. Limited spots available for summer 2024. #Photography #NightSky",
+    imageUrl:
+      "https://images.unsplash.com/photo-1489549132488-d00b7eee80f1?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-04-02T09:00:00Z",
+    platforms: ["x"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "draft",
+  },
+
+  // LinkedIn Posts
+  {
+    id: "post-7",
+    text: "Proud to announce our new sustainable tourism initiative! 🌱 Kaz Routes is partnering with local communities to develop eco-friendly travel experiences that preserve Kazakhstan's natural beauty while supporting local economies. #SustainableTourism #ResponsibleTravel",
+    imageUrl:
+      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-03-30T10:00:00Z",
+    platforms: ["linkedin"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "generated",
+  },
+  {
+    id: "post-8",
+    text: "We're expanding our team! 🚀 Looking for experienced tour guides with a passion for Kazakhstan's culture and history. Join us in creating unforgettable travel experiences. #JobOpportunity #Tourism",
+    imageUrl:
+      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-04-03T11:00:00Z",
+    platforms: ["linkedin"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "scheduled",
+  },
+  {
+    id: "post-9",
+    text: "Milestone achieved! 🏆 Kaz Routes has been recognized as the leading cultural tourism provider in Central Asia for 2024. Thank you to our amazing team and partners who made this possible. #Achievement #TourismIndustry",
+    imageUrl:
+      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=1000",
+    scheduledDate: "2024-04-04T13:00:00Z",
+    platforms: ["linkedin"],
+    businessLogo: "/kaz-routes-logo.png",
+    status: "draft",
+  },
+];
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
@@ -28,12 +124,8 @@ export const Dashboard = () => {
       });
     }
   }, []);
-  const {
-    data: domains,
-    isDomainsLoading,
-    isDomainsError,
-    domainsError,
-  } = useDomains(userId);
+  const { data: domains, isLoading, isError, error } = useDomains(userId);
+  const [posts, setPosts] = useState(samplePosts);
   const [selectedWebsite, setSelectedWebsite] = useState(null);
   const [currentTab, setCurrentTab] = useState("posts");
   const [view, setView] = useState("list");
@@ -42,24 +134,21 @@ export const Dashboard = () => {
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const {
-    data: posts,
-    isPostsLoading,
-    isPostsError,
-    postsError,
-  } = useGetAllPostsByDomainId(selectedWebsite);
-  console.log(posts);
+  const location = useLocation();
   useEffect(() => {
-    if (domains?.length > 0) {
-      const domainId = searchParams.get("domainId");
-      if (domainId) {
-        setSelectedWebsite(domainId);
-      } else {
-        setSelectedWebsite(domains[0]?._id);
-      }
+    if (location?.state?.domainId) {
+      setSelectedWebsite(location.state.domainId);
+      location.state = {}; // Clear domainId from location state
+      // navigate(location.pathname, { replace: true, state: {} }); // Clear state without reloading
+    } else if (
+      !selectedWebsite &&
+      !location?.state?.domainId &&
+      domains?.length > 0
+    ) {
+      setSelectedWebsite(domains[0]?._id);
     }
-  }, [domains, searchParams]);
+  }, [domains, location]);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
@@ -67,14 +156,14 @@ export const Dashboard = () => {
   const handleGeneratePosts = async (url) => {
     setIsGeneratingPosts(true);
     await new Promise((resolve) => setTimeout(resolve, 4000));
-    // setPosts((prevPosts) => [...prevPosts]);
+    setPosts((prevPosts) => [...prevPosts]);
     setIsGeneratingPosts(false);
     setCurrentTab("posts");
     setPostsTab("generated");
   };
 
   const handleNewPost = (post) => {
-    // setPosts((prevPosts) => [post, ...prevPosts]);
+    setPosts((prevPosts) => [post, ...prevPosts]);
     setCurrentTab("posts");
     setPostsTab("generated");
   };
@@ -99,7 +188,7 @@ export const Dashboard = () => {
     console.log("Edit business section:", section);
   };
 
-  const filteredPosts = posts?.filter((post) => {
+  const filteredPosts = posts.filter((post) => {
     const matchesFilter = filter === "all" || post.platforms.includes(filter);
     const matchesTab = post.status === postsTab;
     return matchesFilter && matchesTab;
@@ -118,8 +207,8 @@ export const Dashboard = () => {
                 onFilterChange={setFilter}
                 currentTab={postsTab}
                 onTabChange={setPostsTab}
-                totalPosts={posts?.length}
-                filteredPosts={filteredPosts?.length}
+                totalPosts={posts.length}
+                filteredPosts={filteredPosts.length}
               />
             </div>
             <div
@@ -129,9 +218,9 @@ export const Dashboard = () => {
                   : "flex flex-col items-center space-y-6"
               }`}
             >
-              {filteredPosts?.map((post) => (
+              {filteredPosts.map((post) => (
                 <div
-                  key={post._id}
+                  key={post.id}
                   className={
                     view === "list" ? "w-full max-w-[680px]" : "w-full"
                   }

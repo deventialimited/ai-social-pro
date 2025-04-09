@@ -1,28 +1,28 @@
-"use client";
-import type React from "react";
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
-import Box from "@mui/material/Box";
-import Slider from "@mui/material/Slider";
+"use client"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { X } from "lucide-react"
+import Box from "@mui/material/Box"
+import Slider from "@mui/material/Slider"
 
 interface EffectsPanelProps {
-  isOpen: () => boolean;
-  onClose: () => void;
+  isOpen: () => boolean
+  onClose: () => void
   effects?: {
-    blur: number;
-    brightness: number;
-    sepia: number;
-    grayscale: number;
-    border: number;
-    cornerRadius: number;
+    blur: number
+    brightness: number
+    sepia: number
+    grayscale: number
+    border: number
+    cornerRadius: number
     shadow: {
-      blur: number;
-      offsetX: number;
-      offsetY: number;
-    };
-  };
-  onEffectChange: (effect: string, value: number) => void;
-  onEffectToggle?: (effect: string) => void;
+      blur: number
+      offsetX: number
+      offsetY: number
+    }
+  }
+  onEffectChange: (effect: string, value: number) => void
+  onEffectToggle?: (effect: string) => void
 }
 
 export const EffectsPanel: React.FC<EffectsPanelProps> = ({
@@ -44,89 +44,85 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
   onEffectChange,
   onEffectToggle,
 }) => {
-  const [localEffects, setLocalEffects] = useState(effects);
-  const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const [localEffects, setLocalEffects] = useState(effects)
+  const [activeEffect, setActiveEffect] = useState<string | null>(null)
 
   useEffect(() => {
-    setLocalEffects(effects);
-  }, [effects]);
+    setLocalEffects(effects)
+  }, [effects])
 
-  if (!isOpen()) return null;
+  if (!isOpen()) return null
 
   const toggleEffect = (effect: string) => {
-    if (!onEffectToggle || !onEffectChange) return;
+    if (!onEffectToggle || !onEffectChange) return
 
     if (effect === "blur" && localEffects.blur === 0) {
-      onEffectChange("blur", 5);
+      onEffectChange("blur", 5)
     } else if (effect === "brightness" && localEffects.brightness === 100) {
-      onEffectChange("brightness", 110);
+      onEffectChange("brightness", 110)
     } else if (effect === "sepia" && localEffects.sepia === 0) {
-      onEffectChange("sepia", 50);
+      onEffectChange("sepia", 50)
     } else if (effect === "grayscale" && localEffects.grayscale === 0) {
-      onEffectChange("grayscale", 50);
+      onEffectChange("grayscale", 50)
     } else if (effect === "border" && localEffects.border === 0) {
-      onEffectChange("border", 3);
+      onEffectChange("border", 3)
     } else if (effect === "cornerRadius" && localEffects.cornerRadius === 0) {
-      onEffectChange("cornerRadius", 10);
+      onEffectChange("cornerRadius", 10)
     } else if (effect === "shadow.blur" && localEffects.shadow.blur === 0) {
-      onEffectChange("shadow.blur", 15);
-      onEffectChange("shadow.offsetX", 5);
-      onEffectChange("shadow.offsetY", 5);
+      onEffectChange("shadow.blur", 15)
+      onEffectChange("shadow.offsetX", 5)
+      onEffectChange("shadow.offsetY", 5)
     }
 
-    onEffectToggle(effect);
-    setActiveEffect(effect);
-  };
+    onEffectToggle(effect)
+    setActiveEffect(effect)
+  }
 
   const isEffectEnabled = (effect: keyof typeof localEffects): boolean => {
     if (effect === "shadow") {
-      return localEffects.shadow.blur > 0;
+      return localEffects.shadow.blur > 0
     }
     if (effect === "brightness") {
-      return localEffects.brightness !== 100;
+      return localEffects.brightness !== 100
     }
-    return localEffects[effect] > 0;
-  };
+    return localEffects[effect] > 0
+  }
 
   const handleToggleOff = (effect: string) => {
-    if (!onEffectChange) return;
+    if (!onEffectChange) return
 
     if (effect === "shadow.blur" || effect === "shadow") {
-      onEffectChange("shadow.blur", 0);
-      onEffectChange("shadow.offsetX", 0);
-      onEffectChange("shadow.offsetY", 0);
+      onEffectChange("shadow.blur", 0)
+      onEffectChange("shadow.offsetX", 0)
+      onEffectChange("shadow.offsetY", 0)
     } else if (effect === "brightness") {
-      onEffectChange(effect, 100);
+      onEffectChange(effect, 100)
     } else {
-      onEffectChange(effect, 0);
+      onEffectChange(effect, 0)
     }
 
     if (onEffectToggle) {
       if (effect === "shadow") {
-        onEffectToggle("shadow.blur");
+        onEffectToggle("shadow.blur")
       } else {
-        onEffectToggle(effect);
+        onEffectToggle(effect)
       }
     }
-    setActiveEffect(null);
-  };
+    setActiveEffect(null)
+  }
 
   const handleDirectSliderChange = (effect: string, value: number) => {
-    if (!onEffectChange) return;
-    onEffectChange(effect, value);
-  };
+    if (!onEffectChange) return
+    onEffectChange(effect, value)
+  }
 
   const handleToggleClick = (effect: string) => {
-    if (
-      isEffectEnabled(
-        effect === "shadow" ? "shadow" : (effect as keyof typeof localEffects)
-      )
-    ) {
-      handleToggleOff(effect);
+    if (isEffectEnabled(effect === "shadow" ? "shadow" : (effect as keyof typeof localEffects))) {
+      handleToggleOff(effect)
     } else {
-      toggleEffect(effect);
+      toggleEffect(effect)
     }
-  };
+  }
 
   return (
     <div className="bg-white p-2 overflow-y-auto">
@@ -146,12 +142,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("blur")}
             >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isEffectEnabled("blur")}
-                onChange={() => {}}
-              />
+              <input type="checkbox" className="sr-only" checked={isEffectEnabled("blur")} onChange={() => {}} />
               <div
                 className={`absolute inset-0 rounded-full transition ${
                   isEffectEnabled("blur") ? "bg-blue-500" : "bg-gray-200"
@@ -172,12 +163,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={0}
                   max={20}
                   value={localEffects.blur}
-                  onChange={(e, val) =>
-                    handleDirectSliderChange(
-                      "blur",
-                      Array.isArray(val) ? val[0] : val
-                    )
-                  }
+                  onChange={(e, val) => handleDirectSliderChange("blur", Array.isArray(val) ? val[0] : val)}
                   valueLabelDisplay="auto"
                 />
               </Box>
@@ -186,10 +172,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 min={0}
                 max={20}
                 value={localEffects.blur}
-                onChange={(e) =>
-                  onEffectChange &&
-                  onEffectChange("blur", Number(e.target.value))
-                }
+                onChange={(e) => onEffectChange && onEffectChange("blur", Number(e.target.value))}
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
             </div>
@@ -204,12 +187,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("brightness")}
             >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isEffectEnabled("brightness")}
-                onChange={() => {}}
-              />
+              <input type="checkbox" className="sr-only" checked={isEffectEnabled("brightness")} onChange={() => {}} />
               <div
                 className={`absolute inset-0 rounded-full transition ${
                   isEffectEnabled("brightness") ? "bg-blue-500" : "bg-gray-200"
@@ -230,12 +208,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={50}
                   max={150}
                   value={localEffects.brightness}
-                  onChange={(e, val) =>
-                    handleDirectSliderChange(
-                      "brightness",
-                      Array.isArray(val) ? val[0] : val
-                    )
-                  }
+                  onChange={(e, val) => handleDirectSliderChange("brightness", Array.isArray(val) ? val[0] : val)}
                   valueLabelDisplay="auto"
                 />
               </Box>
@@ -244,10 +217,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 min={50}
                 max={150}
                 value={localEffects.brightness}
-                onChange={(e) =>
-                  onEffectChange &&
-                  onEffectChange("brightness", Number(e.target.value))
-                }
+                onChange={(e) => onEffectChange && onEffectChange("brightness", Number(e.target.value))}
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
             </div>
@@ -262,12 +232,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("sepia")}
             >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isEffectEnabled("sepia")}
-                onChange={() => {}}
-              />
+              <input type="checkbox" className="sr-only" checked={isEffectEnabled("sepia")} onChange={() => {}} />
               <div
                 className={`absolute inset-0 rounded-full transition ${
                   isEffectEnabled("sepia") ? "bg-blue-500" : "bg-gray-200"
@@ -288,12 +253,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={0}
                   max={100}
                   value={localEffects.sepia}
-                  onChange={(e, val) =>
-                    handleDirectSliderChange(
-                      "sepia",
-                      Array.isArray(val) ? val[0] : val
-                    )
-                  }
+                  onChange={(e, val) => handleDirectSliderChange("sepia", Array.isArray(val) ? val[0] : val)}
                   valueLabelDisplay="auto"
                 />
               </Box>
@@ -302,10 +262,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 min={0}
                 max={100}
                 value={localEffects.sepia}
-                onChange={(e) =>
-                  onEffectChange &&
-                  onEffectChange("sepia", Number(e.target.value))
-                }
+                onChange={(e) => onEffectChange && onEffectChange("sepia", Number(e.target.value))}
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
             </div>
@@ -320,12 +277,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("grayscale")}
             >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isEffectEnabled("grayscale")}
-                onChange={() => {}}
-              />
+              <input type="checkbox" className="sr-only" checked={isEffectEnabled("grayscale")} onChange={() => {}} />
               <div
                 className={`absolute inset-0 rounded-full transition ${
                   isEffectEnabled("grayscale") ? "bg-blue-500" : "bg-gray-200"
@@ -346,12 +298,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={0}
                   max={100}
                   value={localEffects.grayscale}
-                  onChange={(e, val) =>
-                    handleDirectSliderChange(
-                      "grayscale",
-                      Array.isArray(val) ? val[0] : val
-                    )
-                  }
+                  onChange={(e, val) => handleDirectSliderChange("grayscale", Array.isArray(val) ? val[0] : val)}
                   valueLabelDisplay="auto"
                 />
               </Box>
@@ -360,10 +307,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 min={0}
                 max={100}
                 value={localEffects.grayscale}
-                onChange={(e) =>
-                  onEffectChange &&
-                  onEffectChange("grayscale", Number(e.target.value))
-                }
+                onChange={(e) => onEffectChange && onEffectChange("grayscale", Number(e.target.value))}
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
             </div>
@@ -378,12 +322,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("border")}
             >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isEffectEnabled("border")}
-                onChange={() => {}}
-              />
+              <input type="checkbox" className="sr-only" checked={isEffectEnabled("border")} onChange={() => {}} />
               <div
                 className={`absolute inset-0 rounded-full transition ${
                   isEffectEnabled("border") ? "bg-blue-500" : "bg-gray-200"
@@ -404,12 +343,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={0}
                   max={10}
                   value={localEffects.border}
-                  onChange={(e, val) =>
-                    handleDirectSliderChange(
-                      "border",
-                      Array.isArray(val) ? val[0] : val
-                    )
-                  }
+                  onChange={(e, val) => handleDirectSliderChange("border", Array.isArray(val) ? val[0] : val)}
                   valueLabelDisplay="auto"
                 />
               </Box>
@@ -418,10 +352,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 min={0}
                 max={10}
                 value={localEffects.border}
-                onChange={(e) =>
-                  onEffectChange &&
-                  onEffectChange("border", Number(e.target.value))
-                }
+                onChange={(e) => onEffectChange && onEffectChange("border", Number(e.target.value))}
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
             </div>
@@ -444,9 +375,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               />
               <div
                 className={`absolute inset-0 rounded-full transition ${
-                  isEffectEnabled("cornerRadius")
-                    ? "bg-blue-500"
-                    : "bg-gray-200"
+                  isEffectEnabled("cornerRadius") ? "bg-blue-500" : "bg-gray-200"
                 }`}
               ></div>
               <div
@@ -464,12 +393,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={0}
                   max={30}
                   value={localEffects.cornerRadius}
-                  onChange={(e, val) =>
-                    handleDirectSliderChange(
-                      "cornerRadius",
-                      Array.isArray(val) ? val[0] : val
-                    )
-                  }
+                  onChange={(e, val) => handleDirectSliderChange("cornerRadius", Array.isArray(val) ? val[0] : val)}
                   valueLabelDisplay="auto"
                 />
               </Box>
@@ -478,10 +402,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 min={0}
                 max={30}
                 value={localEffects.cornerRadius}
-                onChange={(e) =>
-                  onEffectChange &&
-                  onEffectChange("cornerRadius", Number(e.target.value))
-                }
+                onChange={(e) => onEffectChange && onEffectChange("cornerRadius", Number(e.target.value))}
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
             </div>
@@ -496,12 +417,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("shadow")}
             >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={localEffects.shadow.blur > 0}
-                onChange={() => {}}
-              />
+              <input type="checkbox" className="sr-only" checked={localEffects.shadow.blur > 0} onChange={() => {}} />
               <div
                 className={`absolute inset-0 rounded-full transition ${
                   localEffects.shadow.blur > 0 ? "bg-blue-500" : "bg-gray-200"
@@ -524,12 +440,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                     min={0}
                     max={30}
                     value={localEffects.shadow.blur}
-                    onChange={(e, val) =>
-                      handleDirectSliderChange(
-                        "shadow.blur",
-                        Array.isArray(val) ? val[0] : val
-                      )
-                    }
+                    onChange={(e, val) => handleDirectSliderChange("shadow.blur", Array.isArray(val) ? val[0] : val)}
                     valueLabelDisplay="auto"
                   />
                 </Box>
@@ -538,10 +449,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={0}
                   max={30}
                   value={localEffects.shadow.blur}
-                  onChange={(e) =>
-                    onEffectChange &&
-                    onEffectChange("shadow.blur", Number(e.target.value))
-                  }
+                  onChange={(e) => onEffectChange && onEffectChange("shadow.blur", Number(e.target.value))}
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
                 />
               </div>
@@ -553,12 +461,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                     min={-10}
                     max={10}
                     value={localEffects.shadow.offsetX}
-                    onChange={(e, val) =>
-                      handleDirectSliderChange(
-                        "shadow.offsetX",
-                        Array.isArray(val) ? val[0] : val
-                      )
-                    }
+                    onChange={(e, val) => handleDirectSliderChange("shadow.offsetX", Array.isArray(val) ? val[0] : val)}
                     valueLabelDisplay="auto"
                   />
                 </Box>
@@ -567,10 +470,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={-10}
                   max={10}
                   value={localEffects.shadow.offsetX}
-                  onChange={(e) =>
-                    onEffectChange &&
-                    onEffectChange("shadow.offsetX", Number(e.target.value))
-                  }
+                  onChange={(e) => onEffectChange && onEffectChange("shadow.offsetX", Number(e.target.value))}
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
                 />
               </div>
@@ -582,12 +482,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                     min={-10}
                     max={10}
                     value={localEffects.shadow.offsetY}
-                    onChange={(e, val) =>
-                      handleDirectSliderChange(
-                        "shadow.offsetY",
-                        Array.isArray(val) ? val[0] : val
-                      )
-                    }
+                    onChange={(e, val) => handleDirectSliderChange("shadow.offsetY", Array.isArray(val) ? val[0] : val)}
                     valueLabelDisplay="auto"
                   />
                 </Box>
@@ -596,10 +491,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   min={-10}
                   max={10}
                   value={localEffects.shadow.offsetY}
-                  onChange={(e) =>
-                    onEffectChange &&
-                    onEffectChange("shadow.offsetY", Number(e.target.value))
-                  }
+                  onChange={(e) => onEffectChange && onEffectChange("shadow.offsetY", Number(e.target.value))}
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
                 />
               </div>
@@ -608,5 +500,5 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -11,7 +11,7 @@ export const useUpdateDomainBusiness = () => {
   return useMutation({
     mutationFn: updateDomain,
     onSuccess: (updatedDomain) => {
-      // Optimistically update domains
+      // Optimistically update UI
       queryClient.setQueryData(
         ["domains", updatedDomain?.userId],
         (oldData) => {
@@ -22,12 +22,11 @@ export const useUpdateDomainBusiness = () => {
         }
       );
 
-      // ✅ Invalidate posts related to this domain
-      queryClient.invalidateQueries(["posts", updatedDomain._id]);
+      // Alternatively, refetch all domains after update
+      // queryClient.invalidateQueries(["domains"]);
     },
   });
 };
-
 export const useUpdateDomainBrandInfo = () => {
   const queryClient = useQueryClient();
 
