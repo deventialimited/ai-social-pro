@@ -878,6 +878,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                 className={`w-full h-full ${
                   selectedImageId === imageData.id ? "selected" : ""
                 } ${imageData.id === "background-image" ? "main-image" : ""}`}
+                data-image-id={imageData.id}
                 style={{
                   filter: filterString,
                   transform: imageTransform,

@@ -1,11 +1,17 @@
 import React from "react";
+import { X } from "lucide-react";
 
 interface MaskPanelProps {
   onSelectMask: (maskType: string) => void;
   isOpen: boolean;
+  onClose: () => void;
 }
 
-const MaskPanel: React.FC<MaskPanelProps> = ({ onSelectMask, isOpen }) => {
+const MaskPanel: React.FC<MaskPanelProps> = ({
+  onSelectMask,
+  isOpen,
+  onClose,
+}) => {
   if (!isOpen) return null;
 
   const masks = [
@@ -75,18 +81,27 @@ const MaskPanel: React.FC<MaskPanelProps> = ({ onSelectMask, isOpen }) => {
     },
   ];
 
-
   return (
-    <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64">
+    <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64 z-50">
       <div className="flex items-center justify-between mb-3 border-b pb-2">
         <h3 className="text-sm font-medium text-gray-700">Select Mask Shape</h3>
+        <button
+          onClick={onClose}
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          title="Close"
+        >
+          <X className="h-4 w-4 text-gray-500" />
+        </button>
       </div>
       <div className="grid grid-cols-4 gap-3">
         {masks.map((mask) => (
           <button
             key={mask.type}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex flex-col items-center justify-center group"
-            onClick={() => onSelectMask(mask.type)}
+            onClick={() => {
+              onSelectMask(mask.type);
+              onClose();
+            }}
             title={mask.label}
           >
             <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-lg group-hover:bg-white">

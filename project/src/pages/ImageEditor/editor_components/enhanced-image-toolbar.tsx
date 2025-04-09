@@ -8,16 +8,9 @@ import {
   Move,
   Copy,
   Trash2,
-  Droplet,
   RotateCw,
-  FlipHorizontal,
-  ZoomIn,
-  ZoomOut,
-  Maximize,
-  Filter,
-  ImageIcon,
-  ArrowLeftRight, // Added for horizontal flip icon
-  ArrowUpDown, // Added for vertical flip icon
+  ArrowLeftRight,
+  ArrowUpDown,
 } from "lucide-react";
 import MaskPanel from "./MaskPanel";
 
@@ -241,10 +234,13 @@ export function EnhancedImageToolbar({
             title="Apply mask"
             onClick={() => setIsMaskPanelOpen(!isMaskPanelOpen)}
           >
-            <Droplet className="h-5 w-5" />
-            <span className="text-sm font-medium ml-1">Mask</span>
+            <span className="text-sm font-medium">Mask</span>
           </button>
-          <MaskPanel isOpen={isMaskPanelOpen} onSelectMask={handleMaskSelect} />
+          <MaskPanel
+            isOpen={isMaskPanelOpen}
+            onSelectMask={handleMaskSelect}
+            onClose={() => setIsMaskPanelOpen(false)}
+          />
         </div>
 
         {/* Crop button with conditional rendering */}

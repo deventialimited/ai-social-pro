@@ -237,6 +237,9 @@ const FullEditor: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
+  // Add state to store original images
+  const [originalImages, setOriginalImages] = useState({});
+
   // Save data to Firebase Firestore
   const saveDataToFirebase = async () => {
     try {
@@ -1242,8 +1245,19 @@ const FullEditor: React.FC = () => {
       });
     };
 
-    // Use the current image's source
-    img.src = selectedImageElement.src;
+    // Use the original image source if available, otherwise use current source
+    const imageId = selectedImageElement.dataset.imageId;
+    if (!originalImages[imageId]) {
+      // Store the original image when first applying a mask
+      setOriginalImages((prev) => ({
+        ...prev,
+        [imageId]: selectedImageElement.src,
+      }));
+      img.src = selectedImageElement.src;
+    } else {
+      // Use the original image for subsequent masks
+      img.src = originalImages[imageId];
+    }
   };
 
   const items = [
