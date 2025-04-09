@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   Calendar,
@@ -45,6 +46,31 @@ export const PostCard = ({
       setIsClamped(contentRef.current.scrollHeight > maxHeight);
     }
   }, [post.content]);
+
+  const getImageAspectRatio = (platform) => {
+    switch (platform?.toLowerCase()) {
+      case "facebook":
+        return 1200 / 630;
+      case "x":
+        return 1200 / 675;
+      case "linkedin":
+        return 1200 / 627;
+      case "instagram":
+        return 1; // Square
+      default:
+        return 16 / 9; // Fallback
+    }
+  };
+
+  const getImageStyle = (platform) => {
+    const aspectRatio = getImageAspectRatio(platform);
+    return {
+      aspectRatio,
+      width: "100%",
+      objectFit: "cover",
+      borderRadius: "0.5rem",
+    };
+  };
 
   const getStatusBadge = () => {
     switch (post.status) {
@@ -108,9 +134,7 @@ export const PostCard = ({
 
           {/* Visual Toggle Buttons */}
           <div className="flex items-center space-x-2 p-2">
-            <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
-              Visual
-            </h2>
+            <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">Visual</h2>
             <div>
               <button
                 onClick={() => setSelectedButton("image")}
@@ -156,7 +180,7 @@ export const PostCard = ({
                     : unselectedStyles
                 }`}
               >
-                <span className="text-[12px] truncate">Slogan</span>
+                <span className="text-[12px] truncate">S</span>
                 <Type
                   className={`w-4 h-4 fill-none ${
                     selectedButton === "slogan"
@@ -190,15 +214,12 @@ export const PostCard = ({
           <img
             src={post.image}
             alt="Post content"
-            className={`w-full rounded-lg ${
-              view === "grid" ? "h-48" : "h-64"
-            } object-cover`}
+            style={getImageStyle(primaryPlatform)}
           />
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-          {/* Left Section (Approve, Date, Platform) */}
           <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
             <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
               Approve
@@ -215,7 +236,6 @@ export const PostCard = ({
             </span>
           </div>
 
-          {/* Right Section (Icons) */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowEditModal(true)}
@@ -233,8 +253,6 @@ export const PostCard = ({
                 <Save className="w-4 h-4" />
               </button>
             )}
-
-            {/* Download */}
             <button
               onClick={() => console.log("Download clicked")}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -242,7 +260,6 @@ export const PostCard = ({
             >
               <Download className="w-4 h-4" />
             </button>
-
             {post.status === "published" && (
               <div
                 className="p-2 text-green-500 dark:text-green-400"
@@ -262,7 +279,6 @@ export const PostCard = ({
         </div>
       </div>
 
-      {/* Modal */}
       {showEditModal && (
         <PostEditModal
           post={post}
