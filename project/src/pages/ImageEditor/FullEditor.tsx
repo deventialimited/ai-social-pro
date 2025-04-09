@@ -1617,7 +1617,7 @@ const FullEditor: React.FC = () => {
                               isTextAreaActive ? "border border-black-500" : ""
                             }`}
                           >
-                            <textarea
+                            {/* <textarea
                               className="w-[40vw] h-[10vh] resize border-none focus:outline-none"
                               value={postBody}
                               onChange={(e) => {
@@ -1637,7 +1637,7 @@ const FullEditor: React.FC = () => {
                               }}
                               style={{ color: textColor }}
                               draggable="true"
-                            />
+                            /> */}
                           </div>
 
                           {/* Zoom controls */}
