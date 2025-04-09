@@ -967,6 +967,12 @@ const FullEditor: React.FC = () => {
   const handleApplyMask = (maskType: string) => {
     if (!backgroundImage) return;
 
+    // Get the currently selected image element in the editor
+    const selectedImageElement =
+      document.querySelector("#canvas img.selected") ||
+      document.querySelector("#canvas img");
+    if (!selectedImageElement) return;
+
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
@@ -1216,18 +1222,28 @@ const FullEditor: React.FC = () => {
       // Get the masked image data
       const maskedImageUrl = canvas.toDataURL("image/png");
 
-      // Only update the main image, not thumbnails
-      setBackgroundImage(maskedImageUrl);
-      const currentState = history[historyIndex];
-      addToHistory({
-        ...currentState,
-        backgroundImage: maskedImageUrl,
-      });
+      // Update only the selected image in the editor
+      selectedImageElement.src = maskedImageUrl;
 
-      // Remove the DOM manipulation that was affecting thumbnails
+      // Update the background image state only if it's the main image
+      if (selectedImageElement.classList.contains("main-image")) {
+        setBackgroundImage(maskedImageUrl);
+      }
+
+      // Add to history
+      addToHistory({
+        backgroundImage: maskedImageUrl,
+        imageScale,
+        imageRotation,
+        imagePosition,
+        scaleX,
+        scaleY,
+        imageFilters,
+      });
     };
 
-    img.src = backgroundImage;
+    // Use the current image's source
+    img.src = selectedImageElement.src;
   };
 
   const items = [

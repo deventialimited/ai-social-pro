@@ -75,6 +75,7 @@ const MaskPanel: React.FC<MaskPanelProps> = ({ onSelectMask, isOpen }) => {
     },
   ];
 
+
   return (
     <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64">
       <div className="flex items-center justify-between mb-3 border-b pb-2">
