@@ -852,7 +852,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
 
       // Image container transform (for rotation and flipping)
       const containerTransform = `scale(${scaleX}, ${scaleY}) rotate(${
-        imageRotation || 0
+        imageData.rotation || 0
       }deg)`;
 
       // Image transform (for scaling)
