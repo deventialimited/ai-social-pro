@@ -96,6 +96,7 @@ interface ImageData {
   url: string
   x: number
   y: number
+  rotation: number // Added rotation property for images
 }
 
 const FullEditor: React.FC = () => {
@@ -130,7 +131,6 @@ const FullEditor: React.FC = () => {
     height: number
   } | null>(null)
   const [imageScale, setImageScale] = useState<number>(1)
-  const [imageRotation, setImageRotation] = useState<number>(0)
   const [imagePosition, setImagePosition] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
@@ -202,12 +202,12 @@ const FullEditor: React.FC = () => {
         history,
         historyIndex,
         imageScale,
-        imageRotation,
         imagePosition,
         imageFilters,
         scaleX,
         scaleY,
         imageEffects,
+        images, // Save images with rotation
       })
       console.log("Data saved successfully to Firebase with postId:", idToUse)
     } catch (e) {
@@ -232,12 +232,12 @@ const FullEditor: React.FC = () => {
 
         // Load image editing state if available
         if (data.imageScale) setImageScale(data.imageScale)
-        if (data.imageRotation) setImageRotation(data.imageRotation)
         if (data.imagePosition) setImagePosition(data.imagePosition)
         if (data.imageFilters) setImageFilters(data.imageFilters)
         if (data.scaleX) setScaleX(data.scaleX)
         if (data.scaleY) setScaleY(data.scaleY)
         if (data.imageEffects) setImageEffects(data.imageEffects)
+        if (data.images) setImages(data.images)
       } else {
         console.log("No such document!")
       }
@@ -478,6 +478,7 @@ const FullEditor: React.FC = () => {
         id: `${imageToDuplicate.id}-${Date.now()}`, // Create unique ID
         x: imageToDuplicate.x + 20, // Offset slightly
         y: imageToDuplicate.y + 20,
+        rotation: imageToDuplicate.rotation, // Preserve rotation
       }
 
       setImages((currentImages) => [...currentImages, duplicatedImage])
@@ -520,6 +521,30 @@ const FullEditor: React.FC = () => {
     const newRotation = (currentRotation + 45) % 360
     const updatedShape = { ...shapeToRotate, rotation: newRotation }
     handleUpdateShape(updatedShape)
+  }
+
+  // Rotate the selected image
+  const handleRotateImage = () => {
+    if (!selectedImageId) {
+      console.error("No image selected for rotation")
+      return
+    }
+
+    const imageToRotate = images.find((img) => img.id === selectedImageId)
+    if (!imageToRotate) {
+      console.error("Image to rotate not found")
+      return
+    }
+
+    const currentRotation = imageToRotate.rotation
+    if (typeof currentRotation !== "number" || isNaN(currentRotation)) {
+      console.error("Current rotation value is not a valid number")
+      return
+    }
+
+    const newRotation = (currentRotation + 45) % 360
+    const updatedImage = { ...imageToRotate, rotation: newRotation }
+    handleUpdateImage(updatedImage)
   }
 
   const handleEffectChange = (effect: string, value: number) => {
@@ -568,12 +593,12 @@ const FullEditor: React.FC = () => {
 
       // Restore image editing state if available
       if (previousState.imageScale !== undefined) setImageScale(previousState.imageScale)
-      if (previousState.imageRotation !== undefined) setImageRotation(previousState.imageRotation)
       if (previousState.imagePosition !== undefined) setImagePosition(previousState.imagePosition)
       if (previousState.imageFilters !== undefined) setImageFilters(previousState.imageFilters)
       if (previousState.scaleX !== undefined) setScaleX(previousState.scaleX)
       if (previousState.scaleY !== undefined) setScaleY(previousState.scaleY)
       if (previousState.imageEffects !== undefined) setImageEffects(previousState.imageEffects)
+      if (previousState.images !== undefined) setImages(previousState.images)
     }
   }
 
@@ -588,12 +613,12 @@ const FullEditor: React.FC = () => {
 
       // Restore image editing state if available
       if (nextState.imageScale !== undefined) setImageScale(nextState.imageScale)
-      if (nextState.imageRotation !== undefined) setImageRotation(nextState.imageRotation)
       if (nextState.imagePosition !== undefined) setImagePosition(nextState.imagePosition)
       if (nextState.imageFilters !== undefined) setImageFilters(nextState.imageFilters)
       if (nextState.scaleX !== undefined) setScaleX(nextState.scaleX)
       if (nextState.scaleY !== undefined) setScaleY(nextState.scaleY)
       if (nextState.imageEffects !== undefined) setImageEffects(nextState.imageEffects)
+      if (nextState.images !== undefined) setImages(nextState.images)
     }
   }
 
@@ -606,7 +631,6 @@ const FullEditor: React.FC = () => {
           backgroundColor: "#ffffff",
           postBody: "",
           imageScale: 1,
-          imageRotation: 0,
           imagePosition: { x: 0, y: 0 },
           imageFilters: { brightness: 100, contrast: 100, saturation: 100 },
           scaleX: 1,
@@ -624,6 +648,7 @@ const FullEditor: React.FC = () => {
               offsetY: 0,
             },
           },
+          images: [],
         },
       ])
       setHistoryIndex(0)
@@ -634,9 +659,6 @@ const FullEditor: React.FC = () => {
   const handleCrop = () => {
     setIsCropping(true)
     setSelectedTool("crop")
-  }
-  const handleRotate = () => {
-    setImageRotation((prev) => (prev + 90) % 360)
   }
   const handleFlipHorizontal = () => {
     const newScaleX = scaleX * -1
@@ -724,7 +746,6 @@ const FullEditor: React.FC = () => {
       // Reset image position and scale
       setImagePosition({ x: 0, y: 0 })
       setImageScale(1)
-      setImageRotation(0)
       setScaleX(1)
       setScaleY(1)
 
@@ -732,7 +753,6 @@ const FullEditor: React.FC = () => {
       addToHistory({
         backgroundImage: croppedImageUrl,
         imageScale: 1,
-        imageRotation: 0,
         imagePosition: { x: 0, y: 0 },
         scaleX: 1,
         scaleY: 1,
@@ -764,13 +784,6 @@ const FullEditor: React.FC = () => {
     addToHistory({ imagePosition })
   }
 
-  const handleRotateImage = () => {
-    // Rotate image by 90 degrees
-    const newRotation = (imageRotation + 90) % 360
-    setImageRotation(newRotation)
-    addToHistory({ imageRotation: newRotation })
-  }
-
   const handleFlipVertical = () => {
     const newScaleY = scaleY * -1
     setScaleY(newScaleY)
@@ -796,7 +809,6 @@ const FullEditor: React.FC = () => {
 
       // Reset all transformations
       setImageScale(1)
-      setImageRotation(0)
       setImagePosition({ x: 0, y: 0 })
       setScaleX(1)
       setScaleY(1)
@@ -808,7 +820,6 @@ const FullEditor: React.FC = () => {
       addToHistory({
         backgroundImage: selectedImage,
         imageScale: 1,
-        imageRotation: 0,
         imagePosition: { x: 0, y: 0 },
         scaleX: 1,
         scaleY: 1,
@@ -1028,7 +1039,6 @@ const FullEditor: React.FC = () => {
     setBackgroundImage(image)
     // Reset all transformations when selecting a new image
     setImageScale(1)
-    setImageRotation(0)
     setImagePosition({ x: 0, y: 0 })
     setScaleX(1)
     setScaleY(1)
@@ -1040,7 +1050,6 @@ const FullEditor: React.FC = () => {
     addToHistory({
       backgroundImage: image,
       imageScale: 1,
-      imageRotation: 0,
       imagePosition: { x: 0, y: 0 },
       scaleX: 1,
       scaleY: 1,
@@ -1426,7 +1435,7 @@ const FullEditor: React.FC = () => {
                             onCrop={handleCrop}
                             onCropApply={handleCropApply}
                             onCropCancel={handleCropCancel}
-                            onRotate={handleRotate}
+                            onRotate={handleRotateImage}
                             onFlip={handleFlipHorizontal}
                             onVerticalFlip={handleFlipVertical}
                             onZoomIn={handleZoomIn}
@@ -1593,7 +1602,6 @@ const FullEditor: React.FC = () => {
                               onCropMove={handleCropMove}
                               onCropComplete={handleCropComplete}
                               imageScale={imageScale}
-                              imageRotation={imageRotation}
                               imagePosition={imagePosition}
                               imageFilters={imageFilters}
                               onImageDragStart={handleImageDragStart}
@@ -1609,7 +1617,7 @@ const FullEditor: React.FC = () => {
                               isTextAreaActive ? "border border-black-500" : ""
                             }`}
                           >
-                            <textarea
+                            {/* <textarea
                               className="w-[40vw] h-[10vh] resize border-none focus:outline-none"
                               value={postBody}
                               onChange={(e) => {
@@ -1629,7 +1637,7 @@ const FullEditor: React.FC = () => {
                               }}
                               style={{ color: textColor }}
                               draggable="true"
-                            />
+                            /> */}
                           </div>
 
                           {/* Zoom controls */}
@@ -1803,4 +1811,3 @@ const SizeTabContent: React.FC = () => {
 }
 
 export default FullEditor
-

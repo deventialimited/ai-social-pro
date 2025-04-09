@@ -137,7 +137,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Blur */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Blur</span>
+            <span className="font-medium">Blur</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("blur")}
@@ -182,7 +182,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Brightness */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Brightness</span>
+            <span className="font-medium">Brightness</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("brightness")}
@@ -227,7 +227,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Sepia */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Sepia</span>
+            <span className="font-medium">Sepia</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("sepia")}
@@ -272,7 +272,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Grayscale */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Grayscale</span>
+            <span className="font-medium">Grayscale</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("grayscale")}
@@ -317,7 +317,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Border */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Border</span>
+            <span className="font-medium">Border</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("border")}
@@ -362,7 +362,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Corner Radius */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Corner Radius</span>
+            <span className="font-medium">Corner Radius</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("cornerRadius")}
@@ -412,7 +412,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         {/* Shadow */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className=" font-medium">Shadow</span>
+            <span className="font-medium">Shadow</span>
             <div
               className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
               onClick={() => handleToggleClick("shadow")}
@@ -433,7 +433,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
           {activeEffect === "shadow" && (
             <div className="space-y-1">
               <div className="flex items-center mt-1">
-                <span className=" mr-1">Blur</span>
+                <span className="mr-1">Blur</span>
                 <Box sx={{ width: "100%" }}>
                   <Slider
                     size="small"
@@ -454,7 +454,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 />
               </div>
               <div className="flex items-center mt-1">
-                <span className=" mr-1">Offset X</span>
+                <span className="mr-1">Offset X</span>
                 <Box sx={{ width: "100%" }}>
                   <Slider
                     size="small"
@@ -475,7 +475,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 />
               </div>
               <div className="flex items-center mt-1">
-                <span className=" mr-1">Offset Y</span>
+                <span className="mr-1">Offset Y</span>
                 <Box sx={{ width: "100%" }}>
                   <Slider
                     size="small"
