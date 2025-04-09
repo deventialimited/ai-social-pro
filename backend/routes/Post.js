@@ -1,6 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const {getAllPosts} = require('../controllers/Post.js');
+const {
+  getAllPostsBydomainId,
+  processPubSub,
+} = require("../controllers/Post.js");
 
-router.get('/getAllPosts', getAllPosts);
+router.get("/getAllPostsBydomainId/:domainId", getAllPostsBydomainId);
+router.post("/processPubSub", processPubSub);
 module.exports = router;
