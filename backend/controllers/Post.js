@@ -3,7 +3,7 @@ const Post = require("../models/Post");
 const getRawBody = require("raw-body");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
-    const { domainId } = req.body; // Extract domainId from query parameters
+    const { domainId } = req.params; // Extract domainId from query parameters
 
     // Validate domainId
     if (!domainId) {
@@ -19,7 +19,7 @@ exports.getAllPostsBydomainId = async (req, res) => {
     // Fetch all posts associated with the domain
     const posts = await Post.find({ domainId }).populate(
       "domainId",
-      "clientName clientWebsite"
+      "clientName clientWebsite siteLogo"
     );
 
     res.status(200).json(posts);
@@ -59,7 +59,9 @@ exports.processPubSub = async (req, res) => {
       content: jsonData?.content,
       slogan: jsonData?.slogan,
       postDate: new Date(jsonData?.date),
-      platform: jsonData?.platform,
+      platform: Array.isArray(jsonData?.platform)
+        ? jsonData.platform
+        : [jsonData.platform], // Ensure it's an array
     });
 
     const savedPost = await newPost.save();
