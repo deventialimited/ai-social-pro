@@ -59,7 +59,7 @@ exports.processPubSub = async (req, res) => {
       content: jsonData?.content,
       slogan: jsonData?.slogan,
       postDate: new Date(jsonData?.date),
-      platform: Array.isArray(jsonData?.platform)
+      platforms: Array.isArray(jsonData?.platform)
         ? jsonData.platform
         : [jsonData.platform], // Ensure it's an array
     });

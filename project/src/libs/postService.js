@@ -25,6 +25,8 @@ export const useGetAllPostsByDomainId = (domainId) => {
     queryKey: ["posts", domainId], // Unique key for caching
     queryFn: () => getAllPostsBydomainId(domainId),
     enabled: !!domainId, // Only run if domainId exists
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes (300,000 ms)
+    refetchIntervalInBackground: true,
     onError: (error) => {
       console.error("Error fetching posts:", error);
     },

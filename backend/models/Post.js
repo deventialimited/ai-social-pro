@@ -30,7 +30,7 @@ const PostSchema = new Schema(
 
     // Metadata
     postDate: { type: Date, default: Date.now }, // Renamed date to postDate
-    platform: {
+    platforms: {
       type: [String],
       default: [], // Optional: provides a default empty array
     },

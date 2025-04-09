@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Calendar,
   Edit,
@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PostEditModal } from './PostEditModal';
-import { usegetAllPostsByDomainId } from '../libs/postService';
 
 export const PostCard = ({
   post,
@@ -25,30 +24,30 @@ export const PostCard = ({
   view,
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedButton, setSelectedButton] = useState('image');
-  const primaryPlatform = post.platforms[0];
+  const [selectedButton, setSelectedButton] = useState("image");
+  const primaryPlatform = post?.platforms?.[0];
 
   const baseStyles =
-    'flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors';
-  const selectedStyles = 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+    "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
+  const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
   const unselectedStyles =
-    'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700';
+    "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
 
   const getStatusBadge = () => {
     switch (post.status) {
-      case 'draft':
+      case "draft":
         return (
           <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
             Draft
           </span>
         );
-      case 'scheduled':
+      case "scheduled":
         return (
           <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded">
             Scheduled
           </span>
         );
-      case 'published':
+      case "published":
         return (
           <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded">
             Published
@@ -60,7 +59,7 @@ export const PostCard = ({
   };
 
   const handleSave = (updatedPost) => {
-    onEdit(updatedPost.id);
+    onEdit(updatedPost._id);
     setShowEditModal(false);
   };
 
@@ -68,7 +67,7 @@ export const PostCard = ({
     <>
       <div
         className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${
-          view === 'grid' ? 'h-full flex flex-col' : ''
+          view === "grid" ? "h-full flex flex-col" : ""
         }`}
       >
         {/* Header */}
@@ -76,7 +75,7 @@ export const PostCard = ({
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <img
-                src={post.siteLogo}
+                src={post?.domainId?.siteLogo}
                 alt="Business logo"
                 className="w-full h-full object-cover"
               />
@@ -101,26 +100,26 @@ export const PostCard = ({
             </h2>
             <div>
               <button
-                onClick={() => setSelectedButton('image')}
+                onClick={() => setSelectedButton("image")}
                 className={`${baseStyles} ${
-                  selectedButton === 'image' ? selectedStyles : unselectedStyles
+                  selectedButton === "image" ? selectedStyles : unselectedStyles
                 }`}
               >
                 <span className="text-[12px]">Image</span>
                 <Image
                   className={`w-4 h-4 fill-none ${
-                    selectedButton === 'image'
-                      ? 'stroke-blue-700'
-                      : 'stroke-gray-500 dark:stroke-gray-400'
+                    selectedButton === "image"
+                      ? "stroke-blue-700"
+                      : "stroke-gray-500 dark:stroke-gray-400"
                   }`}
                 />
               </button>
             </div>
             <div>
               <button
-                onClick={() => setSelectedButton('branding')}
+                onClick={() => setSelectedButton("branding")}
                 className={`${baseStyles} ${
-                  selectedButton === 'branding'
+                  selectedButton === "branding"
                     ? selectedStyles
                     : unselectedStyles
                 }`}
@@ -128,26 +127,28 @@ export const PostCard = ({
                 <span className="text-[12px]">Branding</span>
                 <Palette
                   className={`w-4 h-4 fill-none ${
-                    selectedButton === 'branding'
-                      ? 'stroke-blue-700'
-                      : 'stroke-gray-500 dark:stroke-gray-400'
+                    selectedButton === "branding"
+                      ? "stroke-blue-700"
+                      : "stroke-gray-500 dark:stroke-gray-400"
                   }`}
                 />
               </button>
             </div>
             <div>
               <button
-                onClick={() => setSelectedButton('slogan')}
+                onClick={() => setSelectedButton("slogan")}
                 className={`${baseStyles} ${
-                  selectedButton === 'slogan' ? selectedStyles : unselectedStyles
+                  selectedButton === "slogan"
+                    ? selectedStyles
+                    : unselectedStyles
                 }`}
               >
-                <span className="text-[12px]">Slogan</span>
+                <span className="text-[12px] truncate">{post?.slogan}</span>
                 <Type
                   className={`w-4 h-4 fill-none ${
-                    selectedButton === 'slogan'
-                      ? 'stroke-blue-700'
-                      : 'stroke-gray-500 dark:stroke-gray-400'
+                    selectedButton === "slogan"
+                      ? "stroke-blue-700"
+                      : "stroke-gray-500 dark:stroke-gray-400"
                   }`}
                 />
               </button>
@@ -156,7 +157,7 @@ export const PostCard = ({
         </div>
 
         {/* Content */}
-        <div className={`p-4 space-y-4 ${view === 'grid' ? 'flex-1' : ''}`}>
+        <div className={`p-4 space-y-4 ${view === "grid" ? "flex-1" : ""}`}>
           <p className="text-gray-900 dark:text-white whitespace-pre-wrap line-clamp-2">
             {post.content}
           </p>
@@ -164,7 +165,7 @@ export const PostCard = ({
             src={post.image}
             alt="Post content"
             className={`w-full rounded-lg ${
-              view === 'grid' ? 'h-48' : 'h-64'
+              view === "grid" ? "h-48" : "h-64"
             } object-cover`}
           />
         </div>
@@ -180,7 +181,7 @@ export const PostCard = ({
             <div className="flex items-center">
               <Calendar className="h-3 w-3" />
               <span className="text-xs ml-1">
-                {/* {format(new Date(post.scheduledDate), 'MMM d, yyyy')} */}
+                {format(new Date(post.postDate), 'MMM d, yyyy')}
               </span>
             </div>
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
@@ -197,9 +198,9 @@ export const PostCard = ({
             >
               <Edit className="w-4 h-4" />
             </button>
-            {post.status !== 'draft' && (
+            {post.status !== "draft" && (
               <button
-                onClick={() => onSaveToDraft(post.id)}
+                onClick={() => onSaveToDraft(post._id)}
                 className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                 title="Save to drafts"
               >
@@ -209,14 +210,14 @@ export const PostCard = ({
 
             {/* ✅ NEW DOWNLOAD BUTTON */}
             <button
-              onClick={() => console.log('Download clicked')}
+              onClick={() => console.log("Download clicked")}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Download"
             >
               <Download className="w-4 h-4" />
             </button>
 
-            {post.status === 'published' && (
+            {post.status === "published" && (
               <div
                 className="p-2 text-green-500 dark:text-green-400"
                 title="Published"
@@ -225,7 +226,7 @@ export const PostCard = ({
               </div>
             )}
             <button
-              onClick={() => onDelete(post.id)}
+              onClick={() => onDelete(post._id)}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Delete post"
             >
