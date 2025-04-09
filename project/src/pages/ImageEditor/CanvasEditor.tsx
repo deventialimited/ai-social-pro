@@ -1017,5 +1017,5 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
     </div>
   )
 }
-
+    
 export default CanvasEditor
