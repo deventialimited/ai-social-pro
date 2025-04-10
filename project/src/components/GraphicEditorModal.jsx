@@ -5,7 +5,8 @@ import FullEditor from "../pages/ImageEditor/FullEditor";
 export default function GraphicEditorModal({
   isGraphicEditorModal,
   setIsGraphicEditorModal,
-  post,
+  postImageDetails,
+  setPostImageDetails,
 }) {
   return (
     <>
@@ -43,7 +44,8 @@ export default function GraphicEditorModal({
               >
                 <Dialog.Panel className="w-full max-h-[90%] max-w-6xl transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
                   <FullEditor
-                    post={post}
+                    postImageDetails={postImageDetails}
+                    setPostImageDetails={setPostImageDetails}
                     setIsGraphicEditorModal={setIsGraphicEditorModal}
                   />
                 </Dialog.Panel>
