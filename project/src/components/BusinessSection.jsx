@@ -45,12 +45,13 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
           ?.filter((color) => color !== ""),
       });
     }
-  }, [domains]);
+  }, [domains, selectedWebsiteId]);
   const handleEdit = (section) => {
     setEditingSection(section);
     onEdit(section);
   };
   const updateDomain = useUpdateDomainBusiness();
+  
   const handleSave = async () => {
     try {
       console.log("Saving data:", formData); // Debugging output
@@ -75,32 +76,41 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
 
   const updateBrandInfo = useUpdateDomainBrandInfo();
   const handleFileUpload = async () => {
-    console.log("Selected logo file:", selectedLogoFile); // Debugging output
-    const isLogoChanged = selectedLogoFile !== null;
-    const areColorsChanged = formData?.colors?.length;
+  console.log("Selected logo file:", selectedLogoFile); // Debugging output
 
-    if (!areColorsChanged) {
-      toast.error(
-        "No changes detected. Please upload a logo or select brand colors."
-      );
-      return;
-    }
-    console.log(formData?.colors);
-    try {
-      await updateBrandInfo.mutateAsync({
-        domainId: selectedWebsiteId,
-        logoFile: selectedLogoFile, // File state
-        colors: formData?.colors,
-      });
+  const selectedDomain = domains?.find((w) => w?._id === selectedWebsiteId);
+  const originalColors = selectedDomain?.colors
+    ?.split(",")
+    ?.map((color) => color.trim())
+    ?.filter((color) => color !== "") || [];
 
-      toast.success("Brand info updated!");
-      setEditingSection(null);
-      setSelectedLogoFile(null);
-    } catch (err) {
-      console.error("Save error:", err);
-      toast.error("Failed to update brand info.");
-    }
-  };
+  const isLogoChanged = selectedLogoFile !== null;
+  const areColorsChanged =
+    JSON.stringify(originalColors) !== JSON.stringify(formData?.colors);
+
+  if (!isLogoChanged && !areColorsChanged) {
+    toast.error(
+      "No changes detected. Please upload a new logo or select new brand colors."
+    );
+    return;
+  }
+
+  try {
+    await updateBrandInfo.mutateAsync({
+      domainId: selectedWebsiteId,
+      logoFile: selectedLogoFile,
+      colors: formData?.colors,
+    });
+
+    toast.success("Brand info updated!");
+    setEditingSection(null);
+    setSelectedLogoFile(null);
+  } catch (err) {
+    console.error("Save error:", err);
+    toast.error("Failed to update brand info.");
+  }
+};
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
