@@ -180,7 +180,7 @@ export const PostCard = ({
                     : unselectedStyles
                 }`}
               >
-                <span className="text-[12px] truncate">S</span>
+                <span className="text-[12px] truncate">Slogan</span>
                 <Type
                   className={`w-4 h-4 fill-none ${
                     selectedButton === "slogan"
