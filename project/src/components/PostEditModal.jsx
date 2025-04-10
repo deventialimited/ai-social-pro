@@ -18,11 +18,6 @@ export const PostEditModal = ({ post, onClose, onSaveToDrafts }) => {
     setContent(post?.content);
     setSelectedSocials([...post?.platforms]);
   }, [post]);
-  const handlenavigate = () => {
-    // setShowGraphicEditor(true)
-    // navigate('/fulleditor');
-    window.location.href = "/fulleditor";
-  };
   // Function to validate if any changes were made
   const validateChanges = () => {
     const hasTopicChanged = topic !== (post?.topic || "");
