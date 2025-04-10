@@ -10,8 +10,11 @@ import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
 import { useSearchParams } from "react-router-dom";
-import { useGetAllPostsByDomainId } from "../libs/postService";
-
+import {
+  useGetAllPostsByDomainId,
+  useUpdatePostById,
+} from "../libs/postService";
+import toast from "react-hot-toast";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
@@ -78,9 +81,19 @@ export const Dashboard = () => {
     setCurrentTab("posts");
     setPostsTab("generated");
   };
-
-  const handleEdit = (id) => {
-    console.log("Edit post:", id);
+  const updatePostMutation = useUpdatePostById();
+  const handleEdit = (updatedPost, status) => {
+    updatePostMutation.mutate(
+      { id: updatedPost._id, postData: { ...updatedPost, status } },
+      {
+        onSuccess: () => {
+          toast.success("Post updated successfully!");
+        },
+        onError: (error) => {
+          toast.error(`Failed to update post: ${error}`);
+        },
+      }
+    );
   };
 
   const handleDelete = (id) => {
