@@ -10,6 +10,7 @@ export const PostEditModal = ({ post, onClose, onSaveToDrafts }) => {
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
   const [selectedSocials, setSelectedSocials] = useState([]);
+  const [postImageDetails, setPostImageDetails] = useState(null);
   const socialOptions = ["Facebook", "X", "Instagram", "LinkedIn"];
   const [isGraphicEditorModal, setIsGraphicEditorModal] = useState(false);
   const navigate = useNavigate();
@@ -17,6 +18,9 @@ export const PostEditModal = ({ post, onClose, onSaveToDrafts }) => {
     setTopic(post?.topic);
     setContent(post?.content);
     setSelectedSocials([...post?.platforms]);
+    // Destructure and exclude specific fields
+    const { topic, content, platforms, status, ...imageData } = post || {};
+    setPostImageDetails(imageData);
   }, [post]);
   // Function to validate if any changes were made
   const validateChanges = () => {
@@ -46,7 +50,8 @@ export const PostEditModal = ({ post, onClose, onSaveToDrafts }) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <GraphicEditorModal
-        post={post}
+        postImageDetails={postImageDetails}
+        setPostImageDetails={setPostImageDetails}
         isGraphicEditorModal={isGraphicEditorModal}
         setIsGraphicEditorModal={setIsGraphicEditorModal}
       />
