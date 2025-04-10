@@ -839,8 +839,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           filterString += ` blur(${imageEffects.blur}px)`;
         }
 
-        // Add brightness effect (only if not handled by imageFilters)
-        if (imageEffects.brightness !== 100 && !imageFilters) {
+        // Add brightness effect
+        if (imageEffects.brightness !== 100) {
           filterString += ` brightness(${imageEffects.brightness}%)`;
         }
 

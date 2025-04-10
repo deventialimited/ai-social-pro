@@ -1,5 +1,5 @@
 "use client";
-import type React from "react";
+import React from "react";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Box from "@mui/material/Box";
@@ -57,9 +57,11 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     if (!onEffectToggle || !onEffectChange) return;
 
     if (effect === "blur" && localEffects.blur === 0) {
-      onEffectChange("blur", 5);
+      onEffectChange("blur", 0);
+      setLocalEffects((prev) => ({ ...prev, blur: 0 }));
     } else if (effect === "brightness" && localEffects.brightness === 100) {
-      onEffectChange("brightness", 110);
+      onEffectChange("brightness", 100);
+      setLocalEffects((prev) => ({ ...prev, brightness: 100 }));
     } else if (effect === "sepia" && localEffects.sepia === 0) {
       onEffectChange("sepia", 50);
     } else if (effect === "grayscale" && localEffects.grayscale === 0) {
@@ -83,7 +85,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
       return localEffects.shadow.blur > 0;
     }
     if (effect === "brightness") {
-      return localEffects.brightness !== 100;
+      return localEffects.brightness !== 100 || activeEffect === "brightness";
     }
     return localEffects[effect] > 0;
   };
@@ -97,6 +99,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
       onEffectChange("shadow.offsetY", 0);
     } else if (effect === "brightness") {
       onEffectChange(effect, 100);
+      setLocalEffects((prev) => ({ ...prev, brightness: 100 }));
     } else {
       onEffectChange(effect, 0);
     }
@@ -114,6 +117,10 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
   const handleDirectSliderChange = (effect: string, value: number) => {
     if (!onEffectChange) return;
     onEffectChange(effect, value);
+    setLocalEffects((prev) => ({ ...prev, [effect]: value }));
+    if (effect === "brightness" && value !== 100) {
+      setActiveEffect("brightness");
+    }
   };
 
   const handleToggleClick = (effect: string) => {
@@ -222,7 +229,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               ></div>
             </div>
           </div>
-          {activeEffect === "brightness" && (
+          {isEffectEnabled("brightness") && (
             <div className="flex items-center">
               <Box sx={{ width: "100%" }}>
                 <Slider
