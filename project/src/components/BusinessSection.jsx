@@ -5,8 +5,8 @@ import {
   useUpdateDomainBrandInfo,
   useUpdateDomainBusiness,
 } from "../libs/domainService";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+
 export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
   const { data: domains, isLoading } = useDomains(userId);
   const [editingSection, setEditingSection] = useState(null);
@@ -27,11 +27,16 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
       audience: ["", "", ""],
     },
   });
+
   const colorPickerRefs = {
     brandColor: useRef(null),
     backgroundColor: useRef(null),
     textColor: useRef(null),
   };
+
+  const updateDomain = useUpdateDomainBusiness();
+  const updateBrandInfo = useUpdateDomainBrandInfo();
+
   useEffect(() => {
     if (domains?.length > 0 && selectedWebsiteId) {
       const selectedWebsiteData = domains?.find(
@@ -46,15 +51,14 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
       });
     }
   }, [domains, selectedWebsiteId]);
+
   const handleEdit = (section) => {
     setEditingSection(section);
     onEdit(section);
   };
-  const updateDomain = useUpdateDomainBusiness();
-  
+
   const handleSave = async () => {
     try {
-      console.log("Saving data:", formData); // Debugging output
       await updateDomain.mutateAsync({
         domainId: selectedWebsiteId,
         domainData: formData,
@@ -67,59 +71,53 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
 
   const handleCancel = () => {
     setEditingSection(null);
-    // setFormData(data);
   };
 
   const handleColorClick = (type) => {
     colorPickerRefs[type].current?.click();
   };
 
-  const updateBrandInfo = useUpdateDomainBrandInfo();
   const handleFileUpload = async () => {
-  console.log("Selected logo file:", selectedLogoFile); // Debugging output
+    const selectedDomain = domains?.find((w) => w?._id === selectedWebsiteId);
+    const originalColors = selectedDomain?.colors
+      ?.split(",")
+      ?.map((color) => color.trim())
+      ?.filter((color) => color !== "") || [];
 
-  const selectedDomain = domains?.find((w) => w?._id === selectedWebsiteId);
-  const originalColors = selectedDomain?.colors
-    ?.split(",")
-    ?.map((color) => color.trim())
-    ?.filter((color) => color !== "") || [];
+    const isLogoChanged = selectedLogoFile !== null;
+    const areColorsChanged =
+      JSON.stringify(originalColors) !== JSON.stringify(formData?.colors);
 
-  const isLogoChanged = selectedLogoFile !== null;
-  const areColorsChanged =
-    JSON.stringify(originalColors) !== JSON.stringify(formData?.colors);
+    if (!isLogoChanged && !areColorsChanged) {
+      toast.error(
+        "No changes detected. Please upload a new logo or select new brand colors."
+      );
+      return;
+    }
 
-  if (!isLogoChanged && !areColorsChanged) {
-    toast.error(
-      "No changes detected. Please upload a new logo or select new brand colors."
-    );
-    return;
-  }
+    try {
+      await updateBrandInfo.mutateAsync({
+        domainId: selectedWebsiteId,
+        logoFile: selectedLogoFile,
+        colors: formData?.colors,
+      });
 
-  try {
-    await updateBrandInfo.mutateAsync({
-      domainId: selectedWebsiteId,
-      logoFile: selectedLogoFile,
-      colors: formData?.colors,
-    });
-
-    toast.success("Brand info updated!");
-    setEditingSection(null);
-    setSelectedLogoFile(null);
-  } catch (err) {
-    console.error("Save error:", err);
-    toast.error("Failed to update brand info.");
-  }
-};
-
+      toast.success("Brand info updated!");
+      setEditingSection(null);
+      setSelectedLogoFile(null);
+    } catch (err) {
+      console.error("Save error:", err);
+      toast.error("Failed to update brand info.");
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setSelectedLogoFile(file);
   };
-  console.log(formData);
+
   const renderImageUpload = (type) => {
     const isEditing = editingSection === "brand";
-    // const imageUrl = type === "logo" ? "/kaz-routes-logo.png" : formData[type];
     const title = type === "logo" ? "Upload Logo" : "Upload Headshot";
 
     const handleImageClick = () => {
@@ -132,11 +130,11 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
       <div className="space-y-2">
         <div
           className={`relative group cursor-pointer overflow-hidden 
-    ${
-      type === "logo"
-        ? "w-[100px] h-[100px] rounded-full bg-gray-100 border border-gray-300"
-        : "w-[120px] h-[120px] rounded-lg"
-    }`}
+            ${
+              type === "logo"
+                ? "w-[100px] h-[100px] rounded-full bg-gray-100 border border-gray-300"
+                : "w-[120px] h-[120px] rounded-lg"
+            }`}
           onClick={handleImageClick}
         >
           {selectedLogoFile || formData?.siteLogo ? (
@@ -145,9 +143,7 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
                 src={
                   selectedLogoFile
                     ? URL.createObjectURL(selectedLogoFile)
-                    : formData?.siteLogo
-                    ? formData?.siteLogo
-                    : "/default-logo.png"
+                    : formData?.siteLogo || "/default-logo.png"
                 }
                 alt={title}
                 className={`w-full h-full ${
@@ -169,10 +165,8 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             </div>
           )}
         </div>
-
-        {/* File input */}
         <input
-          id={`${type}-file-input`} // Add id for easier reference
+          id={`${type}-file-input`}
           type="file"
           accept="image/*"
           onChange={handleFileChange}
@@ -196,10 +190,9 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             <input
               type="text"
               value={value}
-              onChange={(e) => {
-                e.preventDefault();
-                setFormData({ ...formData, [field]: e.target.value });
-              }}
+              onChange={(e) =>
+                setFormData({ ...formData, [field]: e.target.value })
+              }
               className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm"
             />
           ) : (
@@ -295,7 +288,6 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
                   onChange={(e) => {
                     const newColors = [...(formData?.colors || [])];
                     newColors[index] = e.target.value;
-
                     setFormData((prev) => ({
                       ...prev,
                       colors: newColors,
@@ -365,7 +357,6 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
         </div>
 
         <div className="p-8 space-y-6">
-          {/* Brand Category */}
           {renderSection(
             "Brand",
             "brand",
@@ -375,17 +366,12 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             </div>
           )}
 
-          {/* Business Category */}
           {renderSection(
             "Business",
             "business",
             <div className="space-y-4">
               {renderField("Business Name", formData?.clientName, "clientName")}
-              {renderField(
-                "Description",
-                formData?.clientDescription,
-                "clientDescription"
-              )}
+              {renderField("Description", formData?.clientDescription, "clientDescription")}
               {renderField("Industry", formData?.industry, "industry")}
               {renderField("Niche", formData?.niche, "niche")}
               {renderField("Website", formData?.clientWebsite, "clientWebsite")}
@@ -395,30 +381,34 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             </div>
           )}
 
-          {/* Marketing Strategy Category */}
           {renderSection(
             "Marketing Strategy",
             "marketing",
             <div className="space-y-6">
-              {renderList(
-                "Target Audience",
-                formData?.marketingStrategy?.audience,
-                "audience"
-              )}
-              {renderList(
-                "Audience Pains",
-                formData?.marketingStrategy?.audiencePains,
-                "audiencePains"
-              )}
-              {renderList(
-                "Core Values",
-                formData?.marketingStrategy?.core_values,
-                "core_values"
-              )}
+              {renderList("Target Audience", formData?.marketingStrategy?.audience, "audience")}
+              {renderList("Audience Pains", formData?.marketingStrategy?.audiencePains, "audiencePains")}
+              {renderList("Core Values", formData?.marketingStrategy?.core_values, "core_values")}
             </div>
           )}
         </div>
       </div>
+
+      {(updateBrandInfo.isPending || updateDomain.isPending) && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 px-6 py-4 rounded-xl shadow-lg flex items-center gap-3">
+            <svg
+              className="animate-spin h-6 w-6 text-blue-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <span className="text-sm font-medium text-gray-700 dark:text-white">Updating info...</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
