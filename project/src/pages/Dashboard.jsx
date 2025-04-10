@@ -54,10 +54,15 @@ export const Dashboard = () => {
   } = useGetAllPostsByDomainId(selectedWebsite);
   console.log(posts);
   useEffect(() => {
+    const selectedWebsiteId = JSON.parse(
+      localStorage.getItem("user")
+    )?.selectedWebsiteId;
     if (domains?.length > 0) {
       const domainId = searchParams.get("domainId");
       if (domainId) {
         setSelectedWebsite(domainId);
+      } else if (selectedWebsiteId) {
+        setSelectedWebsite(selectedWebsiteId);
       } else {
         setSelectedWebsite(domains[0]?._id);
       }
