@@ -1,11 +1,12 @@
 const transporter = require("./emailConfig"); // Centralized transporter configuration
 
 const sendVerificationEmail = async (email, otp) => {
-  const mailOptions = {
-    from: `"One Year Social Team" <${process.env.DOMAIN_EMAIL}>`,
-    to: email,
-    subject: "Verify Your Email - One Year Social",
-    html: `
+  try {
+    const mailOptions = {
+      from: `"One Year Social Team" <${process.env.DOMAIN_EMAIL}>`,
+      to: email,
+      subject: "Verify Your Email - One Year Social",
+      html: `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #000; text-align: left;">
       <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 20px;">Welcome to One Year Social 🎉</h2>
       <p style="font-size: 16px;">Hey there 👋,</p>
@@ -21,9 +22,13 @@ const sendVerificationEmail = async (email, otp) => {
       </p>
     </div>
     `,
-  };
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
+  }catch (error) {
+    console.error(`Failed to send verification email to ${email}:`, error.message);
+  }
+  console.log(`Verification email sent to ${email}`);
 };
 
 module.exports = sendVerificationEmail;

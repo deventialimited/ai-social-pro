@@ -342,7 +342,7 @@ exports.verifyOtp = async (req, res) => {
 
     // If email is verified, send a welcome email
     if (method === "email") {
-      await sendWelcomeEmail(user.email);
+      await sendWelcomeEmail(user.email,user.username);
     }
 
     res.status(200).json({
@@ -384,7 +384,7 @@ exports.googleAuth = async (req, res) => {
         profileImage: picture || profileImage,
         emailVerified: true, // Google accounts are generally verified
       });
-      await sendWelcomeEmail(email);
+      await sendWelcomeEmail(email,name);
       userType = "new";
     } else {
       
