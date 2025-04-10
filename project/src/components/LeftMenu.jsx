@@ -12,9 +12,8 @@ import {
 import { Listbox } from "@headlessui/react";
 import { Link } from "./Link";
 import { AddWebsiteModal } from "./AddWebsiteModal";
-import { CreatePostStrip } from "./CreatePostStrip";
 import { useDomains } from "../libs/domainService";
-
+import { updateSelectedDomain } from "../libs/authService";
 export const LeftMenu = ({
   userId,
   selectedWebsite,
@@ -30,17 +29,32 @@ export const LeftMenu = ({
   const { data: domains, isLoading } = useDomains(userId);
   const [showAddWebsite, setShowAddWebsite] = useState(false);
   const selectedWebsiteData = domains?.find((w) => w?._id === selectedWebsite);
+
   useEffect(() => {
-    // Close mobile menu when switching tabs
     if (isOpen) {
       onClose();
     }
   }, [currentTab]);
+  const handleWebsiteChange = async (val) => {
+    console.log("[LeftMenu] Changing selected domain:", val);
+    onWebsiteChange(val);
+    try {
+      const result = await updateSelectedDomain(userId, val);
+      console.log(
+        "[LeftMenu] Domain updated successfully on the backend:",
+        result
+      );
+      localStorage.setItem("user", JSON.stringify(result?.user));
+    } catch (e) {
+      console.error("[LeftMenu] Error updating selected domain on backend:", e);
+    }
+  };
 
   const handleGeneratePosts = (url) => {
     onAddBusiness(url);
     setShowAddWebsite(false);
   };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -55,7 +69,6 @@ export const LeftMenu = ({
         }`}
         onClick={onClose}
       />
-
       <div
         className={`w-64 bg-white dark:bg-gray-800 h-screen fixed left-0 top-0 border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 z-40 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -85,10 +98,8 @@ export const LeftMenu = ({
         </div>
 
         <div className="px-6 py-6">
-          {/* <CreatePostStrip onNewPost={onNewPost} /> */}
-
           {selectedWebsite && (
-            <Listbox value={selectedWebsite} onChange={onWebsiteChange}>
+            <Listbox value={selectedWebsite} onChange={handleWebsiteChange}>
               <div className="relative">
                 <Listbox.Button className="relative w-full pl-12 pr-12 py-3 text-left rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                   <span className="flex items-center">
@@ -108,7 +119,7 @@ export const LeftMenu = ({
                     />
                   </span>
                 </Listbox.Button>
-                <Listbox.Options className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 py-1 overflow-auto">
+                <Listbox.Options className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 py-1 overflow-auto max-h-60">
                   {!isLoading &&
                     domains?.map((website) => (
                       <Listbox.Option

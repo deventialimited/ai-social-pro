@@ -59,7 +59,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    selectedWebsiteId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Domain",
+         default: null,
+
   },
+  },
+  
   { timestamps: true }
 );
 

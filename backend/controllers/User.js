@@ -945,3 +945,35 @@ exports.deleteUserByAdmin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+exports.updateSelectedDomain = async (req, res) => {
+  const { userId, selectedWebsiteId } = req.body;
+
+  try {
+    // Ensure valid input
+    if (!userId || !selectedWebsiteId) {
+      return res.status(400).json({ error: "User ID and Domain ID are required." });
+    }
+
+    const user = await User.findById(userId);
+  
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Update the user's selected domain
+    console.log("current website" ,user.selectedWebsiteId);
+    user.selectedWebsiteId = selectedWebsiteId;
+    console.log("new website" ,user.selectedWebsiteId);
+    await user.save();
+
+    // Return the updated user
+    res.status(200).json({ message: "Selected domain updated successfully.", user });
+  } catch (error) {
+    console.error("Error updating selected domain:", error);
+    res.status(500).json({ error: "Server error while updating selected domain." });
+  }
+};
+
+

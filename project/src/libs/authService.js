@@ -1,8 +1,22 @@
 import axios from "axios";
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:4000";
 // Base URL of your API
 const API_URL = `${baseURL}/api/v1/users`;
+export const updateSelectedDomain = async (userId, selectedWebsiteId) => {
+  
+  try {
+    const response = await axios.post(`${API_URL}/updateSelectedDomain`, {
+      userId,
+      selectedWebsiteId,
+    });
+    console.log(`[updateSelectedDomain] Domain updated successfully for user ${userId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`[updateSelectedDomain] Error updating domain for user ${userId}:`, error.message);
+    throw error;
+  }
+};
 //edit-profile
 export const updateProfile = async (userId, formData) => {
   try {

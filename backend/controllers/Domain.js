@@ -1,4 +1,5 @@
 const Domain = require("../models/Domain");
+const User = require("../models/User");
 const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 // Add a new domain
 exports.addDomain = async (req, res) => {
@@ -121,10 +122,11 @@ exports.getDomainById = async (req, res) => {
 // Get all domains by userId
 exports.getDomainsByUserId = async (req, res) => {
   const userId = req.params.userId; // Get userId from request params
-
+console.log("Fetching domains for userId:", userId);
   try {
     const domains = await Domain.find({ userId });
     if (!domains.length) {
+      console.log("No domains found for userId:", userId);  
       return res.status(404).json({
         success: false,
         error: "No domains found for this user",
@@ -309,3 +311,4 @@ exports.uploadBrand = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+

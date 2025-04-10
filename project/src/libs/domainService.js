@@ -1,5 +1,5 @@
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:4000";
 const API_URL = `${baseURL}/api/v1/domains`;
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -28,28 +28,6 @@ export const useUpdateDomainBusiness = () => {
   });
 };
 
-// export const useUpdateDomainBrandInfo = () => {
-//   const queryClient = useQueryClient();
-
-//   return useMutation({
-//     mutationFn: updateBrandInfo,
-//     onSuccess: (updatedDomain) => {
-//       // Optimistically update UI
-//       queryClient.setQueryData(
-//         ["domains", updatedDomain?.userId],
-//         (oldData) => {
-//           if (!oldData) return [];
-//           return oldData.map((domain) =>
-//             domain._id === updatedDomain._id ? updatedDomain : domain
-//           );
-//         }
-//       );
-
-//       // Alternatively, refetch all domains after update
-//       // queryClient.invalidateQueries(["domains"]);
-//     },
-//   });
-// };
 export const useUpdateDomainBrandInfo = () => {
   const queryClient = useQueryClient();
 
@@ -93,7 +71,7 @@ export const addDomain = async (domainData) => {
 
     return response.data?.data;
   } catch (error) {
-    console.log(error.response.data.error);
+    console.log(error);
     throw error.response?.data.error;
   }
 };
@@ -126,7 +104,7 @@ export const getDomainsByUserId = async (userId) => {
     const response = await axios.get(`${API_URL}/getDomainsByUserId/${userId}`);
     return response.data?.data;
   } catch (error) {
-    console.log(error.response?.data?.error || "Error fetching domains");
+    console.log(error);
     throw error.response?.data?.error;
   }
 };
@@ -187,3 +165,7 @@ export const updateBrandInfo = async ({ domainId, logoFile, colors }) => {
 
   return response.data;
 };
+
+
+
+
