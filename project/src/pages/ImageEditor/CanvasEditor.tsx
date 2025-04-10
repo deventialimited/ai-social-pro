@@ -816,7 +816,14 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const renderImage = () => {
-    return images.map((imageData) => {
+    // Sort images to ensure selected image is rendered last (on top)
+    const sortedImages = [...images].sort((a, b) => {
+      if (a.id === selectedImageId) return 1;
+      if (b.id === selectedImageId) return -1;
+      return (a.zIndex || 1) - (b.zIndex || 1);
+    });
+
+    return sortedImages.map((imageData) => {
       const isSelected = selectedImageId === imageData.id;
       const isBackgroundImage = imageData.id === "background-image";
 
@@ -840,12 +847,10 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         // Add sepia effect
         if (imageEffects.sepia > 0) {
           filterString += ` sepia(${imageEffects.sepia}%)`;
-          filterString += ` sepia(${imageEffects.sepia}%)`;
         }
 
         // Add grayscale effect
         if (imageEffects.grayscale > 0) {
-          filterString += ` grayscale(${imageEffects.grayscale}%)`;
           filterString += ` grayscale(${imageEffects.grayscale}%)`;
         }
       }
@@ -884,7 +889,11 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           position={{ x: imageData.x, y: imageData.y }}
           onDragStart={(e) => {
             e.stopPropagation();
-            if (onSelectImage) onSelectImage(imageData.id);
+            if (onSelectImage) {
+              onSelectImage(imageData.id);
+              // Deselect any selected shape when selecting an image
+              if (onSelectShape) onSelectShape(null);
+            }
           }}
           onDrag={(e, d) => {
             const updatedImages = images.map((img) =>
@@ -921,10 +930,14 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             setImages(updatedImages);
             if (onUpdateImage) onUpdateImage(updatedImage);
           }}
-          className={`${isSelected ? "z-10" : ""}`}
+          className={`${isSelected ? "z-50" : ""}`}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
-            if (onSelectImage) onSelectImage(imageData.id);
+            if (onSelectImage) {
+              onSelectImage(imageData.id);
+              // Deselect any selected shape when selecting an image
+              if (onSelectShape) onSelectShape(null);
+            }
           }}
           bounds="#canvas"
           enableResizing={{
@@ -940,7 +953,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           disableDragging={!isSelected}
           style={{
             transformOrigin: "center center",
-            zIndex: imageData.zIndex || 1,
+            zIndex: isSelected ? 50 : imageData.zIndex || 1,
           }}
         >
           <div
@@ -1067,6 +1080,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         height: "100%",
       }}
       onClick={() => {
+        // Clear both selections when clicking on canvas
         onSelectShape(null);
         if (onSelectImage) onSelectImage(null);
       }}
@@ -1116,6 +1130,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
               className={`${isSelected ? "z-10" : ""}`}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                // Deselect any selected image when selecting a shape
+                if (onSelectImage) onSelectImage(null);
                 onSelectShape(shape.id);
               }}
               bounds="#canvas"
