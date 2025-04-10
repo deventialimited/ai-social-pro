@@ -12,6 +12,7 @@ import {
   Palette,
   Type,
   Download,
+} from "lucide-react";
 import { format } from "date-fns";
 import { PostEditModal } from "./PostEditModal";
 
