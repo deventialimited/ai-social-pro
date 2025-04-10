@@ -17,7 +17,7 @@ export const PostEditModal: React.FC<PostEditModalProps> = ({ post, onClose, onS
 
 const handlenavigate=()=>{
 
-navigate('/fullEditor');
+navigate('/fulleditor');
 }
   const handleSave = () => {
     onSave({
