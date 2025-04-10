@@ -982,7 +982,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                   filter: filterString,
                   transform: imageTransform,
                   transformOrigin: "center center",
-                  objectFit: "contain", // Change from "cover" to "contain" to maintain aspect ratio
+                  // objectFit: "contain",
                   borderRadius,
                 }}
                 draggable={false}
