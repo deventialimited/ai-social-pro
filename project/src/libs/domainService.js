@@ -28,13 +28,35 @@ export const useUpdateDomainBusiness = () => {
   });
 };
 
+// export const useUpdateDomainBrandInfo = () => {
+//   const queryClient = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: updateBrandInfo,
+//     onSuccess: (updatedDomain) => {
+//       // Optimistically update UI
+//       queryClient.setQueryData(
+//         ["domains", updatedDomain?.userId],
+//         (oldData) => {
+//           if (!oldData) return [];
+//           return oldData.map((domain) =>
+//             domain._id === updatedDomain._id ? updatedDomain : domain
+//           );
+//         }
+//       );
+
+//       // Alternatively, refetch all domains after update
+//       // queryClient.invalidateQueries(["domains"]);
+//     },
+//   });
+// };
 export const useUpdateDomainBrandInfo = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: updateBrandInfo,
     onSuccess: (updatedDomain) => {
-      // Optimistically update UI
+      // Update domain cache
       queryClient.setQueryData(
         ["domains", updatedDomain?.userId],
         (oldData) => {
@@ -45,11 +67,12 @@ export const useUpdateDomainBrandInfo = () => {
         }
       );
 
-      // Alternatively, refetch all domains after update
-      // queryClient.invalidateQueries(["domains"]);
+      // ✅ Refetch posts to reflect new logo
+      queryClient.invalidateQueries(["posts", updatedDomain._id]);
     },
   });
 };
+
 export const useAddDomainMutation = () => {
   const queryClient = useQueryClient();
 
