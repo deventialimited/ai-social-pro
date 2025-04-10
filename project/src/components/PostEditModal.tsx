@@ -12,12 +12,13 @@ interface PostEditModalProps {
 
 export const PostEditModal: React.FC<PostEditModalProps> = ({ post, onClose, onSave }) => {
   const [editedText, setEditedText] = useState(post.text);
-  const [showGraphicEditor, setShowGraphicEditor] = useState(false);
+  // const [showGraphicEditor, setShowGraphicEditor] = useState(false);
   const navigate = useNavigate();
 
 
-const handleNavigate = () => {
+const handlenavigate = () => {
   navigate('/fulleditor');
+  
 };
   const handleSave = () => {
     onSave({
