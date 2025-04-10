@@ -41,7 +41,7 @@ export default function GraphicEditorModal({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-h-[90%] max-w-6xl transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
                   <FullEditor
                     post={post}
                     setIsGraphicEditorModal={setIsGraphicEditorModal}

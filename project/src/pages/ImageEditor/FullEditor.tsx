@@ -4,7 +4,6 @@
 import React from "react";
 import { Fragment, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Dialog, Transition, Listbox } from "@headlessui/react";
 import {
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
@@ -140,7 +139,6 @@ const FullEditor: React.FC = () => {
   const [postContent, setPostContent] = useState<string>("");
   const [postImage, setPostImage] = useState<string>("");
 
-  const [isOpen, setIsOpen] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<EditorTab>("images");
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [shapes, setShapes] = useState<Shape[]>([]);
@@ -424,15 +422,6 @@ const FullEditor: React.FC = () => {
 
     fetchBackgroundData();
   }, []);
-
-  const closeModal = () => {
-    setIsOpen(false);
-    navigate("/posts");
-  };
-
-  const openModal = () => {
-    setIsOpen(true);
-  };
 
   // Add a shape to the canvas
   const handleAddShape = (shape: Shape) => {
@@ -1429,35 +1418,9 @@ const FullEditor: React.FC = () => {
 
   return (
     <>
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/30" />
-          </Transition.Child>
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-[95%] h-[70vh] transform overflow-hidden rounded-lg bg-white shadow-xl transition-all editor-container">
                   <div className="flex justify-between items-center px-4 py-3 border-b">
-                    <Dialog.Title
-                      as="h3"
+                    <h3
                       className="text-lg font-medium flex items-center"
                     >
                       <svg
@@ -1475,20 +1438,20 @@ const FullEditor: React.FC = () => {
                         />
                       </svg>
                       Image Post Editor
-                    </Dialog.Title>
+                    </h3>
                     <div className="flex items-center space-x-2">
                       <button
                         type="button"
                         className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
-                        onClick={closeModal}
+                        // onClick={closeModal}
                       >
                         Cancel
                       </button>
 
                       <div className="relative flex text-left">
-                        <Listbox>
+                        <div>
                           <div className="relative">
-                            <Listbox.Button className="inline-flex items-center rounded-l-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
+                            <button className="inline-flex items-center rounded-l-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-4 w-4 mr-2"
@@ -1510,9 +1473,9 @@ const FullEditor: React.FC = () => {
                                 />
                               </svg>
                               <span>Change to Video</span>
-                            </Listbox.Button>
+                            </button>
                           </div>
-                        </Listbox>
+                        </div>
 
                         <Dropdown menu={{ items }} trigger={["click"]}>
                           <button
@@ -1891,14 +1854,14 @@ const FullEditor: React.FC = () => {
                             </div>
 
                             <div className="relative mr-4">
-                              <Listbox>
+                              <div>
                                 <div className="relative">
-                                  <Listbox.Button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
+                                  <button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
                                     <span>Palette</span>
                                     <ChevronDownIcon className="ml-2 h-4 w-4" />
-                                  </Listbox.Button>
+                                  </button>
                                 </div>
-                              </Listbox>
+                              </div>
                             </div>
 
                             <div className="flex items-center space-x-2 mr-4">
@@ -2086,12 +2049,7 @@ const FullEditor: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+                
     </>
   );
 };
