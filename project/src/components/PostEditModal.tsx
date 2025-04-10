@@ -15,10 +15,10 @@ export const PostEditModal: React.FC<PostEditModalProps> = ({ post, onClose, onS
   const [showGraphicEditor, setShowGraphicEditor] = useState(false);
   const navigate = useNavigate();
 
-const handlenavigate=()=>{
 
-navigate('/fulleditor');
-}
+const handleNavigate = () => {
+  navigate('/fulleditor');
+};
   const handleSave = () => {
     onSave({
       ...post,
