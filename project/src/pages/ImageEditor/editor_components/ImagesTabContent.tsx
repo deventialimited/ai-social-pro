@@ -59,14 +59,8 @@ export function ImagesTabContent({
     // Update local images
     setImages((prevImages) => [...prevImages, ...imageUrls]);
 
-    // If the first uploaded image should be selected
-    if (imageUrls.length > 0) {
-      handleImageSelect(`uploaded-0`, imageUrls[0]);
-
-      // Also call the parent's onSelectImage if provided
-      onSelectImage(imageUrls[0]);
-    }
-
+    // Don't automatically select the first uploaded image
+    // Just set the active tab to uploaded
     setActiveTab("uploaded");
   };
 
