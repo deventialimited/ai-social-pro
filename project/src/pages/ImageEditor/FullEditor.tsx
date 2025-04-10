@@ -132,7 +132,11 @@ interface ImageData {
   rotation: number; // Added rotation property for images
 }
 
-const FullEditor: React.FC = () => {
+const FullEditor: React.FC<{
+  postImageDetails: any;
+  setPostImageDetails: (details: any) => void;
+  setIsGraphicEditorModal: (isOpen: boolean) => void;
+}> = ({ postImageDetails, setPostImageDetails, setIsGraphicEditorModal }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [postId, setPostId] = useState<string | null>(null);
@@ -1443,7 +1447,7 @@ const FullEditor: React.FC = () => {
                       <button
                         type="button"
                         className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
-                        // onClick={closeModal}
+                        onClick={() => setIsGraphicEditorModal(false)}
                       >
                         Cancel
                       </button>
