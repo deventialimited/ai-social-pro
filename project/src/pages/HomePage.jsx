@@ -138,13 +138,15 @@ export const HomePage = () => {
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </button>
+              {
+                localStorage?.getItem("user") && (<button
+                  onClick={() => navigate("/dashboard")}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </button>)
+              }
               {!localStorage?.getItem("user") && (
                 <>
                   <button
