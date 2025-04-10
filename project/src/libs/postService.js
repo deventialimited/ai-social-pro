@@ -1,7 +1,7 @@
 // api/posts.js
 import axios from "axios";
 // Custom hook for fetching posts
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 const baseURL = "https://api.oneyearsocial.com";
 // const baseURL = "http://localhost:4000";
 const API_URL = `${baseURL}/api/v1/posts`;
@@ -31,4 +31,41 @@ export const useGetAllPostsByDomainId = (domainId) => {
       console.error("Error fetching posts:", error);
     },
   });
+};
+
+// Hook to update a post
+export const useUpdatePostById = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updatePost,
+    onSuccess: (updatedPost) => {
+      // Update the list of posts for the domain (if applicable)
+      queryClient.setQueryData(["posts", updatedPost.domainId], (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        );
+      });
+      // Invalidate queries to refetch the latest data
+      queryClient.invalidateQueries(["posts", updatedPost.domainId]); // Invalidate posts for the domain
+    },
+    onError: (error) => {
+      console.error("Failed to update post:", error);
+    },
+  });
+};
+// Update a post
+export const updatePost = async ({ id, postData }) => {
+  try {
+    const response = await axios.put(`${API_URL}/updatePost/${id}`, postData);
+
+    return response.data?.post; // Return the updated post from the response
+  } catch (error) {
+    console.error(
+      "Error updating post:",
+      error.response?.data?.message || error.message
+    );
+    throw error.response?.data?.message || error.message;
+  }
 };

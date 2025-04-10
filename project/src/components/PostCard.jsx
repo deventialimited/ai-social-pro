@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   Calendar,
@@ -97,8 +96,8 @@ export const PostCard = ({
     }
   };
 
-  const handleSave = (updatedPost) => {
-    onEdit(updatedPost._id);
+  const handleSaveToDrafts = (updatedPost) => {
+    onEdit(updatedPost, "drafted");
     setShowEditModal(false);
   };
 
@@ -134,7 +133,9 @@ export const PostCard = ({
 
           {/* Visual Toggle Buttons */}
           <div className="flex items-center space-x-2 p-2">
-            <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">Visual</h2>
+            <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
+              Visual
+            </h2>
             <div>
               <button
                 onClick={() => setSelectedButton("image")}
@@ -283,7 +284,7 @@ export const PostCard = ({
         <PostEditModal
           post={post}
           onClose={() => setShowEditModal(false)}
-          onSave={handleSave}
+          onSaveToDrafts={handleSaveToDrafts}
         />
       )}
     </>
