@@ -1,6 +1,8 @@
 const Domain = require("../models/Domain");
 const User = require("../models/User");
-const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
+const axios = require("axios");
+
+const { uploadToS3,deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 // Add a new domain
 exports.addDomain = async (req, res) => {
   // Create new domain object
@@ -51,31 +53,47 @@ exports.addDomain = async (req, res) => {
       marketingStrategy,
     };
 
-       const logoUrl = `https://img.logo.dev/${clientWebsite}`;
+    const logoUrl = `https://img.logo.dev/${clientWebsite}`;
     // Check if Logo.dev returned a valid image
     const logoResponse = await fetch(logoUrl, {
        headers: {
     Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
   },
     });
-    console.log("Logo response status:", logoResponse);
     let siteLogo;
+    let uploadedImageUrl = "";
 
     if (logoResponse.ok && logoResponse.headers.get('content-type')?.includes('image')) {
       siteLogo = logoUrl;
     } 
 
-    const newDomain = new Domain({ ...domainData, siteLogo });
+ try {
+        const response = await axios.get(siteLogo, {
+          responseType: "arraybuffer",
+        });
+
+        const buffer = Buffer.from(response.data, "binary");
+        const file = {
+          originalname: `downloaded_${Date.now()}.jpg`, // you can extract real extension if needed
+          mimetype: response.headers["content-type"],
+          buffer: buffer,
+        };
+
+   uploadedImageUrl = await uploadToS3(file);
+
+      } catch (err) {
+        console.error("Failed to fetch or upload image:", err);
+    }
+    
+    const newDomain = new Domain({ ...domainData, siteLogo:uploadedImageUrl });
 
     const savedDomain = await newDomain.save();
-
     res.status(201).json({
       success: true,
       message: "Domain created successfully",
       data: savedDomain,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -131,11 +149,9 @@ exports.getDomainById = async (req, res) => {
 // Get all domains by userId
 exports.getDomainsByUserId = async (req, res) => {
   const userId = req.params.userId; // Get userId from request params
-console.log("Fetching domains for userId:", userId);
   try {
     const domains = await Domain.find({ userId });
     if (!domains.length) {
-      console.log("No domains found for userId:", userId);  
       return res.status(404).json({
         success: false,
         error: "No domains found for this user",
@@ -281,43 +297,107 @@ exports.updateDomain = async (req, res) => {
   }
 };
 
+// exports.uploadBrand = async (req, res) => {
+//   const domainId = req.params.id;
+//   const file = req.file;
+//   const { colors } = req.body;
+
+//   try {
+//     // Find the existing domain
+//     const existingDomain = await Domain.findById(domainId);
+//     if (!existingDomain) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Domain not found" });
+//     }
+//     const updateData = {};
+
+//     if (file) {
+//       const logoUrl = await uploadToS3(file);
+//       updateData.siteLogo = logoUrl;
+//     }
+//     if (colors) {
+//       updateData.colors = colors;
+//     }
+
+//     const updatedDomain = await Domain.findByIdAndUpdate(domainId, updateData, {
+//       new: true,
+//     });
+
+//     if (!updatedDomain) {
+//       return res.status(404).json({ error: "Domain not found" });
+//     }
+
+//     res
+//       .status(200)
+//       .json({ message: "Update successful", domain: updatedDomain });
+//   } catch (error) {
+//     console.error("Error uploading logo and updating brand:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
+
 exports.uploadBrand = async (req, res) => {
   const domainId = req.params.id;
   const file = req.file;
   const { colors } = req.body;
 
   try {
-    // Find the existing domain
     const existingDomain = await Domain.findById(domainId);
     if (!existingDomain) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Domain not found" });
+      return res.status(404).json({ success: false, message: "Domain not found" });
     }
-    const updateData = {};
 
-    if (file) {
-      const logoUrl = await uploadToS3(file);
-      updateData.siteLogo = logoUrl;
+    const updateData = {};
+    let oldLogoKey = null;
+
+    // Step 1: Capture the old logo key before updating
+    if (file && existingDomain.siteLogo) {
+      const existingUrl = existingDomain.siteLogo;
+      const splitUrl = existingUrl.split(".amazonaws.com/");
+      if (splitUrl.length === 2) {
+        oldLogoKey = splitUrl[1];
+      } else {
+        console.warn("Could not extract S3 key from existing logo URL.");
+      }
     }
+
+    // Step 2: Upload new logo
+    if (file) {
+      const newLogoUrl = await uploadToS3(file);
+      updateData.siteLogo = newLogoUrl;
+    }
+
+    // Step 3: Update colors if provided
     if (colors) {
       updateData.colors = colors;
     }
 
+    // Step 4: Update the domain
     const updatedDomain = await Domain.findByIdAndUpdate(domainId, updateData, {
       new: true,
     });
 
     if (!updatedDomain) {
-      return res.status(404).json({ error: "Domain not found" });
+      return res.status(404).json({ error: "Domain not found after update" });
     }
 
-    res
-      .status(200)
-      .json({ message: "Update successful", domain: updatedDomain });
+    // Step 5: Delete the old logo after successful update
+    if (oldLogoKey) {
+      try {
+        const deleteResult = await deleteFromS3([oldLogoKey]);
+      } catch (err) {
+        console.error("Error deleting old logo from S3:", err);
+        // Optionally send this to logs or monitoring
+      }
+    } else {
+      console.log("No old logo to delete.");
+    }
+  
+    res.status(200).json({ message: "Update successful", domain: updatedDomain });
   } catch (error) {
     console.error("Error uploading logo and updating brand:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-

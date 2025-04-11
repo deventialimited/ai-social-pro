@@ -1,6 +1,6 @@
 import axios from "axios";
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:4000";
 // Base URL of your API
 const API_URL = `${baseURL}/api/v1/users`;
 export const updateSelectedDomain = async (userId, selectedWebsiteId) => {
