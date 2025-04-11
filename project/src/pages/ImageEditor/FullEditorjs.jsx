@@ -37,7 +37,11 @@ import { EffectsPanel } from "./editor_components/EffectsPanel"; // Import Effec
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
-const FullEditor = () => {
+const FullEditor = ({
+  postImageDetails,
+  setPostImageDetails,
+  setIsGraphicEditorModal,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [postId, setPostId] = useState(null);
@@ -1285,6 +1289,7 @@ const FullEditor = () => {
           <button
             type="button"
             className="rounded-md px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:cursor-pointer"
+            onClick={() => setIsGraphicEditorModal(false)}
           >
             Cancel
           </button>
