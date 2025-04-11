@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import FullEditor from "./pages/ImageEditor/FullEditor";
+import Fulljs from "./pages/ImageEditor/FullEditorjs";
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
@@ -23,6 +24,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard/*" element={<Dashboard />} />
             <Route path="/fullEditor" element={<FullEditor />} /> 
+            <Route path="/full" element={<Fulljs />} /> 
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Toaster />
