@@ -214,6 +214,8 @@ export const PostCard = ({
           </div>
           <img
             src={post.image}
+            className=" cursor-pointer"
+            onClick={() => setShowEditModal(true)}
             alt="Post content"
             style={getImageStyle(primaryPlatform)}
           />
@@ -229,7 +231,7 @@ export const PostCard = ({
             <div className="flex items-center">
               <Calendar className="h-3 w-3" />
               <span className="text-xs ml-1">
-                {format(new Date(post.postDate), "MMM d, yyyy")}
+                {format(new Date(post.date), "MMM d, yyyy")}
               </span>
             </div>
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
