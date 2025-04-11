@@ -4,7 +4,10 @@ const Schema = mongoose.Schema;
 /**
  * Post Schema
  * Main schema for social media posts
- */
+ * post details  sub schema -> postid doamin id  userid image topic content slogan date platform status followers
+ * editing value sub schema -> text[](can be multiples array) sub-schema -> header->text and sub schema ->styles ,sub header ,body() ,
+ *   image  shape  background layers size 
+ */ 
 const PostSchema = new Schema(
   {
     postId: {
