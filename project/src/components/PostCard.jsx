@@ -283,6 +283,7 @@ export const PostCard = ({
       {showEditModal && (
         <PostEditModal
           post={post}
+          showEditModal={showEditModal}
           onClose={() => setShowEditModal(false)}
           onSaveToDrafts={handleSaveToDrafts}
         />
