@@ -51,9 +51,19 @@ exports.addDomain = async (req, res) => {
       marketingStrategy,
     };
 
-    const siteLogo = `https://avatar.iran.liara.run/username?username=${encodeURIComponent(
-      clientWebsite
-    )}`;
+       const logoUrl = `https://img.logo.dev/${clientWebsite}`;
+    // Check if Logo.dev returned a valid image
+    const logoResponse = await fetch(logoUrl, {
+       headers: {
+    Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
+  },
+    });
+    console.log("Logo response status:", logoResponse);
+    let siteLogo;
+
+    if (logoResponse.ok && logoResponse.headers.get('content-type')?.includes('image')) {
+      siteLogo = logoUrl;
+    } 
 
     const newDomain = new Domain({ ...domainData, siteLogo });
 
@@ -72,7 +82,6 @@ exports.addDomain = async (req, res) => {
     });
   }
 };
-
 // Get all domains
 exports.getAllDomains = async (req, res) => {
   try {
