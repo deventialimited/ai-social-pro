@@ -21,8 +21,7 @@ import { Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import axios from "axios";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // Importing Firebase config
+import { saveOrUpdatePostDesign, getPostDesignById, transformToPostDesignSchema, transformToEditorData } from "../../libs/postDesignService";
 
 import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
@@ -110,12 +109,14 @@ const FullEditor = ({
   // Add state to store original images
   const [originalImages, setOriginalImages] = useState({});
 
-  // Save data to Firebase Firestore
-  const saveDataToFirebase = async () => {
+  // Save data to backend API
+  const saveDataToBackend = async () => {
     try {
       const postId = post_id;
       const idToUse = postId || "1";
-      await setDoc(doc(db, "posts", idToUse), {
+
+      const editorData = {
+        post_id: idToUse,
         shapes,
         backgroundColor,
         backgroundImage,
@@ -128,41 +129,43 @@ const FullEditor = ({
         scaleX,
         scaleY,
         imageEffects,
-        images,
-      });
-      console.log("Data saved successfully to Firebase with postId:", idToUse);
-    } catch (e) {
-      console.error("Error saving document: ", e);
+        images
+      };
+
+      const postDesignData = transformToPostDesignSchema(editorData);
+      await saveOrUpdatePostDesign(postDesignData);
+      console.log("Data saved successfully to backend");
+    } catch (error) {
+      console.error("Error saving to backend:", error);
     }
   };
 
-  // Load data from Firebase Firestore
-  const loadDataFromFirebase = async () => {
+  // Load data from backend API
+  const loadDataFromBackend = async () => {
     try {
-      const docRef = doc(db, "posts", post_id || "1");
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        console.log("Data retrieved from Firebase:", data);
-        setShapes(data.shapes || []);
-        setBackgroundColor(data.backgroundColor || "#ffffff");
-        setBackgroundImage(data.backgroundImage || null);
-        setPostBody(data.postBody || "");
-        setHistory(data.history || []);
-        setHistoryIndex(data.historyIndex || -1);
-
-        if (data.imageScale) setImageScale(data.imageScale);
-        if (data.imagePosition) setImagePosition(data.imagePosition);
-        if (data.imageFilters) setImageFilters(data.imageFilters);
-        if (data.scaleX) setScaleX(data.scaleX);
-        if (data.scaleY) setScaleY(data.scaleY);
-        if (data.imageEffects) setImageEffects(data.imageEffects);
-        if (data.images) setImages(data.images);
+      const postDesign = await getPostDesignById(post_id || "1");
+      const editorData = transformToEditorData(postDesign);
+      
+      if (editorData) {
+        console.log("Data retrieved from backend:", editorData);
+        setShapes(editorData.shapes);
+        setBackgroundColor(editorData.backgroundColor);
+        setBackgroundImage(editorData.backgroundImage);
+        setPostBody(editorData.postBody);
+        setHistory(editorData.history);
+        setHistoryIndex(editorData.historyIndex);
+        setImageScale(editorData.imageScale);
+        setImagePosition(editorData.imagePosition);
+        setImageFilters(editorData.imageFilters);
+        setScaleX(editorData.scaleX);
+        setScaleY(editorData.scaleY);
+        setImageEffects(editorData.imageEffects);
+        setImages(editorData.images);
       } else {
-        console.log("No such document!");
+        console.log("No data found!");
       }
-    } catch (e) {
-      console.error("Error getting document: ", e);
+    } catch (error) {
+      console.error("Error loading data from backend:", error);
     }
   };
 
@@ -178,7 +181,7 @@ const FullEditor = ({
     if (!postId) {
       setPostId("1");
     } else {
-      loadDataFromFirebase();
+      loadDataFromBackend();
     }
   }, [postId]);
 
@@ -186,12 +189,12 @@ const FullEditor = ({
 
   const captureDiagramAsImage = async () => {
     try {
-      // First, load the data from Firebase to ensure we have the latest data
-      saveDataToFirebase();
-      await loadDataFromFirebase();
+      // First, save the data to backend to ensure we have the latest data
+      await saveDataToBackend();
+      await loadDataFromBackend();
 
       // Wait a moment for the React state to update and render with the loaded data
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Increased timeout for reliable rendering
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Get the canvas element
       const diagramElement = document.getElementById("canvas");
@@ -227,7 +230,7 @@ const FullEditor = ({
 
       diagramElement.appendChild(tempTextElement);
 
-      // Create a canvas from the HTML element with the loaded Firebase data
+      // Create a canvas from the HTML element with the loaded backend data
       const canvas = await html2canvas(diagramElement, {
         useCORS: true, // This helps with any cross-origin images
         scale: 2, // Increase quality
@@ -257,7 +260,7 @@ const FullEditor = ({
       const a = document.createElement("a");
       a.href = url;
 
-      // Include some Firebase data in the filename
+      // Include some backend data in the filename
       const timestamp = new Date().getTime();
       const filename = `editor_${postId || "1"}_${timestamp}.png`;
       a.download = filename;
@@ -268,7 +271,7 @@ const FullEditor = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      console.log("Image downloaded successfully with Firebase data");
+      console.log("Image downloaded successfully with backend data");
     } catch (error) {
       console.error("Error downloading image:", error);
     }

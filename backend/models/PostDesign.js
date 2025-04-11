@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 
 const postDesignSchema = new mongoose.Schema({
-  postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true },
+  postId: { 
+    type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed to handle both types
+    required: true 
+  },
   canvas: {
     width: Number,
     height: Number,
