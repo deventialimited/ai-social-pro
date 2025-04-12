@@ -103,6 +103,8 @@ interface CanvasEditorProps {
       offsetX: number;
       offsetY: number;
     };
+    opacity: number;
+    borderColor: string;
   };
 }
 
@@ -866,7 +868,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
       // Get border style from effects
       const borderStyle =
         imageEffects && imageEffects.border > 0
-          ? `${imageEffects.border}px solid black`
+          ? `${imageEffects.border}px solid ${
+              imageEffects.borderColor || "#000000"
+            }`
           : undefined;
 
       // Border radius from effects
@@ -880,6 +884,12 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
         imageEffects && imageEffects.shadow && imageEffects.shadow.blur > 0
           ? `${imageEffects.shadow.offsetX}px ${imageEffects.shadow.offsetY}px ${imageEffects.shadow.blur}px rgba(0,0,0,0.5)`
           : undefined;
+
+      // Apply opacity
+      const opacity =
+        imageEffects && imageEffects.opacity !== undefined
+          ? 1 - imageEffects.opacity / 100 // Reverse the calculation: 0 = visible (1), 100 = invisible (0)
+          : 1;
 
       return (
         <Rnd
@@ -954,6 +964,11 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
           style={{
             transformOrigin: "center center",
             zIndex: isSelected ? 50 : imageData.zIndex || 1,
+            filter: filterString || undefined,
+            border: borderStyle,
+            borderRadius,
+            boxShadow,
+            opacity,
           }}
         >
           <div
@@ -961,9 +976,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
             style={{
               transform: containerTransform,
               transformOrigin: "center center",
-              boxShadow,
-              border: borderStyle,
-              borderRadius,
             }}
           >
             {/* Image container */}
