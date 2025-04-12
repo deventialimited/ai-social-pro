@@ -2,7 +2,7 @@
 
 // @ts-nocheck
 import React from "react";
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowUpTrayIcon,
@@ -1476,7 +1476,9 @@ const FullEditor = ({
 
             <button
               className={`w-full py-4 flex flex-col items-center justify-center ${
-                activeTab === "selectedImage" ? "bg-blue-100" : "hover:bg-gray-100"
+                activeTab === "selectedImage"
+                  ? "bg-blue-100"
+                  : "hover:bg-gray-100"
               } hover:cursor-pointer`}
               onClick={() => setActiveTab("selectedImage")}
             >
@@ -1502,9 +1504,7 @@ const FullEditor = ({
         {/* Main content */}
         <div className="flex-1 flex">
           {/* Sidebar for active tab */}
-          <div className="w-1/5 p-4 shadow">
-            {renderTabContent()}
-          </div>
+          <div className="w-1/5 p-4 shadow">{renderTabContent()}</div>
 
           <div className="flex-1 flex flex-col">
             {/* Toolbar */}
@@ -1716,11 +1716,10 @@ const FullEditor = ({
                           onChange={(e) => {
                             const newColor = e.target.value;
                             if (selectedShapeId) {
-                              const updatedShapes = shapes.map(
-                                (shape) =>
-                                  shape.id === selectedShapeId
-                                    ? { ...shape, color: newColor }
-                                    : shape
+                              const updatedShapes = shapes.map((shape) =>
+                                shape.id === selectedShapeId
+                                  ? { ...shape, color: newColor }
+                                  : shape
                               );
                               setShapes(updatedShapes);
                               addToHistory({
@@ -1830,9 +1829,7 @@ const FullEditor = ({
                 >
                   <MinusIcon className="h-4 w-4" />
                 </button>
-                <div className="px-3 py-1 border-l border-r">
-                  {zoomLevel}%
-                </div>
+                <div className="px-3 py-1 border-l border-r">{zoomLevel}%</div>
                 <button
                   className="p-2 hover:bg-gray-100 rounded-r-md hover:cursor-pointer"
                   onClick={() => setZoomLevel(Math.min(200, zoomLevel + 25))}
@@ -1889,7 +1886,7 @@ const BackgroundTabContent = ({
 }) => {
   return (
     <div className="w-full max-w-lg mx-auto p-4">
-      <div className="mb-4" style={{ height: "30%" }}>
+      <div className="mb-4">
         <h3 className="text-lg font-medium mb-2">Colors</h3>
         <div className="grid grid-cols-5 gap-2 overflow-y-auto max-h-24">
           {colors.map((color, index) => (
@@ -1902,13 +1899,13 @@ const BackgroundTabContent = ({
           ))}
         </div>
       </div>
-      <div style={{ height: "70%" }}>
+      <div>
         <h3 className="text-lg font-medium mb-2">Patterns</h3>
-        <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-128">
+        <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[260px]">
           {patterns.map((pattern, index) => (
             <div
               key={index}
-              className="h-20 bg-gray-200 rounded-md cursor-pointer flex items-center justify-center"
+              className="h-20 bg-gray-200 rounded-md cursor-pointer"
               style={{ backgroundImage: `url(${pattern})` }}
               onClick={() => onPatternSelect(pattern)}
             ></div>
