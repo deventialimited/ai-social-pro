@@ -4,7 +4,6 @@ import {
   useDomains,
   useUpdateDomainBrandInfo,
   useUpdateDomainBusiness,
-  
 } from "../libs/domainService";
 import { toast } from "react-hot-toast";
 
@@ -37,7 +36,7 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
 
   const updateDomain = useUpdateDomainBusiness();
   const updateBrandInfo = useUpdateDomainBrandInfo();
-// const { updateBrandInfo } = useUpdateBrandInfo;
+  // const { updateBrandInfo } = useUpdateBrandInfo;
   useEffect(() => {
     if (domains?.length > 0 && selectedWebsiteId) {
       const selectedWebsiteData = domains?.find(
@@ -215,7 +214,7 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
                 }`}
               />
               {isEditing && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <Upload className="w-6 h-6 text-white" />
                 </div>
               )}
