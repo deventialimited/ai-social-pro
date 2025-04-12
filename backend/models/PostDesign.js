@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const postDesignSchema = new mongoose.Schema({
-  postId: { 
+  postId: {
     type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed to handle both types
-    required: true 
+    required: true,
   },
   canvas: {
     width: Number,
@@ -44,8 +44,10 @@ const postDesignSchema = new mongoose.Schema({
   ],
 
   backgrounds: {
-    type: Object,
-    default: {},
+    type: { type: String }, // "color", "gradient", "image", "video"
+    url: String, // only if image or video
+    color: String, // only if color
+    gradient: Object, // if gradient
   },
 
   version: { type: Number, default: 1 },
