@@ -43,6 +43,32 @@ const FullEditor = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+    if (postImageDetails) {
+      const { postId, content, image } = postImageDetails;
+      setPostId(postId);
+      setPostContent(content);
+      setPostImage(image);
+      console.log("postImageDetailsihihi", postImageDetails);
+    }
+  }, [postImageDetails]);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    setPostImageDetails((prevDetails) => ({
+      ...prevDetails,
+      date: currentDate,
+    }));
+  }, []);
+  useEffect(() => {
+    if (postImageDetails) {
+      const { postId, content, image } = postImageDetails;
+      setPostId(postId);
+      setPostContent(content);
+      setPostImage(image);
+      console.log("postImageDetailsihihi", postImageDetails);
+    }
+  }, [postImageDetails]);
   const [postId, setPostId] = useState(null);
   const [postContent, setPostContent] = useState("");
   const [postImage, setPostImage] = useState("");
@@ -112,27 +138,51 @@ const FullEditor = ({
   // Save data to backend API
   const saveDataToBackend = async () => {
     try {
-      const postId = post_id;
+      const postId = postImageDetails?._id || post_id;
       const idToUse = postId || "1";
 
-      const editorData = {
-        post_id: idToUse,
-        shapes,
-        backgroundColor,
-        backgroundImage,
-        postBody,
-        history,
-        historyIndex,
-        imageScale,
-        imagePosition,
-        imageFilters,
-        scaleX,
-        scaleY,
-        imageEffects,
-        images
+      const postDesignData = {
+        postId: idToUse,
+        canvas: {
+          width: 768,
+          height: 774,
+          ratio: "1:1",
+          styles: {
+            backgroundColor: backgroundColor || "#7DD3FC"
+          }
+        },
+        elements: shapes.map(shape => ({
+          id: `${shape.id}-${Date.now()}`,
+          type: shape.type,
+          category: shape.category || "shape",
+          position: {
+            x: shape.x,
+            y: shape.y
+          },
+          size: {
+            width: shape.width,
+            height: shape.height
+          },
+          rotation: shape.rotation || 0,
+          opacity: shape.opacity || 1,
+          zIndex: shape.zIndex || 1,
+          styles: shape.styles || {},
+          props: shape.props || {}
+        })),
+        layers: shapes.map(shape => ({
+          id: `layer-${shape.id}-${Date.now()}`,
+          name: shape.type,
+          elementId: `${shape.id}-${Date.now()}`,
+          visible: true,
+          locked: false
+        })),
+        backgrounds: {
+          type: "color",
+          color: backgroundColor || "#7DD3FC"
+        },
+        version: 1
       };
 
-      const postDesignData = transformToPostDesignSchema(editorData);
       await saveOrUpdatePostDesign(postDesignData);
       console.log("Data saved successfully to backend");
     } catch (error) {
@@ -143,7 +193,9 @@ const FullEditor = ({
   // Load data from backend API
   const loadDataFromBackend = async () => {
     try {
-      const postDesign = await getPostDesignById(post_id || "1");
+      const postId = postImageDetails?._id || post_id;
+      const idToUse = postId || "1";
+      const postDesign = await getPostDesignById(idToUse);
       const editorData = transformToEditorData(postDesign);
       
       if (editorData) {
@@ -189,91 +241,13 @@ const FullEditor = ({
 
   const captureDiagramAsImage = async () => {
     try {
-      // First, save the data to backend to ensure we have the latest data
+      // Save the data to backend
       await saveDataToBackend();
-      await loadDataFromBackend();
-
-      // Wait a moment for the React state to update and render with the loaded data
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Get the canvas element
-      const diagramElement = document.getElementById("canvas");
-
-      if (!diagramElement) {
-        console.error("Canvas element not found");
-        return;
-      }
-
-      // Add the postBody text directly to the original DOM before capturing
-      // This is more reliable than trying to add it in the onclone callback
-      const tempTextElement = document.createElement("div");
-      tempTextElement.id = "temp-post-body-text";
-      tempTextElement.style.position = "absolute";
-      tempTextElement.style.top = "10px";
-      tempTextElement.style.left = "10px";
-      tempTextElement.style.color = textColor || "#000000";
-      tempTextElement.style.fontSize = "16px";
-      tempTextElement.style.fontFamily = "Arial, sans-serif";
-      tempTextElement.style.zIndex = "1000"; // Ensure it's on top
-      tempTextElement.style.padding = "5px";
-      // tempTextElement.style.backgroundColor = "rgba(255, 255, 255, 0.7)"; // Semi-transparent background for readability
-      tempTextElement.textContent = postBody;
-
-      // Make sure the container can handle absolute positioning
-      if (
-        diagramElement.style.position !== "absolute" &&
-        diagramElement.style.position !== "relative" &&
-        diagramElement.style.position !== "fixed"
-      ) {
-        diagramElement.style.position = "relative";
-      }
-
-      diagramElement.appendChild(tempTextElement);
-
-      // Create a canvas from the HTML element with the loaded backend data
-      const canvas = await html2canvas(diagramElement, {
-        useCORS: true, // This helps with any cross-origin images
-        scale: 2, // Increase quality
-        backgroundColor: backgroundColor || "#ffffff", // Use the loaded background color
-        logging: true, // Enable logging for debugging
-        allowTaint: true, // This can help with rendering issues
-      });
-
-      // Clean up by removing the temporary text element
-      const textToRemove = document.getElementById("temp-post-body-text");
-      if (textToRemove && textToRemove.parentNode) {
-        textToRemove.parentNode.removeChild(textToRemove);
-      }
-
-      // Convert the canvas to a blob
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/png", 1.0)
-      );
-
-      if (!blob) {
-        console.error("Failed to create blob from canvas");
-        return;
-      }
-
-      // Create a downloadable link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-
-      // Include some backend data in the filename
-      const timestamp = new Date().getTime();
-      const filename = `editor_${postId || "1"}_${timestamp}.png`;
-      a.download = filename;
-
-      // Trigger download
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      console.log("Image downloaded successfully with backend data");
+      
+      // Close the editor modal
+      setIsGraphicEditorModal(false);
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error("Error saving and closing:", error);
     }
   };
 
