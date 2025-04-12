@@ -43,32 +43,32 @@ const FullEditor = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  useEffect(() => {
-    if (postImageDetails) {
-      const { postId, content, image } = postImageDetails;
-      setPostId(postId);
-      setPostContent(content);
-      setPostImage(image);
-      console.log("postImageDetailsihihi", postImageDetails);
-    }
-  }, [postImageDetails]);
+  // useEffect(() => {
+  //   if (postImageDetails) {
+  //     const { postId, content, image } = postImageDetails;
+  //     setPostId(postId);
+  //     setPostContent(content);
+  //     setPostImage(image);
+  //     console.log("postImageDetailsihihi", postImageDetails);
+  //   }
+  // }, [postImageDetails]);
 
-  useEffect(() => {
-    const currentDate = new Date();
-    setPostImageDetails((prevDetails) => ({
-      ...prevDetails,
-      date: currentDate,
-    }));
-  }, []);
-  useEffect(() => {
-    if (postImageDetails) {
-      const { postId, content, image } = postImageDetails;
-      setPostId(postId);
-      setPostContent(content);
-      setPostImage(image);
-      console.log("postImageDetailsihihi", postImageDetails);
-    }
-  }, [postImageDetails]);
+  // useEffect(() => {
+  //   const currentDate = new Date();
+  //   setPostImageDetails((prevDetails) => ({
+  //     ...prevDetails,
+  //     date: currentDate,
+  //   }));
+  // }, []);
+  // useEffect(() => {
+  //   if (postImageDetails) {
+  //     const { postId, content, image } = postImageDetails;
+  //     setPostId(postId);
+  //     setPostContent(content);
+  //     setPostImage(image);
+  //     console.log("postImageDetailsihihi", postImageDetails);
+  //   }
+  // }, [postImageDetails]);
   const [postId, setPostId] = useState(null);
   const [postContent, setPostContent] = useState("");
   const [postImage, setPostImage] = useState("");
