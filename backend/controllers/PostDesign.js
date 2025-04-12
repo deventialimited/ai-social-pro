@@ -1,5 +1,24 @@
 const PostDesign = require("../models/PostDesign");
 
+exports.getPostDesignById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const postDesign = await PostDesign.findOne({ postId: id });
+    
+    if (!postDesign) {
+      return res.status(404).json({ message: "PostDesign not found" });
+    }
+    
+    return res.status(200).json(postDesign);
+  } catch (error) {
+    console.error("Error in getPostDesignById:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 exports.saveOrUpdatePostDesign = async (req, res) => {
   try {
     const { postId, canvas, elements, layers, backgrounds } = req.body;
@@ -8,7 +27,10 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       return res.status(400).json({ message: "postId is required" });
     }
 
-    let existingDesign = await PostDesign.findOne({ postId });
+    // Ensure postId is a string
+    const stringPostId = String(postId);
+
+    let existingDesign = await PostDesign.findOne({ postId: stringPostId });
 
     if (existingDesign) {
       let updated = false;
@@ -20,9 +42,7 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       }
 
       // Compare and update elements
-      if (
-        JSON.stringify(existingDesign.elements) !== JSON.stringify(elements)
-      ) {
+      if (JSON.stringify(existingDesign.elements) !== JSON.stringify(elements)) {
         existingDesign.elements = elements;
         updated = true;
       }
@@ -34,10 +54,7 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       }
 
       // Compare and update backgrounds
-      if (
-        JSON.stringify(existingDesign.backgrounds) !==
-        JSON.stringify(backgrounds)
-      ) {
+      if (JSON.stringify(existingDesign.backgrounds) !== JSON.stringify(backgrounds)) {
         existingDesign.backgrounds = backgrounds;
         updated = true;
       }
@@ -58,7 +75,7 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
     } else {
       // Create new
       const newPostDesign = new PostDesign({
-        postId,
+        postId: stringPostId,
         canvas,
         elements,
         layers,
