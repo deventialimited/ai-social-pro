@@ -15,6 +15,13 @@ const PostSchema = new Schema({
   status: { type: String, default: "generated" },
   followers: { type: Number, default: 0, min: 0 },
 
+  // 👇 Editor status to track if edited by user in main editor
+  editorStatus: {
+    type: String,
+    enum: ["not_edited", "edited"],
+    default: "not_edited",
+  },
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
