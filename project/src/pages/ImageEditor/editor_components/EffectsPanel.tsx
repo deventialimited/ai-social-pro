@@ -1,6 +1,5 @@
 "use client";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { X } from "lucide-react";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
@@ -18,13 +17,18 @@ interface EffectsPanelProps {
     opacity: number;
     cornerRadius: number;
     shadow: {
+      enabled: boolean;
       blur: number;
       offsetX: number;
       offsetY: number;
+      color: string;
     };
   };
   onEffectChange: (effect: string, value: number | string) => void;
   onEffectToggle?: (effect: string) => void;
+  selectedImage: string;
+  imageData: Record<string, any>;
+  onUpdateImage: (image: any) => void;
 }
 
 export const EffectsPanel: React.FC<EffectsPanelProps> = ({
@@ -40,16 +44,23 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     opacity: 0,
     cornerRadius: 0,
     shadow: {
+      enabled: false,
       blur: 0,
       offsetX: 0,
       offsetY: 0,
+      color: "#000000",
     },
   },
   onEffectChange,
   onEffectToggle,
+  selectedImage,
+  imageData,
+  onUpdateImage,
 }) => {
   const [localEffects, setLocalEffects] = useState(effects);
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const borderColorRef = useRef<HTMLInputElement>(null);
+  const shadowColorRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLocalEffects(effects);
@@ -59,6 +70,24 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
 
   const toggleEffect = (effect: string) => {
     if (!onEffectToggle || !onEffectChange) return;
+
+    if (effect === "shadow") {
+      if (!localEffects.shadow.enabled) {
+        onEffectChange("shadow.enabled", 1);
+        onEffectChange("shadow.blur", 15);
+        onEffectChange("shadow.offsetX", 5);
+        onEffectChange("shadow.offsetY", 5);
+        onEffectChange("shadow.color", "#000000");
+      } else {
+        onEffectChange("shadow.enabled", 0);
+        onEffectChange("shadow.blur", 0);
+        onEffectChange("shadow.offsetX", 0);
+        onEffectChange("shadow.offsetY", 0);
+      }
+      onEffectToggle(effect);
+      setActiveEffect(effect);
+      return;
+    }
 
     if (effect === "blur" && localEffects.blur === 0) {
       onEffectChange("blur", 0);
@@ -77,10 +106,6 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
       setLocalEffects((prev) => ({ ...prev, opacity: 0 }));
     } else if (effect === "cornerRadius" && localEffects.cornerRadius === 0) {
       onEffectChange("cornerRadius", 10);
-    } else if (effect === "shadow.blur" && localEffects.shadow.blur === 0) {
-      onEffectChange("shadow.blur", 15);
-      onEffectChange("shadow.offsetX", 5);
-      onEffectChange("shadow.offsetY", 5);
     }
 
     onEffectToggle(effect);
@@ -109,11 +134,18 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
   const handleToggleOff = (effect: string) => {
     if (!onEffectChange) return;
 
-    if (effect === "shadow.blur" || effect === "shadow") {
+    if (effect === "shadow") {
       onEffectChange("shadow.blur", 0);
       onEffectChange("shadow.offsetX", 0);
       onEffectChange("shadow.offsetY", 0);
-    } else if (effect === "brightness") {
+      if (onEffectToggle) {
+        onEffectToggle(effect);
+      }
+      setActiveEffect(null);
+      return;
+    }
+
+    if (effect === "brightness") {
       onEffectChange(effect, 100);
       setLocalEffects((prev) => ({ ...prev, brightness: 100 }));
     } else if (effect === "opacity") {
@@ -154,8 +186,47 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     }
   };
 
+  const handleBorderColorClick = () => {
+    borderColorRef.current?.click();
+  };
+
+  const handleShadowColorClick = () => {
+    shadowColorRef.current?.click();
+  };
+
+  const handleBorderColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    if (!onEffectChange) return;
+
+    // Update the local state
+    setLocalEffects((prev) => ({
+      ...prev,
+      borderColor: newColor,
+    }));
+
+    // Update the parent state
+    onEffectChange("borderColor", newColor);
+  };
+
+  const handleShadowColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    if (!onEffectChange) return;
+
+    // Update the local state
+    setLocalEffects((prev) => ({
+      ...prev,
+      shadow: {
+        ...prev.shadow,
+        color: newColor,
+      },
+    }));
+
+    // Update the parent state
+    onEffectChange("shadow.color", newColor);
+  };
+
   return (
-    <div className="bg-white p-2 overflow-y-auto">
+    <div className="bg-white p-2 h-full flex flex-col">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-semibold">Effects</h3>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -163,7 +234,33 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div
+        className="space-y-4 overflow-y-auto flex-1 pr-2"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#888 #f1f1f1",
+          msOverflowStyle: "none",
+        }}
+      >
+        <style>
+          {`
+            div::-webkit-scrollbar {
+              width: 6px;
+            }
+            div::-webkit-scrollbar-track {
+              background: #f1f1f1;
+              border-radius: 3px;
+            }
+            div::-webkit-scrollbar-thumb {
+              background: #888;
+              border-radius: 3px;
+            }
+            div::-webkit-scrollbar-thumb:hover {
+              background: #555;
+            }
+          `}
+        </style>
+
         {/* Blur */}
         <div className="space-y-1">
           <div className="flex justify-between items-center">
@@ -454,15 +551,22 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Color</span>
-                <input
-                  type="color"
-                  value={localEffects.borderColor}
-                  onChange={(e) =>
-                    onEffectChange &&
-                    onEffectChange("borderColor", e.target.value)
-                  }
-                  className="w-8 h-8 p-0 border border-gray-300 rounded cursor-pointer"
-                />
+                <div
+                  className="w-8 h-8 rounded border cursor-pointer"
+                  style={{
+                    backgroundColor: localEffects.borderColor || "#000000",
+                    border: "1px solid #ccc",
+                  }}
+                  onClick={handleBorderColorClick}
+                >
+                  <input
+                    ref={borderColorRef}
+                    type="color"
+                    className="hidden"
+                    value={localEffects.borderColor || "#000000"}
+                    onChange={handleBorderColorChange}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -598,24 +702,24 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               <input
                 type="checkbox"
                 className="sr-only"
-                checked={localEffects.shadow.blur > 0}
+                checked={isEffectEnabled("shadow")}
                 onChange={() => {}}
               />
               <div
                 className={`absolute inset-0 rounded-full transition ${
-                  localEffects.shadow.blur > 0 ? "bg-blue-500" : "bg-gray-200"
+                  isEffectEnabled("shadow") ? "bg-blue-500" : "bg-gray-200"
                 }`}
               ></div>
               <div
                 className={`absolute left-1 top-0.5 bg-white w-3 h-3 rounded-full transition transform ${
-                  localEffects.shadow.blur > 0 ? "translate-x-4" : ""
+                  isEffectEnabled("shadow") ? "translate-x-4" : ""
                 }`}
               ></div>
             </div>
           </div>
           {activeEffect === "shadow" && (
-            <div className="space-y-1">
-              <div className="flex items-center mt-1">
+            <div className="space-y-2">
+              <div className="flex items-center">
                 <span className="mr-1">Blur</span>
                 <Box sx={{ width: "100%" }}>
                   <Slider
@@ -701,6 +805,25 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   }
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
                 />
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-sm">Color</span>
+                <div
+                  className="w-8 h-8 rounded border cursor-pointer"
+                  style={{
+                    backgroundColor: localEffects.shadow.color || "#000000",
+                    border: "1px solid #ccc",
+                  }}
+                  onClick={handleShadowColorClick}
+                >
+                  <input
+                    ref={shadowColorRef}
+                    type="color"
+                    className="hidden"
+                    value={localEffects.shadow.color || "#000000"}
+                    onChange={handleShadowColorChange}
+                  />
+                </div>
               </div>
             </div>
           )}

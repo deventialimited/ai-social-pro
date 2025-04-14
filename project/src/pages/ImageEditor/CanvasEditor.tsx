@@ -42,12 +42,14 @@ interface Shape {
 }
 
 interface ShapeEffects {
-  shadow: boolean;
-  blur: number;
-  offsetX: number;
-  offsetY: number;
+  shadow: {
+    enabled: boolean;
+    blur: number;
+    offsetX: number;
+    offsetY: number;
+    color: string;
+  };
   opacity: number;
-  color: string;
 }
 
 interface ImageData {
@@ -339,29 +341,19 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
   };
 
   const getShadowStyle = (effects?: ShapeEffects) => {
-    if (!effects || !effects.shadow) return {};
+    if (!effects?.shadow?.enabled) return {};
 
-    const opacityDecimal = effects.opacity / 100;
-    let shadowColor = effects.color || "#000000";
+    // Get the shadow color directly from effects
+    const shadowColor = effects.shadow.color;
 
-    if (shadowColor.startsWith("#")) {
-      const r = Number.parseInt(shadowColor.slice(1, 3), 16);
-      const g = Number.parseInt(shadowColor.slice(3, 5), 16);
-      const b = Number.parseInt(shadowColor.slice(5, 7), 16);
-      shadowColor = `rgba(${r}, ${g}, ${b}, ${opacityDecimal})`;
-    } else if (shadowColor.startsWith("rgb(")) {
-      shadowColor = shadowColor
-        .replace("rgb(", "rgba(")
-        .replace(")", `, ${opacityDecimal})`);
-    } else if (shadowColor.startsWith("rgba(")) {
-      shadowColor = shadowColor.replace(
-        /rgba$$(\d+),\s*(\d+),\s*(\d+),\s*[\d.]+$$/,
-        `rgba($1, $2, $3, ${opacityDecimal})`
-      );
-    }
+    // Create the shadow style with the exact color
+    const shadowStyle = `${effects.shadow.offsetX}px ${effects.shadow.offsetY}px ${effects.shadow.blur}px ${shadowColor}`;
 
     return {
-      filter: `drop-shadow(${effects.offsetX}px ${effects.offsetY}px ${effects.blur}px ${shadowColor})`,
+      WebkitFilter: `drop-shadow(${shadowStyle})`,
+      filter: `drop-shadow(${shadowStyle})`,
+      position: "relative",
+      zIndex: 1,
     };
   };
 
@@ -994,7 +986,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({
                   filter: filterString,
                   transform: imageTransform,
                   transformOrigin: "center center",
-                  // objectFit: "contain",
+                  objectFit: "contain",
                   borderRadius,
                 }}
                 draggable={false}

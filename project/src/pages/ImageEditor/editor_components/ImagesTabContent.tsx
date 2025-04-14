@@ -27,6 +27,7 @@ export function ImagesTabContent({
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [isImageLocked, setIsImageLocked] = useState<boolean>(false);
   const [imageData, setImageData] = useState(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   type UnsplashImage = {
     urls: {
@@ -62,6 +63,11 @@ export function ImagesTabContent({
     // Don't automatically select the first uploaded image
     // Just set the active tab to uploaded
     setActiveTab("uploaded");
+  };
+
+  // Handle upload button click
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Fetch from Unsplash (random or search)
@@ -568,14 +574,6 @@ export function ImagesTabContent({
     img.src = imageData.src;
   };
 
-  const handleUpload = () => {
-    // Trigger file input click
-    const fileInput = document.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement;
-    if (fileInput) fileInput.click();
-  };
-
   const handleChangeImage = () => {
     // Open image selection interface
     setActiveTab("search");
@@ -883,10 +881,14 @@ export function ImagesTabContent({
     <>
       <div className="flex flex-col gap-2">
         {/* Upload Button */}
-        <label className="flex items-center justify-between py-2 gap-2 px-4 border rounded-md shadow-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+        <label
+          className="flex items-center justify-between py-2 gap-2 px-4 border rounded-md shadow-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+          onClick={handleUploadClick}
+        >
           Upload
           <ArrowUpTrayIcon className="h-5 w-5 text-gray-500" />
           <input
+            ref={fileInputRef}
             type="file"
             multiple
             accept="image/*"
