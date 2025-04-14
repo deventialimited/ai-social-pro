@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
+import ColorPicker from '../../../components/ColorPicker';
 
 interface EffectsPanelProps {
   isOpen: () => boolean;
@@ -21,6 +22,7 @@ interface EffectsPanelProps {
       blur: number;
       offsetX: number;
       offsetY: number;
+      color: string;
     };
   };
   onEffectChange: (effect: string, value: number | string) => void;
@@ -43,6 +45,7 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
       blur: 0,
       offsetX: 0,
       offsetY: 0,
+      color: "#000000",
     },
   },
   onEffectChange,
@@ -452,18 +455,11 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Color</span>
-                <input
-                  type="color"
-                  value={localEffects.borderColor}
-                  onChange={(e) =>
-                    onEffectChange &&
-                    onEffectChange("borderColor", e.target.value)
-                  }
-                  className="w-8 h-8 p-0 border border-gray-300 rounded cursor-pointer"
-                />
-              </div>
+              <ColorPicker
+                color={localEffects.borderColor}
+                onChange={(color) => onEffectChange && onEffectChange("borderColor", color)}
+                label="Border Color"
+              />
             </div>
           )}
         </div>
@@ -700,6 +696,13 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                     onEffectChange("shadow.offsetY", Number(e.target.value))
                   }
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
+                />
+              </div>
+              <div className="mt-2">
+                <ColorPicker
+                  color={localEffects.shadow.color}
+                  onChange={(color) => onEffectChange && onEffectChange("shadow.color", color)}
+                  // label="Shadow Color"
                 />
               </div>
             </div>
