@@ -21,7 +21,12 @@ import { Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import axios from "axios";
-import { saveOrUpdatePostDesign, getPostDesignById, transformToPostDesignSchema, transformToEditorData } from "../../libs/postDesignService";
+import {
+  saveOrUpdatePostDesign,
+  getPostDesignById,
+  transformToPostDesignSchema,
+  transformToEditorData,
+} from "../../libs/postDesignService";
 
 import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
@@ -148,39 +153,39 @@ const FullEditor = ({
           height: 774,
           ratio: "1:1",
           styles: {
-            backgroundColor: backgroundColor || "#7DD3FC"
-          }
+            backgroundColor: backgroundColor || "#7DD3FC",
+          },
         },
-        elements: shapes.map(shape => ({
+        elements: shapes.map((shape) => ({
           id: `${shape.id}-${Date.now()}`,
           type: shape.type,
           category: shape.category || "shape",
           position: {
             x: shape.x,
-            y: shape.y
+            y: shape.y,
           },
           size: {
             width: shape.width,
-            height: shape.height
+            height: shape.height,
           },
           rotation: shape.rotation || 0,
           opacity: shape.opacity || 1,
           zIndex: shape.zIndex || 1,
           styles: shape.styles || {},
-          props: shape.props || {}
+          props: shape.props || {},
         })),
-        layers: shapes.map(shape => ({
+        layers: shapes.map((shape) => ({
           id: `layer-${shape.id}-${Date.now()}`,
           name: shape.type,
           elementId: `${shape.id}-${Date.now()}`,
           visible: true,
-          locked: false
+          locked: false,
         })),
         backgrounds: {
           type: "color",
-          color: backgroundColor || "#7DD3FC"
+          color: backgroundColor || "#7DD3FC",
         },
-        version: 1
+        version: 1,
       };
 
       await saveOrUpdatePostDesign(postDesignData);
@@ -197,7 +202,7 @@ const FullEditor = ({
       const idToUse = postId || "1";
       const postDesign = await getPostDesignById(idToUse);
       const editorData = transformToEditorData(postDesign);
-      
+
       if (editorData) {
         console.log("Data retrieved from backend:", editorData);
         setShapes(editorData.shapes);
@@ -243,7 +248,7 @@ const FullEditor = ({
     try {
       // Save the data to backend
       await saveDataToBackend();
-      
+
       // Close the editor modal
       setIsGraphicEditorModal(false);
     } catch (error) {

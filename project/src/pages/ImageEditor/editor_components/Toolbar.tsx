@@ -200,14 +200,26 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
   onEffectsChange,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [effects, setEffects] = useState<ShapeEffects>({
-    shadow: false,
-    blur: 5,
-    offsetX: 0,
-    offsetY: 0,
-    opacity: 100,
-    color: "#000000",
+  const [effects, setEffects] = useState<ShapeEffects>(() => {
+    const savedEffects = localStorage.getItem("editor_shapeEffects");
+    return savedEffects
+      ? JSON.parse(savedEffects)
+      : {
+          shadow: false,
+          blur: 5,
+          offsetX: 0,
+          offsetY: 0,
+          opacity: 100,
+          color: "#000000",
+        };
   });
+
+  useEffect(() => {
+    // Update effects when props change
+    if (onEffectsChange) {
+      onEffectsChange(effects);
+    }
+  }, [effects, onEffectsChange]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -231,13 +243,13 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
     setIsOpen(!isOpen);
   };
 
-  const handleShadowToggle = () => {
+  const handleShadowToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const newEffects = {
       ...effects,
       shadow: !effects.shadow,
     };
     setEffects(newEffects);
-    onEffectsChange?.(newEffects);
     localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects));
   };
 
@@ -248,7 +260,6 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       blur,
     };
     setEffects(newEffects);
-    onEffectsChange?.(newEffects);
     localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects));
   };
 
@@ -259,7 +270,6 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       offsetX,
     };
     setEffects(newEffects);
-    onEffectsChange?.(newEffects);
     localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects));
   };
 
@@ -270,7 +280,6 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       offsetY,
     };
     setEffects(newEffects);
-    onEffectsChange?.(newEffects);
     localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects));
   };
 
@@ -281,7 +290,6 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       opacity,
     };
     setEffects(newEffects);
-    onEffectsChange?.(newEffects);
     localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects));
   };
 
@@ -292,7 +300,6 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       color,
     };
     setEffects(newEffects);
-    onEffectsChange?.(newEffects);
     localStorage.setItem("editor_shapeEffects", JSON.stringify(newEffects));
   };
 
@@ -301,7 +308,10 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       <button
         className="p-2 flex rounded-md hover:bg-gray-100 cursor-pointer"
         title="Effects"
-        onClick={toggleDropdown}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleDropdown();
+        }}
       >
         <svg
           data-icon="left-join"
@@ -319,19 +329,25 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64">
+        <div
+          className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-64"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Shadow</span>
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={effects.shadow}
-                  onChange={handleShadowToggle}
-                  className="sr-only peer"
+              <button
+                onClick={handleShadowToggle}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  effects.shadow ? "bg-blue-600" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    effects.shadow ? "translate-x-6" : "translate-x-1"
+                  }`}
                 />
-                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-              </label>
+              </button>
             </div>
 
             {effects.shadow && (
@@ -344,6 +360,8 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
                       className="w-16 h-8 border border-gray-300 rounded text-sm px-2"
                       value={effects.blur}
                       onChange={handleBlurChange}
+                      min="0"
+                      max="20"
                     />
                   </div>
                   <input
@@ -364,6 +382,8 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
                       className="w-16 h-8 border border-gray-300 rounded text-sm px-2"
                       value={effects.offsetX}
                       onChange={handleOffsetXChange}
+                      min="-20"
+                      max="20"
                     />
                   </div>
                   <input
@@ -384,6 +404,8 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
                       className="w-16 h-8 border border-gray-300 rounded text-sm px-2"
                       value={effects.offsetY}
                       onChange={handleOffsetYChange}
+                      min="-20"
+                      max="20"
                     />
                   </div>
                   <input
@@ -404,6 +426,8 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
                       className="w-16 h-8 border border-gray-300 rounded text-sm px-2"
                       value={effects.opacity}
                       onChange={handleOpacityChange}
+                      min="0"
+                      max="100"
                     />
                   </div>
                   <input
@@ -421,7 +445,7 @@ const EffectsDropdown: React.FC<EffectsDropdownProps> = ({
                     <span className="text-sm">Color</span>
                     <input
                       type="color"
-                      className="w-8 h-8 p-0 border-0"
+                      className="w-8 h-8 p-0 border-0 rounded cursor-pointer"
                       value={effects.color}
                       onChange={handleColorChange}
                     />

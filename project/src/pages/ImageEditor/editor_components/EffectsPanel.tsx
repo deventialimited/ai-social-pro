@@ -1,6 +1,5 @@
 "use client";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { X } from "lucide-react";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
@@ -27,6 +26,9 @@ interface EffectsPanelProps {
   };
   onEffectChange: (effect: string, value: number | string) => void;
   onEffectToggle?: (effect: string) => void;
+  selectedImage: string;
+  imageData: Record<string, any>;
+  onUpdateImage: (image: any) => void;
 }
 
 export const EffectsPanel: React.FC<EffectsPanelProps> = ({
@@ -51,9 +53,14 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
   },
   onEffectChange,
   onEffectToggle,
+  selectedImage,
+  imageData,
+  onUpdateImage,
 }) => {
   const [localEffects, setLocalEffects] = useState(effects);
   const [activeEffect, setActiveEffect] = useState<string | null>(null);
+  const borderColorRef = useRef<HTMLInputElement>(null);
+  const shadowColorRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLocalEffects(effects);
@@ -177,6 +184,45 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     } else {
       toggleEffect(effect);
     }
+  };
+
+  const handleBorderColorClick = () => {
+    borderColorRef.current?.click();
+  };
+
+  const handleShadowColorClick = () => {
+    shadowColorRef.current?.click();
+  };
+
+  const handleBorderColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    if (!onEffectChange) return;
+
+    // Update the local state
+    setLocalEffects((prev) => ({
+      ...prev,
+      borderColor: newColor,
+    }));
+
+    // Update the parent state
+    onEffectChange("borderColor", newColor);
+  };
+
+  const handleShadowColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value;
+    if (!onEffectChange) return;
+
+    // Update the local state
+    setLocalEffects((prev) => ({
+      ...prev,
+      shadow: {
+        ...prev.shadow,
+        color: newColor,
+      },
+    }));
+
+    // Update the parent state
+    onEffectChange("shadow.color", newColor);
   };
 
   return (
@@ -505,15 +551,22 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Color</span>
-                <input
-                  type="color"
-                  value={localEffects.borderColor}
-                  onChange={(e) =>
-                    onEffectChange &&
-                    onEffectChange("borderColor", e.target.value)
-                  }
-                  className="w-8 h-8 p-0 border border-gray-300 rounded cursor-pointer"
-                />
+                <div
+                  className="w-8 h-8 rounded border cursor-pointer"
+                  style={{
+                    backgroundColor: localEffects.borderColor || "#000000",
+                    border: "1px solid #ccc",
+                  }}
+                  onClick={handleBorderColorClick}
+                >
+                  <input
+                    ref={borderColorRef}
+                    type="color"
+                    className="hidden"
+                    value={localEffects.borderColor || "#000000"}
+                    onChange={handleBorderColorChange}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -755,23 +808,22 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               </div>
               <div className="flex items-center justify-between mt-2">
                 <span className="text-sm">Color</span>
-                <input
-                  type="color"
-                  value={localEffects.shadow.color}
-                  onChange={(e) => {
-                    if (!onEffectChange) return;
-                    const newColor = e.target.value;
-                    onEffectChange("shadow.color", newColor);
-                    setLocalEffects((prev) => ({
-                      ...prev,
-                      shadow: {
-                        ...prev.shadow,
-                        color: newColor,
-                      },
-                    }));
+                <div
+                  className="w-8 h-8 rounded border cursor-pointer"
+                  style={{
+                    backgroundColor: localEffects.shadow.color || "#000000",
+                    border: "1px solid #ccc",
                   }}
-                  className="w-8 h-8 p-0 border border-gray-300 rounded cursor-pointer"
-                />
+                  onClick={handleShadowColorClick}
+                >
+                  <input
+                    ref={shadowColorRef}
+                    type="color"
+                    className="hidden"
+                    value={localEffects.shadow.color || "#000000"}
+                    onChange={handleShadowColorChange}
+                  />
+                </div>
               </div>
             </div>
           )}
