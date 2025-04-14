@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 // const API_URL = import.meta.env.VITE_API_URL || '';
 // const API_URL = "https://api.oneyearsocial.com";
@@ -10,13 +10,16 @@ export const saveOrUpdatePostDesign = async (postDesignData) => {
     // Ensure postId is a string
     const dataToSend = {
       ...postDesignData,
-      postId: String(postDesignData.postId)
+      postId: String(postDesignData.postId),
     };
 
-    const response = await axios.post(`${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign`, dataToSend);
+    const response = await axios.post(
+      `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign`,
+      dataToSend
+    );
     return response.data;
   } catch (error) {
-    console.error('Error saving post design:', error);
+    console.error("Error saving post design:", error);
     throw error;
   }
 };
@@ -26,10 +29,12 @@ export const getPostDesignById = async (postId) => {
   try {
     // Ensure postId is a string
     const stringPostId = String(postId);
-    const response = await axios.get(`${API_URL}/api/v1/postsDesign/${stringPostId}`);
+    const response = await axios.get(
+      `${API_URL}/api/v1/postsDesign/${stringPostId}`
+    );
     return response.data;
   } catch (error) {
-    console.error('Error getting post design:', error);
+    console.error("Error getting post design:", error);
     throw error;
   }
 };
@@ -49,7 +54,7 @@ export const transformToPostDesignSchema = (editorData) => {
     scaleX,
     scaleY,
     imageEffects,
-    images
+    images,
   } = editorData;
 
   return {
@@ -60,37 +65,37 @@ export const transformToPostDesignSchema = (editorData) => {
       ratio: "4:3", // Default aspect ratio
       styles: {
         backgroundColor: backgroundColor || "#ffffff",
-        backgroundImage: backgroundImage || null
-      }
+        backgroundImage: backgroundImage || null,
+      },
     },
-    elements: shapes.map(shape => ({
+    elements: shapes.map((shape) => ({
       id: shape.id,
       type: shape.type,
       category: shape.category || "shape",
       position: {
         x: shape.x,
-        y: shape.y
+        y: shape.y,
       },
       size: {
         width: shape.width,
-        height: shape.height
+        height: shape.height,
       },
       rotation: shape.rotation || 0,
       opacity: shape.opacity || 1,
       zIndex: shape.zIndex || 1,
       styles: shape.styles || {},
-      props: shape.props || {}
+      props: shape.props || {},
     })),
-    layers: shapes.map(shape => ({
+    layers: shapes.map((shape) => ({
       id: shape.id,
       name: shape.type,
       elementId: shape.id,
       visible: true,
-      locked: false
+      locked: false,
     })),
     backgrounds: {
       color: backgroundColor || "#ffffff",
-      image: backgroundImage || null
+      image: backgroundImage || null,
     },
     postBody,
     history,
@@ -101,7 +106,7 @@ export const transformToPostDesignSchema = (editorData) => {
     scaleX,
     scaleY,
     imageEffects,
-    images
+    images,
   };
 };
 
@@ -121,7 +126,7 @@ export const transformToEditorData = (postDesign) => {
     imageFilters: postDesign.imageFilters || {
       brightness: 100,
       contrast: 100,
-      saturation: 100
+      saturation: 100,
     },
     scaleX: postDesign.scaleX || 1,
     scaleY: postDesign.scaleY || 1,
@@ -135,9 +140,45 @@ export const transformToEditorData = (postDesign) => {
       shadow: {
         blur: 0,
         offsetX: 0,
-        offsetY: 0
-      }
+        offsetY: 0,
+      },
     },
-    images: postDesign.images || []
+    images: postDesign.images || [],
   };
-}; 
+};
+
+export const saveOrUpdatePostDesignFrontendController = async (
+  postDesignData,
+  allFiles
+) => {
+  const formData = new FormData();
+  const { elements, backgrounds } = postDesignData;
+
+  formData.append("data", JSON.stringify(postDesignData));
+
+  // Only include files for element types that require them
+  const validElementIds = elements
+    .filter((el) => ["image", "shape"].includes(el.type))
+    .map((el) => el.id);
+
+  // Only include background if type is "image" or "video"
+  const includeBackgroundFile = ["image", "video"].includes(backgrounds?.type);
+
+  allFiles.forEach((file) => {
+    const isElementFile = validElementIds.includes(file.name);
+    const isBackgroundFile =
+      file.name === "background" && includeBackgroundFile;
+
+    if (isElementFile || isBackgroundFile) {
+      formData.append("files", file, file.name);
+    }
+  });
+
+  return await axios.post(
+    `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+};
