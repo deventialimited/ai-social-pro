@@ -21,8 +21,7 @@ import { Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import axios from "axios";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase"; // Importing Firebase config
+import { saveOrUpdatePostDesign, getPostDesignById, transformToPostDesignSchema, transformToEditorData } from "../../libs/postDesignService";
 
 import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
@@ -44,6 +43,32 @@ const FullEditor = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  // useEffect(() => {
+  //   if (postImageDetails) {
+  //     const { postId, content, image } = postImageDetails;
+  //     setPostId(postId);
+  //     setPostContent(content);
+  //     setPostImage(image);
+  //     console.log("postImageDetailsihihi", postImageDetails);
+  //   }
+  // }, [postImageDetails]);
+
+  // useEffect(() => {
+  //   const currentDate = new Date();
+  //   setPostImageDetails((prevDetails) => ({
+  //     ...prevDetails,
+  //     date: currentDate,
+  //   }));
+  // }, []);
+  // useEffect(() => {
+  //   if (postImageDetails) {
+  //     const { postId, content, image } = postImageDetails;
+  //     setPostId(postId);
+  //     setPostContent(content);
+  //     setPostImage(image);
+  //     console.log("postImageDetailsihihi", postImageDetails);
+  //   }
+  // }, [postImageDetails]);
   const [postId, setPostId] = useState(null);
   const [postContent, setPostContent] = useState("");
   const [postImage, setPostImage] = useState("");
@@ -110,59 +135,89 @@ const FullEditor = ({
   // Add state to store original images
   const [originalImages, setOriginalImages] = useState({});
 
-  // Save data to Firebase Firestore
-  const saveDataToFirebase = async () => {
+  // Save data to backend API
+  const saveDataToBackend = async () => {
     try {
-      const postId = post_id;
+      const postId = postImageDetails?._id || post_id;
       const idToUse = postId || "1";
-      await setDoc(doc(db, "posts", idToUse), {
-        shapes,
-        backgroundColor,
-        backgroundImage,
-        postBody,
-        history,
-        historyIndex,
-        imageScale,
-        imagePosition,
-        imageFilters,
-        scaleX,
-        scaleY,
-        imageEffects,
-        images,
-      });
-      console.log("Data saved successfully to Firebase with postId:", idToUse);
-    } catch (e) {
-      console.error("Error saving document: ", e);
+
+      const postDesignData = {
+        postId: idToUse,
+        canvas: {
+          width: 768,
+          height: 774,
+          ratio: "1:1",
+          styles: {
+            backgroundColor: backgroundColor || "#7DD3FC"
+          }
+        },
+        elements: shapes.map(shape => ({
+          id: `${shape.id}-${Date.now()}`,
+          type: shape.type,
+          category: shape.category || "shape",
+          position: {
+            x: shape.x,
+            y: shape.y
+          },
+          size: {
+            width: shape.width,
+            height: shape.height
+          },
+          rotation: shape.rotation || 0,
+          opacity: shape.opacity || 1,
+          zIndex: shape.zIndex || 1,
+          styles: shape.styles || {},
+          props: shape.props || {}
+        })),
+        layers: shapes.map(shape => ({
+          id: `layer-${shape.id}-${Date.now()}`,
+          name: shape.type,
+          elementId: `${shape.id}-${Date.now()}`,
+          visible: true,
+          locked: false
+        })),
+        backgrounds: {
+          type: "color",
+          color: backgroundColor || "#7DD3FC"
+        },
+        version: 1
+      };
+
+      await saveOrUpdatePostDesign(postDesignData);
+      console.log("Data saved successfully to backend");
+    } catch (error) {
+      console.error("Error saving to backend:", error);
     }
   };
 
-  // Load data from Firebase Firestore
-  const loadDataFromFirebase = async () => {
+  // Load data from backend API
+  const loadDataFromBackend = async () => {
     try {
-      const docRef = doc(db, "posts", post_id || "1");
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        console.log("Data retrieved from Firebase:", data);
-        setShapes(data.shapes || []);
-        setBackgroundColor(data.backgroundColor || "#ffffff");
-        setBackgroundImage(data.backgroundImage || null);
-        setPostBody(data.postBody || "");
-        setHistory(data.history || []);
-        setHistoryIndex(data.historyIndex || -1);
-
-        if (data.imageScale) setImageScale(data.imageScale);
-        if (data.imagePosition) setImagePosition(data.imagePosition);
-        if (data.imageFilters) setImageFilters(data.imageFilters);
-        if (data.scaleX) setScaleX(data.scaleX);
-        if (data.scaleY) setScaleY(data.scaleY);
-        if (data.imageEffects) setImageEffects(data.imageEffects);
-        if (data.images) setImages(data.images);
+      const postId = postImageDetails?._id || post_id;
+      const idToUse = postId || "1";
+      const postDesign = await getPostDesignById(idToUse);
+      const editorData = transformToEditorData(postDesign);
+      
+      if (editorData) {
+        console.log("Data retrieved from backend:", editorData);
+        setShapes(editorData.shapes);
+        setBackgroundColor(editorData.backgroundColor);
+        setBackgroundImage(editorData.backgroundImage);
+        setPostBody(editorData.postBody);
+        setHistory(editorData.history);
+        setHistoryIndex(editorData.historyIndex);
+        setImageScale(editorData.imageScale);
+        setImagePosition(editorData.imagePosition);
+        setImageFilters(editorData.imageFilters);
+        setScaleX(editorData.scaleX);
+        setScaleY(editorData.scaleY);
+        setImageEffects(editorData.imageEffects);
+        setImages(editorData.images);
       } else {
-        console.log("No such document!");
+        console.log("No data found!");
       }
-    } catch (e) {
-      console.error("Error getting document: ", e);
+    } catch (error) {
+      console.error("Error loading data from backend:", error);
     }
   };
 
@@ -178,7 +233,7 @@ const FullEditor = ({
     if (!postId) {
       setPostId("1");
     } else {
-      loadDataFromFirebase();
+      loadDataFromBackend();
     }
   }, [postId]);
 
@@ -186,91 +241,13 @@ const FullEditor = ({
 
   const captureDiagramAsImage = async () => {
     try {
-      // First, load the data from Firebase to ensure we have the latest data
-      saveDataToFirebase();
-      await loadDataFromFirebase();
-
-      // Wait a moment for the React state to update and render with the loaded data
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Increased timeout for reliable rendering
-
-      // Get the canvas element
-      const diagramElement = document.getElementById("canvas");
-
-      if (!diagramElement) {
-        console.error("Canvas element not found");
-        return;
-      }
-
-      // Add the postBody text directly to the original DOM before capturing
-      // This is more reliable than trying to add it in the onclone callback
-      const tempTextElement = document.createElement("div");
-      tempTextElement.id = "temp-post-body-text";
-      tempTextElement.style.position = "absolute";
-      tempTextElement.style.top = "10px";
-      tempTextElement.style.left = "10px";
-      tempTextElement.style.color = textColor || "#000000";
-      tempTextElement.style.fontSize = "16px";
-      tempTextElement.style.fontFamily = "Arial, sans-serif";
-      tempTextElement.style.zIndex = "1000"; // Ensure it's on top
-      tempTextElement.style.padding = "5px";
-      // tempTextElement.style.backgroundColor = "rgba(255, 255, 255, 0.7)"; // Semi-transparent background for readability
-      tempTextElement.textContent = postBody;
-
-      // Make sure the container can handle absolute positioning
-      if (
-        diagramElement.style.position !== "absolute" &&
-        diagramElement.style.position !== "relative" &&
-        diagramElement.style.position !== "fixed"
-      ) {
-        diagramElement.style.position = "relative";
-      }
-
-      diagramElement.appendChild(tempTextElement);
-
-      // Create a canvas from the HTML element with the loaded Firebase data
-      const canvas = await html2canvas(diagramElement, {
-        useCORS: true, // This helps with any cross-origin images
-        scale: 2, // Increase quality
-        backgroundColor: backgroundColor || "#ffffff", // Use the loaded background color
-        logging: true, // Enable logging for debugging
-        allowTaint: true, // This can help with rendering issues
-      });
-
-      // Clean up by removing the temporary text element
-      const textToRemove = document.getElementById("temp-post-body-text");
-      if (textToRemove && textToRemove.parentNode) {
-        textToRemove.parentNode.removeChild(textToRemove);
-      }
-
-      // Convert the canvas to a blob
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/png", 1.0)
-      );
-
-      if (!blob) {
-        console.error("Failed to create blob from canvas");
-        return;
-      }
-
-      // Create a downloadable link
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-
-      // Include some Firebase data in the filename
-      const timestamp = new Date().getTime();
-      const filename = `editor_${postId || "1"}_${timestamp}.png`;
-      a.download = filename;
-
-      // Trigger download
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      console.log("Image downloaded successfully with Firebase data");
+      // Save the data to backend
+      await saveDataToBackend();
+      
+      // Close the editor modal
+      setIsGraphicEditorModal(false);
     } catch (error) {
-      console.error("Error downloading image:", error);
+      console.error("Error saving and closing:", error);
     }
   };
 

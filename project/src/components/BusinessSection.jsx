@@ -36,7 +36,7 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
 
   const updateDomain = useUpdateDomainBusiness();
   const updateBrandInfo = useUpdateDomainBrandInfo();
-
+  // const { updateBrandInfo } = useUpdateBrandInfo;
   useEffect(() => {
     if (domains?.length > 0 && selectedWebsiteId) {
       const selectedWebsiteData = domains?.find(
@@ -77,12 +77,58 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
     colorPickerRefs[type].current?.click();
   };
 
+  // const handleFileUpload = async () => {
+  //   const selectedDomain = domains?.find((w) => w?._id === selectedWebsiteId);
+  //   const originalColors = selectedDomain?.colors
+  //     ?.split(",")
+  //     ?.map((color) => color.trim())
+  //     ?.filter((color) => color !== "") || [];
+
+  //   const isLogoChanged = selectedLogoFile !== null;
+  //   console.log("isLogoChanged", isLogoChanged);
+  //   const areColorsChanged =
+  //     JSON.stringify(originalColors) !== JSON.stringify(formData?.colors);
+
+  //   if (!isLogoChanged && !areColorsChanged) {
+  //     toast.error(
+  //       "No changes detected. Please upload a new logo or select new brand colors."
+  //     );
+  //     return;
+  //   }
+
+  //   try {
+  //     await updateBrandInfo.mutateAsync({
+  //       domainId: selectedWebsiteId,
+  //       logoFile: selectedLogoFile,
+  //       colors: formData?.colors,
+  //     });
+
+  //     toast.success("Brand info updated!");
+  //     setEditingSection(null);
+  //     setSelectedLogoFile(null);
+  //   } catch (err) {
+  //     console.error("Save error:", err);
+  //     toast.error("Failed to update brand info.");
+  //   }
+  // };
+
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   setSelectedLogoFile(file);
+  // };
+
+  // Changes made inside handleFileUpload and useEffect
+  // Line updated: setFormData(prev => ({ ...prev, siteLogo: data.logoUrl }));
+
+  // ... same imports and state setup
+
   const handleFileUpload = async () => {
     const selectedDomain = domains?.find((w) => w?._id === selectedWebsiteId);
-    const originalColors = selectedDomain?.colors
-      ?.split(",")
-      ?.map((color) => color.trim())
-      ?.filter((color) => color !== "") || [];
+    const originalColors =
+      selectedDomain?.colors
+        ?.split(",")
+        ?.map((color) => color.trim())
+        ?.filter((color) => color !== "") || [];
 
     const isLogoChanged = selectedLogoFile !== null;
     const areColorsChanged =
@@ -96,11 +142,19 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
     }
 
     try {
-      await updateBrandInfo.mutateAsync({
+      const data = await updateBrandInfo.mutateAsync({
         domainId: selectedWebsiteId,
         logoFile: selectedLogoFile,
         colors: formData?.colors,
       });
+
+      // Update logo instantly with returned S3 URL
+      if (data?.logoUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          siteLogo: data.logoUrl,
+        }));
+      }
 
       toast.success("Brand info updated!");
       setEditingSection(null);
@@ -114,6 +168,15 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setSelectedLogoFile(file);
+
+    // Show instantly in UI before upload finishes
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        siteLogo: previewUrl,
+      }));
+    }
   };
 
   const renderImageUpload = (type) => {
@@ -151,7 +214,7 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
                 }`}
               />
               {isEditing && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <Upload className="w-6 h-6 text-white" />
                 </div>
               )}
@@ -371,7 +434,11 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             "business",
             <div className="space-y-4">
               {renderField("Business Name", formData?.clientName, "clientName")}
-              {renderField("Description", formData?.clientDescription, "clientDescription")}
+              {renderField(
+                "Description",
+                formData?.clientDescription,
+                "clientDescription"
+              )}
               {renderField("Industry", formData?.industry, "industry")}
               {renderField("Niche", formData?.niche, "niche")}
               {renderField("Website", formData?.clientWebsite, "clientWebsite")}
@@ -385,9 +452,21 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             "Marketing Strategy",
             "marketing",
             <div className="space-y-6">
-              {renderList("Target Audience", formData?.marketingStrategy?.audience, "audience")}
-              {renderList("Audience Pains", formData?.marketingStrategy?.audiencePains, "audiencePains")}
-              {renderList("Core Values", formData?.marketingStrategy?.core_values, "core_values")}
+              {renderList(
+                "Target Audience",
+                formData?.marketingStrategy?.audience,
+                "audience"
+              )}
+              {renderList(
+                "Audience Pains",
+                formData?.marketingStrategy?.audiencePains,
+                "audiencePains"
+              )}
+              {renderList(
+                "Core Values",
+                formData?.marketingStrategy?.core_values,
+                "core_values"
+              )}
             </div>
           )}
         </div>
@@ -402,10 +481,23 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              />
             </svg>
-            <span className="text-sm font-medium text-gray-700 dark:text-white">Updating info...</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-white">
+              Updating info...
+            </span>
           </div>
         </div>
       )}

@@ -106,7 +106,7 @@ export const LeftMenu = ({
                     <img
                       src={selectedWebsiteData?.siteLogo}
                       alt="Selected website logo"
-                      className="w-5 h-5 rounded-sm absolute left-4"
+                      className="w-6  h-6 rounded-full absolute left-4"
                     />
                     <span className="block truncate">
                       {selectedWebsiteData?.clientName}
@@ -140,7 +140,7 @@ export const LeftMenu = ({
                             <img
                               src={website.siteLogo}
                               alt={`${website.clientName} logo`}
-                              className="w-5 h-5 rounded-sm absolute left-4"
+                              className="w-6 h-6 rounded-full absolute left-4"
                             />
                             <span
                               className={`block truncate ${

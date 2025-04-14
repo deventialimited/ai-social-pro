@@ -1,6 +1,8 @@
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
 const getRawBody = require("raw-body");
+const axios = require("axios");
+const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -105,18 +107,20 @@ exports.updatePost = async (req, res) => {
     });
   }
 };
+
+
 exports.processPubSub = async (req, res) => {
   try {
-    let jsonData = req.body;
+    const jsonData = req.body;
 
-    // Check if jsonData exists
     if (!jsonData || Object.keys(jsonData).length === 0) {
-      return res.status(400).json({ message: "Generated posts is required" });
+      return res
+        .status(400)
+        .json({ message: "Generated post data is required" });
     }
 
-    console.log("Generated Posts", JSON.stringify(jsonData));
+    console.log("Generated Post:", JSON.stringify(jsonData));
 
-    // Proceed with your existing logic
     const domain = await Domain.findOne({
       client_email: jsonData?.client_email,
       clientWebsite: jsonData?.website,
@@ -126,22 +130,45 @@ exports.processPubSub = async (req, res) => {
       return res.status(404).json({ message: "Domain not found" });
     }
 
+    let uploadedImageUrl = "";
+
+    if (jsonData.image) {
+      try {
+        const response = await axios.get(jsonData.image, {
+          responseType: "arraybuffer",
+        });
+
+        const buffer = Buffer.from(response.data, "binary");
+        const file = {
+          originalname: `downloaded_${Date.now()}.jpg`, // you can extract real extension if needed
+          mimetype: response.headers["content-type"],
+          buffer: buffer,
+        };
+
+        uploadedImageUrl = await uploadToS3(file);
+      } catch (err) {
+        console.error("Failed to fetch or upload image:", err);
+      }
+    }
+
     const newPost = new Post({
-      postId: jsonData?.post_id,
+      postId: jsonData.post_id || "",
       domainId: domain._id,
       userId: domain.userId,
-      image: jsonData?.image,
-      topic: jsonData?.topic,
-      content: jsonData?.content,
-      slogan: jsonData?.slogan,
-      postDate: new Date(jsonData?.date),
-      platforms: Array.isArray(jsonData?.platform)
+      image: uploadedImageUrl || "", // fallback if upload fails
+      topic: jsonData.topic || "",
+      content: jsonData.content || "",
+      slogan: jsonData.slogan || "",
+      postDate: jsonData.date ? new Date(jsonData.date) : Date.now(),
+      platforms: Array.isArray(jsonData.platform)
         ? jsonData.platform
-        : [jsonData.platform], // Ensure it's an array
+        : jsonData.platform
+        ? [jsonData.platform]
+        : [],
     });
 
     const savedPost = await newPost.save();
-    console.log("Post saved to database:", savedPost);
+    console.log("Post saved:", savedPost);
 
     res.status(201).json({
       message: "Post saved successfully",
@@ -150,7 +177,7 @@ exports.processPubSub = async (req, res) => {
       domainId: savedPost.domainId,
     });
   } catch (error) {
-    console.error("Error in processPubSub controller:", error);
+    console.error("Error in processPubSub:", error);
     res.status(500).json({
       message: "Internal server error",
       error: error.message,

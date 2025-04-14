@@ -118,7 +118,9 @@ export const Dashboard = () => {
   };
 
   const filteredPosts = posts?.filter((post) => {
-    const matchesFilter = filter === "all" || post.platforms.includes(filter);
+    const platforms = post.platforms?.map((p) => p.toLowerCase());
+    const matchesFilter =
+      filter === "all" || platforms.includes(filter.toLowerCase());
     const matchesTab = post.status === postsTab;
     return matchesFilter && matchesTab;
   });

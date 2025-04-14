@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 4000;
 const UserRoutes = require("./routes/User");
 const DomainRoutes = require("./routes/Domain");
 const PostRoutes = require("./routes/Post");
+const PostDesignRoutes = require("./routes/PostDesign");
 const { createServer } = require("http");
 
 require("dotenv").config();
@@ -36,6 +37,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/v1/users", UserRoutes);
 app.use("/api/v1/domains", DomainRoutes);
 app.use("/api/v1/posts", PostRoutes);
+app.use("/api/v1/postsDesign", PostDesignRoutes);
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running!" });
 });

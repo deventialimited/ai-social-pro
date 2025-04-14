@@ -68,7 +68,7 @@ export const useAddDomainMutation = () => {
 export const addDomain = async (domainData) => {
   try {
     const response = await axios.post(`${API_URL}/addDomain`, domainData);
-
+console.log("Domain added successfully:", response.data);
     return response.data?.data;
   } catch (error) {
     console.log(error);
@@ -102,6 +102,7 @@ export const getDomainById = async (id) => {
 export const getDomainsByUserId = async (userId) => {
   try {
     const response = await axios.get(`${API_URL}/getDomainsByUserId/${userId}`);
+    console.log("Domains fetched successfully:", response.data);
     return response.data?.data;
   } catch (error) {
     console.log(error);
@@ -165,7 +166,4 @@ export const updateBrandInfo = async ({ domainId, logoFile, colors }) => {
 
   return response.data;
 };
-
-
-
 
