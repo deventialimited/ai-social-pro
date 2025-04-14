@@ -702,7 +702,6 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                 <ColorPicker
                   color={localEffects.shadow.color}
                   onChange={(color) => onEffectChange && onEffectChange("shadow.color", color)}
-                  // label="Shadow Color"
                 />
               </div>
             </div>
