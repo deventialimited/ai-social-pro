@@ -1,6 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
-import FullEditor from "../pages/ImageEditor/FullEditor";
+import FullEditorjs from "../pages/ImageEditor/FullEditorjs";
 
 export default function GraphicEditorModal({
   isGraphicEditorModal,
@@ -43,7 +43,7 @@ export default function GraphicEditorModal({
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full min-h-[98%] min-w-[95%] transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
-                  <FullEditor
+                  <FullEditorjs
                     postImageDetails={postImageDetails}
                     setPostImageDetails={setPostImageDetails}
                     setIsGraphicEditorModal={setIsGraphicEditorModal}

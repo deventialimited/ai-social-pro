@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
+import ColorPicker from '../../../components/ColorPicker';
 
 interface EffectsPanelProps {
   isOpen: () => boolean;
@@ -14,14 +15,17 @@ interface EffectsPanelProps {
     sepia: number;
     grayscale: number;
     border: number;
+    borderColor: string;
+    opacity: number;
     cornerRadius: number;
     shadow: {
       blur: number;
       offsetX: number;
       offsetY: number;
+      color: string;
     };
   };
-  onEffectChange: (effect: string, value: number) => void;
+  onEffectChange: (effect: string, value: number | string) => void;
   onEffectToggle?: (effect: string) => void;
 }
 
@@ -34,11 +38,14 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     sepia: 0,
     grayscale: 0,
     border: 0,
+    borderColor: "#000000",
+    opacity: 0,
     cornerRadius: 0,
     shadow: {
       blur: 0,
       offsetX: 0,
       offsetY: 0,
+      color: "#000000",
     },
   },
   onEffectChange,
@@ -68,6 +75,9 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
       onEffectChange("grayscale", 50);
     } else if (effect === "border" && localEffects.border === 0) {
       onEffectChange("border", 3);
+    } else if (effect === "opacity" && localEffects.opacity === 0) {
+      onEffectChange("opacity", 0);
+      setLocalEffects((prev) => ({ ...prev, opacity: 0 }));
     } else if (effect === "cornerRadius" && localEffects.cornerRadius === 0) {
       onEffectChange("cornerRadius", 10);
     } else if (effect === "shadow.blur" && localEffects.shadow.blur === 0) {
@@ -87,7 +97,16 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     if (effect === "brightness") {
       return localEffects.brightness !== 100 || activeEffect === "brightness";
     }
-    return localEffects[effect] > 0;
+    if (effect === "borderColor") {
+      return localEffects.border > 0;
+    }
+    if (effect === "opacity") {
+      return localEffects.opacity > 0 || activeEffect === "opacity";
+    }
+    return (
+      typeof localEffects[effect] === "number" &&
+      (localEffects[effect] as number) > 0
+    );
   };
 
   const handleToggleOff = (effect: string) => {
@@ -100,6 +119,9 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
     } else if (effect === "brightness") {
       onEffectChange(effect, 100);
       setLocalEffects((prev) => ({ ...prev, brightness: 100 }));
+    } else if (effect === "opacity") {
+      onEffectChange(effect, 0);
+      setLocalEffects((prev) => ({ ...prev, opacity: 0 }));
     } else {
       onEffectChange(effect, 0);
     }
@@ -403,17 +425,83 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               ></div>
             </div>
           </div>
-          {activeEffect === "border" && (
+          {isEffectEnabled("border") && (
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Box sx={{ width: "100%" }}>
+                  <Slider
+                    size="small"
+                    min={0}
+                    max={20}
+                    value={localEffects.border}
+                    onChange={(e, val) =>
+                      handleDirectSliderChange(
+                        "border",
+                        Array.isArray(val) ? val[0] : val
+                      )
+                    }
+                    valueLabelDisplay="auto"
+                  />
+                </Box>
+                <input
+                  type="number"
+                  min={0}
+                  max={20}
+                  value={localEffects.border}
+                  onChange={(e) =>
+                    onEffectChange &&
+                    onEffectChange("border", Number(e.target.value))
+                  }
+                  className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
+                />
+              </div>
+              <ColorPicker
+                color={localEffects.borderColor}
+                onChange={(color) => onEffectChange && onEffectChange("borderColor", color)}
+                label="Border Color"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Opacity */}
+        <div className="space-y-1">
+          <div className="flex justify-between items-center">
+            <span className="font-medium">Opacity</span>
+            <div
+              className="relative inline-block w-8 h-4 rounded-full bg-gray-200 cursor-pointer"
+              onClick={() => handleToggleClick("opacity")}
+            >
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={isEffectEnabled("opacity")}
+                onChange={() => {}}
+              />
+              <div
+                className={`absolute inset-0 rounded-full transition ${
+                  isEffectEnabled("opacity") ? "bg-blue-500" : "bg-gray-200"
+                }`}
+              ></div>
+              <div
+                className={`absolute left-1 top-0.5 bg-white w-3 h-3 rounded-full transition transform ${
+                  isEffectEnabled("opacity") ? "translate-x-4" : ""
+                }`}
+              ></div>
+            </div>
+          </div>
+          {isEffectEnabled("opacity") && (
             <div className="flex items-center">
               <Box sx={{ width: "100%" }}>
                 <Slider
                   size="small"
                   min={0}
-                  max={10}
-                  value={localEffects.border}
+                  max={100}
+                  step={1}
+                  value={localEffects.opacity}
                   onChange={(e, val) =>
                     handleDirectSliderChange(
-                      "border",
+                      "opacity",
                       Array.isArray(val) ? val[0] : val
                     )
                   }
@@ -423,11 +511,11 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
               <input
                 type="number"
                 min={0}
-                max={10}
-                value={localEffects.border}
+                max={100}
+                value={localEffects.opacity}
                 onChange={(e) =>
                   onEffectChange &&
-                  onEffectChange("border", Number(e.target.value))
+                  onEffectChange("opacity", Number(e.target.value))
                 }
                 className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
               />
@@ -608,6 +696,12 @@ export const EffectsPanel: React.FC<EffectsPanelProps> = ({
                     onEffectChange("shadow.offsetY", Number(e.target.value))
                   }
                   className="ml-1 w-8 h-5 text-center border border-gray-300 rounded text-xs"
+                />
+              </div>
+              <div className="mt-2">
+                <ColorPicker
+                  color={localEffects.shadow.color}
+                  onChange={(color) => onEffectChange && onEffectChange("shadow.color", color)}
                 />
               </div>
             </div>
