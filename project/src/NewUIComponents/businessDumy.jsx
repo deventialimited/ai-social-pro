@@ -1,7 +1,21 @@
 import React, { useState } from "react";
-import { Edit, Mail, Globe, Palette, Target, BadgeInfo, BookType, MapPin, Languages, Gem, Users, AlertTriangle, Star } from "lucide-react";
+import {
+  Edit,
+  Mail,
+  Globe,
+  Palette,
+  Target,
+  BadgeInfo,
+  BookType,
+  MapPin,
+  Languages,
+  Gem,
+  Users,
+  AlertTriangle,
+  Star,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
-import {FirstPostPopUp} from './FirstPostPopUp'
+import { FirstPostPopUp } from "./FirstPostPopUp";
 export const BusinessSectionDummy = ({ setComponentType }) => {
   const [editing, setEditing] = useState(false);
   const [PopUp, setPopup] = useState(false);
@@ -322,7 +336,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
       {PopUp && (
         <FirstPostPopUp
           isOpen={PopUp}
-          onClose={handleClosePopup}
+          onClose={() => {}}
           title="Lets Create Your First Post !"
           description="Finding engaging topics for your audience"
           data="Extracting Business data and brand Information...."
