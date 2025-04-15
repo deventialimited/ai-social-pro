@@ -11,11 +11,17 @@ import html2canvas from "html2canvas";
 
 const ACCESS_KEY = "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk";
 
+interface ImagesTabContentProps {
+  onSelectImage?: (src: string) => void;
+  canvasEditor?: React.RefObject<any>;
+  onUploadClick?: (callback: () => void) => void;
+}
+
 export function ImagesTabContent({
   onSelectImage,
   canvasEditor,
   onUploadClick,
-}) {
+}: ImagesTabContentProps) {
   const [images, setImages] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"uploaded" | "search">("uploaded");
@@ -26,7 +32,8 @@ export function ImagesTabContent({
   const lastImageRef = useRef<HTMLImageElement | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [isImageLocked, setIsImageLocked] = useState<boolean>(false);
-  const [imageData, setImageData] = useState(null);
+  const [imageData, setImageData] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   type UnsplashImage = {
     urls: {
@@ -51,16 +58,17 @@ export function ImagesTabContent({
 
   // Handle Image Upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) return;
-
+    if (!event.target.files || event.target.files.length === 0) return;
+    
+    console.log("Files selected:", event.target.files);  // Debug log
+    
     const files = Array.from(event.target.files);
     const imageUrls = files.map((file) => URL.createObjectURL(file));
-
+    
+    console.log("Created URLs:", imageUrls);  // Debug log
+    
     // Update local images
     setImages((prevImages) => [...prevImages, ...imageUrls]);
-
-    // Don't automatically select the first uploaded image
-    // Just set the active tab to uploaded
     setActiveTab("uploaded");
   };
 
@@ -871,51 +879,61 @@ export function ImagesTabContent({
   useEffect(() => {
     if (onUploadClick) {
       onUploadClick(() => {
-        const fileInput = document.querySelector(
-          'input[type="file"]'
-        ) as HTMLInputElement;
-        if (fileInput) fileInput.click();
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
       });
     }
   }, [onUploadClick]);
 
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        {/* Upload Button */}
-        <label className="flex items-center justify-between py-2 gap-2 px-4 border rounded-md shadow-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-          Upload
+    <div className="flex flex-col gap-2">
+      {/* Single Upload Button */}
+      <button 
+        type="button"
+        className="flex items-center justify-between py-2 gap-2 px-4 border rounded-md shadow-sm text-gray-700 hover:bg-gray-100"
+        onClick={() => {
+          if (fileInputRef.current) {
+            fileInputRef.current.click();
+          }
+        }}
+      >
+        <span className="flex items-center gap-2">
           <ArrowUpTrayIcon className="h-5 w-5 text-gray-500" />
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </label>
+          Upload
+        </span>
+      </button>
 
-        {/* Search Input */}
-        <form
-          onSubmit={(e) => fetchFromUnsplash(e, true)}
-          className="flex justify-between items-center px-4 py-2 border rounded-md shadow-sm text-gray-700"
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
+
+      {/* Search Input */}
+      <form
+        onSubmit={(e) => fetchFromUnsplash(e, true)}
+        className="flex justify-between items-center px-4 py-2 border rounded-md shadow-sm text-gray-700"
+      >
+        <input
+          type="text"
+          className="h-6 outline-0 w-full"
+          placeholder="Search"
+          value={searchQuery}
+          onClick={handleInputClick}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button
+          type="submit"
+          onClick={() => fetchFromUnsplash(undefined, true)}
         >
-          <input
-            type="text"
-            className="h-6 outline-0 w-full"
-            placeholder="Search"
-            value={searchQuery}
-            onClick={handleInputClick}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button
-            type="submit"
-            onClick={() => fetchFromUnsplash(undefined, true)}
-          >
-            <MagnifyingGlassIcon className="w-5 text-gray-500" />
-          </button>
-        </form>
-      </div>
+          <MagnifyingGlassIcon className="w-5 text-gray-500" />
+        </button>
+      </form>
 
       {/* Images Display Section */}
       <div className="mt-4">
@@ -987,6 +1005,6 @@ export function ImagesTabContent({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

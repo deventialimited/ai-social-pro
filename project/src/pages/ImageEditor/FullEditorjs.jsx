@@ -1603,7 +1603,7 @@ const FullEditor = ({
                 onUndo={handleUndo}
                 onRedo={handleRedo}
               />
-            ) : backgroundImage ? (
+            ) : selectedImageId ? (
               <EnhancedImageToolbar
                 onUndo={handleUndo}
                 onRedo={handleRedo}
@@ -1623,7 +1623,7 @@ const FullEditor = ({
                 onDuplicateImage={handleDuplicateImage}
                 onDeleteImage={handleDeleteImage}
               />
-            ) : backgroundColor ? (
+            ) : (
               <BackgroundToolbar
                 onColorChange={(color) => {
                   setBackgroundColor(color);
@@ -1632,126 +1632,6 @@ const FullEditor = ({
                 onUndo={handleUndo}
                 onRedo={handleRedo}
               />
-            ) : (
-              <div className="flex items-center p-2 border-b">
-                <div className="flex space-x-2 mr-4">
-                  <button
-                    className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                    onClick={handleUndo}
-                    disabled={historyIndex <= 0}
-                  >
-                    <ArrowUturnLeftIcon className="h-5 w-5 text-gray-500" />
-                  </button>
-                  <button
-                    className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                    onClick={handleRedo}
-                    disabled={historyIndex >= history.length - 1}
-                  >
-                    <ArrowUturnRightIcon className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <div className="flex items-center space-x-2 mr-4">
-                  <ClockIcon className="h-5 w-5 text-gray-500" />
-                  <span>5s</span>
-                </div>
-
-                <div className="relative mr-4">
-                  <div>
-                    <div className="relative">
-                      <button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
-                        <span>Palette</span>
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2 mr-4">
-                  <div
-                    className="h-8 w-8 rounded cursor-pointer border border-gray-300"
-                    style={{ backgroundColor }}
-                  ></div>
-                  <span>Background Color</span>
-                </div>
-
-                <button className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
-                  <ArrowUpTrayIcon className="mr-2 h-5 w-5" />
-                  Upload
-                </button>
-
-                <div className="ml-auto flex items-center space-x-4">
-                  <div className="relative">
-                    <button
-                      className="rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                      style={{ backgroundColor }}
-                    >
-                      <div className="">
-                        <input
-                          type="color"
-                          className="cursor-pointer w-8 rounded h-7"
-                          onChange={(e) => {
-                            const newColor = e.target.value;
-                            if (selectedShapeId) {
-                              const updatedShapes = shapes.map((shape) =>
-                                shape.id === selectedShapeId
-                                  ? { ...shape, color: newColor }
-                                  : shape
-                              );
-                              setShapes(updatedShapes);
-                              addToHistory({
-                                shapes: updatedShapes,
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </button>
-                  </div>
-                  <button
-                    className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                    onClick={handleDuplicateShape}
-                    disabled={!selectedShapeId}
-                  >
-                    <DocumentDuplicateIcon className="h-5 w-5 text-gray-500" />
-                  </button>
-                  <button
-                    className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                    onClick={handleRotateShape}
-                    disabled={!selectedShapeId}
-                  >
-                    <ArrowsPointingInIcon className="h-5 w-5 text-gray-500" />
-                  </button>
-                  <button
-                    className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                    onClick={() =>
-                      selectedShapeId && handleDeleteShape(selectedShapeId)
-                    }
-                    disabled={!selectedShapeId}
-                  >
-                    <TrashIcon className="h-5 w-5 text-gray-500" />
-                  </button>
-                  <button
-                    className="p-2 rounded-md hover:bg-gray-100 hover:cursor-pointer"
-                    onClick={captureDiagramAsImage}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
             )}
 
             {/* Editor area */}
