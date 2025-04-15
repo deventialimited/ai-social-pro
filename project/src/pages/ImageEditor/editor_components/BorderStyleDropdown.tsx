@@ -1,8 +1,9 @@
 // @ts-nocheck
-"use client"
+
 
 import { useState, useRef, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
+import ColorPicker from '../../../components/ColorPicker'
 
 interface BorderStyleDropdownProps {
   onBorderStyleChange?: (style: string) => void
@@ -71,7 +72,7 @@ const BorderStyleDropdown = ({
   const handleBorderColorChange = (color: string) => {
     setCurrentBorderColor(color)
     onBorderColorChange?.(color)
-    if (selectedShapeId) {
+    if (selectedShapeId && updateShape) {
       updateShape(selectedShapeId, { borderColor: color })
     }
   }
@@ -89,8 +90,8 @@ const BorderStyleDropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-2 bg-white border border-gray-200 rounded-md shadow-lg p-4 w-80">
-          <div className="space-y-4">
+        <div className="absolute z-50 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200">
+          <div className="p-4 space-y-4">
             <div className="space-y-2">
               <div className="text-sm font-medium">Style</div>
               <div className="grid grid-cols-5 gap-2">
@@ -160,12 +161,10 @@ const BorderStyleDropdown = ({
             </div>
 
             <div className="space-y-2">
-              <div className="text-sm font-medium">Color</div>
-              <input
-                type="color"
-                value={currentBorderColor}
-                onChange={(e) => handleBorderColorChange(e.target.value)}
-                className="w-full h-10"
+              <ColorPicker
+                color={currentBorderColor}
+                onChange={handleBorderColorChange}
+                label="Border Color"
               />
             </div>
           </div>

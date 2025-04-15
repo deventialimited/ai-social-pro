@@ -1,5 +1,5 @@
 // @ts-nocheck
-"use client";
+;
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -29,6 +29,7 @@ import {
 import BorderStyleDropdown from "./BorderStyleDropdown";
 import TransparencyDropdown from "./TransparencyDropdown";
 import MaskPanel from "./MaskPanel";
+import ColorPicker from '../../../components/ColorPicker';
 
 // Common toolbar style
 const toolbarStyle =
@@ -480,11 +481,13 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
     Number.parseFloat(getLocalStorageData("editor_shapeTransparency", "0"))
   );
 
-  const handleShapeColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newColor = e.target.value;
-    setShapeColor(newColor);
-    onColorChange?.(newColor);
-    localStorage.setItem("editor_shapeColor", newColor);
+  const handleShapeColorChange = (color: string) => {
+    setShapeColor(color);
+    onColorChange?.(color);
+    localStorage.setItem("editor_shapeColor", color);
+    if (selectedShapeId && updateShape) {
+      updateShape(selectedShapeId, { color });
+    }
   };
 
   const handleShapeTransparencyChange = (newTransparency: number) => {
@@ -550,12 +553,10 @@ const ShapeToolbar: React.FC<ShapeToolbarProps> = ({
             <path d="M500.33 0h-47.41a12 12 0 0 0-12 12.57l4 82.76A247.42 247.42 0 0 0 256 8C119.34 8 7.9 119.53 8 256.19 8.1 393.07 119.1 504 256 504a247.1 247.1 0 0 0 166.18-63.91 12 12 0 0 0 .48-17.43l-34-34a12 12 0 0 0-16.38-.55A176 176 0 1 1 402.1 157.8l-101.53-4.87a12 12 0 0 0-12.57 12v47.41a12 12 0 0 0 12 12h200.33a12 12 0 0 0 12-12V12a12 12 0 0 0-12-12z"></path>
           </svg>
         </button>
-        <input
-          type="color"
-          className="w-10 h-10 p-1 border border-gray-200 rounded"
-          value={shapeColor}
+        <ColorPicker
+          color={shapeColor}
           onChange={handleShapeColorChange}
-          title="Fill Color"
+          // label="Fill Color"
         />
 
         {/* Replace the inline transparency control with the new dropdown */}
@@ -1053,21 +1054,18 @@ const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({
     getLocalStorageData("editor_backgroundColor", "#ffffff")
   );
 
-  const handleBackgroundColorChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const newColor = e.target.value;
-    setBackgroundColor(newColor);
-    onColorChange?.(newColor);
-    localStorage.setItem("editor_backgroundColor", newColor);
+  const handleBackgroundColorChange = (color: string) => {
+    setBackgroundColor(color);
+    onColorChange?.(color);
+    localStorage.setItem("editor_backgroundColor", color);
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Delete" && isItemSelected) {
-        onUndo?.(); // Assuming undo is the desired action for background
+        onUndo?.();
       } else if (e.ctrlKey && e.key === "c" && isItemSelected) {
-        onUndo?.(); // Assuming undo is the desired action for background
+        onUndo?.();
       }
     };
 
@@ -1079,16 +1077,14 @@ const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({
 
   return (
     <div className="flex items-center p-2 border-b h-14">
-      <div className="flex space-x-2 mr-4">
-        <input
-          type="color"
-          className="w-10 h-10 p-1 border border-gray-200 rounded"
-          value={backgroundColor}
+      <div className="flex space-x-4  mr-4">
+        <span className="text-sm">Background Color</span>
+        <ColorPicker
+          color={backgroundColor}
           onChange={handleBackgroundColorChange}
+          // label="Background Color"
+          className="w-full"
         />
-        <div className="flex items-center space-x-2">
-          <span>Background Color</span>
-        </div>
       </div>
       <div className="flex space-x-2 mr-4">
         <button
