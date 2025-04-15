@@ -1,5 +1,5 @@
 // @ts-nocheck
-"use client";
+;
 import type React from "react";
 import { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
