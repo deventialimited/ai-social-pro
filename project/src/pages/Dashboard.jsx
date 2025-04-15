@@ -170,13 +170,13 @@ export const Dashboard = () => {
           </div>
         );
       case "business":
-        return (
-          <BusinessSection
-            selectedWebsiteId={selectedWebsite}
-            userId={userId}
-            onEdit={handleBusinessEdit}
-          />
-        );
+      return (
+        <BusinessSection
+          selectedWebsiteId={selectedWebsite}
+          userId={userId}
+          onEdit={handleBusinessEdit}
+        />
+      );
       case "socials":
         return <SocialsTab />;
       default:

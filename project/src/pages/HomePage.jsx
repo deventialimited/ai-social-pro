@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -18,6 +17,10 @@ import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import { useAddDomainMutation } from "../libs/domainService";
 
+//extra
+import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation"; // use the correct named export
+import { BusinessSectionDummy } from '../NewUIComponents/businessDumy'
+import {BusinessModal} from '../NewUIComponents/Modal'
 export function extractDomain(fullUrl) {
   try {
     // Trim whitespace and normalize input
@@ -39,7 +42,10 @@ export const HomePage = () => {
     useAuthStore();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showBusinessPopup, setShowBusinessPopup] = useState(false);
 
+  //extra
+  const [isModalOpen, setisModalOpen] = useState(false);
   const navigate = useNavigate();
   const addDomain = useAddDomainMutation();
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -95,6 +101,7 @@ export const HomePage = () => {
   };
 
   const handleSubmit = async (e) => {
+    setisModalOpen(true);
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -138,15 +145,15 @@ export const HomePage = () => {
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
-              {
-                localStorage?.getItem("user") && (<button
+              {localStorage?.getItem("user") && (
+                <button
                   onClick={() => navigate("/dashboard")}
                   className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   Dashboard
-                </button>)
-              }
+                </button>
+              )}
               {!localStorage?.getItem("user") && (
                 <>
                   <button
@@ -191,7 +198,14 @@ export const HomePage = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          <form
+            onSubmit={(e) =>
+            {
+              e.preventDefault();
+              setisModalOpen(true);
+              }}
+            className="max-w-3xl mx-auto"
+          >
             <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
               <div className="flex gap-3">
                 <div className="flex-1 relative">
@@ -300,6 +314,14 @@ export const HomePage = () => {
       </div>
 
       {(isSignInPopup || isSignUpPopup) && <AuthModal />}
+
+<BusinessModal
+  isOpen={isModalOpen}
+  onClose={() => setisModalOpen(false)}
+/>      
+
+
     </div>
+    
   );
 };
