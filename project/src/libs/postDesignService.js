@@ -151,34 +151,42 @@ export const saveOrUpdatePostDesignFrontendController = async (
   postDesignData,
   allFiles
 ) => {
-  const formData = new FormData();
-  const { elements, backgrounds } = postDesignData;
+  try {
+    const formData = new FormData();
+    const { elements, backgrounds } = postDesignData;
 
-  formData.append("data", JSON.stringify(postDesignData));
+    formData.append("data", JSON.stringify(postDesignData));
 
-  // Only include files for element types that require them
-  const validElementIds = elements
-    .filter((el) => ["image", "shape"].includes(el.type))
-    .map((el) => el.id);
+    // Only include files for element types that require them
+    const validElementIds = elements
+      .filter((el) => ["image", "shape"].includes(el.type))
+      .map((el) => el.id);
 
-  // Only include background if type is "image" or "video"
-  const includeBackgroundFile = ["image", "video"].includes(backgrounds?.type);
+    // Only include background if type is "image" or "video"
+    const includeBackgroundFile = ["image", "video"].includes(
+      backgrounds?.type
+    );
 
-  allFiles.forEach((file) => {
-    const isElementFile = validElementIds.includes(file.name);
-    const isBackgroundFile =
-      file.name === "background" && includeBackgroundFile;
+    allFiles.forEach((file) => {
+      const isElementFile = validElementIds.includes(file.name);
+      const isBackgroundFile =
+        file.name === "background" && includeBackgroundFile;
 
-    if (isElementFile || isBackgroundFile) {
-      formData.append("files", file, file.name);
-    }
-  });
+      if (isElementFile || isBackgroundFile) {
+        formData.append("files", file, file.name);
+      }
+    });
 
-  return await axios.post(
-    `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign`,
-    formData,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-    }
-  );
+    const response = await axios.post(
+      `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response?.data?.postDesign;
+  } catch (error) {
+    console.error("Error saving post design:", error);
+    throw error;
+  }
 };
