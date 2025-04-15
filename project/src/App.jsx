@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import FullEditor from "./pages/ImageEditor/FullEditor";
 import Fulljs from "./pages/ImageEditor/FullEditorjs";
+import EditorModal from "./components/Editor Components/EditorModal";
+import Test from "./pages/Test";
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
@@ -25,6 +27,10 @@ function App() {
             <Route path="/dashboard/*" element={<Dashboard />} />
             {/* <Route path="/fullEditor" element={<FullEditor />} />  */}
             <Route path="/fullEditor" element={<Fulljs />} />
+            <Route path="/neweditor" element={<EditorModal />} />
+            <Route path="/test" element={<Test />} />
+
+
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
