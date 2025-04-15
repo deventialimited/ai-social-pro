@@ -12,13 +12,13 @@ export const FirstPostPopUp = ({
 }) => {
   useEffect(() => {
     if (isOpen) {
-      const timeout = setTimeout(onClose, 3000);
+      const timeout = setTimeout(onClose, 9000);
       return () => clearTimeout(timeout);
     }
   }, [isOpen, onClose]);
 
   return (
-    <Transition appear show={isOpen} onClose={onClose} as={Fragment}>
+    <Transition appear show={isOpen} onClose={() => {}} as={Fragment}>
       <Dialog as="div" className="relative z-50">
         <Transition.Child
           as={Fragment}
