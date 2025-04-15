@@ -1,6 +1,8 @@
-import { useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
-export const useFullEditorState = () => {
+const EditorContext = createContext(null);
+
+export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
   const [canvas, setCanvas] = useState({
     width: 1200,
@@ -38,8 +40,8 @@ export const useFullEditorState = () => {
   // ===================== 🔧 Updaters =====================
 
   const updateCanvasSize = useCallback((width, height) => {
-    console.log(width)
-    console.log(height)
+    console.log(width);
+    console.log(height);
     setCanvas((prev) => ({
       ...prev,
       width,
@@ -142,7 +144,7 @@ export const useFullEditorState = () => {
     setAllFiles([]);
   }, []);
 
-  return {
+  const store = {
     // Design Data
     canvas,
     setCanvas,
@@ -171,4 +173,11 @@ export const useFullEditorState = () => {
     removeFileByName,
     clearEditor,
   };
+
+  return (
+    <EditorContext.Provider value={store}>{children}</EditorContext.Provider>
+  );
 };
+
+// ✅ Hook for usage
+export const useEditor = () => useContext(EditorContext);

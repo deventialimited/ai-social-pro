@@ -1,4 +1,4 @@
-"use client";
+;
 
 import { useState } from "react";
 import { Instagram, Facebook, PinIcon as Pinterest } from "lucide-react";
