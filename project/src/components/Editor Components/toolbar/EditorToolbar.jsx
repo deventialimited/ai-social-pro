@@ -1,50 +1,46 @@
-import { RotateCcw, RotateCw, Clock, ChevronDown, Upload, Move } from "lucide-react"
+import TextToolbar from "./toolbars/TextToolbar";
+import ImageToolbar from "./toolbars/ImageToolbar";
+import ShapeToolbar from "./toolbars/ShapeToolbar";
+import CanvasToolbar from "./toolbars/CanvasToolbar";
 
-function EditorToolbar() {
+function EditorToolbar({
+  activeElement = "canvas",
+  specialActiveTab,
+  setSpecialActiveTab,
+}) {
+  // This would be determined by what's selected in the canvas
+  // For now we'll use a prop to control it
+
+  // Render the appropriate toolbar based on the active element
+  const renderToolbar = () => {
+    switch (activeElement) {
+      case "text":
+        return (
+          <TextToolbar
+            specialActiveTab={specialActiveTab}
+            setSpecialActiveTab={setSpecialActiveTab}
+          />
+        );
+      case "image":
+        return (
+          <ImageToolbar
+            specialActiveTab={specialActiveTab}
+            setSpecialActiveTab={setSpecialActiveTab}
+          />
+        );
+      case "shape":
+        return <ShapeToolbar />;
+      case "canvas":
+      default:
+        return <CanvasToolbar />;
+    }
+  };
+
   return (
-    <div className="p-2 border-b flex items-center gap-2">
-      <div className="flex items-center gap-1">
-        <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCcw className="h-5 w-5" />
-        </button>
-
-        <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCw className="h-5 w-5" />
-        </button>
-
-        <button className="flex items-center gap-1 p-2 rounded-md hover:bg-gray-100">
-          <Clock className="h-5 w-5" />
-          <span>5s</span>
-        </button>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100">
-          <span>Palette</span>
-          <ChevronDown className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md bg-blue-100 text-blue-600">
-          <div className="w-4 h-4 bg-blue-400 rounded-sm"></div>
-          <span>Background Color</span>
-        </button>
-      </div>
-
-      <div className="flex items-center gap-1 ml-auto">
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100">
-          <Upload className="h-5 w-5" />
-          <span>Upload</span>
-        </button>
-
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100">
-          <Move className="h-5 w-5" />
-          <span>Position</span>
-        </button>
-      </div>
+    <div className="p-2 border-b flex w-full items-center gap-2 bg-white">
+      {renderToolbar()}
     </div>
-  )
+  );
 }
 
-export default EditorToolbar
+export default EditorToolbar;
