@@ -336,10 +336,12 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
       {PopUp && (
         <FirstPostPopUp
           isOpen={PopUp}
-          onClose={() => {}}
-          title="Lets Create Your First Post !"
-          description="Finding engaging topics for your audience"
-          data="Extracting Business data and brand Information...."
+          onClose={() => {
+            // setPopup(false);
+            setComponentType("postTopics");
+          }}
+          title="Let’s Discover the Perfect Topics..."
+          description="We’re crafting relevant and captivating topics designed to spark interest and drive engagement within your audience."
         />
       )}
     </>

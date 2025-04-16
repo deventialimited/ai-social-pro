@@ -17,7 +17,7 @@ const PostTopics = ({ setComponentType }) => {
   const [PopUp, setPopup] = useState(false);
 
   const handleClosePopup = () => {
-    setPopup(false);
+    // setPopup(false);
     setComponentType("postDetails");
   };
 
@@ -69,13 +69,25 @@ const PostTopics = ({ setComponentType }) => {
 
       {/* Add Custom Topic Button */}
       {!showInput ? (
-        <div className="mt-6 flex justify-center">
+        <div className="mt-6 flex justify-center gap-4">
           <button
             onClick={() => setShowInput(true)}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition text-sm"
           >
             <Plus className="w-4 h-4" />
             Add Custom Topic
+          </button>
+          <button
+            onClick={() => {
+              // You can modify this logic to select a topic using AI
+              const randomTopic =
+                defaultTopics[Math.floor(Math.random() * defaultTopics.length)];
+              console.log("AI selected topic:", randomTopic);
+              setPopup(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition text-sm"
+          >
+            🎯 Let AI Select Topic
           </button>
         </div>
       ) : (
@@ -98,9 +110,8 @@ const PostTopics = ({ setComponentType }) => {
 
       {PopUp && (
         <FirstPostPopUp
-          title="It's time to generate your post!"
-          data="Using AI to create engaging content..."
-          description="Creating engaging content with AI"
+          title="Time to Create Compelling Content!"
+          description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
           isOpen={PopUp}
           onClose={handleClosePopup}
         />
