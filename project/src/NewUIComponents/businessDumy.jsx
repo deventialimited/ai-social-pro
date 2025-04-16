@@ -340,9 +340,8 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             // setPopup(false);
             setComponentType("postTopics");
           }}
-          title="Lets Create Your First Post !"
-          description="Finding engaging topics for your audience"
-          data="Extracting Business data and brand Information...."
+          title="Let’s Discover the Perfect Topics..."
+          description="We’re crafting relevant and captivating topics designed to spark interest and drive engagement within your audience."
         />
       )}
     </>
