@@ -11,26 +11,42 @@ import {
 import DurationSelector from "../../common/popups/DurationSelector";
 import PaletteSelector from "../../common/popups/PaletteSelector";
 import ColorPicker from "../../common/popups/ColorPicker";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function CanvasToolbar() {
   const [duration, setDuration] = useState(5);
-  const [backgroundColor, setBackgroundColor] = useState("#87CEEB");
-
+  const { updateBackground, updateCanvasStyles, canvas } = useEditor();
   const handleDurationChange = (newDuration) => {
     setDuration(newDuration);
   };
 
   const handlePaletteSelect = (palette) => {
-    // Handle palette selection
     console.log("Selected palette:", palette);
+
+    if (!palette || !palette.colors || palette.colors.length === 0) return;
+
+    // Create a linear gradient using the palette colors
+    const gradient = `linear-gradient(90deg, ${palette.colors.join(", ")})`;
+
+    // Update canvas styles — will clear backgroundColor and set image-related styles
+    updateCanvasStyles({
+      backgroundImage: gradient,
+    });
+
+    // Update background state — stores the gradient string
+    updateBackground("gradient", gradient);
   };
 
   const handleColorChange = (color, opacity) => {
-    setBackgroundColor(color);
-    // You can also handle opacity if needed
-    console.log("Color:", color, "Opacity:", opacity);
-  };
+    // Update canvas styles with hex background
+    updateCanvasStyles({
+      backgroundColor: color,
+    });
 
+    // Update background state
+    updateBackground("color", color);
+  };
+  console.log(canvas);
   return (
     <div className="flex items-center justify-between w-max overflow-x-auto">
       <div className="flex items-center gap-1">
@@ -49,7 +65,7 @@ function CanvasToolbar() {
         <PaletteSelector onSelect={handlePaletteSelect} />
 
         <ColorPicker
-          color={backgroundColor}
+          color={canvas?.styles?.backgroundColor}
           onChange={handleColorChange}
           label="Background Color"
           showPalette={true}
