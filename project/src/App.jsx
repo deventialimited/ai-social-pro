@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { Dashboard } from "./pages/Dashboard";
@@ -8,9 +8,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import FullEditor from "./pages/ImageEditor/FullEditor";
 import Fulljs from "./pages/ImageEditor/FullEditorjs";
+import EditorModal from "./components/Editor Components/EditorModal";
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
+  const [isEditorOpen, setIsEditorOpen] = useState(true);
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -18,6 +20,12 @@ function App() {
 
   return (
     <div className={isDark ? "dark" : ""}>
+      {isEditorOpen && (
+        <EditorModal
+          onClose={() => setIsEditorOpen(false)}
+          isEditorOpen={isEditorOpen}
+        />
+      )}
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>
