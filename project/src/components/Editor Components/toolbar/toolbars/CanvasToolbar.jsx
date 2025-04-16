@@ -1,25 +1,35 @@
-import { useState } from "react"
-import { RotateCcw, RotateCw, Upload, Move, Lock, Copy, Trash } from "lucide-react"
-import DurationSelector from "../../common/popups/DurationSelector"
-import PaletteSelector from "../../common/popups/PaletteSelector"
-import ColorPicker from "../../common/popups/ColorPicker"
+import { useState } from "react";
+import {
+  RotateCcw,
+  RotateCw,
+  Upload,
+  Move,
+  Lock,
+  Copy,
+  Trash,
+} from "lucide-react";
+import DurationSelector from "../../common/popups/DurationSelector";
+import PaletteSelector from "../../common/popups/PaletteSelector";
+import ColorPicker from "../../common/popups/ColorPicker";
 
 function CanvasToolbar() {
-  const [duration, setDuration] = useState(5)
-  const [backgroundColor, setBackgroundColor] = useState("#87CEEB")
+  const [duration, setDuration] = useState(5);
+  const [backgroundColor, setBackgroundColor] = useState("#87CEEB");
 
   const handleDurationChange = (newDuration) => {
-    setDuration(newDuration)
-  }
+    setDuration(newDuration);
+  };
 
   const handlePaletteSelect = (palette) => {
     // Handle palette selection
-    console.log("Selected palette:", palette)
-  }
+    console.log("Selected palette:", palette);
+  };
 
-  const handleColorChange = (color) => {
-    setBackgroundColor(color)
-  }
+  const handleColorChange = (color, opacity) => {
+    setBackgroundColor(color);
+    // You can also handle opacity if needed
+    console.log("Color:", color, "Opacity:", opacity);
+  };
 
   return (
     <div className="flex items-center justify-between w-max overflow-x-auto">
@@ -38,7 +48,12 @@ function CanvasToolbar() {
       <div className="flex items-center gap-2">
         <PaletteSelector onSelect={handlePaletteSelect} />
 
-        <ColorPicker color={backgroundColor} onChange={handleColorChange} label="Background Color" />
+        <ColorPicker
+          color={backgroundColor}
+          onChange={handleColorChange}
+          label="Background Color"
+          showPalette={true}
+        />
 
         <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
           <Upload className="h-5 w-5 text-gray-600" />
@@ -64,7 +79,7 @@ function CanvasToolbar() {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
-export default CanvasToolbar
+export default CanvasToolbar;
