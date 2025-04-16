@@ -72,13 +72,9 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
     setPopup(true);
   };
 
-  const handleClosePopup = () => {
-    setPopup(false);
-    setComponentType("postTopics");
-  };
-
-  const handleEdit = () => setEditing(true);
   const handleCancel = () => setEditing(false);
+  const handleEdit = () => setEditing(true);
+
   const handleSave = () => {
     setEditing(false);
     toast.success("Business profile updated!");
@@ -87,20 +83,22 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
   const renderField = (icon, label, value, onChange = null) => (
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-1">
-        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
           {icon}
         </div>
-        <span className="font-medium text-gray-800">{label}</span>
+        <span className="font-medium text-gray-800 dark:text-white">
+          {label}
+        </span>
       </div>
       {editing ? (
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+          className="w-full bg-white dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
         />
       ) : (
-        <p className="text-sm text-gray-700">{value}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300">{value}</p>
       )}
     </div>
   );
@@ -108,20 +106,20 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
   return (
     <>
       <div>
-        <div className="pt-3 text-center">
-          <h1 className="text-3xl font-bold text-blue-600">
+        <div className="pt-3 pb-3 text-center dark:bg-gray-800  rounded-3xl  dark:border-gray-700">
+          <h1 className="text-3xl font-bold text-blue-600 dark:text-white">
             Your Business Profile
           </h1>
-          <p className="text-sm text-gray-500 mt-3">
+          <p className="text-sm text-gray-500 mt-3 dark:text-gray-400">
             Here is the information we have extracted about your business. Make
             sure it's accurate for the best content
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto p-6 pb-24 bg-white rounded-xl shadow-md relative">
+        <div className="max-w-3xl mx-auto p-6 pb-24 bg-white dark:bg-gray-900 rounded-xl shadow-md relative">
           {/* Logo and Name */}
           <div className="flex items-center gap-4 mb-6">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
               <img
                 src={formData.siteLogo}
                 alt="Logo"
@@ -148,10 +146,10 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           {/* Description */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                <BookType className="w-4 h-4 text-gray-700" />
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <BookType className="w-4 h-4 text-gray-700 dark:text-white" />
               </div>
-              <span className="font-medium text-gray-800">
+              <span className="font-medium text-gray-800 dark:text-white">
                 Business Description
               </span>
             </div>
@@ -165,10 +163,10 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                     clientDescription: e.target.value,
                   })
                 }
-                className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full bg-white dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
               />
             ) : (
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 {formData.clientDescription}
               </p>
             )}
@@ -215,10 +213,10 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           {/* Brand Colors */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Palette className="text-blue-600 w-4 h-4" />
+              <div className="w-8 h-8 bg-blue-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <Palette className="text-blue-600 dark:text-blue-400 w-4 h-4" />
               </div>
-              <h3 className="text-sm font-medium text-gray-800">
+              <h3 className="text-sm font-medium text-gray-800 dark:text-white">
                 Brand Colors
               </h3>
             </div>
@@ -237,14 +235,14 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                       className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                     />
                     <div
-                      className="w-full h-full rounded-full border border-gray-300"
+                      className="w-full h-full rounded-full border border-gray-300 dark:border-gray-600"
                       style={{ backgroundColor: color }}
                     ></div>
                   </label>
                 ) : (
                   <div
                     key={index}
-                    className="w-8 h-8 rounded-full border border-gray-300"
+                    className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
                     style={{ backgroundColor: color }}
                   />
                 )
@@ -256,7 +254,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           {["audience", "audiencePains", "core_values"].map((key, i) => (
             <div key={i} className="mb-6">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
                   {key === "audience" ? (
                     <Users className="w-4 h-4 text-purple-600" />
                   ) : key === "audiencePains" ? (
@@ -265,7 +263,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                     <Star className="w-4 h-4 text-green-600" />
                   )}
                 </div>
-                <h3 className="text-sm font-medium capitalize text-gray-800">
+                <h3 className="text-sm font-medium capitalize text-gray-800 dark:text-white">
                   {key.replace("_", " ")}
                 </h3>
               </div>
@@ -287,10 +285,13 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                           },
                         });
                       }}
-                      className="bg-gray-50 border border-gray-200 rounded-md p-2 text-sm outline-none"
+                      className="bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm outline-none"
                     />
                   ) : (
-                    <p key={idx} className="text-sm text-gray-700">
+                    <p
+                      key={idx}
+                      className="text-sm text-gray-700 dark:text-gray-300"
+                    >
                       {item}
                     </p>
                   )
@@ -301,15 +302,15 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
         </div>
 
         {/* Sticky Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-30 py-3 px-6 flex items-center justify-between max-w-3xl mx-auto">
-          <h2 className="text-sm font-semibold text-blue-600">
+        <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-6 flex items-center justify-between max-w-3xl mx-auto">
+          <h2 className="text-sm font-semibold text-blue-600 dark:text-white">
             Your Business Profile
           </h2>
           {editing ? (
             <div className="flex gap-2">
               <button
                 onClick={handleCancel}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition"
+                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
                 Cancel
               </button>
@@ -324,7 +325,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             <div className="flex gap-2">
               <button
                 onClick={handleEdit}
-                className="flex items-center gap-1 text-gray-600 hover:text-black"
+                className="flex items-center gap-1 text-gray-600 dark:text-white hover:text-black dark:hover:text-gray-300"
               >
                 <Edit className="w-4 h-4" />
                 <span className="text-sm">Edit</span>
@@ -333,7 +334,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                 onClick={handlePopup}
                 className="px-4 py-1 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
-                Continue
+                Looking Good! Lets Continue
               </button>
             </div>
           )}
