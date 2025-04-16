@@ -11,12 +11,18 @@ export const createTextElement = (category = "body") => {
   if (category === "header") {
     defaultStyles.fontSize = "36px";
     defaultStyles.fontWeight = "bold";
+    defaultStyles.width = 400;
+    defaultStyles.height = 60;
   } else if (category === "sub-header") {
     defaultStyles.fontSize = "28px";
     defaultStyles.fontWeight = "600";
+    defaultStyles.width = 300;
+    defaultStyles.height = 50;
   } else if (category === "body") {
     defaultStyles.fontSize = "20px";
     defaultStyles.fontWeight = "normal";
+    defaultStyles.width = 250;
+    defaultStyles.height = 40;
   }
 
   return {
@@ -24,10 +30,14 @@ export const createTextElement = (category = "body") => {
     type: "text",
     category,
     position: { x: 100, y: 100 },
-    size: { width: 300, height: 100 },
     styles: defaultStyles,
     props: {
-      text: category === "header" ? "Header Text" : category === "sub-header" ? "Sub Header Text" : "Body Text"
-    }
+      text:
+        category === "header"
+          ? "Header Text"
+          : category === "sub-header"
+          ? "Sub Header Text"
+          : "Body Text",
+    },
   };
 };

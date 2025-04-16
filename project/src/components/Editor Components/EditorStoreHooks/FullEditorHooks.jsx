@@ -50,6 +50,8 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const updateCanvasStyles = useCallback((styles) => {
+    console.log(styles);
+
     setCanvas((prev) => {
       const updatedStyles = { ...prev.styles };
 
@@ -82,6 +84,7 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const updateBackground = useCallback((type, value) => {
+    console.log(type, value);
     const bg = { type };
 
     if (type === "color") {
