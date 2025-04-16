@@ -17,7 +17,6 @@ const dummyPost = {
   postText:
     "Discover how EduTlush is revolutionizing the education landscape with cutting-edge technology and personalized learning solutions. Join us on a journey to empower learners worldwide.",
   brandName: "EduTlush",
-  profileImage: "https://your-business-logo.jpg",
   postDate: "April 14, 2025",
 };
 
@@ -38,10 +37,15 @@ export default function PostDetails() {
   const [selectedButton, setSelectedButton] = useState("image");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
+  const [postImage, setPostImage] = useState("");
+  const [logoImage, setLogoImage] = useState("");
   const contentRef = useRef(null);
   const navigate = useNavigate();
 
+  const unsplashAccessKey = "5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I";
+
   useEffect(() => {
+    // Check for text overflow
     const checkClamping = () => {
       if (contentRef.current) {
         const { scrollHeight, clientHeight } = contentRef.current;
@@ -53,11 +57,42 @@ export default function PostDetails() {
     return () => window.removeEventListener("resize", checkClamping);
   }, []);
 
+  useEffect(() => {
+    // Fetch post image
+    const fetchPostImage = async () => {
+      try {
+        const res = await fetch(
+          `https://api.unsplash.com/photos/random?query=education,technology&orientation=landscape&client_id=${unsplashAccessKey}`
+        );
+        const data = await res.json();
+        setPostImage(data.urls.regular);
+      } catch (error) {
+        console.error("Error fetching post image:", error);
+        setPostImage("https://via.placeholder.com/600x400.png?text=Post+Image");
+      }
+    };
+
+    // Fetch logo image
+    const fetchLogoImage = async () => {
+      try {
+        const res = await fetch(
+          `https://api.unsplash.com/photos/random?query=${dummyPost.brandName}+logo&orientation=squarish&client_id=${unsplashAccessKey}`
+        );
+        const data = await res.json();
+        setLogoImage(data.urls.thumb);
+      } catch (error) {
+        console.error("Error fetching logo image:", error);
+        setLogoImage("https://via.placeholder.com/80x80.png?text=Logo");
+      }
+    };
+
+    fetchPostImage();
+    fetchLogoImage();
+  }, []);
+
   return (
     <div className="relative bg-white rounded-2xl shadow-md w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col">
-      {/* Scrollable Content */}
       <div className="overflow-y-auto p-6 pb-24">
-        {/* Header */}
         <h1 className="text-center font-bold text-3xl mb-10 text-purple-700">
           Congratulations! Your First Post Is Ready
         </h1>
@@ -67,7 +102,7 @@ export default function PostDetails() {
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100">
               <img
-                src={dummyPost.profileImage}
+                src={logoImage}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -85,39 +120,22 @@ export default function PostDetails() {
           <div className="flex items-center space-x-2 p-2">
             <h2 className="text-[12px] text-gray-500 rounded">Visual</h2>
             <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedButton("image")}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-sm ${
-                  selectedButton === "image"
-                    ? "bg-blue-100 text-blue-700 border-blue-300"
-                    : "text-gray-500 border-gray-300"
-                }`}
-              >
-                <Image className="w-4 h-4" />
-                Image
-              </button>
-              <button
-                onClick={() => setSelectedButton("branding")}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-sm ${
-                  selectedButton === "branding"
-                    ? "bg-blue-100 text-blue-700 border-blue-300"
-                    : "text-gray-500 border-gray-300"
-                }`}
-              >
-                <Palette className="w-4 h-4" />
-                Branding
-              </button>
-              <button
-                onClick={() => setSelectedButton("slogan")}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-sm ${
-                  selectedButton === "slogan"
-                    ? "bg-blue-100 text-blue-700 border-blue-300"
-                    : "text-gray-500 border-gray-300"
-                }`}
-              >
-                <Type className="w-4 h-4" />
-                Slogan
-              </button>
+              {["image", "branding", "slogan"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedButton(type)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full border text-sm ${
+                    selectedButton === type
+                      ? "bg-blue-100 text-blue-700 border-blue-300"
+                      : "text-gray-500 border-gray-300"
+                  }`}
+                >
+                  {type === "image" && <Image className="w-4 h-4" />}
+                  {type === "branding" && <Palette className="w-4 h-4" />}
+                  {type === "slogan" && <Type className="w-4 h-4" />}
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -143,7 +161,7 @@ export default function PostDetails() {
         {/* Post Image */}
         <div className="rounded-xl overflow-hidden mb-4">
           <img
-            src="https://via.placeholder.com/600x400.png?text=Generated+Post+Image"
+            src={postImage}
             alt="Post Visual"
             style={getImageStyle(dummyPost.platform)}
             className="w-full"
