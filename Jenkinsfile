@@ -33,16 +33,18 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies & Build Locally') {
-            steps {
-                dir('project') {
-                    sh 'npm install --legacy-peer-deps'
-                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                        sh 'npm run build'
-                    }
-                }
-            }
+       stage('Install Dependencies & Build Locally') {
+    dir('project') {
+        catchError {
+            sh '''
+                rm -rf node_modules package-lock.json
+                npm install --legacy-peer-deps
+                npm run build
+            '''
         }
+    }
+}
+
 
         stage('Sync to Deployment Directory') {
             steps {
