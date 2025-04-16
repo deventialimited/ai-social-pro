@@ -105,9 +105,9 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
 
   return (
     <>
-      <div>
-        <div className="pt-3 pb-3 text-center dark:bg-gray-800  rounded-3xl  dark:border-gray-700">
-          <h1 className="text-3xl font-bold text-blue-600 dark:text-white">
+      <div className="px-4 sm:px-6">
+        <div className="pt-6 pb-4 text-center dark:bg-gray-800 rounded-3xl dark:border-gray-700">
+          <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-white">
             Your Business Profile
           </h1>
           <p className="text-sm text-gray-500 mt-3 dark:text-gray-400">
@@ -116,10 +116,9 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto p-6 pb-24 bg-white dark:bg-gray-900 rounded-xl shadow-md relative">
-          {/* Logo and Name */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
+        <div className="max-w-3xl mx-auto p-4 sm:p-6 pb-24 bg-white dark:bg-gray-900 rounded-xl shadow-md relative">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            <div className="relative w-20 h-20 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
               <img
                 src={formData.siteLogo}
                 alt="Logo"
@@ -135,15 +134,16 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                 />
               )}
             </div>
-            {renderField(
-              <BadgeInfo className="w-4 h-4" />,
-              "Business Name",
-              formData.clientName,
-              (v) => setFormData({ ...formData, clientName: v })
-            )}
+            <div className="flex-1">
+              {renderField(
+                <BadgeInfo className="w-4 h-4" />,
+                "Business Name",
+                formData.clientName,
+                (v) => setFormData({ ...formData, clientName: v })
+              )}
+            </div>
           </div>
 
-          {/* Description */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -172,7 +172,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             )}
           </div>
 
-          {/* Core Info */}
+          {/* Core Info Fields */}
           {renderField(
             <Globe className="w-4 h-4" />,
             "Website",
@@ -220,8 +220,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                 Brand Colors
               </h3>
             </div>
-
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               {formData.colors.map((color, index) =>
                 editing ? (
                   <label
@@ -302,7 +301,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
         </div>
 
         {/* Sticky Footer */}
-        <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-6 flex items-center justify-between max-w-3xl mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-4 sm:px-6 flex items-center justify-between max-w-3xl mx-auto w-full z-50">
           <h2 className="text-sm font-semibold text-blue-600 dark:text-white">
             Your Business Profile
           </h2>
@@ -322,7 +321,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               </button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleEdit}
                 className="flex items-center gap-1 text-gray-600 dark:text-white hover:text-black dark:hover:text-gray-300"
