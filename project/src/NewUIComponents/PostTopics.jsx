@@ -110,9 +110,8 @@ const PostTopics = ({ setComponentType }) => {
 
       {PopUp && (
         <FirstPostPopUp
-          title="It's time to generate your post!"
-          data="Using AI to create engaging content..."
-          description="Creating engaging content with AI"
+          title="Time to Create Compelling Content!"
+          description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
           isOpen={PopUp}
           onClose={handleClosePopup}
         />
