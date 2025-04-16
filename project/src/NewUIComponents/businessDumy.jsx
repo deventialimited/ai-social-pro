@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { FirstPostPopUp } from "./FirstPostPopUp";
+
 export const BusinessSectionDummy = ({ setComponentType }) => {
   const [editing, setEditing] = useState(false);
   const [PopUp, setPopup] = useState(false);
@@ -66,13 +67,16 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
+
   const handlePopup = () => {
     setPopup(true);
   };
+
   const handleClosePopup = () => {
     setPopup(false);
     setComponentType("postTopics");
   };
+
   const handleEdit = () => setEditing(true);
   const handleCancel = () => setEditing(false);
   const handleSave = () => {
@@ -109,22 +113,12 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             Your Business Profile
           </h1>
           <p className="text-sm text-gray-500 mt-3">
-            Here is the informationwe have extracted about your business. Make
+            Here is the information we have extracted about your business. Make
             sure it's accurate for the best content
           </p>
         </div>
-        <div className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-md">
-          {/* Header */}
-          <div className="flex items-end justify-end mb-6">
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-1 text-gray-600 hover:text-black"
-            >
-              <Edit className="w-4 h-4" />
-              <span className="text-sm">Edit</span>
-            </button>
-          </div>
 
+        <div className="max-w-3xl mx-auto p-6 pb-24 bg-white rounded-xl shadow-md relative">
           {/* Logo and Name */}
           <div className="flex items-center gap-4 mb-6">
             <div className="relative w-16 h-16 rounded-full overflow-hidden border">
@@ -304,40 +298,52 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               </div>
             </div>
           ))}
+        </div>
 
-          {/* Buttons */}
+        {/* Sticky Footer */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow z-30 py-3 px-6 flex items-center justify-between max-w-3xl mx-auto">
+          <h2 className="text-sm font-semibold text-blue-600">
+            Your Business Profile
+          </h2>
           {editing ? (
-            <div className="flex justify-end gap-3 mt-4">
+            <div className="flex gap-2">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 transition-all"
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all"
+                className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
                 Save
               </button>
             </div>
           ) : (
-            <div className="flex justify-end mt-6">
+            <div className="flex gap-2">
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-1 text-gray-600 hover:text-black"
+              >
+                <Edit className="w-4 h-4" />
+                <span className="text-sm">Edit</span>
+              </button>
               <button
                 onClick={handlePopup}
-                className="w-full px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center justify-center gap-2 text-base font-medium transition-all"
+                className="px-4 py-1 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
-                <span>Looking Good! Continue</span>
+                Continue
               </button>
             </div>
           )}
         </div>
       </div>
+
       {PopUp && (
         <FirstPostPopUp
           isOpen={PopUp}
           onClose={() => {
-            // setPopup(false);
             setComponentType("postTopics");
           }}
           title="Let’s Discover the Perfect Topics..."

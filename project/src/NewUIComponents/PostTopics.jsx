@@ -17,7 +17,6 @@ const PostTopics = ({ setComponentType }) => {
   const [PopUp, setPopup] = useState(false);
 
   const handleClosePopup = () => {
-    // setPopup(false);
     setComponentType("postDetails");
   };
 
@@ -79,7 +78,6 @@ const PostTopics = ({ setComponentType }) => {
           </button>
           <button
             onClick={() => {
-              // You can modify this logic to select a topic using AI
               const randomTopic =
                 defaultTopics[Math.floor(Math.random() * defaultTopics.length)];
               console.log("AI selected topic:", randomTopic);
@@ -104,6 +102,15 @@ const PostTopics = ({ setComponentType }) => {
             className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm"
           >
             Add
+          </button>
+          <button
+            onClick={() => {
+              setShowInput(false);
+              setCustomTopic("");
+            }}
+            className="border border-red-500 text-red-500 px-4 py-2 rounded-lg text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+          >
+            Cancel
           </button>
         </div>
       )}
