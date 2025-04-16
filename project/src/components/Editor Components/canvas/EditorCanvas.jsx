@@ -27,7 +27,7 @@ function EditorCanvas({ content, onElementSelect }) {
       if (onElementSelect) {
         onElementSelect("canvas");
         setSelectedElementId(null);
-        setShowSelectorOverlay(true)
+        setShowSelectorOverlay(true);
       }
     }
   };
@@ -55,6 +55,7 @@ function EditorCanvas({ content, onElementSelect }) {
         style={{
           width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
           height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+          ...canvas.styles,
         }}
         onClick={handleCanvasClick}
       >
