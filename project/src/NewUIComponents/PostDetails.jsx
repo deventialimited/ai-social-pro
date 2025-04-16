@@ -93,7 +93,15 @@ export default function PostDetails() {
   return (
     <div className="relative bg-white rounded-2xl shadow-md w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col">
       <div className="overflow-y-auto p-6 pb-24">
-        <h1 className="text-center font-bold text-3xl mb-10 text-purple-700">
+        <h1
+          className="text-center font-bold text-3xl mb-10 text-transparent bg-clip-text"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
           Congratulations! Your First Post Is Ready
         </h1>
 
@@ -196,7 +204,11 @@ export default function PostDetails() {
         <div className="text-center">
           <button
             onClick={() => navigate("/dashboard")}
-            className="bg-purple-700 hover:bg-purple-900 text-white px-6 py-2 rounded-lg text-sm w-full"
+            className="text-white px-6 py-2 rounded-lg text-sm w-full font-medium"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
+            }}
           >
             See All Posts
           </button>
