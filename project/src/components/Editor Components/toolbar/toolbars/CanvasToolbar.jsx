@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   RotateCcw,
   RotateCw,
@@ -15,6 +15,7 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function CanvasToolbar() {
   const [duration, setDuration] = useState(5);
+  const fileInputRef = useRef(null);
   const { updateBackground, updateCanvasStyles, canvas } = useEditor();
   const handleDurationChange = (newDuration) => {
     setDuration(newDuration);
@@ -46,7 +47,27 @@ function CanvasToolbar() {
     // Update background state
     updateBackground("color", color);
   };
-  console.log(canvas);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const imageURL = URL.createObjectURL(file);
+
+    updateCanvasStyles({
+      backgroundImage: `url(${imageURL})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundColor: "",
+    });
+
+    updateBackground("image", imageURL);
+  };
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="flex items-center justify-between w-max overflow-x-auto">
       <div className="flex items-center gap-1">
@@ -71,7 +92,18 @@ function CanvasToolbar() {
           showPalette={true}
         />
 
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+        <button
+          className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
+          onClick={triggerFileUpload}
+        >
           <Upload className="h-5 w-5 text-gray-600" />
           <span>Upload</span>
         </button>
