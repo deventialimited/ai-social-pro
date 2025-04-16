@@ -75,7 +75,7 @@ function ColorPicker({
           className="w-5 h-5 rounded-sm border border-gray-200"
           style={{ backgroundColor: currentColor }}
         />
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm w-max font-medium">{label}</span>
         {showPalette && <ChevronDown className="h-4 w-4 text-gray-500" />}
       </button>
 
