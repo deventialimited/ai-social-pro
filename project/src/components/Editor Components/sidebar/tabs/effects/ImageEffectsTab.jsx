@@ -253,25 +253,31 @@ function ImageEffectsTab({ onClose }) {
           </div>
         </div>
         <div className="flex items-center gap-2 mb-1">
-          <input
-            type="color"
-            value={effects.border.color}
-            onChange={(e) =>
-              handleChangeEffectValue("border", {
-                ...effects.border,
-                color: e.target.value,
-              })
-            }
-            className="w-8 h-8 p-0 border border-gray-300"
-            disabled={!effects.border.enabled}
-          />
+          <div className="w-full">
+            <Slider
+              min={0}
+              max={20}
+              value={effects.border.value}
+              onChange={(value) => handleChangeEffectValue("border", value)}
+              disabled={!effects.border.enabled}
+              trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+              handleStyle={{
+                borderColor: "#3b82f6",
+                height: 12,
+                width: 12,
+                marginTop: -5,
+                backgroundColor: "#3b82f6",
+              }}
+              railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+            />
+          </div>
           <input
             type="number"
             value={effects.border.value}
             onChange={(e) =>
               handleChangeEffectValue("border", Number.parseInt(e.target.value))
             }
-            className="w-full p-1 text-sm border rounded-md"
+            className="w-12 p-1 text-sm border rounded-md"
             disabled={!effects.border.enabled}
           />
           <div className="flex flex-col">
@@ -341,6 +347,24 @@ function ImageEffectsTab({ onClose }) {
             }
             className="w-12 p-1 text-sm border rounded-md"
             disabled={!effects.cornerRadius.enabled}
+          />
+        </div>
+      </div>
+
+      {/* Border Color */}
+      <div className="mb-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={effects.border.color}
+            onChange={(e) =>
+              handleChangeEffectValue("border", {
+                ...effects.border,
+                color: e.target.value,
+              })
+            }
+            className="w-8 h-8 p-0 border border-gray-300"
+            disabled={!effects.border.enabled}
           />
         </div>
       </div>
