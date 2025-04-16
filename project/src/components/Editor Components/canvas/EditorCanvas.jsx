@@ -7,6 +7,7 @@ function EditorCanvas({ content, onElementSelect }) {
   const [zoom, setZoom] = useState(32);
   const { canvas, elements } = useEditor();
   const [selectedElementId, setSelectedElementId] = useState(null);
+  const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 100));
   };
@@ -26,6 +27,7 @@ function EditorCanvas({ content, onElementSelect }) {
       if (onElementSelect) {
         onElementSelect("canvas");
         setSelectedElementId(null);
+        setShowSelectorOverlay(true)
       }
     }
   };
@@ -63,6 +65,8 @@ function EditorCanvas({ content, onElementSelect }) {
             element={el}
             onSelect={handleSelectElement}
             isSelected={el.id === selectedElementId}
+            showSelectorOverlay={showSelectorOverlay}
+            setShowSelectorOverlay={setShowSelectorOverlay}
           />
         ))}
       </div>
