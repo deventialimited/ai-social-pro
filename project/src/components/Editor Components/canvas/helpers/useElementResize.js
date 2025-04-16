@@ -1,13 +1,16 @@
 import { useCallback, useRef } from "react";
 
-export function useElementResize(onResize) {
+export function useElementResize(onResizeStart, onResize, direction = "se") {
   const resizingRef = useRef(false);
 
   const handleMouseDown = useCallback((e) => {
     e.stopPropagation();
     resizingRef.current = true;
+
     const startX = e.clientX;
     const startY = e.clientY;
+
+    onResizeStart();
 
     const onMouseMove = (moveEvent) => {
       if (!resizingRef.current) return;
@@ -15,7 +18,7 @@ export function useElementResize(onResize) {
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
 
-      onResize({ deltaX, deltaY });
+      onResize({ deltaX, deltaY }, direction); // send direction
     };
 
     const onMouseUp = () => {
@@ -26,7 +29,7 @@ export function useElementResize(onResize) {
 
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-  }, [onResize]);
+  }, [onResizeStart, onResize, direction]);
 
   return { handleMouseDown };
 }
