@@ -38,8 +38,8 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex flex-col items-center space-y-8 text-center">
+            <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8">
+              <div className="flex flex-col items-center justify-center min-h-[300px] space-y-8 py-10 text-center">
                 {/* Loader */}
                 <div className="relative w-32 h-32">
                   <div
@@ -58,13 +58,13 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
                 {/* Title */}
                 <Dialog.Title
                   as="h2"
-                  className="text-2xl font-bold text-gray-900 dark:text-white"
+                  className="text-3xl font-bold text-gray-900 dark:text-white"
                 >
                   {title}
                 </Dialog.Title>
 
                 {/* Description */}
-                <p className="text-base text-gray-600 dark:text-gray-400 max-w-md">
+                <p className="text-lg text-gray-600 dark:text-gray-400 max-w-lg">
                   {description}
                 </p>
               </div>
