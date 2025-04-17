@@ -129,7 +129,8 @@ function TextToolbar({
           <div className="flex border rounded-md">
   <button
     className={`p-2 hover:bg-gray-100 ${
-      selectedElement?.styles?.textAlign === "left" ? "bg-gray-200" : ""
+      (selectedElement?.styles?.textAlign ?? "left") === "left"
+      ? "bg-gray-200" : ""
     }`}
     onClick={() => handleAlignChange("left")}
   >
