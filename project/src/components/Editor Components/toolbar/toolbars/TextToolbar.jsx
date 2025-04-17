@@ -92,6 +92,13 @@ function TextToolbar({
 
   const handleTextStyleChange = ({ lineHeight, letterSpacing }) => {
     setTextStyle({ lineHeight, letterSpacing });
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        lineHeight: lineHeight,
+        letterSpacing:letterSpacing,
+      },
+    });
   };
 
   return (
