@@ -127,31 +127,115 @@ function TextToolbar({
           </div>
 
           <div className="flex border rounded-md">
-            <button className="p-2 hover:bg-gray-100">
-              <AlignLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <AlignCenter className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <AlignRight className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textAlign === "left" ? "bg-gray-200" : ""
+    }`}
+    onClick={() => handleAlignChange("left")}
+  >
+    <AlignLeft className="h-5 w-5 text-gray-600" />
+  </button>
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textAlign === "center" ? "bg-gray-200" : ""
+    }`}
+    onClick={() => handleAlignChange("center")}
+  >
+    <AlignCenter className="h-5 w-5 text-gray-600" />
+  </button>
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textAlign === "right" ? "bg-gray-200" : ""
+    }`}
+    onClick={() => handleAlignChange("right")}
+  >
+    <AlignRight className="h-5 w-5 text-gray-600" />
+  </button>
+</div>
 
-          <div className="flex border rounded-md">
-            <button className="p-2 hover:bg-gray-100">
-              <Bold className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <Italic className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <Underline className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <Strikethrough className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
+
+<div className="flex border rounded-md">
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.fontWeight === "bold" ? "bg-gray-200" : ""
+    }`}
+    onClick={() =>
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          fontWeight:
+            selectedElement?.styles?.fontWeight === "bold" ? "normal" : "bold",
+        },
+      })
+    }
+  >
+    <Bold className="h-5 w-5 text-gray-600" />
+  </button>
+
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.fontStyle === "italic" ? "bg-gray-200" : ""
+    }`}
+    onClick={() =>
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          fontStyle:
+            selectedElement?.styles?.fontStyle === "italic"
+              ? "normal"
+              : "italic",
+        },
+      })
+    }
+  >
+    <Italic className="h-5 w-5 text-gray-600" />
+  </button>
+
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textDecoration?.includes("underline")
+        ? "bg-gray-200"
+        : ""
+    }`}
+    onClick={() => {
+      const current = selectedElement?.styles?.textDecoration || "";
+      const isActive = current.includes("underline");
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          textDecoration: isActive
+            ? current.replace("underline", "").trim()
+            : `${current} underline`.trim(),
+        },
+      });
+    }}
+  >
+    <Underline className="h-5 w-5 text-gray-600" />
+  </button>
+
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textDecoration?.includes("line-through")
+        ? "bg-gray-200"
+        : ""
+    }`}
+    onClick={() => {
+      const current = selectedElement?.styles?.textDecoration || "";
+      const isActive = current.includes("line-through");
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          textDecoration: isActive
+            ? current.replace("line-through", "").trim()
+            : `${current} line-through`.trim(),
+        },
+      });
+    }}
+  >
+    <Strikethrough className="h-5 w-5 text-gray-600" />
+  </button>
+</div>
+
 
           <button className="p-2 border rounded-md hover:bg-gray-100">
             <List className="h-5 w-5 text-gray-600" />
