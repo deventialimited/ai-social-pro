@@ -22,7 +22,6 @@ function CanvasToolbar() {
   };
 
   const handlePaletteSelect = (palette) => {
-
     if (!palette || !palette.colors || palette.colors.length === 0) return;
 
     // Create a linear gradient using the palette colors

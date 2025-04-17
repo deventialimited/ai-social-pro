@@ -1,13 +1,15 @@
 import { Upload, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { createImageElement } from "../hooks/ImagesHooks";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function ImagesTab() {
   const [query, setQuery] = useState("");
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const fileInputRef = useRef(null);
-
+  const { addElement, addFile } = useEditor();
   const fetchImages = async () => {
     try {
       let response;
@@ -47,9 +49,27 @@ function ImagesTab() {
     if (bottom) setPage((prev) => prev + 1);
   };
 
-  const handleAddImage = (src) => {
-    const newElement = createImageElement(src);
-    addElement(newElement);
+  const handleAddImage = async (src) => {
+    try {
+      // 1. Fetch image from the remote URL
+      const response = await fetch(src);
+      const blob = await response.blob();
+
+      // 2. Generate a local object URL for rendering in the frontend
+      const objectUrl = URL.createObjectURL(blob);
+
+      // 3. Create and add the canvas element with local object URL
+      const newElement = createImageElement(objectUrl); // includes a unique `id`
+      addElement(newElement);
+
+      // 4. Store file with element ID as the name for backend API use
+      const file = new File([blob], newElement.id, { type: blob.type });
+      addFile(file);
+
+      // ✅ Now the element is visible on canvas and its original file is stored for API upload
+    } catch (error) {
+      console.error("Failed to add image:", error);
+    }
   };
 
   const handleUploadImage = (e) => {
