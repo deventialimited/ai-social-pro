@@ -78,7 +78,7 @@ function CanvasToolbar() {
           <RotateCw className="h-5 w-5 text-gray-600" />
         </button>
 
-        <DurationSelector duration={duration} onChange={handleDurationChange} />
+        {/* <DurationSelector duration={duration} onChange={handleDurationChange} /> */}
       </div>
 
       <div className="flex items-center gap-2">
