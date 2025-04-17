@@ -9,6 +9,7 @@ import { EditorProvider } from "./EditorStoreHooks/FullEditorHooks";
 function EditorModal({ onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
+  const [selectedElementId, setSelectedElementId] = useState(null);
   const [activeElement, setActiveElement] = useState("canvas"); // Default to canvas toolbar
   const [canvasContent, setCanvasContent] = useState({
     backgroundColor: "#87CEEB",
@@ -47,7 +48,6 @@ function EditorModal({ onClose, isEditorOpen }) {
   const handleElementSelect = (elementType) => {
     setActiveElement(elementType);
   };
-
   return (
     <EditorProvider>
       <Transition appear show={isEditorOpen} as={Fragment}>
@@ -125,9 +125,13 @@ function EditorModal({ onClose, isEditorOpen }) {
                         activeElement={activeElement}
                         specialActiveTab={specialActiveTab}
                         setSpecialActiveTab={setSpecialActiveTab}
+                        selectedElementId={selectedElementId}
+                        setSelectedElementId={setSelectedElementId}
                       />
                       <EditorCanvas
                         content={canvasContent}
+                        selectedElementId={selectedElementId}
+                        setSelectedElementId={setSelectedElementId}
                         onElementSelect={handleElementSelect}
                       />
                     </div>

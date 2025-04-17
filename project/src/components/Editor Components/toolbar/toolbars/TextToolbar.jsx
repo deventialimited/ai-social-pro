@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RotateCcw,
   RotateCw,
@@ -21,27 +21,55 @@ import FontSelector from "../../common/popups/FontSelector";
 import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import TextStylePopup from "../../common/popups/TextStylePopup";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
-function TextToolbar({ specialActiveTab, setSpecialActiveTab }) {
-  const [textColor, setTextColor] = useState("#000000");
-  const [font, setFont] = useState("Poppins");
-  const [fontSize, setFontSize] = useState(38.5);
+function TextToolbar({
+  specialActiveTab,
+  setSpecialActiveTab,
+  selectedElementId,
+  setSelectedElementId,
+}) {
   const [transparency, setTransparency] = useState(100);
+  const { updateElement, elements } = useEditor();
+  const [selectedElement, setSelectedElement] = useState(null);
   const [textStyle, setTextStyle] = useState({
     lineHeight: 1.5,
     letterSpacing: 0,
   });
+  useEffect(() => {
+    if (selectedElementId) {
+      const selectedElement = elements.find(
+        (el) => el.id === selectedElementId
+      );
+      setSelectedElement(selectedElement);
+    }
+  }, [elements, selectedElementId]);
 
   const handleColorChange = (color) => {
-    setTextColor(color);
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        color: color,
+      },
+    });
   };
-
+  console.log(selectedElement?.styles);
   const handleFontChange = (newFont) => {
-    setFont(newFont);
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        fontFamily: newFont,
+      },
+    });
   };
 
   const handleFontSizeChange = (e) => {
-    setFontSize(e.target.value);
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        fontSize: `${e.target.value}px`,
+      },
+    });
   };
 
   const handlePositionChange = (action) => {
@@ -50,6 +78,12 @@ function TextToolbar({ specialActiveTab, setSpecialActiveTab }) {
 
   const handleAlignChange = (action) => {
     console.log("Align action:", action);
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        textAlign: action, // action could be 'left', 'center', or 'right'
+      },
+    });
   };
 
   const handleTransparencyChange = (value) => {
@@ -73,17 +107,20 @@ function TextToolbar({ specialActiveTab, setSpecialActiveTab }) {
           </button>
 
           <ColorPicker
-            color={textColor}
+            color={selectedElement?.styles?.color}
             onChange={handleColorChange}
             showPalette={false}
           />
 
-          <FontSelector font={font} onChange={handleFontChange} />
+          <FontSelector
+            font={selectedElement?.styles?.fontFamily}
+            onChange={handleFontChange}
+          />
 
           <div className="w-16">
             <input
-              type="text"
-              value={fontSize}
+              type="number"
+              value={parseFloat(selectedElement?.styles?.fontSize)}
               onChange={handleFontSizeChange}
               className="w-full px-2 py-1 border rounded-md text-sm"
             />

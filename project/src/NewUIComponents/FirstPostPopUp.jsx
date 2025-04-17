@@ -3,23 +3,17 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Sparkles } from "lucide-react";
 import clsx from "clsx";
 
-export const FirstPostPopUp = ({
-  title,
-  data,
-  description,
-  isOpen,
-  onClose,
-}) => {
+export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
-      const timeout = setTimeout(onClose, 3000);
+      const timeout = setTimeout(onClose, 9000);
       return () => clearTimeout(timeout);
     }
   }, [isOpen, onClose]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
+      <Dialog as="div" className="relative z-50" onClose={()=>{}}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -42,42 +36,31 @@ export const FirstPostPopUp = ({
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="relative w-full max-w-xl min-h-[75vh] bg-white dark:bg-gray-900 rounded-3xl shadow-xl px-8 sm:px-10 py-6 sm:py-8 flex flex-col justify-center items-center text-center">
-              {/* Title */}
-              <Dialog.Title
-                as="h1"
-                className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white mb-10"
-              >
-                {title}
-              </Dialog.Title>
-
-              {/* Description */}
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 px-4 sm:px-12 mb-10 leading-relaxed">
-                {description}
-              </p>
-
-              {/* Animated Loader */}
-              <div className="relative w-32 h-32">
-                <div
-                  className={clsx(
-                    "w-full h-full rounded-full border-8 border-purple-500/50 border-t-transparent animate-spin",
-                    "bg-gradient-to-br from-purple-500 to-blue-500 shadow-2xl",
-                    "animate-pulse"
-                  )}
-                />
-                <Sparkles
-                  className="absolute inset-0 m-auto w-12 h-12 text-white animate-bounce"
-                  strokeWidth={2}
-                />
+            <Dialog.Panel className="relative w-full max-w-4xl rounded-2xl bg-white dark:bg-gray-900 shadow-xl p-6 overflow-y-auto max-h-[100vh]">
+              <div className="flex flex-col items-center space-y-8 py-10 px-6 sm:px-10 text-center">
+                <div className="relative w-32 h-32">
+                  <div
+                    className={clsx(
+                      "w-full h-full rounded-full border-8 border-purple-500/50 border-t-transparent animate-spin",
+                      "bg-gradient-to-br from-purple-500 to-blue-500 shadow-2xl",
+                      "animate-pulse"
+                    )}
+                  />
+                  <Sparkles
+                    className="absolute inset-0 m-auto w-12 h-12 text-white animate-bounce"
+                    strokeWidth={2}
+                  />
+                </div>
+                <Dialog.Title
+                  as="h2"
+                  className="text-3xl font-bold text-gray-900 dark:text-white"
+                >
+                  {title}
+                </Dialog.Title>
+                <p className="text-lg text-gray-600 dark:text-gray-400 max-w-lg">
+                  {description}
+                </p>
               </div>
-              <h2 className="text-3xl mt-10 font-bold text-gray-900 dark:text-white text-center">
-                Analyzing Your Website...
-              </h2>
-
-              {/* Data */}
-              <p className="text-sm sm:text-base mt-10 text-gray-600 dark:text-gray-300 px-4 sm:px-12 leading-relaxed">
-                {data}
-              </p>
             </Dialog.Panel>
           </Transition.Child>
         </div>

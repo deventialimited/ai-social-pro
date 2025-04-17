@@ -1,173 +1,202 @@
-import React, { useState } from "react";
-import { Type, Image } from "lucide-react";
-import { FirstPostPopUp } from "./FirstPostPopUp";
-const PostDetails = ({ setComponentType }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [PopUp, setPopup] = useState(false);
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Check,
+  Image,
+  Palette,
+  Type,
+  CalendarDays,
+  Edit,
+  Trash2,
+  Download,
+} from "lucide-react";
 
-  const [postText, setPostText] = useState(
-    "✨ Introducing EduTlush! Our cutting-edge educational tools are designed to transform learning experiences..."
-  );
-  const [imagePreview, setImagePreview] = useState(
-    "https://images.unsplash.com/photo-1549924231-f129b911e442"
-  );
-  const [newImageFile, setNewImageFile] = useState(null);
+const dummyPost = {
+  platform: "linkedin",
+  postText:
+    "Discover how EduTlush is revolutionizing the education landscape with cutting-edge technology and personalized learning solutions. Join us on a journey to empower learners worldwide.",
+  brandName: "EduTlush",
+  postDate: "April 14, 2025",
+};
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setNewImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
+const getImageStyle = (platform) => {
+  switch (platform) {
+    case "x":
+      return { aspectRatio: "2/1", objectFit: "cover" };
+    case "linkedin":
+      return { aspectRatio: "4/3", objectFit: "cover" };
+    case "instagram":
+      return { aspectRatio: "1/1", objectFit: "cover" };
+    default:
+      return { aspectRatio: "1/1", objectFit: "cover" };
+  }
+};
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    // For now we only update local state. Hook into backend upload/save logic here later.
-    setIsEditing(false);
-  };
-  const handleClosePopup = () => {
-    setPopup(false);
-    setComponentType("socialAccount");
-  };
+export default function PostDetails() {
+  const [selectedButton, setSelectedButton] = useState("image");
+  const [showFullText, setShowFullText] = useState(false);
+  const [isClamped, setIsClamped] = useState(false);
+  const [postImage, setPostImage] = useState("");
+  const [logoImage, setLogoImage] = useState("");
+  const contentRef = useRef(null);
+  const navigate = useNavigate();
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    setNewImageFile(null);
-    setImagePreview(
-      "https://images.unsplash.com/photo-1549924231-f129b911e442"
-    );
-  };
-  const handlePopup = () => {
-    setPopup(true);
-  };
+  const unsplashAccessKey = "5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I";
+
+  useEffect(() => {
+    const checkClamping = () => {
+      if (contentRef.current) {
+        const { scrollHeight, clientHeight } = contentRef.current;
+        setIsClamped(scrollHeight > clientHeight);
+      }
+    };
+    checkClamping();
+    window.addEventListener("resize", checkClamping);
+    return () => window.removeEventListener("resize", checkClamping);
+  }, []);
+
+  useEffect(() => {
+    const fetchPostImage = async () => {
+      try {
+        const res = await fetch(
+          `https://api.unsplash.com/photos/random?query=education,technology&orientation=landscape&client_id=${unsplashAccessKey}`
+        );
+        const data = await res.json();
+        setPostImage(data.urls.regular);
+      } catch (error) {
+        console.error("Error fetching post image:", error);
+        setPostImage("https://via.placeholder.com/600x400.png?text=Post+Image");
+      }
+    };
+
+    const fetchLogoImage = async () => {
+      try {
+        const res = await fetch(
+          `https://api.unsplash.com/photos/random?query=${dummyPost.brandName}+logo&orientation=squarish&client_id=${unsplashAccessKey}`
+        );
+        const data = await res.json();
+        setLogoImage(data.urls.thumb);
+      } catch (error) {
+        console.error("Error fetching logo image:", error);
+        setLogoImage("https://via.placeholder.com/80x80.png?text=Logo");
+      }
+    };
+
+    fetchPostImage();
+    fetchLogoImage();
+  }, []);
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-purple-600">
-          🎉 Congrats! Your first post is ready
-        </h2>
-        <p className="text-gray-600 mt-1">
-          Preview your post and switch between different visual styles
-        </p>
-      </div>
+    <div className="relative bg-white dark:bg-gray-800 dark:text-white rounded-2xl shadow-md w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700">
+      <div className="overflow-y-auto p-4 sm:p-6 pb-32 sm:pb-24">
+        <h1
+          className="text-center font-bold text-2xl sm:text-3xl mb-6 sm:mb-10 text-transparent bg-clip-text"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Congratulations! Your First Post Is Ready
+        </h1>
 
-      {/* Post Card */}
-      <div className="max-w-xl mx-auto border rounded-xl shadow-sm p-4 bg-white">
-        {/* Post header */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gray-200" />
-          <div>
-            <p className="font-medium">EduTlush</p>
-            <p className="text-xs text-gray-400">New Post</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
+              <img
+                src={logoImage}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h2 className="font-semibold text-sm">{dummyPost.brandName}</h2>
+              <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
+                New Post
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xs text-gray-500 dark:text-gray-300">Visual</h2>
+            {["image", "branding", "slogan"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setSelectedButton(type)}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-xs sm:text-sm ${
+                  selectedButton === type
+                    ? "bg-blue-100 text-blue-700 border-blue-300"
+                    : "text-gray-500 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+                }`}
+              >
+                {type === "image" && <Image className="w-4 h-4" />}
+                {type === "branding" && <Palette className="w-4 h-4" />}
+                {type === "slogan" && <Type className="w-4 h-4" />}
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
 
-        {isEditing ? (
-          <form onSubmit={handleSave} className="space-y-4">
-            {/* Editable text input */}
-            <textarea
-              value={postText}
-              onChange={(e) => setPostText(e.target.value)}
-              rows={4}
-              className="w-full border rounded-md p-2 text-sm resize-none"
-            />
+        <div className="mb-4 text-sm text-gray-800 dark:text-gray-200">
+          <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
+            {dummyPost.postText}
+          </p>
+          {isClamped && (
+            <button
+              onClick={() => setShowFullText(!showFullText)}
+              className="text-blue-600 dark:text-blue-400 text-sm mt-1 underline"
+            >
+              {showFullText ? "Show less" : "Show more"}
+            </button>
+          )}
+        </div>
 
-            {/* Image upload */}
-            <div className="space-y-2">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="block"
-              />
-              {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-60 object-cover rounded-lg"
-                />
-              )}
-            </div>
+        <div className="rounded-xl overflow-hidden mb-4">
+          <img
+            src={postImage}
+            alt="Post Visual"
+            style={getImageStyle(dummyPost.platform)}
+            className="w-full"
+          />
+        </div>
 
-            {/* Save / Cancel */}
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 border rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-5 py-2 rounded-lg"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            {/* Post content */}
-            <div>
-              <p className="mb-3 text-sm">{postText}</p>
-              <img
-                src={imagePreview}
-                alt="Post preview"
-                className="w-full h-60 object-cover rounded-lg"
-              />
-            </div>
-
-            {/* Tag buttons */}
-            <div className="flex gap-4 mt-4">
-              <div className="px-3 flex gap-1 py-1 bg-gray-100 text-sm rounded-full">
-                <Image className="h-5 w-5" />
-                <p>Image</p>
-              </div>
-              <span className="px-3 py-1 bg-gray-100 text-sm rounded-full">
-                🏷️ Branded
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
+          <div className="flex flex-wrap gap-4">
+            <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2 text-sm">
+              Approve
+              <Check className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <CalendarDays className="w-4 h-4" />
+              <span>{dummyPost.postDate}</span>
+              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded capitalize">
+                {dummyPost.platform}
               </span>
-              <div className="px-3 gap-1 flex py-1 bg-gray-100 text-sm rounded-full">
-                <Type className="w-5 h-5" />
-                <p>Slogan</p>
-              </div>
             </div>
+          </div>
 
-            {/* Action buttons */}
-            <div className="flex justify-between mt-6">
-              <button
-                onClick={handlePopup}
-                className="bg-green-600 text-white px-5 py-2 rounded-lg"
-              >
-                Approve
-              </button>
-              <div className="space-x-2">
-                <button
-                  className="px-4 py-2 border rounded-lg"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Edit
-                </button>
-                <button className="px-4 py-2 border rounded-lg">
-                  Regenerate
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+          <div className="flex gap-3 justify-end">
+            <Edit className="w-4 h-4 cursor-pointer hover:text-blue-600" />
+            <Trash2 className="w-4 h-4 cursor-pointer hover:text-red-600" />
+            <Download className="w-4 h-4 cursor-pointer hover:text-green-600" />
+          </div>
+        </div>
       </div>
-      {PopUp && (
-        <FirstPostPopUp
-          isOpen={PopUp}
-          onClose={handleClosePopup}
-          title="Lets Automate your Future Posts !"
-          data="Setting Up Social Accounts...."
-        />
-      )}
+
+      <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-700 p-4">
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="text-white px-6 py-3 rounded-lg text-sm w-full font-medium"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
+          }}
+        >
+          See All Posts
+        </button>
+      </div>
     </div>
   );
-};
-
-export default PostDetails;
+}

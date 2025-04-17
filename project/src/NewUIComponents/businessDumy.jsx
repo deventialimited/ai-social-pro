@@ -1,7 +1,22 @@
 import React, { useState } from "react";
-import { Edit, Mail, Globe, Palette, Target, BadgeInfo, BookType, MapPin, Languages, Gem, Users, AlertTriangle, Star } from "lucide-react";
+import {
+  Edit,
+  Mail,
+  Globe,
+  Palette,
+  Target,
+  BadgeInfo,
+  BookType,
+  MapPin,
+  Languages,
+  Gem,
+  Users,
+  AlertTriangle,
+  Star,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
-import {FirstPostPopUp} from './FirstPostPopUp'
+import { FirstPostPopUp } from "./FirstPostPopUp";
+
 export const BusinessSectionDummy = ({ setComponentType }) => {
   const [editing, setEditing] = useState(false);
   const [PopUp, setPopup] = useState(false);
@@ -52,15 +67,14 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
+
   const handlePopup = () => {
     setPopup(true);
   };
-  const handleClosePopup = () => {
-    setPopup(false);
-    setComponentType("postTopics");
-  };
-  const handleEdit = () => setEditing(true);
+
   const handleCancel = () => setEditing(false);
+  const handleEdit = () => setEditing(true);
+
   const handleSave = () => {
     setEditing(false);
     toast.success("Business profile updated!");
@@ -69,51 +83,42 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
   const renderField = (icon, label, value, onChange = null) => (
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-1">
-        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
           {icon}
         </div>
-        <span className="font-medium text-gray-800">{label}</span>
+        <span className="font-medium text-gray-800 dark:text-white">
+          {label}
+        </span>
       </div>
       {editing ? (
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+          className="w-full bg-white dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
         />
       ) : (
-        <p className="text-sm text-gray-700">{value}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300">{value}</p>
       )}
     </div>
   );
 
   return (
     <>
-      <div>
-        <div className="pt-3 text-center">
-          <h1 className="text-3xl font-bold text-blue-600">
+      <div className="px-4 sm:px-6">
+        <div className="pt-6 pb-4 text-center dark:bg-gray-800 rounded-3xl dark:border-gray-700">
+          <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-white">
             Your Business Profile
           </h1>
-          <p className="text-sm text-gray-500 mt-3">
-            Here is the informationwe have extracted about your business. Make
+          <p className="text-sm text-gray-500 mt-3 dark:text-gray-400">
+            Here is the information we have extracted about your business. Make
             sure it's accurate for the best content
           </p>
         </div>
-        <div className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-md">
-          {/* Header */}
-          <div className="flex items-end justify-end mb-6">
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-1 text-gray-600 hover:text-black"
-            >
-              <Edit className="w-4 h-4" />
-              <span className="text-sm">Edit</span>
-            </button>
-          </div>
 
-          {/* Logo and Name */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border">
+        <div className="max-w-3xl mx-auto p-4 sm:p-6 pb-24 bg-white dark:bg-gray-900 rounded-xl shadow-md relative">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            <div className="relative w-20 h-20 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
               <img
                 src={formData.siteLogo}
                 alt="Logo"
@@ -129,21 +134,22 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                 />
               )}
             </div>
-            {renderField(
-              <BadgeInfo className="w-4 h-4" />,
-              "Business Name",
-              formData.clientName,
-              (v) => setFormData({ ...formData, clientName: v })
-            )}
+            <div className="flex-1">
+              {renderField(
+                <BadgeInfo className="w-4 h-4" />,
+                "Business Name",
+                formData.clientName,
+                (v) => setFormData({ ...formData, clientName: v })
+              )}
+            </div>
           </div>
 
-          {/* Description */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                <BookType className="w-4 h-4 text-gray-700" />
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <BookType className="w-4 h-4 text-gray-700 dark:text-white" />
               </div>
-              <span className="font-medium text-gray-800">
+              <span className="font-medium text-gray-800 dark:text-white">
                 Business Description
               </span>
             </div>
@@ -157,16 +163,16 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                     clientDescription: e.target.value,
                   })
                 }
-                className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full bg-white dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
               />
             ) : (
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 {formData.clientDescription}
               </p>
             )}
           </div>
 
-          {/* Core Info */}
+          {/* Core Info Fields */}
           {renderField(
             <Globe className="w-4 h-4" />,
             "Website",
@@ -207,15 +213,14 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           {/* Brand Colors */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Palette className="text-blue-600 w-4 h-4" />
+              <div className="w-8 h-8 bg-blue-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <Palette className="text-blue-600 dark:text-blue-400 w-4 h-4" />
               </div>
-              <h3 className="text-sm font-medium text-gray-800">
+              <h3 className="text-sm font-medium text-gray-800 dark:text-white">
                 Brand Colors
               </h3>
             </div>
-
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               {formData.colors.map((color, index) =>
                 editing ? (
                   <label
@@ -229,14 +234,14 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                       className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
                     />
                     <div
-                      className="w-full h-full rounded-full border border-gray-300"
+                      className="w-full h-full rounded-full border border-gray-300 dark:border-gray-600"
                       style={{ backgroundColor: color }}
                     ></div>
                   </label>
                 ) : (
                   <div
                     key={index}
-                    className="w-8 h-8 rounded-full border border-gray-300"
+                    className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
                     style={{ backgroundColor: color }}
                   />
                 )
@@ -248,7 +253,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           {["audience", "audiencePains", "core_values"].map((key, i) => (
             <div key={i} className="mb-6">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
                   {key === "audience" ? (
                     <Users className="w-4 h-4 text-purple-600" />
                   ) : key === "audiencePains" ? (
@@ -257,7 +262,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                     <Star className="w-4 h-4 text-green-600" />
                   )}
                 </div>
-                <h3 className="text-sm font-medium capitalize text-gray-800">
+                <h3 className="text-sm font-medium capitalize text-gray-800 dark:text-white">
                   {key.replace("_", " ")}
                 </h3>
               </div>
@@ -279,10 +284,13 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                           },
                         });
                       }}
-                      className="bg-gray-50 border border-gray-200 rounded-md p-2 text-sm outline-none"
+                      className="bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm outline-none"
                     />
                   ) : (
-                    <p key={idx} className="text-sm text-gray-700">
+                    <p
+                      key={idx}
+                      className="text-sm text-gray-700 dark:text-gray-300"
+                    >
                       {item}
                     </p>
                   )
@@ -290,42 +298,56 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               </div>
             </div>
           ))}
+        </div>
 
-          {/* Buttons */}
+        {/* Sticky Footer */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-4 sm:px-6 flex items-center justify-between max-w-3xl mx-auto w-full z-50">
+          <h2 className="text-sm font-semibold text-blue-600 dark:text-white">
+            Your Business Profile
+          </h2>
           {editing ? (
-            <div className="flex justify-end gap-3 mt-4">
+            <div className="flex gap-2">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100 transition-all"
+                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all"
+                className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
               >
                 Save
               </button>
             </div>
           ) : (
-            <div className="flex justify-end mt-6">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-1 text-gray-600 dark:text-white hover:text-black dark:hover:text-gray-300"
+              >
+                <Edit className="w-4 h-4" />
+                <span className="text-sm">Edit</span>
+              </button>
               <button
                 onClick={handlePopup}
-                className="w-full px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center justify-center gap-2 text-base font-medium transition-all"
+                className="px-4 py-1 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
-                <span>Looking Good! Continue</span>
+                Looking Good! Lets Continue
               </button>
             </div>
           )}
         </div>
       </div>
+
       {PopUp && (
         <FirstPostPopUp
           isOpen={PopUp}
-          onClose={handleClosePopup}
-          title="Lets Create Your First Post !"
-          description="Finding engaging topics for your audience"
-          data="Extracting Business data and brand Information...."
+          onClose={() => {
+            setComponentType("postTopics");
+          }}
+          title="Let’s Discover the Perfect Topics..."
+          description="We’re crafting relevant and captivating topics designed to spark interest and drive engagement within your audience."
         />
       )}
     </>

@@ -1,26 +1,22 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faFacebookF,
-  faInstagram,
-  faTwitter,
-  faLinkedinIn,
-} from "@fortawesome/free-brands-svg-icons";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-    
+  FacebookFilled,
+  InstagramFilled,
+  TwitterSquareFilled,
+  LinkedinFilled,
+  ArrowRightOutlined,
+} from "@ant-design/icons";
+
 export const SocialAccount = ({ onContinue, onClose }) => {
   const platforms = [
-    { name: "Facebook", icon: faFacebookF, color: "text-blue-600" },
-    { name: "Instagram", icon: faInstagram, color: "text-pink-500" },
-    { name: "Twitter", icon: faTwitter, color: "text-sky-500" },
-    { name: "LinkedIn", icon: faLinkedinIn, color: "text-blue-700" },
+    { name: "Facebook", icon: <FacebookFilled className="text-blue-600" /> },
+    { name: "Instagram", icon: <InstagramFilled className="text-pink-500" /> },
+    { name: "Twitter", icon: <TwitterSquareFilled className="text-sky-500" /> },
+    { name: "LinkedIn", icon: <LinkedinFilled className="text-blue-700" /> },
   ];
 
   return (
     <div className="relative max-w-md mx-auto p-6">
-      {/* Close button */}
-     
-
       <h2 className="text-2xl text-purple-700 font-semibold text-center mb-6">
         Connect Your Social Accounts
       </h2>
@@ -32,16 +28,10 @@ export const SocialAccount = ({ onContinue, onClose }) => {
             className="flex items-center justify-between border px-4 py-3 rounded-lg cursor-pointer hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-3">
-              <FontAwesomeIcon
-                icon={platform.icon}
-                className={`w-5 h-5 ${platform.color}`}
-              />
+              {platform.icon}
               <span className="text-sm font-medium">{platform.name}</span>
             </div>
-            <FontAwesomeIcon
-              icon={faArrowRight}
-              className="w-4 h-4 text-gray-400"
-            />
+            <ArrowRightOutlined className="text-gray-400" />
           </div>
         ))}
       </div>
@@ -49,7 +39,7 @@ export const SocialAccount = ({ onContinue, onClose }) => {
       <div className="mt-8 flex justify-between items-center">
         <button
           onClick={onClose}
-          className=" text-lg font-bold  hover:text-black"
+          className="text-lg font-bold hover:text-black"
         >
           Do this later
         </button>

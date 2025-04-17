@@ -199,11 +199,10 @@ export const HomePage = () => {
           </div>
 
           <form
-            onSubmit={(e) =>
-            {
+            onSubmit={(e) => {
               e.preventDefault();
               setisModalOpen(true);
-              }}
+            }}
             className="max-w-3xl mx-auto"
           >
             <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
@@ -315,13 +314,7 @@ export const HomePage = () => {
 
       {(isSignInPopup || isSignUpPopup) && <AuthModal />}
 
-<BusinessModal
-  isOpen={isModalOpen}
-  onClose={() => setisModalOpen(false)}
-/>      
-
-
+      <BusinessModal isOpen={isModalOpen} onClose={() => {}} />
     </div>
-    
   );
 };

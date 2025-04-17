@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash, Minus, Plus } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
+import CanvasElement from "./CanvasElement";
 
-function EditorCanvas({ content, onElementSelect }) {
+function EditorCanvas({ content, onElementSelect,selectedElementId, setSelectedElementId }) {
   const [zoom, setZoom] = useState(32);
-  const { canvas } = useEditor();
+  const { canvas, elements } = useEditor();
+  const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 100));
   };
@@ -13,25 +15,23 @@ function EditorCanvas({ content, onElementSelect }) {
     setZoom((prev) => Math.max(prev - 10, 10));
   };
 
-  // Handle element click to select it
-  const handleElementClick = (elementType) => {
-    if (onElementSelect) {
-      onElementSelect(elementType);
-    }
+  const handleSelectElement = (id, type) => {
+    setSelectedElementId(id);
+    onElementSelect(type);
   };
-
   // Handle canvas click (background)
   const handleCanvasClick = (e) => {
     // Only select canvas if clicking directly on the canvas background
     if (e.target === e.currentTarget) {
       if (onElementSelect) {
         onElementSelect("canvas");
+        setSelectedElementId(null);
+        setShowSelectorOverlay(true);
       }
     }
   };
-  console.log(canvas);
   return (
-    <div className="flex-1 bg-gray-200 flex flex-col items-center justify-center p-4 relative">
+    <div className="flex-1 bg-gray-200 flex flex-col items-center justify-start p-4 relative">
       {/* Canvas controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-1">
         <button className="p-1 bg-white rounded-md shadow hover:bg-gray-50">
@@ -54,69 +54,21 @@ function EditorCanvas({ content, onElementSelect }) {
         style={{
           width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
           height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
-          backgroundColor: content.backgroundColor,
+          ...canvas.styles,
         }}
         onClick={handleCanvasClick}
       >
         {/* Canvas content */}
-        <div className="relative w-full h-full">
-          {content.elements.map((element) => {
-            if (element.type === "text") {
-              return (
-                <div
-                  key={element.id}
-                  className="absolute cursor-pointer hover:outline hover:outline-blue-500 hover:outline-2"
-                  style={{
-                    top: `${(element.y * zoom) / 100}px`,
-                    left: `${(element.x * zoom) / 100}px`,
-                    transform: "translate(-50%, -50%)",
-                    maxWidth: element.maxWidth
-                      ? `${(element.maxWidth * zoom) / 100}px`
-                      : "none",
-                    fontSize: `${(element.fontSize * zoom) / 100}px`,
-                    fontWeight: element.fontWeight || "normal",
-                    textAlign: "center",
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleElementClick("text");
-                  }}
-                >
-                  {element.content}
-                </div>
-              );
-            }
-            return null;
-          })}
-
-          {/* Smiley face in top right - this would be a shape element */}
-          <div
-            className="absolute top-8 right-8 bg-blue-400 text-white p-2 rounded-md text-xl cursor-pointer hover:outline hover:outline-blue-500 hover:outline-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleElementClick("shape");
-            }}
-          >
-            :)
-          </div>
-
-          {/* Add a sample image element for demo purposes */}
-          <div
-            className="absolute top-20 left-20 w-16 h-16 bg-gray-300 rounded-md cursor-pointer hover:outline hover:outline-blue-500 hover:outline-2 flex items-center justify-center"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleElementClick("image");
-            }}
-          >
-            <span className="text-xs">Image</span>
-          </div>
-
-          {/* Branding at bottom */}
-          <div className="absolute bottom-4 right-4 bg-white rounded-md p-1 shadow-sm text-xs flex items-center">
-            <span>Made with</span>
-            <span className="font-bold ml-1">Marky™</span>
-          </div>
-        </div>
+        {elements?.map((el) => (
+          <CanvasElement
+            key={el.id}
+            element={el}
+            onSelect={handleSelectElement}
+            isSelected={el.id === selectedElementId}
+            showSelectorOverlay={showSelectorOverlay}
+            setShowSelectorOverlay={setShowSelectorOverlay}
+          />
+        ))}
       </div>
 
       {/* Zoom controls */}

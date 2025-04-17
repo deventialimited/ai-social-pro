@@ -1,25 +1,71 @@
-import { useState } from "react"
-import { RotateCcw, RotateCw, Upload, Move, Lock, Copy, Trash } from "lucide-react"
-import DurationSelector from "../../common/popups/DurationSelector"
-import PaletteSelector from "../../common/popups/PaletteSelector"
-import ColorPicker from "../../common/popups/ColorPicker"
+import { useState, useRef } from "react";
+import {
+  RotateCcw,
+  RotateCw,
+  Upload,
+  Move,
+  Lock,
+  Copy,
+  Trash,
+} from "lucide-react";
+import DurationSelector from "../../common/popups/DurationSelector";
+import PaletteSelector from "../../common/popups/PaletteSelector";
+import ColorPicker from "../../common/popups/ColorPicker";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function CanvasToolbar() {
-  const [duration, setDuration] = useState(5)
-  const [backgroundColor, setBackgroundColor] = useState("#87CEEB")
-
+  const [duration, setDuration] = useState(5);
+  const fileInputRef = useRef(null);
+  const { updateBackground, updateCanvasStyles, canvas } = useEditor();
   const handleDurationChange = (newDuration) => {
-    setDuration(newDuration)
-  }
+    setDuration(newDuration);
+  };
 
   const handlePaletteSelect = (palette) => {
-    // Handle palette selection
-    console.log("Selected palette:", palette)
-  }
 
-  const handleColorChange = (color) => {
-    setBackgroundColor(color)
-  }
+    if (!palette || !palette.colors || palette.colors.length === 0) return;
+
+    // Create a linear gradient using the palette colors
+    const gradient = `linear-gradient(90deg, ${palette.colors.join(", ")})`;
+
+    // Update canvas styles — will clear backgroundColor and set image-related styles
+    updateCanvasStyles({
+      backgroundImage: gradient,
+    });
+
+    // Update background state — stores the gradient string
+    updateBackground("gradient", gradient);
+  };
+
+  const handleColorChange = (color, opacity) => {
+    // Update canvas styles with hex background
+    updateCanvasStyles({
+      backgroundColor: color,
+    });
+
+    // Update background state
+    updateBackground("color", color);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const imageURL = URL.createObjectURL(file);
+
+    updateCanvasStyles({
+      backgroundImage: `url(${imageURL})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundColor: "",
+    });
+
+    updateBackground("image", imageURL);
+  };
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="flex items-center justify-between w-max overflow-x-auto">
@@ -38,9 +84,25 @@ function CanvasToolbar() {
       <div className="flex items-center gap-2">
         <PaletteSelector onSelect={handlePaletteSelect} />
 
-        <ColorPicker color={backgroundColor} onChange={handleColorChange} label="Background Color" />
+        <ColorPicker
+          color={canvas?.styles?.backgroundColor}
+          onChange={handleColorChange}
+          label="Background Color"
+          showPalette={true}
+        />
 
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+        <button
+          className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
+          onClick={triggerFileUpload}
+        >
           <Upload className="h-5 w-5 text-gray-600" />
           <span>Upload</span>
         </button>
@@ -64,7 +126,7 @@ function CanvasToolbar() {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
-export default CanvasToolbar
+export default CanvasToolbar;
