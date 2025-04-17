@@ -22,7 +22,6 @@ function CanvasToolbar() {
   };
 
   const handlePaletteSelect = (palette) => {
-    console.log("Selected palette:", palette);
 
     if (!palette || !palette.colors || palette.colors.length === 0) return;
 
