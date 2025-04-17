@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { List, Type } from "lucide-react"
 
-function TextStylePopup({ lineHeight = 1.5, letterSpacing = 0, onChange }) {
+function TextStylePopup({ lineHeight , letterSpacing , onChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentLineHeight, setCurrentLineHeight] = useState(lineHeight)
   const [currentLetterSpacing, setCurrentLetterSpacing] = useState(letterSpacing)

@@ -33,7 +33,7 @@ function TextToolbar({
   const { updateElement, elements } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const [textStyle, setTextStyle] = useState({
-    lineHeight: 1.5,
+    lineHeight:1.5,
     letterSpacing: 0,
   });
   useEffect(() => {
@@ -81,7 +81,7 @@ function TextToolbar({
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
-        textAlign: action, // action could be 'left', 'center', or 'right'
+        textAlign: action,
       },
     });
   };
