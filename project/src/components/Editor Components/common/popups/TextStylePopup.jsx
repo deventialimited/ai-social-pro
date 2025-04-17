@@ -1,7 +1,7 @@
 
 
 import { useState, useRef, useEffect } from "react"
-import { Type } from "lucide-react"
+import { List, Type } from "lucide-react"
 
 function TextStylePopup({ lineHeight = 1.5, letterSpacing = 0, onChange }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -39,11 +39,11 @@ function TextStylePopup({ lineHeight = 1.5, letterSpacing = 0, onChange }) {
   return (
     <div className="overflow-hidden" ref={popupRef}>
       <button className="p-2 rounded-md hover:bg-gray-100" onClick={() => setIsOpen(!isOpen)}>
-        <Type className="h-5 w-5 text-gray-600" />
+        <List className="h-5 w-5 text-gray-600" />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
+        <div className="absolute z-50 right-44 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">Line Height</label>
             <div className="flex items-center gap-2">
