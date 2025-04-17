@@ -106,9 +106,9 @@ const CanvasElement = ({
       bounds="parent"
       onDragStop={(e, d) => updateElement(id, { position: { x: d.x, y: d.y } })}
       onClick={() => onSelect(id, type)}
-      enableResizing={false} // for now, we focus on dragging
+      enableResizing={false} // we handle resizing manually
     >
-      {type === "text" && (
+      {(type === "text" || type === "image") && (
         <div
           ref={elementRef}
           className={`absolute ${
@@ -119,25 +119,36 @@ const CanvasElement = ({
             transform: styles.transform || "rotate(0deg)",
           }}
         >
-          <EditableTextElement
-            text={props.text}
-            styles={{
-              ...styles,
-              transform: "rotate(0deg)",
-            }}
-            onChange={(newText) =>
-              updateElement(id, { props: { ...props, text: newText } })
-            }
-          />
+          {type === "text" && (
+            <EditableTextElement
+              text={props.text}
+              styles={{
+                ...styles,
+                transform: "rotate(0deg)",
+              }}
+              onChange={(newText) =>
+                updateElement(id, { props: { ...props, text: newText } })
+              }
+            />
+          )}
+
+          {type === "image" && (
+            <img
+              src={props.src}
+              alt="Canvas"
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          )}
 
           {isSelected && showSelectorOverlay && (
             <>
-              {/* Resize Handle */}
+              {/* Resize Handles */}
               <div
                 onDoubleClick={handleDoubleClick}
                 className="absolute inset-0 border z-10 border-blue-500 bg-green-300/70"
               >
-                {/* Corner Handles */}
+                {/* Corners */}
                 <ResizeHandle
                   onResize={onResize}
                   onResizeStart={onResizeStart}
@@ -163,7 +174,7 @@ const CanvasElement = ({
                   className="bottom-0 right-0"
                 />
 
-                {/* Edge Handles */}
+                {/* Edges */}
                 <ResizeHandle
                   onResize={onResize}
                   onResizeStart={onResizeStart}
@@ -195,7 +206,7 @@ const CanvasElement = ({
                 onMouseDown={(e) => handleRotateMouseDown(e, elementRef)}
                 className="absolute -top-5 left-1/2 flex flex-col justify-center items-center -translate-x-1/2 -translate-y-1/2"
               >
-                <div className="bg-white rounded-full shadow cursor-crosshair  flex items-center justify-center border border-gray-300 h-5 w-5">
+                <div className="bg-white rounded-full shadow cursor-crosshair flex items-center justify-center border border-gray-300 h-5 w-5">
                   <RotateCcw size={14} />
                 </div>
                 <span className="border-l-4 h-5 border-blue-500"></span>
