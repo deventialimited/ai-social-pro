@@ -7,7 +7,6 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
   const handleBlur = () => {
     onChange?.(currentText);
   };
-  console.log(styles);
   return (
     <input
       ref={inputRef}

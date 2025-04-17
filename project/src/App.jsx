@@ -19,7 +19,6 @@ function App() {
 
   return (
     <div className={isDark ? "dark" : ""}>
- 
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>

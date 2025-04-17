@@ -3,15 +3,19 @@ import { Copy, ChevronUp, ChevronDown, Trash, Minus, Plus } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
 
-function EditorCanvas({ content, onElementSelect }) {
+function EditorCanvas({
+  content,
+  onElementSelect,
+  selectedElementId,
+  setSelectedElementId,
+}) {
   const [zoom, setZoom] = useState(32);
   const { canvas, elements } = useEditor();
-  const [selectedElementId, setSelectedElementId] = useState(null);
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 100));
   };
-
+  console.log(elements);
   const decreaseZoom = () => {
     setZoom((prev) => Math.max(prev - 10, 10));
   };
