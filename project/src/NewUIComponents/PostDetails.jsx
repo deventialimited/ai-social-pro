@@ -124,11 +124,10 @@ export default function PostDetails() {
               <button
                 key={type}
                 onClick={() => setSelectedButton(type)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-xs sm:text-sm ${
-                  selectedButton === type
+                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-xs sm:text-sm ${selectedButton === type
                     ? "bg-blue-100 text-blue-700 border-blue-300"
                     : "text-gray-500 dark:text-gray-300 border-gray-300 dark:border-gray-600"
-                }`}
+                  }`}
               >
                 {type === "image" && <Image className="w-4 h-4" />}
                 {type === "branding" && <Palette className="w-4 h-4" />}

@@ -331,7 +331,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               </button>
               <button
                 onClick={handlePopup}
-                className="px-4 py-1 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+                className="px-20 py-3 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
                 Looking Good! Lets Continue
               </button>
