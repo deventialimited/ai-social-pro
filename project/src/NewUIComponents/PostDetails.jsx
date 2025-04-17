@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Check,
   Image,
@@ -20,15 +19,22 @@ const dummyPost = {
 };
 
 const getImageStyle = (platform) => {
+  const style = {
+    width: "100%",
+    objectFit: "cover",
+    borderRadius: "0.5rem",
+  };
   switch (platform) {
-    case "x":
-      return { aspectRatio: "2/1", objectFit: "cover" };
     case "linkedin":
-      return { aspectRatio: "4/3", objectFit: "cover" };
+      return { ...style, aspectRatio: "1200/627" };
+    case "x":
+      return { ...style, aspectRatio: "1200/675" };
+    case "facebook":
+      return { ...style, aspectRatio: "1200/630" };
     case "instagram":
-      return { aspectRatio: "1/1", objectFit: "cover" };
+      return { ...style, aspectRatio: "1" };
     default:
-      return { aspectRatio: "1/1", objectFit: "cover" };
+      return { ...style, aspectRatio: "16/9" };
   }
 };
 
@@ -39,155 +45,180 @@ export default function PostDetails() {
   const [postImage, setPostImage] = useState("");
   const [logoImage, setLogoImage] = useState("");
   const contentRef = useRef(null);
-  const navigate = useNavigate();
 
-  const unsplashAccessKey = "5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I";
+  const baseStyles =
+    "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
+  const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
+  const unselectedStyles =
+    "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
 
   useEffect(() => {
-    const checkClamping = () => {
-      if (contentRef.current) {
-        const { scrollHeight, clientHeight } = contentRef.current;
-        setIsClamped(scrollHeight > clientHeight);
-      }
-    };
-    checkClamping();
-    window.addEventListener("resize", checkClamping);
-    return () => window.removeEventListener("resize", checkClamping);
+    if (contentRef.current) {
+      const lineHeight = parseFloat(
+        getComputedStyle(contentRef.current).lineHeight
+      );
+      const maxHeight = lineHeight * 2;
+      setIsClamped(contentRef.current.scrollHeight > maxHeight);
+    }
   }, []);
 
   useEffect(() => {
-    const fetchPostImage = async () => {
+    const fetchImages = async () => {
       try {
-        const res = await fetch(
-          `https://api.unsplash.com/photos/random?query=education,technology&orientation=landscape&client_id=${unsplashAccessKey}`
+        const imgRes = await fetch(
+          `https://api.unsplash.com/photos/random?query=education,technology&orientation=landscape&client_id=5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I`
         );
-        const data = await res.json();
-        setPostImage(data.urls.regular);
-      } catch (error) {
-        console.error("Error fetching post image:", error);
+        const imgData = await imgRes.json();
+        setPostImage(imgData.urls.regular);
+      } catch {
         setPostImage("https://via.placeholder.com/600x400.png?text=Post+Image");
       }
-    };
 
-    const fetchLogoImage = async () => {
       try {
-        const res = await fetch(
-          `https://api.unsplash.com/photos/random?query=${dummyPost.brandName}+logo&orientation=squarish&client_id=${unsplashAccessKey}`
+        const logoRes = await fetch(
+          `https://api.unsplash.com/photos/random?query=${dummyPost.brandName}+logo&orientation=squarish&client_id=5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I`
         );
-        const data = await res.json();
-        setLogoImage(data.urls.thumb);
-      } catch (error) {
-        console.error("Error fetching logo image:", error);
+        const logoData = await logoRes.json();
+        setLogoImage(logoData.urls.thumb);
+      } catch {
         setLogoImage("https://via.placeholder.com/80x80.png?text=Logo");
       }
     };
 
-    fetchPostImage();
-    fetchLogoImage();
+    fetchImages();
   }, []);
 
   return (
-    <div className="relative bg-white dark:bg-gray-800 dark:text-white rounded-2xl shadow-md w-full max-w-2xl mx-auto max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-700">
-      <div className="overflow-y-auto p-4 sm:p-6 pb-32 sm:pb-24">
-        <h1
-          className="text-center font-bold text-2xl sm:text-3xl mb-6 sm:mb-10 text-transparent bg-clip-text"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Congratulations! Your First Post Is Ready
-        </h1>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-auto">
+      {/* Header Title */}
+      <h1
+        className="text-center font-bold text-2xl sm:text-xl px-4 pt-6 pb-2 text-transparent bg-clip-text"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        Congratulations! Your First Post Is Ready
+      </h1>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
-              <img
-                src={logoImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <h2 className="font-semibold text-sm">{dummyPost.brandName}</h2>
-              <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
-                New Post
+      {/* Card Header */}
+      <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <img
+              src={logoImage}
+              alt="Brand logo"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-0.5">
+              {dummyPost.brandName}
+            </h3>
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+                ID: #123456
               </span>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xs text-gray-500 dark:text-gray-300">Visual</h2>
-            {["image", "branding", "slogan"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedButton(type)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-full border text-xs sm:text-sm ${selectedButton === type
-                    ? "bg-blue-100 text-blue-700 border-blue-300"
-                    : "text-gray-500 dark:text-gray-300 border-gray-300 dark:border-gray-600"
-                  }`}
-              >
-                {type === "image" && <Image className="w-4 h-4" />}
-                {type === "branding" && <Palette className="w-4 h-4" />}
-                {type === "slogan" && <Type className="w-4 h-4" />}
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </button>
-            ))}
-          </div>
         </div>
 
-        <div className="mb-4 text-sm text-gray-800 dark:text-gray-200">
+        {/* Visual Toggle Buttons */}
+        <div className="flex items-center space-x-2 p-2">
+          <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
+            Visual
+          </h2>
+          <button
+            onClick={() => setSelectedButton("image")}
+            className={`${baseStyles} ${
+              selectedButton === "image" ? selectedStyles : unselectedStyles
+            }`}
+          >
+            <span className="text-[12px]">Image</span>
+            <Image className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setSelectedButton("branding")}
+            className={`${baseStyles} ${
+              selectedButton === "branding" ? selectedStyles : unselectedStyles
+            }`}
+          >
+            <span className="text-[12px]">Branding</span>
+            <Palette className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setSelectedButton("slogan")}
+            className={`${baseStyles} ${
+              selectedButton === "slogan" ? selectedStyles : unselectedStyles
+            }`}
+          >
+            <span className="text-[12px]">Slogan</span>
+            <Type className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Post Content */}
+      <div className="p-4 space-y-4">
+        <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
           <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
             {dummyPost.postText}
           </p>
           {isClamped && (
             <button
               onClick={() => setShowFullText(!showFullText)}
-              className="text-blue-600 dark:text-blue-400 text-sm mt-1 underline"
+              className="mt-1 text-blue-600 dark:text-blue-400 text-sm underline hover:text-blue-800"
             >
               {showFullText ? "Show less" : "Show more"}
             </button>
           )}
         </div>
+        <img
+          src={postImage}
+          alt="Post"
+          className="cursor-pointer"
+          style={getImageStyle(dummyPost.platform)}
+        />
+      </div>
 
-        <div className="rounded-xl overflow-hidden mb-4">
-          <img
-            src={postImage}
-            alt="Post Visual"
-            style={getImageStyle(dummyPost.platform)}
-            className="w-full"
-          />
+      {/* Footer */}
+      <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
+          <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
+            Approve <Check className="text-white w-4 h-4" />
+          </button>
+          <div className="flex items-center text-xs text-white">
+            <CalendarDays className="h-4 w-4" />
+            <span className="ml-2">{dummyPost.postDate}</span>
+          </div>
+          <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+            {dummyPost.platform}
+          </span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
-          <div className="flex flex-wrap gap-4">
-            <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2 text-sm">
-              Approve
-              <Check className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-2 text-xs sm:text-sm">
-              <CalendarDays className="w-4 h-4" />
-              <span>{dummyPost.postDate}</span>
-              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded capitalize">
-                {dummyPost.platform}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <Edit className="w-4 h-4 cursor-pointer hover:text-blue-600" />
-            <Trash2 className="w-4 h-4 cursor-pointer hover:text-red-600" />
-            <Download className="w-4 h-4 cursor-pointer hover:text-green-600" />
-          </div>
+        <div className="flex items-center gap-2">
+          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <Edit className="w-4 h-4" />
+          </button>
+          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <Download className="w-4 h-4" />
+          </button>
+          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-700 p-4">
+      {/* Sticky Bottom Button */}
+      {/* Sticky Bottom Button */}
+      <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">
         <button
-          onClick={() => navigate("/dashboard")}
-          className="text-white px-6 py-3 rounded-lg text-sm w-full font-medium"
+          onClick={() => {
+            window.location.href = "/dashboard";
+          }}
+          className="w-full text-white rounded-xl px-6 py-3 font-semibold text-sm sm:text-base transition-colors duration-200"
           style={{
             background:
               "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
