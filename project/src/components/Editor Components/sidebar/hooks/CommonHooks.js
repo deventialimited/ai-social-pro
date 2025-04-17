@@ -132,4 +132,5 @@ export function setTransparency(element, percentage) {
     element.opacity = Math.max(0, Math.min(percentage, 100)) / 100;
     return element;
   }
+
   

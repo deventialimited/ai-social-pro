@@ -17,7 +17,7 @@ function App() {
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
-  const [isEditorOpen, setIsEditorOpen] = useState(true);
+
   return (
     <div className={isDark ? "dark" : ""}>
       {isEditorOpen && (
@@ -44,4 +44,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;

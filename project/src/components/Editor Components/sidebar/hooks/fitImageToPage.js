@@ -1,4 +1,3 @@
-// utils/fitImageToPage.js
 
 function fitImageToPage(image, page) {
     const aspectRatio = image.width / image.height;
