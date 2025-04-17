@@ -28,9 +28,6 @@ const CanvasElement = ({
       fontSize: styles.fontSize || "16px",
     };
   };
-  const handleDoubleClick = () => {
-    setShowSelectorOverlay(false);
-  };
   const onResize = ({ deltaX, deltaY }, direction) => {
     const { width, height, fontSize: rawFontSize } = startSizeRef.current;
     const fontSize = parseFloat(rawFontSize);
@@ -108,7 +105,7 @@ const CanvasElement = ({
       onClick={() => onSelect(id, type)}
       enableResizing={false} // we handle resizing manually
     >
-      {(type === "text" || type === "image") && (
+      {["text", "image", "shape"].includes(type) && (
         <div
           ref={elementRef}
           className={`absolute ${
@@ -141,65 +138,66 @@ const CanvasElement = ({
             />
           )}
 
-          {isSelected && showSelectorOverlay && (
+          {type === "shape" && (
+            <div
+              className="w-full h-full"
+              dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
+            />
+          )}
+          {isSelected && (
             <>
               {/* Resize Handles */}
-              <div
-                onDoubleClick={handleDoubleClick}
-                className="absolute inset-0 border z-10 border-blue-500 bg-green-300/70"
-              >
-                {/* Corners */}
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="nw"
-                  className="top-0 left-0"
-                />
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="ne"
-                  className="top-0 right-0"
-                />
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="sw"
-                  className="bottom-0 left-0"
-                />
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="se"
-                  className="bottom-0 right-0"
-                />
+              {/* Corners */}
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="nw"
+                className="absolute z-10 top-0 left-0"
+              />
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="ne"
+                className="absolute z-10 top-0 right-0"
+              />
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="sw"
+                className="absolute z-10 bottom-0 left-0"
+              />
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="se"
+                className="absolute z-10 bottom-0 right-0"
+              />
 
-                {/* Edges */}
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="n"
-                  className="top-0 left-1/2 -translate-x-1/2"
-                />
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="s"
-                  className="bottom-0 left-1/2 -translate-x-1/2"
-                />
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="w"
-                  className="left-0 top-1/2 -translate-y-1/2"
-                />
-                <ResizeHandle
-                  onResize={onResize}
-                  onResizeStart={onResizeStart}
-                  position="e"
-                  className="right-0 top-1/2 -translate-y-1/2"
-                />
-              </div>
+              {/* Edges */}
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="n"
+                className="absolute z-10 top-0 left-1/2 -translate-x-1/2"
+              />
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="s"
+                className="absolute z-10 bottom-0 left-1/2 -translate-x-1/2"
+              />
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="w"
+                className="absolute z-10 left-0 top-1/2 -translate-y-1/2"
+              />
+              <ResizeHandle
+                onResize={onResize}
+                onResizeStart={onResizeStart}
+                position="e"
+                className="absolute z-10 right-0 top-1/2 -translate-y-1/2"
+              />
 
               {/* Rotate Handle */}
               <div

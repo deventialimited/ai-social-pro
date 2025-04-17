@@ -10,12 +10,11 @@ function EditorCanvas({
   setSelectedElementId,
 }) {
   const [zoom, setZoom] = useState(32);
-  const { canvas, elements } = useEditor();
+  const { canvas, elements, allFiles } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 100));
   };
-  console.log(elements);
   const decreaseZoom = () => {
     setZoom((prev) => Math.max(prev - 10, 10));
   };
