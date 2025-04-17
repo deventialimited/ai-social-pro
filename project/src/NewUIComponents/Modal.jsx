@@ -4,7 +4,8 @@ import { BusinessSectionDummy } from "./businessDumy";
 import { AnalyzeLoader } from "./LoaderAnimation";
 import PostTopics from "./PostTopics";
 import PostDetails from "./PostDetails";
-import {SocialAccount} from "./SocialAccount";
+import { SocialAccount } from "./SocialAccount";
+
 export const BusinessModal = ({ isOpen, onClose }) => {
   const [componentType, setComponentType] = useState("loading");
 
@@ -43,7 +44,7 @@ export const BusinessModal = ({ isOpen, onClose }) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="relative w-full max-w-4xl rounded-2xl bg-white dark:bg-gray-900 shadow-xl p-6 overflow-y-auto max-h-[100vh]">
+            <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
               {componentType === "loading" && (
                 <AnalyzeLoader isOpen={true} onClose={() => {}} />
               )}

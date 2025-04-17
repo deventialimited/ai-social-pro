@@ -105,8 +105,8 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
 
   return (
     <>
-      <div className="px-4 sm:px-6">
-        <div className="pt-6 pb-4 text-center dark:bg-gray-800 rounded-3xl dark:border-gray-700">
+      <div className="px-7 sm:px-6">
+        <div className="p-10  text-center dark:bg-gray-800 rounded-2xl dark:border-gray-700">
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-white">
             Your Business Profile
           </h1>
@@ -301,7 +301,8 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
         </div>
 
         {/* Sticky Footer */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-4 sm:px-6 flex items-center justify-between max-w-3xl mx-auto w-full z-50">
+        {/* Sticky Footer (adjusted to stick within modal) */}
+        <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-4 sm:px-6 flex items-center justify-between z-20">
           <h2 className="text-sm font-semibold text-blue-600 dark:text-white">
             Your Business Profile
           </h2>
@@ -331,7 +332,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               </button>
               <button
                 onClick={handlePopup}
-                className="px-20 py-3 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+                className="px-5 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
                 Looking Good! Lets Continue
               </button>

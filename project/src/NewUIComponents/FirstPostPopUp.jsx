@@ -13,7 +13,8 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={()=>{}}>
+      <Dialog as="div" className="relative z-50" onClose={() => {}}>
+        {/* Backdrop */}
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -26,6 +27,7 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
         </Transition.Child>
 
+        {/* Modal wrapper */}
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Transition.Child
             as={Fragment}
@@ -36,8 +38,9 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="relative w-full max-w-4xl rounded-2xl bg-white dark:bg-gray-900 shadow-xl p-6 overflow-y-auto max-h-[100vh]">
-              <div className="flex flex-col items-center space-y-8 py-10 px-6 sm:px-10 text-center">
+            <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
+              <div className="flex flex-col items-center space-y-8 text-center">
+                {/* Loader */}
                 <div className="relative w-32 h-32">
                   <div
                     className={clsx(
@@ -51,13 +54,17 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
                     strokeWidth={2}
                   />
                 </div>
+
+                {/* Title */}
                 <Dialog.Title
                   as="h2"
-                  className="text-3xl font-bold text-gray-900 dark:text-white"
+                  className="text-2xl font-bold text-gray-900 dark:text-white"
                 >
                   {title}
                 </Dialog.Title>
-                <p className="text-lg text-gray-600 dark:text-gray-400 max-w-lg">
+
+                {/* Description */}
+                <p className="text-base text-gray-600 dark:text-gray-400 max-w-md">
                   {description}
                 </p>
               </div>
