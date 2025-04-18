@@ -1,9 +1,21 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Slider from "rc-slider";
+import { useEditor } from "../../../EditorStoreHooks/FullEditorHooks";
 import "rc-slider/assets/index.css";
 
-function TextEffectsTab({ onClose }) {
+function TextEffectsTab({ onClose,selectedElementId }) {
+  const [selectedElement, setSelectedElement] = useState(null);
+  const { updateElement, elements } = useEditor();
+
+  useEffect(() => {
+    if (selectedElementId) {
+      const selectedElement = elements.find(
+        (el) => el.id === selectedElementId
+      );
+      setSelectedElement(selectedElement);
+    }
+  }, [elements, selectedElementId]);
   const [effects, setEffects] = useState({
     blur: { enabled: true, value: 0 },
     textStroke: { enabled: true, value: 2, color: "#808080" },
