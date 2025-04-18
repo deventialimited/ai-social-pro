@@ -1,34 +1,43 @@
-
-
 import { useState, useRef, useEffect } from "react"
 import { ChevronDown, Search } from "lucide-react"
-
+import WebFont from 'webfontloader';
+import axios from "axios"
 function FontSelector({ font = "Poppins", onChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedFont, setSelectedFont] = useState(font)
-  const selectorRef = useRef(null)
+  const [fonts, setFonts] = useState([]);
+  const [selectedFont, setSelectedFont] = useState('');
 
-  const fonts = [
-    "Poiret One",
-    "Poller One",
-    "Poltawski Nowy",
-    "Poly",
-    "Pompiere",
-    "Pontano Sans",
-    "Poor Story",
-    "Poppins",
-    "Playfair Display",
-    "Roboto",
-    "Montserrat",
-    "Open Sans",
-    "Lato",
-    "Raleway",
-    "Oswald",
-    "Source Sans Pro",
-    "Slabo 27px",
-    "Merriweather",
-  ]
+
+  const selectorRef = useRef(null)
+  const API_KEY = "AIzaSyC26vJC8yUlX5URokX7mZPvJW7Sg-wom-g"
+
+
+  useEffect(() => {
+    axios
+      .get(`https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`)
+      .then((response) => {
+        const fontList = response.data.items.map((item) => item.family);
+        console.log(fontList)
+        setFonts(fontList);
+        const defaultFont = fontList.includes("Roboto") ? "Roboto" : fontList[0];
+
+        setSelectedFont(defaultFont); 
+      })
+      .catch((error) => {
+        console.error('Error fetching fonts:', error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (selectedFont) {
+      WebFont.load({
+        google: {
+          families: [selectedFont],
+        },
+      });
+    }
+  }, [selectedFont]);
 
   const filteredFonts = searchQuery ? fonts.filter((f) => f.toLowerCase().includes(searchQuery.toLowerCase())) : fonts
 
@@ -54,12 +63,12 @@ function FontSelector({ font = "Poppins", onChange }) {
   }
 
   return (
-    <div className="overflow-hidden" ref={selectorRef}>
+    <div className="overflow-hidden " ref={selectorRef}>
       <button
         className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span>{selectedFont}</span>
+        <span className="w-max">{selectedFont}</span>
         <ChevronDown className="h-4 w-4" />
       </button>
 
