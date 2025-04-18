@@ -32,16 +32,20 @@ const tabs = [
 
 // Special tabs that aren't shown in the sidebar navigation
 const specialTabs = {
-  "text-effects": { component: TextEffectsTab },
+  "text-effects": {
+    component: TextEffectsTab,
+  },
   "image-effects": { component: ImageEffectsTab },
   "apply-mask": { component: ApplyMaskTab },
 };
+
 
 function EditorSidebar({
   activeTab,
   setActiveTab,
   specialActiveTab,
   setSpecialActiveTab,
+  selectedElementId,
 }) {
   // Get the active component based on the active tab
   let ActiveTabComponent;
@@ -78,15 +82,15 @@ function EditorSidebar({
 
       {/* Tab content */}
       <div className="flex-1 w-72 h-full">
-        <ActiveTabComponent
-          onClose={() => {
-            // When closing a special tab, return to the previous tab
-            if (specialTabs[specialActiveTab]) {
-              setActiveTab("text");
-              setSpecialActiveTab(null);
-            }
-          }}
-        />
+      <ActiveTabComponent
+    selectedElementId={selectedElementId}
+    onClose={() => {
+      if (specialTabs[specialActiveTab]) {
+        setActiveTab("text");
+        setSpecialActiveTab(null);
+      }
+    }}
+  />
       </div>
     </div>
   );
