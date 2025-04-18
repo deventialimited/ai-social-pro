@@ -134,3 +134,41 @@ export function setTransparency(element, percentage) {
   }
 
   
+  export const setPosition = (element, action) => {
+    const updatedStyles = { ...element.styles };
+  
+    if (action === "up" || action === "down" || action === "toFront" || action === "toBack") {
+      updatedStyles.zIndex = (parseInt(updatedStyles.zIndex || 0) || 0) + (action === "up" ? 1 : action === "down" ? -1 : action === "toFront" ? 999 : -999);
+      return updatedStyles;
+    }
+  
+    updatedStyles.position = "absolute";
+  
+    switch (action) {
+      case "left":
+        updatedStyles.left = 0;
+        break;
+      case "right":
+        updatedStyles.right = 0;
+        break;
+      case "top":
+        updatedStyles.top = 0;
+        break;
+      case "bottom":
+        updatedStyles.bottom = 0;
+        break;
+      case "center":
+        updatedStyles.left = "50%";
+        updatedStyles.transform = "translateX(-50%)";
+        break;
+      case "middle":
+        updatedStyles.top = "50%";
+        updatedStyles.transform = "translateY(-50%)";
+        break;
+    }
+  
+    return updatedStyles;
+  };
+  
+
+
