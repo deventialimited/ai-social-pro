@@ -100,7 +100,7 @@ const CanvasElement = ({
       key={id}
       size={{ width: styles.width, height: styles.height }}
       position={{ x: position.x, y: position.y }}
-      bounds="parent"
+      // bounds="parent"
       onDragStop={(e, d) => updateElement(id, { position: { x: d.x, y: d.y } })}
       onClick={() => onSelect(id, type)}
       enableResizing={false} // we handle resizing manually
