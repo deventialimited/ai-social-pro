@@ -22,7 +22,7 @@ import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import TextStylePopup from "../../common/popups/TextStylePopup";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
-
+import { setPosition } from "../../sidebar/hooks/CommonHooks";
 function TextToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -72,22 +72,34 @@ function TextToolbar({
     });
   };
 
-  const handlePositionChange = (action) => {
-    console.log("Position action:", action);
-  };
+// This should handle element POSITIONING (left, right, center, etc.)
+const handlePositionChange = (action) => {
+  if (!selectedElement) return;
+  console.log("Position action:", action);
+  
+  const updatedStyles = setPosition(selectedElement, action); 
+  updateElement(selectedElement.id, { styles: updatedStyles });
+};
 
-  const handleAlignChange = (action) => {
-    console.log("Align action:", action);
+// This should handle TEXT ALIGNMENT (not to be confused with element positioning)
+const handleAlignChange = (action) => {
+  console.log("Align action:", action);
+  updateElement(selectedElement?.id, {
+    styles: {
+      ...selectedElement.styles,
+      textAlign: action,
+    },
+  });
+};
+  
+  const handleTransparencyChange = (value) => {
+    setTransparency(value);
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
-        textAlign: action,
+        opacity: value,
       },
     });
-  };
-
-  const handleTransparencyChange = (value) => {
-    setTransparency(value);
   };
 
   const handleTextStyleChange = ({ lineHeight, letterSpacing }) => {
@@ -103,7 +115,7 @@ function TextToolbar({
 
   return (
     <>
-      <div className="flex items-center justify-between w-max overflow-x-auto">
+      <div className="flex items-center justify-between w-max  overflow-x-auto">
         <div className="flex items-center gap-2">
           <button className="p-2 rounded-md hover:bg-gray-100">
             <RotateCcw className="h-5 w-5 text-gray-600" />
@@ -274,12 +286,14 @@ function TextToolbar({
         </div>
 
         <div className="flex items-center gap-2">
-          <PositionPopup
-            onPositionChange={handlePositionChange}
-            onAlignChange={handleAlignChange}
-          />
+       <PositionPopup
+  // onPositionChange={handlePositionChange}  // For element positioning
+  onAlignChange={handlePositionChange}        // For text alignment
+/>  
+
 
           <TransparencyPopup
+          
             transparency={transparency}
             onChange={handleTransparencyChange}
           />
