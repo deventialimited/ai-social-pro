@@ -77,7 +77,7 @@ function EditorSidebar({
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 w-72 overflow-y-auto">
+      <div className="flex-1 w-72 h-full">
         <ActiveTabComponent
           onClose={() => {
             // When closing a special tab, return to the previous tab
