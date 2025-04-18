@@ -105,7 +105,7 @@ const CanvasElement = ({
       onClick={() => onSelect(id, type)}
       enableResizing={false} // we handle resizing manually
     >
-      {["text", "image", "shape"].includes(type) && (
+      {["text", "image"].includes(type) && (
         <div
           ref={elementRef}
           className={`absolute ${
