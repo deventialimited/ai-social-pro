@@ -8,6 +8,7 @@ function EditorCanvas({
   onElementSelect,
   selectedElementId,
   setSelectedElementId,
+  setSpecialActiveTab,
 }) {
   const [zoom, setZoom] = useState(32);
   const { canvas, elements, allFiles } = useEditor();
@@ -31,6 +32,7 @@ function EditorCanvas({
         onElementSelect("canvas");
         setSelectedElementId(null);
         setShowSelectorOverlay(true);
+        setSpecialActiveTab(null);
       }
     }
   };
