@@ -22,7 +22,7 @@ import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import TextStylePopup from "../../common/popups/TextStylePopup";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
-
+import { setPosition } from "../../sidebar/hooks/CommonHooks";
 function TextToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -33,7 +33,7 @@ function TextToolbar({
   const { updateElement, elements } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const [textStyle, setTextStyle] = useState({
-    lineHeight: 1.5,
+    lineHeight:1.5,
     letterSpacing: 0,
   });
   useEffect(() => {
@@ -72,31 +72,50 @@ function TextToolbar({
     });
   };
 
-  const handlePositionChange = (action) => {
-    console.log("Position action:", action);
-  };
+// This should handle element POSITIONING (left, right, center, etc.)
+const handlePositionChange = (action) => {
+  if (!selectedElement) return;
+  console.log("Position action:", action);
+  
+  const updatedStyles = setPosition(selectedElement, action); 
+  updateElement(selectedElement.id, { styles: updatedStyles });
+};
 
-  const handleAlignChange = (action) => {
-    console.log("Align action:", action);
+// This should handle TEXT ALIGNMENT (not to be confused with element positioning)
+const handleAlignChange = (action) => {
+  console.log("Align action:", action);
+  updateElement(selectedElement?.id, {
+    styles: {
+      ...selectedElement.styles,
+      textAlign: action,
+    },
+  });
+};
+  
+  const handleTransparencyChange = (value) => {
+    setTransparency(value);
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
-        textAlign: action, // action could be 'left', 'center', or 'right'
+        opacity: value,
       },
     });
   };
 
-  const handleTransparencyChange = (value) => {
-    setTransparency(value);
-  };
-
   const handleTextStyleChange = ({ lineHeight, letterSpacing }) => {
     setTextStyle({ lineHeight, letterSpacing });
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        lineHeight: lineHeight,
+        letterSpacing:letterSpacing,
+      },
+    });
   };
 
   return (
     <>
-      <div className="flex items-center justify-between w-max overflow-x-auto">
+      <div className="flex items-center justify-between w-max  overflow-x-auto">
         <div className="flex items-center gap-2">
           <button className="p-2 rounded-md hover:bg-gray-100">
             <RotateCcw className="h-5 w-5 text-gray-600" />
@@ -127,35 +146,116 @@ function TextToolbar({
           </div>
 
           <div className="flex border rounded-md">
-            <button className="p-2 hover:bg-gray-100">
-              <AlignLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <AlignCenter className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <AlignRight className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      (selectedElement?.styles?.textAlign ?? "left") === "left"
+      ? "bg-gray-200" : ""
+    }`}
+    onClick={() => handleAlignChange("left")}
+  >
+    <AlignLeft className="h-5 w-5 text-gray-600" />
+  </button>
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textAlign === "center" ? "bg-gray-200" : ""
+    }`}
+    onClick={() => handleAlignChange("center")}
+  >
+    <AlignCenter className="h-5 w-5 text-gray-600" />
+  </button>
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textAlign === "right" ? "bg-gray-200" : ""
+    }`}
+    onClick={() => handleAlignChange("right")}
+  >
+    <AlignRight className="h-5 w-5 text-gray-600" />
+  </button>
+</div>
 
-          <div className="flex border rounded-md">
-            <button className="p-2 hover:bg-gray-100">
-              <Bold className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <Italic className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <Underline className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100">
-              <Strikethrough className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
 
-          <button className="p-2 border rounded-md hover:bg-gray-100">
-            <List className="h-5 w-5 text-gray-600" />
-          </button>
+<div className="flex border rounded-md">
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.fontWeight === "bold" ? "bg-gray-200" : ""
+    }`}
+    onClick={() =>
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          fontWeight:
+            selectedElement?.styles?.fontWeight === "bold" ? "normal" : "bold",
+        },
+      })
+    }
+  >
+    <Bold className="h-5 w-5 text-gray-600" />
+  </button>
+
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.fontStyle === "italic" ? "bg-gray-200" : ""
+    }`}
+    onClick={() =>
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          fontStyle:
+            selectedElement?.styles?.fontStyle === "italic"
+              ? "normal"
+              : "italic",
+        },
+      })
+    }
+  >
+    <Italic className="h-5 w-5 text-gray-600" />
+  </button>
+
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textDecoration?.includes("underline")
+        ? "bg-gray-200"
+        : ""
+    }`}
+    onClick={() => {
+      const current = selectedElement?.styles?.textDecoration || "";
+      const isActive = current.includes("underline");
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          textDecoration: isActive
+            ? current.replace("underline", "").trim()
+            : `${current} underline`.trim(),
+        },
+      });
+    }}
+  >
+    <Underline className="h-5 w-5 text-gray-600" />
+  </button>
+
+  <button
+    className={`p-2 hover:bg-gray-100 ${
+      selectedElement?.styles?.textDecoration?.includes("line-through")
+        ? "bg-gray-200"
+        : ""
+    }`}
+    onClick={() => {
+      const current = selectedElement?.styles?.textDecoration || "";
+      const isActive = current.includes("line-through");
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement.styles,
+          textDecoration: isActive
+            ? current.replace("line-through", "").trim()
+            : `${current} line-through`.trim(),
+        },
+      });
+    }}
+  >
+    <Strikethrough className="h-5 w-5 text-gray-600" />
+  </button>
+</div>
+
 
           <TextStylePopup
             lineHeight={textStyle.lineHeight}
@@ -186,12 +286,14 @@ function TextToolbar({
         </div>
 
         <div className="flex items-center gap-2">
-          <PositionPopup
-            onPositionChange={handlePositionChange}
-            onAlignChange={handleAlignChange}
-          />
+       <PositionPopup
+  // onPositionChange={handlePositionChange}  // For element positioning
+  onAlignChange={handlePositionChange}        // For text alignment
+/>  
+
 
           <TransparencyPopup
+          
             transparency={transparency}
             onChange={handleTransparencyChange}
           />

@@ -8,14 +8,14 @@ function EditorCanvas({
   onElementSelect,
   selectedElementId,
   setSelectedElementId,
+  setSpecialActiveTab,
 }) {
   const [zoom, setZoom] = useState(32);
-  const { canvas, elements } = useEditor();
+  const { canvas, elements, allFiles } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 100));
   };
-  console.log(elements);
   const decreaseZoom = () => {
     setZoom((prev) => Math.max(prev - 10, 10));
   };
@@ -32,6 +32,7 @@ function EditorCanvas({
         onElementSelect("canvas");
         setSelectedElementId(null);
         setShowSelectorOverlay(true);
+        setSpecialActiveTab(null);
       }
     }
   };
@@ -55,25 +56,36 @@ function EditorCanvas({
 
       {/* Canvas */}
       <div
-        className="bg-white rounded-lg shadow-lg overflow-hidden"
+        className="bg-white rounded-lg shadow-lg overflow-hidden relative"
         style={{
           width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
           height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+          overflow: "hidden", // ✅ Clips visuals
+          position: "relative", // ✅ Required for absolutely positioned children
           ...canvas.styles,
         }}
         onClick={handleCanvasClick}
       >
-        {/* Canvas content */}
-        {elements?.map((el) => (
-          <CanvasElement
-            key={el.id}
-            element={el}
-            onSelect={handleSelectElement}
-            isSelected={el.id === selectedElementId}
-            showSelectorOverlay={showSelectorOverlay}
-            setShowSelectorOverlay={setShowSelectorOverlay}
-          />
-        ))}
+        <div
+          style={{
+            transform: `scale(${zoom / 100})`,
+            transformOrigin: "top left",
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          {/* Canvas content */}
+          {elements?.map((el) => (
+            <CanvasElement
+              key={el.id}
+              element={el}
+              onSelect={handleSelectElement}
+              isSelected={el.id === selectedElementId}
+              showSelectorOverlay={showSelectorOverlay}
+              setShowSelectorOverlay={setShowSelectorOverlay}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Zoom controls */}

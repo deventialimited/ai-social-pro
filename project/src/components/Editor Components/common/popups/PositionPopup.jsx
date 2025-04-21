@@ -1,5 +1,3 @@
-
-
 import { useState, useRef, useEffect } from "react"
 import {
   ChevronDown,
@@ -18,10 +16,12 @@ import {
 function PositionPopup({ onPositionChange, onAlignChange }) {
   const [isOpen, setIsOpen] = useState(false)
   const popupRef = useRef(null)
-
+  const buttonRef = useRef(null)
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
+      if (popupRef.current && !popupRef.current.contains(event.target) && 
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
         setIsOpen(false)
       }
     }
@@ -34,19 +34,23 @@ function PositionPopup({ onPositionChange, onAlignChange }) {
 
   const handleLayeringAction = (action) => {
     if (onPositionChange) {
-      onPositionChange(action)
+      onPositionChange(action);
     }
-  }
-
+    setIsOpen(false);
+  };
+  
   const handleAlignAction = (action) => {
     if (onAlignChange) {
-      onAlignChange(action)
+      onAlignChange(action);
     }
-  }
+    setIsOpen(false);
+  };
+  
 
   return (
-    <div className="overflow-hidden" ref={popupRef}>
+    <div className="inline-block relative" ref={popupRef}>
       <button
+        ref={buttonRef}
         className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -60,7 +64,12 @@ function PositionPopup({ onPositionChange, onAlignChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border">
+        <div className="fixed  z-50 bg-white rounded-md shadow-lg border" 
+             style={{
+               top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 5 : 0,
+               left: buttonRef.current ? buttonRef.current.getBoundingClientRect().left : 0,
+               width: '16rem'
+             }}>
           <div className="p-4 border-b">
             <h3 className="font-medium mb-3">Layering</h3>
             <div className="grid grid-cols-2 gap-2">

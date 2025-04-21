@@ -120,7 +120,7 @@ function ImagesTab() {
       </div>
 
       <div
-        className="grid grid-cols-2 gap-2 overflow-y-auto"
+        className="grid grid-cols-2 gap-2 h-max overflow-y-auto"
         onScroll={handleScroll}
       >
         {images?.map((img) => (
