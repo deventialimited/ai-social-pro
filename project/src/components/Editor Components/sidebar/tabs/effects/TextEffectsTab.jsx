@@ -46,35 +46,119 @@ function TextEffectsTab({ onClose,selectedElementId }) {
     }));
   };
 
+  const updateStyle = (styleChanges) => {
+    if (!selectedElement) return;
+    updateElement(selectedElement.id, {
+      styles: {
+        ...selectedElement.styles,
+        ...styleChanges,
+      },
+    });
+  };
+  
+
+ 
+
   const handleChangeEffectValue = (effect, value) => {
+    const updated = {
+      ...effects[effect],
+      value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      [effect]: {
-        ...prev[effect],
-        value: value,
-      },
+      [effect]: updated,
     }));
+
+    if (effect === "textStroke") {
+      updateStyle({
+        WebkitTextStroke: `${updated.value}px ${updated.color}`,
+      });
+    }
+  };
+
+  const handleBlurChange = (value) => {
+    handleChangeEffectValue("blur", value);
+    updateStyle({
+      filter: `blur(${value}px)`,
+    });
   };
 
   const handleChangeBackgroundValue = (property, value) => {
+    const updated = {
+      ...effects.background,
+      [property]: value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      background: {
-        ...prev.background,
-        [property]: value,
-      },
+      background: updated,
     }));
+
+    if (effects.background.enabled) {
+      updateStyle({
+        backgroundColor: updated.color,
+        padding: `${updated.padding}px`,
+        borderRadius: `${updated.cornerRadius}px`,
+        opacity: updated.opacity / 100,
+      });
+    }
   };
 
   const handleChangeShadowValue = (property, value) => {
+    const updated = {
+      ...effects.shadow,
+      [property]: value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      shadow: {
-        ...prev.shadow,
-        [property]: value,
-      },
+      shadow: updated,
     }));
+
+    if (effects.shadow.enabled) {
+      updateStyle({
+        boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${updated.blur}px rgba(${hexToRgb(
+          updated.color
+        )}, ${updated.opacity / 100})`,
+      });
+    }
   };
+
+  const handleChangeNestedEffectValue = (effectKey, propKey, value) => {
+    if (effectKey === "shadow") {
+      handleChangeShadowValue(propKey, value);
+    } else if (effectKey === "background") {
+      handleChangeBackgroundValue(propKey, value);
+    }
+  };
+
+  const handleTextStrokeColorChange = (color) => {
+    const updated = {
+      ...effects.textStroke,
+      color,
+    };
+    setEffects((prev) => ({
+      ...prev,
+      textStroke: updated,
+    }));
+
+    if (effects.textStroke.enabled) {
+      updateStyle({
+        WebkitTextStroke: `${updated.value}px ${color}`,
+      });
+    }
+  };
+
+  const hexToRgb = (hex) => {
+    const bigint = parseInt(hex.slice(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r}, ${g}, ${b}`;
+  };
+
+
 
   return (
     <div className="p-2 h-[400px] overflow-y-auto">
@@ -114,13 +198,14 @@ function TextEffectsTab({ onClose,selectedElementId }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <Slider
-              min={0}
-              max={50}
-              value={effects.blur.value}
-              onChange={(value) => handleChangeEffectValue("blur", value)}
-              disabled={!effects.blur.enabled}
-            />
+          <Slider
+  min={0}
+  max={50}
+  value={effects.blur.value}
+  onChange={(value) => handleBlurChange(value)}
+  disabled={!effects.blur.enabled}
+/>
+
           </div>
           <input
             type="number"
@@ -369,7 +454,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                 min={0}
                 max={50}
                 value={effects.shadow.blur}
-                onChange={(value) => handleChangeShadowValue("blur", value)}
+                onChange={(value) => handleChangeNestedEffectValue("shadow", "blur", value)}
                 disabled={!effects.shadow.enabled}
               />
             </div>
@@ -377,8 +462,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
               type="number"
               value={effects.shadow.blur}
               onChange={(e) =>
-                handleChangeShadowValue("blur", Number.parseInt(e.target.value))
+                handleChangeNestedEffectValue("shadow", "blur", Number.parseInt(e.target.value))
               }
+              
               className="w-12 p-1 text-sm border rounded-md"
               disabled={!effects.shadow.enabled}
             />
