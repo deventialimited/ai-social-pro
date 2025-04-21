@@ -142,13 +142,14 @@ function TextEffectsTab({ onClose,selectedElementId }) {
       ...prev,
       textStroke: updated,
     }));
-
+  
     if (effects.textStroke.enabled) {
       updateStyle({
-        WebkitTextStroke: `${updated.value}px ${color}`,
+        WebkitTextStroke: `${updated.value}px ${updated.color}`,
       });
     }
   };
+  
 
   const hexToRgb = (hex) => {
     const bigint = parseInt(hex.slice(1), 16);
@@ -161,7 +162,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
 
 
   return (
-    <div className="p-2 h-[400px] overflow-y-auto">
+    <div className="p-2 h-[500px] overflow-y-auto">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold">Effects</h2>
         <button
@@ -244,12 +245,22 @@ function TextEffectsTab({ onClose,selectedElementId }) {
           </div>
         </div>
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 bg-gray-200 border border-gray-300 grid grid-cols-2 grid-rows-2">
+          {/* <div className="w-6 h-6 bg-gray-200 border border-gray-300 grid grid-cols-2 grid-rows-2">
             <div className="bg-white"></div>
             <div className="bg-gray-500"></div>
             <div className="bg-gray-500"></div>
             <div className="bg-white"></div>
-          </div>
+          </div> */}
+
+
+<input
+  type="color"
+  value={effects.textStroke.color}
+  onChange={(e) => handleTextStrokeColorChange(e.target.value)}
+  className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
+  disabled={!effects.textStroke.enabled}
+/>
+
           <input
             type="number"
             value={effects.textStroke.value}
@@ -262,14 +273,14 @@ function TextEffectsTab({ onClose,selectedElementId }) {
             className="w-12 p-1 text-sm border rounded-md"
             disabled={!effects.textStroke.enabled}
           />
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <button className="px-1 py-0.5 border rounded-t-md hover:bg-gray-100 text-xs">
               ▲
             </button>
             <button className="px-1 py-0.5 border rounded-b-md border-t-0 hover:bg-gray-100 text-xs">
               ▼
             </button>
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs">Color</label>
