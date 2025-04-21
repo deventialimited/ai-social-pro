@@ -148,9 +148,10 @@ function TextEffectsTab({ onClose,selectedElementId }) {
     if (effects.background.enabled) {
       updateStyle({
         backgroundColor: updated.color,
-        padding: `${updated.padding}px`,
+        padding: updated.padding,
         borderRadius: `${updated.cornerRadius}px`,
         opacity: updated.opacity / 100,
+        display: 'block', // or 'block'
       });
     }
   };
