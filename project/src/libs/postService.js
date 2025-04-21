@@ -69,3 +69,18 @@ export const updatePost = async ({ id, postData }) => {
     throw error.response?.data?.message || error.message;
   }
 };
+
+//fetching first post of the domain
+export const getFirstPost = async (id) => {
+  try {
+    console.log("getting first post of the domain", id);
+    const response = await axios.get(`${API_URL}/getFirstPost/${id}`);
+    return response.data;
+  } catch (err) {
+    console.error(
+      "Error getting first post",
+      err.response?.data?.message || err.message
+    );
+    throw err.response?.data?.message || err.message;
+  }
+};

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Edit,
   Mail,
@@ -16,47 +16,79 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { FirstPostPopUp } from "./FirstPostPopUp";
-
-export const BusinessSectionDummy = ({ setComponentType }) => {
+import { useUpdateDomainDetails } from "../libs/domainService";
+import { getFirstPost } from "../libs/postService";
+import { BusinessModal } from "../NewUIComponents/Modal";
+export const BusinessSectionDummy = ({
+  setComponentType,
+  clientData,
+  setPostData,
+}) => {
   const [editing, setEditing] = useState(false);
   const [PopUp, setPopup] = useState(false);
-
+  const [logoFile, setLogoFile] = useState(null);
+  const [isBusinessModal, setisBusinessModal] = useState(false);
   const [formData, setFormData] = useState({
-    clientName: "Honda Motor Co., Ltd.",
-    clientDescription:
-      "Honda is a global manufacturer of automobiles, motorcycles, and power equipment. Known for engineering excellence and innovation, Honda designs reliable, fuel-efficient vehicles and offers environmentally-conscious technologies to improve mobility and enrich people's lives around the world.",
-    clientWebsite: "honda.com",
-    client_email: "mehtabahmed7777777@gmail.com",
-    colors: ["#e40521", "#000000", "#ffffff"],
-    country: "Worldwide",
-    industry: "Automotive",
-    language: "English",
+    clientName: "",
+    clientDescription: "",
+    clientWebsite: "",
+    client_email: "",
+    colors: [],
+    country: "",
+    state: "",
+    language: "",
+    niche: "",
+    industry: "",
+    siteLogo: "",
     marketingStrategy: {
-      audience: [
-        "1. Individual vehicle buyers seeking reliable and fuel-efficient transportation,",
-        "2. Environmentally-conscious consumers interested in hybrid and electric vehicles,",
-        "3. Motorcycle enthusiasts and outdoor power equipment users",
-      ],
-      audiencePains: [
-        "1. Rising fuel costs and environmental concerns,",
-        "2. Need for reliable, maintenance-friendly vehicles,",
-        "3. Desire for innovative, high-performance transportation options",
-      ],
-      core_values: [
-        "1. Respect for the individual,",
-        "2. The Three Joys: The Joy of Buying, The Joy of Selling, and The Joy of Creating,",
-        "3. Innovation and environmental responsibility",
-      ],
+      audience: [],
+      audiencePains: [],
+      core_values: [],
     },
-    niche:
-      "Fuel-efficient vehicles, motorcycles, and eco-friendly mobility solutions",
-    siteLogo: "https://img.logo.dev/honda.com",
-    state: "California",
   });
+  const updateDomainDetails = useUpdateDomainDetails();
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (clientData) {
+      const marketingStrategy = clientData.marketingStrategy || {
+        audience: clientData.audience || [],
+        audiencePains: clientData.audiencePains || [],
+        core_values: clientData.core_values || [],
+      };
+
+      setFormData({
+        id: clientData.id,
+        clientName: clientData.clientName || "",
+        clientDescription: clientData.clientDescription || "",
+        clientWebsite: clientData.clientWebsite || "",
+        client_email: clientData.client_email || "",
+        colors: Array.isArray(clientData.colors) ? clientData.colors : [],
+        country: clientData.country || "",
+        state: clientData.state || "",
+        language: clientData.language || "",
+        niche: clientData.niche || "",
+        industry: clientData.industry || "",
+        siteLogo: clientData.siteLogo || "",
+        marketingStrategy: {
+          audience: Array.isArray(marketingStrategy.audience)
+            ? marketingStrategy.audience
+            : [],
+          audiencePains: Array.isArray(marketingStrategy.audiencePains)
+            ? marketingStrategy.audiencePains
+            : [],
+          core_values: Array.isArray(marketingStrategy.core_values)
+            ? marketingStrategy.core_values
+            : [],
+        },
+      });
+    }
+  }, [clientData]);
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setLogoFile(file);
       const newLogoUrl = URL.createObjectURL(file);
       setFormData({ ...formData, siteLogo: newLogoUrl });
     }
@@ -67,17 +99,87 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
-
-  const handlePopup = () => {
+  const getPostData = async (e) => {
+    e.preventDefault();
     setPopup(true);
+    try {
+      const res = await getFirstPost(clientData.id);
+      console.log(res, "post data in business section");
+      setPostData({
+        ...res?.data,
+        domainId: clientData.id,
+        userId: clientData.userId,
+      });
+      setComponentType("postDetails");
+      setPopup(false);
+    } catch (err) {
+      console.log(err);
+      setPopup(false);
+      toast.error("Error fetching post data");
+    }
   };
 
-  const handleCancel = () => setEditing(false);
+  const handleCancel = () => {
+    if (clientData) {
+      const marketingStrategy = clientData.marketingStrategy || {
+        audience: clientData.audience || [],
+        audiencePains: clientData.audiencePains || [],
+        core_values: clientData.core_values || [],
+      };
+
+      setFormData({
+        id: clientData.id,
+        clientName: clientData.clientName || "",
+        clientDescription: clientData.clientDescription || "",
+        clientWebsite: clientData.clientWebsite || "",
+        client_email: clientData.client_email || "",
+        colors: Array.isArray(clientData.colors) ? clientData.colors : [],
+        country: clientData.country || "",
+        state: clientData.state || "",
+        language: clientData.language || "",
+        niche: clientData.niche || "",
+        industry: clientData.industry || "",
+        siteLogo: clientData.siteLogo || "",
+        marketingStrategy: {
+          audience: Array.isArray(marketingStrategy.audience)
+            ? marketingStrategy.audience
+            : [],
+          audiencePains: Array.isArray(marketingStrategy.audiencePains)
+            ? marketingStrategy.audiencePains
+            : [],
+          core_values: Array.isArray(marketingStrategy.core_values)
+            ? marketingStrategy.core_values
+            : [],
+        },
+      });
+    }
+    setEditing(false);
+    setLogoFile(null);
+  };
+
   const handleEdit = () => setEditing(true);
 
-  const handleSave = () => {
-    setEditing(false);
-    toast.success("Business profile updated!");
+  const handleSave = async () => {
+    try {
+      const logoFileToUpload = logoFile || null;
+      console.log(clientData, "domainId");
+      await updateDomainDetails.mutateAsync({
+        domainId: clientData.id,
+        formData: {
+          ...formData,
+          colors: formData.colors,
+          marketingStrategy: formData.marketingStrategy,
+        },
+        logoFile: logoFileToUpload,
+      });
+
+      setEditing(false);
+      setLogoFile(null);
+      toast.success("Business profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating domain:", error);
+      toast.error("Failed to update business profile");
+    }
   };
 
   const renderField = (icon, label, value, onChange = null) => (
@@ -93,26 +195,79 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
       {editing ? (
         <input
           type="text"
-          value={value}
+          value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           className="w-full bg-white dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
         />
       ) : (
-        <p className="text-sm text-gray-700 dark:text-gray-300">{value}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          {value || "—"}
+        </p>
       )}
     </div>
   );
 
+  const renderArrayField = (key, icon) => {
+    const items = formData.marketingStrategy?.[key] || formData[key] || [];
+
+    return (
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+            {icon}
+          </div>
+          <h3 className="text-sm font-medium capitalize text-gray-800 dark:text-white">
+            {key.replace("_", " ")}
+          </h3>
+        </div>
+        <div className="flex flex-col gap-2">
+          {items.length > 0 ? (
+            items.map((item, idx) =>
+              editing ? (
+                <input
+                  key={`${key}-${idx}`}
+                  type="text"
+                  value={item || ""}
+                  onChange={(e) => {
+                    const updated = [...items];
+                    updated[idx] = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      marketingStrategy: {
+                        ...prev.marketingStrategy,
+                        [key]: updated,
+                      },
+                    }));
+                  }}
+                  className="bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm outline-none"
+                />
+              ) : (
+                <p
+                  key={`${key}-${idx}`}
+                  className="text-sm text-gray-700 dark:text-gray-300"
+                >
+                  {item}
+                </p>
+              )
+            )
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">—</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="px-7 sm:px-6">
-        <div className="p-10  text-center dark:bg-gray-800 rounded-2xl dark:border-gray-700">
+        <div className="p-10 text-center dark:bg-gray-800 rounded-2xl dark:border-gray-700">
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-white">
             Your Business Profile
           </h1>
           <p className="text-sm text-gray-500 mt-3 dark:text-gray-400">
             Here is the information we have extracted about your business. Make
-            sure it's accurate for the best content
+            sure it's accurate for the best content.
           </p>
         </div>
 
@@ -120,7 +275,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <div className="relative w-20 h-20 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
               <img
-                src={formData.siteLogo}
+                src={formData.siteLogo || "/default-logo.png"}
                 alt="Logo"
                 className="w-full h-full object-cover"
                 onError={(e) => (e.target.src = "/default-logo.png")}
@@ -130,6 +285,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                   type="file"
                   accept="image/*"
                   onChange={handleLogoChange}
+                  ref={fileInputRef}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                 />
               )}
@@ -156,7 +312,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             {editing ? (
               <textarea
                 rows={3}
-                value={formData.clientDescription}
+                value={formData.clientDescription || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -167,12 +323,11 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               />
             ) : (
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                {formData.clientDescription}
+                {formData.clientDescription || "—"}
               </p>
             )}
           </div>
 
-          {/* Core Info Fields */}
           {renderField(
             <Globe className="w-4 h-4" />,
             "Website",
@@ -210,7 +365,6 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             (v) => setFormData({ ...formData, industry: v })
           )}
 
-          {/* Brand Colors */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-blue-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -221,7 +375,7 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
               </h3>
             </div>
             <div className="flex gap-3 flex-wrap">
-              {formData.colors.map((color, index) =>
+              {formData.colors?.map((color, index) =>
                 editing ? (
                   <label
                     key={index}
@@ -249,59 +403,20 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
             </div>
           </div>
 
-          {/* Marketing Strategy */}
-          {["audience", "audiencePains", "core_values"].map((key, i) => (
-            <div key={i} className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                  {key === "audience" ? (
-                    <Users className="w-4 h-4 text-purple-600" />
-                  ) : key === "audiencePains" ? (
-                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                  ) : (
-                    <Star className="w-4 h-4 text-green-600" />
-                  )}
-                </div>
-                <h3 className="text-sm font-medium capitalize text-gray-800 dark:text-white">
-                  {key.replace("_", " ")}
-                </h3>
-              </div>
-              <div className="flex flex-col gap-2">
-                {formData.marketingStrategy[key].map((item, idx) =>
-                  editing ? (
-                    <input
-                      key={idx}
-                      type="text"
-                      value={item}
-                      onChange={(e) => {
-                        const updated = [...formData.marketingStrategy[key]];
-                        updated[idx] = e.target.value;
-                        setFormData({
-                          ...formData,
-                          marketingStrategy: {
-                            ...formData.marketingStrategy,
-                            [key]: updated,
-                          },
-                        });
-                      }}
-                      className="bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-md p-2 text-sm outline-none"
-                    />
-                  ) : (
-                    <p
-                      key={idx}
-                      className="text-sm text-gray-700 dark:text-gray-300"
-                    >
-                      {item}
-                    </p>
-                  )
-                )}
-              </div>
-            </div>
-          ))}
+          {renderArrayField(
+            "audience",
+            <Users className="w-4 h-4 text-purple-600" />
+          )}
+          {renderArrayField(
+            "audiencePains",
+            <AlertTriangle className="w-4 h-4 text-yellow-600" />
+          )}
+          {renderArrayField(
+            "core_values",
+            <Star className="w-4 h-4 text-green-600" />
+          )}
         </div>
 
-        {/* Sticky Footer */}
-        {/* Sticky Footer (adjusted to stick within modal) */}
         <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-4 sm:px-6 flex items-center justify-between z-20">
           <h2 className="text-sm font-semibold text-blue-600 dark:text-white">
             Your Business Profile
@@ -331,10 +446,10 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
                 <span className="text-sm">Edit</span>
               </button>
               <button
-                onClick={handlePopup}
+                onClick={getPostData}
                 className="px-5 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
-                Looking Good! Lets Continue
+                Looking Good! Let's Continue
               </button>
             </div>
           )}
@@ -345,10 +460,10 @@ export const BusinessSectionDummy = ({ setComponentType }) => {
         <FirstPostPopUp
           isOpen={PopUp}
           onClose={() => {
-            setComponentType("postTopics");
+            setPopup(false);
           }}
-          title="Let’s Discover the Perfect Topics..."
-          description="We’re crafting relevant and captivating topics designed to spark interest and drive engagement within your audience."
+          title="Time to Create Compelling Content!"
+          description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
         />
       )}
     </>

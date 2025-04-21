@@ -16,11 +16,11 @@ import {
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import { useAddDomainMutation } from "../libs/domainService";
-
+import axios from "axios";
 //extra
 import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation"; // use the correct named export
-import { BusinessSectionDummy } from '../NewUIComponents/businessDumy'
-import {BusinessModal} from '../NewUIComponents/Modal'
+import { BusinessSectionDummy } from "../NewUIComponents/businessDumy";
+import { BusinessModal } from "../NewUIComponents/Modal";
 export function extractDomain(fullUrl) {
   try {
     // Trim whitespace and normalize input
@@ -43,7 +43,25 @@ export const HomePage = () => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [showBusinessPopup, setShowBusinessPopup] = useState(false);
-
+  const [clientData, setClientData] = useState({
+    client_email: "",
+    clientWebsite: "",
+    clientName: "",
+    clientDescription: "",
+    industry: "",
+    niche: "",
+    colors: [],
+    language: "",
+    country: "",
+    state: "",
+    siteLogo: "",
+    userId: "",
+    marketingStrategy: {
+      audience: [],
+      audiencePains: [],
+      core_values: [],
+    },
+  });
   //extra
   const [isModalOpen, setisModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -57,28 +75,27 @@ export const HomePage = () => {
       }
 
       console.log("Generating data for domain:", domain); // Debug log
-      const firstResponse = await fetch(
-        `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
+      const firstResponse = await axios.post(
+        "https://social-api-107470285539.us-central1.run.app/create-client",
+        {
+          user_email: user?.email,
+          client_Website: domain,
+        }
       );
-      if (!firstResponse.ok) {
-        throw new Error(`Try another website`);
+      console.log("first res message:", firstResponse.data.message); // Debug log
+      if (firstResponse.data.message == "Client already exists") {
+        console.error("Error in first API response:", firstResponse.status); // Debug log
+        toast.error(`Try another website`);
+        setisModalOpen(false);
+        return;
       }
 
-      await sleep(15000);
+      await sleep(5000);
 
-      const secondResponse = await fetch(
-        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
-      );
+      const Data = firstResponse.data;
 
-      if (!secondResponse.ok) {
-        throw new Error(
-          `Site data extraction failed with status: ${secondResponse.status}`
-        );
-      }
-
-      const secondData = await secondResponse.json();
-      console.log("Second API response:", secondData); // Debug log
-      const { client_email, clientWebsite, clientDescription } = secondData;
+      console.log("first API response  data:", Data); // Debug log
+      const { client_email, clientWebsite, clientDescription } = Data;
 
       if (!client_email || !clientWebsite || !clientDescription) {
         if (!client_email) toast.error("Client email is required.");
@@ -88,20 +105,76 @@ export const HomePage = () => {
       }
 
       const result = await addDomain.mutateAsync({
-        ...secondData,
+        ...Data,
         userId: user?._id,
       });
+      console.log("result:", result); // Debug log
 
+      // setClientData({
+      //   client_email: result?.client_email,
+      //   clientWebsite: result.clientWebsite,
+      //   clientName:
+      //     result.clientName || "Not provided,, setted null in the home jsx", // Providing defaults if not available
+      //   clientDescription:
+      //     result.clientDescription ||
+      //     "Not provided setted null in the home jsx",
+      //   industry: result.industry || "General setted null in the home jsx",
+      //   niche: result.niche || "General setted null in the home jsx",
+      //   colors: result.colors || ["#6B818C"],
+      //   language: result.language || "English setted null in the home jsx",
+      //   country: result.country || "Worldwide setted null in the home jsx",
+      //   state: result.state || "Unknown setted null in the home jsx",
+      //   userId: result.userId || "setted null in the home jsx",
+      //   siteLogo: result.siteLogo,
+      //   marketingStrategy: Data.marketingStrategy || {
+      //     audience: [],
+      //     audiencePains: [],
+      //     core_values: [],
+      //   },
+      // });
+
+      setClientData({
+        id:result?._id,
+        client_email: result?.client_email || "dummy data",
+        clientWebsite: result?.clientWebsite || "dummy site",
+        clientName: result?.clientName || "dummy ",
+        clientDescription: result?.clientDescription || "dummy",
+        industry: result?.industry || "dumy",
+        niche: result?.niche || "dummy",
+        colors: result.colors,
+        language: result?.language || "Dummy",
+        country: result?.country || "dummy",
+        state: result?.state || "dummy",
+        userId: result?.userId || "dummy set",
+        siteLogo: result?.siteLogo || "",
+        marketingStrategy: {
+          audience: Array.isArray(result?.marketingStrategy?.audience)
+            ? result.marketingStrategy.audience
+            : Array.isArray(Data?.marketingStrategy?.audience)
+            ? Data.marketingStrategy.audience
+            : [],
+          audiencePains: Array.isArray(result?.marketingStrategy?.audiencePains)
+            ? result.marketingStrategy.audiencePains
+            : Array.isArray(Data?.marketingStrategy?.audiencePains)
+            ? Data.marketingStrategy.audiencePains
+            : [],
+          core_values: Array.isArray(result?.marketingStrategy?.core_values)
+            ? result.marketingStrategy.core_values
+            : Array.isArray(Data?.marketingStrategy?.core_values)
+            ? Data.marketingStrategy.core_values
+            : [],
+        },
+      });
       toast.success("Domain successfully added!");
-      navigate(`/dashboard?domainId=${result?._id}`);
+      // navigate(`/dashboard?domainId=${result?._id}`);
     } catch (error) {
       console.error("Error in generateCompanyData:", error);
-      toast.error(error.message || "Failed to generate company data.");
+      toast.error(error || "Failed to generate company data.");
     }
   };
 
   const handleSubmit = async (e) => {
-    setisModalOpen(true);
+    // setisModalOpen(true);
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -119,9 +192,8 @@ export const HomePage = () => {
     }
 
     if (user) {
-      setLoading(true);
+      setisModalOpen(true);
       await generateCompanyData(domain, user);
-      setLoading(false);
     } else {
       setIsSignInPopup(true);
     }
@@ -198,13 +270,7 @@ export const HomePage = () => {
             </p>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setisModalOpen(true);
-            }}
-            className="max-w-3xl mx-auto"
-          >
+          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
             <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
               <div className="flex gap-3">
                 <div className="flex-1 relative">
@@ -222,24 +288,10 @@ export const HomePage = () => {
                 </div>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className={`px-8 py-4 ${
-                    loading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
-                  } text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap`}
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap"
                 >
-                  {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full"></div>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      Generate Posts
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
+                  Generate Posts
+                  <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -314,7 +366,11 @@ export const HomePage = () => {
 
       {(isSignInPopup || isSignUpPopup) && <AuthModal />}
 
-      <BusinessModal isOpen={isModalOpen} onClose={() => {}} />
+      <BusinessModal
+        isOpen={isModalOpen}
+        clientData={clientData}
+        onClose={() => {}}
+      />
     </div>
   );
 };

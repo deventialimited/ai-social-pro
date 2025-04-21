@@ -3,6 +3,7 @@ const Post = require("../models/Post");
 const getRawBody = require("raw-body");
 const axios = require("axios");
 const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
+const mongoose = require("mongoose");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -108,7 +109,6 @@ exports.updatePost = async (req, res) => {
   }
 };
 
-
 exports.processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
@@ -180,6 +180,71 @@ exports.processPubSub = async (req, res) => {
     console.error("Error in processPubSub:", error);
     res.status(500).json({
       message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+exports.getFirstPost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("Domain ID:", id); // Log the domainId for debugging
+
+    // Check if domain exists
+    const domainExists = await Domain.findById(id);
+    if (!domainExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Domain not found" });
+    }
+
+    // Find the first post for this domain (sorted by createdAt)
+    const firstPost = await Post.findOne({ domainId: id }).populate("domainId","clientName clientWebsite siteLogo")
+      .sort({ createdAt: 1 }) // Get the oldest post (first created)
+      .lean(); // Convert to plain JavaScript object
+    console.log(firstPost);
+    if (!firstPost) {
+      console.error("No posts found for this domain....if no firstPost"); // Log if no posts are found
+      return res.status(404).json({
+        success: false,
+        message: "No posts found for this domain",
+      });
+    }
+
+    // Format the response data
+    const responseData = {
+      id: firstPost._id,
+      domainId: firstPost.domainId,
+      domainInfo: {
+        // Add a separate object for domain info
+        clientName: firstPost.domainId.clientName,
+        clientWebsite: firstPost.domainId.clientWebsite,
+        siteLogo: firstPost.domainId.siteLogo,
+      },
+      userId: firstPost.userId,
+      image: firstPost.image,
+      topic: firstPost.topic,
+      content: firstPost.content,
+      slogan: firstPost.slogan,
+      date: firstPost.date,
+      platforms: firstPost.platforms,
+      status: firstPost.status,
+      followers: firstPost.followers,
+      editorStatus: firstPost.editorStatus,
+      createdAt: firstPost.createdAt,
+      updatedAt: firstPost.updatedAt,
+      ageInDays: firstPost.ageInDays, // Utilizing the virtual property
+    };
+    console.log("First Post Data:", responseData); // Log the response data for debugging
+    res.status(200).json({
+      success: true,
+      data: responseData,
+    });
+  } catch (error) {
+    console.error("Error fetching first post:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching first post",
       error: error.message,
     });
   }

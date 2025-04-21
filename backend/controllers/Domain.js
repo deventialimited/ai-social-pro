@@ -2,10 +2,114 @@ const Domain = require("../models/Domain");
 const User = require("../models/User");
 const axios = require("axios");
 
-const { uploadToS3,deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
+const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 // Add a new domain
+// exports.addDomain = async (req, res) => {
+//   // Create new domain object
+//   const {
+//     client_email,
+//     clientWebsite,
+//     clientName,
+//     clientDescription,
+//     industry,
+//     niche,
+//     colors,
+//     userId,
+//     core_values,
+//     audience,
+//     audiencePains,
+//     language,
+//     country,
+//     state,
+//   } = req.body;
+
+//   console.log("Received data:", req.body); // Log the received data
+//   try {
+//     // Helper function to split numbered lists correctly
+//     const splitNumberedList = (value) => {
+//       if (typeof value !== "string") return value; // Return original if not a string
+//       return value
+//         .split(/(?=\d+\.\s)/) // Split before numbers like "1. ", "2. "
+//         .map((v) => v.trim()); // Trim spaces
+//     };
+//     const marketingStrategy = {
+//       core_values: splitNumberedList(core_values),
+//       audiencePains: splitNumberedList(audiencePains),
+//       audience: splitNumberedList(audience),
+//     };
+
+//     // Create new domain object
+//     const domainData = {
+//       client_email,
+//       clientWebsite,
+//       clientName,
+//       clientDescription,
+//       industry,
+//       niche,
+//       colors,
+//       userId,
+//       language,
+//       country,
+//       state,
+//       marketingStrategy,
+//     };
+
+//     const logoUrl = `https://img.logo.dev/${clientWebsite}`;
+//     // Check if Logo.dev returned a valid image
+//     const logoResponse = await fetch(logoUrl, {
+//        headers: {
+//     Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
+//   },
+//     });
+//     let siteLogo;
+//     let uploadedImageUrl = "";
+
+//     if (logoResponse.ok && logoResponse.headers.get('content-type')?.includes('image')) {
+//       siteLogo = logoUrl;
+//     }
+
+//  try {
+//         const response = await axios.get(siteLogo, {
+//           responseType: "arraybuffer",
+//         });
+
+//         const buffer = Buffer.from(response.data, "binary");
+//         const file = {
+//           originalname: `downloaded_${Date.now()}.jpg`, // you can extract real extension if needed
+//           mimetype: response.headers["content-type"],
+//           buffer: buffer,
+//         };
+
+//    uploadedImageUrl = await uploadToS3(file);
+
+//       } catch (err) {
+//         console.error("Failed to fetch or upload image:", err);
+//     }
+
+//     const newDomain = new Domain({ ...domainData, siteLogo:uploadedImageUrl });
+
+//     const savedDomain = await newDomain.save();
+//     console.log("Saved domain:", savedDomain); // Log the saved domain
+//     res.status(201).json({
+//       success: true,
+//       message: "Domain created successfully",
+//       data: savedDomain,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       error: error.message,
+//     });
+//   }
+// };
+
+function normalizeDomain(url) {
+  return url
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split("/")[0];
+}
 exports.addDomain = async (req, res) => {
-  // Create new domain object
   const {
     client_email,
     clientWebsite,
@@ -23,21 +127,21 @@ exports.addDomain = async (req, res) => {
     state,
   } = req.body;
 
+  console.log("Received data:", req.body);
+
   try {
-    // Helper function to split numbered lists correctly
+    // Helper to split numbered lists if needed
     const splitNumberedList = (value) => {
-      if (typeof value !== "string") return value; // Return original if not a string
-      return value
-        .split(/(?=\d+\.\s)/) // Split before numbers like "1. ", "2. "
-        .map((v) => v.trim()); // Trim spaces
+      if (typeof value !== "string") return value;
+      return value.split(/(?=\d+\.\s)/).map((v) => v.trim());
     };
+
     const marketingStrategy = {
       core_values: splitNumberedList(core_values),
       audiencePains: splitNumberedList(audiencePains),
       audience: splitNumberedList(audience),
     };
 
-    // Create new domain object
     const domainData = {
       client_email,
       clientWebsite,
@@ -53,53 +157,76 @@ exports.addDomain = async (req, res) => {
       marketingStrategy,
     };
 
-    const logoUrl = `https://img.logo.dev/${clientWebsite}`;
-    // Check if Logo.dev returned a valid image
-    const logoResponse = await fetch(logoUrl, {
-       headers: {
-    Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
-  },
-    });
+    // Start logo generation logic
     let siteLogo;
     let uploadedImageUrl = "";
+    let clientWebisteForLogo = normalizeDomain(clientWebsite);
+    console.log("Normalized client website for logo:", clientWebisteForLogo);
+    try {
+      const logoUrl = `https://img.logo.dev/${clientWebisteForLogo}`;
+      console.log("Attempting to fetch logo of:", clientWebsite);
+      console.log("Attempting to fetch logo from:", logoUrl);
 
-    if (logoResponse.ok && logoResponse.headers.get('content-type')?.includes('image')) {
-      siteLogo = logoUrl;
-    } 
+      const logoResponse = await fetch(logoUrl, {
+        headers: {
+          Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
+        },
+      });
 
- try {
+      const isImage =
+        logoResponse.ok &&
+        logoResponse.headers.get("content-type")?.includes("image");
+
+      if (isImage) {
+        siteLogo = logoUrl;
+
+        // Download the image
         const response = await axios.get(siteLogo, {
           responseType: "arraybuffer",
         });
 
         const buffer = Buffer.from(response.data, "binary");
+
         const file = {
-          originalname: `downloaded_${Date.now()}.jpg`, // you can extract real extension if needed
+          originalname: `downloaded_${Date.now()}.jpg`,
           mimetype: response.headers["content-type"],
           buffer: buffer,
         };
 
-   uploadedImageUrl = await uploadToS3(file);
-
-      } catch (err) {
-        console.error("Failed to fetch or upload image:", err);
+        // Upload to S3
+        uploadedImageUrl = await uploadToS3(file);
+        console.log("Image uploaded to S3:", uploadedImageUrl);
+      } else {
+        console.warn("No valid image found at Logo.dev for:", clientWebsite);
+      }
+    } catch (err) {
+      console.error("Failed to fetch or upload image:", err);
     }
-    
-    const newDomain = new Domain({ ...domainData, siteLogo:uploadedImageUrl });
+
+    console.log("before saving data", domainData);
+    // Save domain
+    const newDomain = new Domain({
+      ...domainData,
+      siteLogo: uploadedImageUrl, // could be empty string if upload failed
+    });
 
     const savedDomain = await newDomain.save();
+    console.log("Saved domain:", savedDomain);
+
     res.status(201).json({
       success: true,
       message: "Domain created successfully",
       data: savedDomain,
     });
   } catch (error) {
+    console.error("addDomain error:", error);
     res.status(500).json({
       success: false,
       error: error.message,
     });
   }
 };
+
 // Get all domains
 exports.getAllDomains = async (req, res) => {
   try {
@@ -337,7 +464,6 @@ exports.updateDomain = async (req, res) => {
 //   }
 // };
 
-
 exports.uploadBrand = async (req, res) => {
   const domainId = req.params.id;
   const file = req.file;
@@ -346,7 +472,9 @@ exports.uploadBrand = async (req, res) => {
   try {
     const existingDomain = await Domain.findById(domainId);
     if (!existingDomain) {
-      return res.status(404).json({ success: false, message: "Domain not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Domain not found" });
     }
 
     const updateData = {};
@@ -394,10 +522,138 @@ exports.uploadBrand = async (req, res) => {
     } else {
       console.log("No old logo to delete.");
     }
-  
-    res.status(200).json({ message: "Update successful", domain: updatedDomain });
+
+    res
+      .status(200)
+      .json({ message: "Update successful", domain: updatedDomain });
   } catch (error) {
     console.error("Error uploading logo and updating brand:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+
+
+
+exports.updateDomainDetails = async (req, res) => {
+  const domainId = req.params.id;
+  const file = req.file;
+  const updates = req.body;
+
+  try {
+    // 1. Validate domain exists
+    const existingDomain = await Domain.findById(domainId);
+    if (!existingDomain) {
+      return res.status(404).json({
+        success: false,
+        message: "Domain not found",
+      });
+    }
+
+    let updateFields = {};
+    let oldLogoKey = null;
+
+    // 2. Handle logo upload if file exists
+    if (file) {
+      // Capture old logo key before updating
+      if (existingDomain.siteLogo) {
+        const existingUrl = existingDomain.siteLogo;
+        const splitUrl = existingUrl.split(".amazonaws.com/");
+        oldLogoKey = splitUrl.length === 2 ? splitUrl[1] : null;
+      }
+
+      // Upload new logo
+      const newLogoUrl = await uploadToS3(file);
+      updateFields.siteLogo = newLogoUrl;
+    }
+
+    // 3. Handle color updates
+    if (updates.colors) {
+      updateFields.colors = Array.isArray(updates.colors)
+        ? updates.colors.join(", ")
+        : updates.colors;
+    }
+
+    // 4. Handle regular field updates
+    const checkAndUpdate = (field, newValue) => {
+      if (newValue !== undefined && newValue !== existingDomain[field]) {
+        updateFields[field] = newValue;
+      }
+    };
+
+    // Basic fields
+    checkAndUpdate("clientName", updates.clientName);
+    checkAndUpdate("clientDescription", updates.clientDescription);
+    checkAndUpdate("industry", updates.industry);
+    checkAndUpdate("niche", updates.niche);
+    checkAndUpdate("clientWebsite", updates.clientWebsite);
+    checkAndUpdate("language", updates.language);
+    checkAndUpdate("country", updates.country);
+    checkAndUpdate("state", updates.state);
+
+    // 5. Handle marketing strategy updates
+    if (updates.marketingStrategy) {
+      updateFields.marketingStrategy = {
+        core_values:
+          JSON.stringify(updates.marketingStrategy.core_values) !==
+          JSON.stringify(existingDomain.marketingStrategy?.core_values)
+            ? updates.marketingStrategy.core_values
+            : existingDomain.marketingStrategy?.core_values,
+
+        audiencePains:
+          JSON.stringify(updates.marketingStrategy.audiencePains) !==
+          JSON.stringify(existingDomain.marketingStrategy?.audiencePains)
+            ? updates.marketingStrategy.audiencePains
+            : existingDomain.marketingStrategy?.audiencePains,
+
+        audience:
+          JSON.stringify(updates.marketingStrategy.audience) !==
+          JSON.stringify(existingDomain.marketingStrategy?.audience)
+            ? updates.marketingStrategy.audience
+            : existingDomain.marketingStrategy?.audience,
+      };
+    }
+
+    // 6. Check if any updates exist
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No changes detected",
+        data: existingDomain,
+      });
+    }
+
+    // 7. Perform the update
+    const updatedDomain = await Domain.findByIdAndUpdate(
+      domainId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+
+    // 8. Clean up old logo if new one was uploaded
+    if (file && oldLogoKey) {
+      try {
+        await deleteFromS3([oldLogoKey]);
+      } catch (err) {
+        console.error("Error deleting old logo from S3:", err);
+        // Continue with response even if deletion fails
+      }
+    }
+
+    // 9. Return successful response
+    res.status(200).json({
+      success: true,
+      message: "Domain updated successfully",
+      data: updatedDomain,
+    });
+  } catch (error) {
+    console.error("Error updating domain:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
   }
 };

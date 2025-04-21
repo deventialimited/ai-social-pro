@@ -6,18 +6,33 @@ import PostTopics from "./PostTopics";
 import PostDetails from "./PostDetails";
 import { SocialAccount } from "./SocialAccount";
 
-export const BusinessModal = ({ isOpen, onClose }) => {
+export const BusinessModal = ({ isOpen, onClose, clientData }) => {
   const [componentType, setComponentType] = useState("loading");
+  console.log("component type....", componentType);
+  const [postData, setPostData] = useState(null);
 
+  console.log(postData, "post data in modal");
   useEffect(() => {
     if (isOpen) {
       setComponentType("loading");
-      const timer = setTimeout(() => {
-        setComponentType("businessData");
-      }, 5000);
-      return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  //client Data
+  useEffect(() => {
+    if (clientData) {
+      console.log("client data....", clientData);
+      setComponentType("businessData");
+    }
+  }, [clientData]);
+
+  //check post data
+  useEffect(() => {
+    if (postData !== undefined && postData !== null) {
+      console.log("post data....", postData);
+      setComponentType("postDetails");
+    }
+  }, [postData]);
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -45,19 +60,26 @@ export const BusinessModal = ({ isOpen, onClose }) => {
             leaveTo="opacity-0 scale-95"
           >
             <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
-              {componentType === "loading" && (
+              {componentType == "loading" && (
                 <AnalyzeLoader isOpen={true} onClose={() => {}} />
               )}
-              {componentType === "businessData" && (
-                <BusinessSectionDummy setComponentType={setComponentType} />
+              {componentType == "businessData" && (
+                <BusinessSectionDummy
+                  clientData={clientData}
+                  setComponentType={setComponentType}
+                  setPostData={setPostData}
+                />
               )}
-              {componentType === "postTopics" && (
+              {componentType == "postTopics" && (
                 <PostTopics setComponentType={setComponentType} />
               )}
-              {componentType === "postDetails" && (
-                <PostDetails setComponentType={setComponentType} />
+              {componentType == "postDetails" && (
+                <PostDetails
+                  postData={postData}
+                  setComponentType={setComponentType}
+                />
               )}
-              {componentType === "socialAccount" && <SocialAccount />}
+              {componentType == "socialAccount" && <SocialAccount />}
             </Dialog.Panel>
           </Transition.Child>
         </div>

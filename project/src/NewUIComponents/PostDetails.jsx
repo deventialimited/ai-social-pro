@@ -9,14 +9,8 @@ import {
   Trash2,
   Download,
 } from "lucide-react";
-
-const dummyPost = {
-  platform: "linkedin",
-  postText:
-    "Discover how EduTlush is revolutionizing the education landscape with cutting-edge technology and personalized learning solutions. Join us on a journey to empower learners worldwide.",
-  brandName: "EduTlush",
-  postDate: "April 14, 2025",
-};
+import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 const getImageStyle = (platform) => {
   const style = {
@@ -24,7 +18,7 @@ const getImageStyle = (platform) => {
     objectFit: "cover",
     borderRadius: "0.5rem",
   };
-  switch (platform) {
+  switch (platform?.toLowerCase()) {
     case "linkedin":
       return { ...style, aspectRatio: "1200/627" };
     case "x":
@@ -38,13 +32,14 @@ const getImageStyle = (platform) => {
   }
 };
 
-export default function PostDetails() {
+export default function PostDetails({ postData }) {
   const [selectedButton, setSelectedButton] = useState("image");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
-  const [postImage, setPostImage] = useState("");
-  const [logoImage, setLogoImage] = useState("");
   const contentRef = useRef(null);
+  const navigate = useNavigate();
+  console.log("post data.... iin the Post Detail section", postData);
+  const primaryPlatform = postData?.platforms?.[0] || "linkedin"; // Default to linkedin if no platform
 
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
@@ -60,33 +55,11 @@ export default function PostDetails() {
       const maxHeight = lineHeight * 2;
       setIsClamped(contentRef.current.scrollHeight > maxHeight);
     }
-  }, []);
+  }, [postData?.content]);
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const imgRes = await fetch(
-          `https://api.unsplash.com/photos/random?query=education,technology&orientation=landscape&client_id=5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I`
-        );
-        const imgData = await imgRes.json();
-        setPostImage(imgData.urls.regular);
-      } catch {
-        setPostImage("https://via.placeholder.com/600x400.png?text=Post+Image");
-      }
-
-      try {
-        const logoRes = await fetch(
-          `https://api.unsplash.com/photos/random?query=${dummyPost.brandName}+logo&orientation=squarish&client_id=5w7aP7QnXpmTCtXBGALuXCLRuv6XxhJ4Fhb0q9jyn_I`
-        );
-        const logoData = await logoRes.json();
-        setLogoImage(logoData.urls.thumb);
-      } catch {
-        setLogoImage("https://via.placeholder.com/80x80.png?text=Logo");
-      }
-    };
-
-    fetchImages();
-  }, []);
+  const handleSeeAllPosts = () => {
+    navigate("/dashboard");
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-auto">
@@ -107,19 +80,25 @@ export default function PostDetails() {
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <img
-              src={logoImage}
-              alt="Brand logo"
-              className="w-full h-full object-cover"
-            />
+            {postData?.image ? (
+              <img
+                src={postData.image}
+                alt="Brand logo"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                <Type className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </div>
+            )}
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-0.5">
-              {dummyPost.brandName}
+              {postData?.domainInfo?.clientName || "Your Brand"}
             </h3>
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                ID: #123456
+                ID: #{postData.id}
               </span>
             </div>
           </div>
@@ -164,7 +143,7 @@ export default function PostDetails() {
       <div className="p-4 space-y-4">
         <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
           <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
-            {dummyPost.postText}
+            {postData?.content || "Your post content will appear here"}
           </p>
           {isClamped && (
             <button
@@ -175,12 +154,21 @@ export default function PostDetails() {
             </button>
           )}
         </div>
-        <img
-          src={postImage}
-          alt="Post"
-          className="cursor-pointer"
-          style={getImageStyle(dummyPost.platform)}
-        />
+        {postData?.image ? (
+          <img
+            src={postData.image}
+            alt="Post"
+            className="cursor-pointer"
+            style={getImageStyle(primaryPlatform)}
+          />
+        ) : (
+          <div
+            className="w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
+            style={getImageStyle(primaryPlatform)}
+          >
+            <Image className="w-12 h-12 text-gray-400" />
+          </div>
+        )}
       </div>
 
       {/* Footer */}
@@ -189,12 +177,16 @@ export default function PostDetails() {
           <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
             Approve <Check className="text-white w-4 h-4" />
           </button>
-          <div className="flex items-center text-xs text-white">
+          <div className="flex items-center text-xs text-gray-800 dark:text-white">
             <CalendarDays className="h-4 w-4" />
-            <span className="ml-2">{dummyPost.postDate}</span>
+            <span className="ml-2">
+              {postData?.date
+                ? format(new Date(postData.date), "MMM d, yyyy")
+                : "Today"}
+            </span>
           </div>
           <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-            {dummyPost.platform}
+            {primaryPlatform}
           </span>
         </div>
 
@@ -212,12 +204,9 @@ export default function PostDetails() {
       </div>
 
       {/* Sticky Bottom Button */}
-      {/* Sticky Bottom Button */}
       <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">
         <button
-          onClick={() => {
-            window.location.href = "/dashboard";
-          }}
+          onClick={handleSeeAllPosts}
           className="w-full text-white rounded-xl px-6 py-3 font-semibold text-sm sm:text-base transition-colors duration-200"
           style={{
             background:

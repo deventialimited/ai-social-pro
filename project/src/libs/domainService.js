@@ -67,6 +67,7 @@ export const useAddDomainMutation = () => {
 // Add a new domain
 export const addDomain = async (domainData) => {
   try {
+    console.log("Adding domain:", domainData);
     const response = await axios.post(`${API_URL}/addDomain`, domainData);
     console.log("Domain added successfully:", response.data);
     return response.data?.data;
@@ -161,6 +162,77 @@ export const updateBrandInfo = async ({ domainId, logoFile, colors }) => {
     formData,
     {
       headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+
+  return response.data;
+};
+
+export const useUpdateDomainDetails = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateDomainDetails,
+    onSuccess: (updatedDomain) => {
+      // Optimistically update the domains cache
+      queryClient.setQueryData(
+        ["domains", updatedDomain?.userId],
+        (oldData) => {
+          if (!oldData) return [];
+          return oldData.map((domain) =>
+            domain._id === updatedDomain._id ? updatedDomain : domain
+          );
+        }
+      );
+
+      // Invalidate any posts related to this domain
+      queryClient.invalidateQueries(["posts", updatedDomain._id]);
+    },
+    onError: (error) => {
+      console.error("Domain update error:", error);
+    },
+  });
+};
+
+export const updateDomainDetails = async ({ domainId, formData, logoFile }) => {
+  const formDataToSend = new FormData();
+
+  // Append all regular fields
+  Object.entries(formData).forEach(([key, value]) => {
+    // Skip marketingStrategy and siteLogo (handled separately)
+    if (key !== "marketingStrategy" && key !== "siteLogo") {
+      if (Array.isArray(value)) {
+        // Handle color arrays and other arrays
+        formDataToSend.append(key, JSON.stringify(value));
+      } else if (typeof value === "object") {
+        // Stringify any objects
+        formDataToSend.append(key, JSON.stringify(value));
+      } else {
+        // Regular string/number values
+        formDataToSend.append(key, value);
+      }
+    }
+  });
+
+  // Append marketing strategy fields individually
+  if (formData.marketingStrategy) {
+    Object.entries(formData.marketingStrategy).forEach(([key, value]) => {
+      formDataToSend.append(`marketingStrategy[${key}]`, JSON.stringify(value));
+    });
+  }
+
+  // Append logo file if exists
+  if (logoFile) {
+    formDataToSend.append("logo", logoFile);
+  }
+
+  const response = await axios.patch(
+    `${API_URL}/UpdateDomainsDeatils/${domainId}`,
+    formDataToSend,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     }
   );
 
