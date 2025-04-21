@@ -82,7 +82,7 @@ export default function PostDetails({ postData }) {
           <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             {postData?.image ? (
               <img
-                src={postData.image}
+                src={postData.domainInfo.siteLogo}
                 alt="Brand logo"
                 className="w-full h-full object-cover"
               />
