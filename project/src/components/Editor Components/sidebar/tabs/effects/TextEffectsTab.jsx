@@ -37,47 +37,183 @@ function TextEffectsTab({ onClose,selectedElementId }) {
   });
 
   const handleToggleEffect = (effect) => {
-    setEffects((prev) => ({
-      ...prev,
-      [effect]: {
-        ...prev[effect],
-        enabled: !prev[effect].enabled,
-      },
-    }));
+    setEffects((prev) => {
+      const newEnabled = !prev[effect].enabled;
+      const updatedEffect = { ...prev[effect], enabled: newEnabled };
+  
+      // Apply or remove styles
+      if (selectedElement) {
+        switch (effect) {
+          case "blur":
+            updateStyle({
+              filter: newEnabled ? `blur(${updatedEffect.value}px)` : "none",
+            });
+            break;
+  
+          case "textStroke":
+            updateStyle({
+              WebkitTextStroke: newEnabled
+                ? `${updatedEffect.value}px ${updatedEffect.color}`
+                : "none",
+            });
+            break;
+  
+          case "background":
+            updateStyle(
+              newEnabled
+                ? {
+                    backgroundColor: updatedEffect.color,
+                    padding: `${updatedEffect.padding}px`,
+                    borderRadius: `${updatedEffect.cornerRadius}px`,
+                    opacity: updatedEffect.opacity / 100,
+                  }
+                : {
+                    backgroundColor: "transparent",
+                    padding: "0px",
+                    borderRadius: "0px",
+                    opacity: 1,
+                  }
+            );
+            break;
+  
+          case "shadow":
+            updateStyle({
+              boxShadow: newEnabled
+                ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${updatedEffect.blur}px rgba(${hexToRgb(
+                    updatedEffect.color
+                  )}, ${updatedEffect.opacity / 100})`
+                : "none",
+            });
+            break;
+        }
+      }
+  
+      return {
+        ...prev,
+        [effect]: updatedEffect,
+      };
+    });
   };
+  
+
+  const updateStyle = (styleChanges) => {
+    if (!selectedElement) return;
+    updateElement(selectedElement.id, {
+      styles: {
+        ...selectedElement.styles,
+        ...styleChanges,
+      },
+    });
+  };
+  
+
+ 
 
   const handleChangeEffectValue = (effect, value) => {
+    const updated = {
+      ...effects[effect],
+      value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      [effect]: {
-        ...prev[effect],
-        value: value,
-      },
+      [effect]: updated,
     }));
+
+    if (effect === "textStroke") {
+      updateStyle({
+        WebkitTextStroke: `${updated.value}px ${updated.color}`,
+      });
+    }
+  };
+
+  const handleBlurChange = (value) => {
+    handleChangeEffectValue("blur", value);
+    updateStyle({
+      filter: `blur(${value}px)`,
+    });
   };
 
   const handleChangeBackgroundValue = (property, value) => {
+    const updated = {
+      ...effects.background,
+      [property]: value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      background: {
-        ...prev.background,
-        [property]: value,
-      },
+      background: updated,
     }));
+
+    if (effects.background.enabled) {
+      updateStyle({
+        backgroundColor: updated.color,
+        padding: updated.padding,
+        borderRadius: `${updated.cornerRadius}px`,
+        opacity: updated.opacity / 100,
+        display: 'block', // or 'block'
+      });
+    }
   };
 
   const handleChangeShadowValue = (property, value) => {
+    const updated = {
+      ...effects.shadow,
+      [property]: value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      shadow: {
-        ...prev.shadow,
-        [property]: value,
-      },
+      shadow: updated,
     }));
+
+    if (effects.shadow.enabled) {
+      updateStyle({
+        boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${updated.blur}px rgba(${hexToRgb(
+          updated.color
+        )}, ${updated.opacity / 100})`,
+      });
+    }
   };
 
+  const handleChangeNestedEffectValue = (effectKey, propKey, value) => {
+    if (effectKey === "shadow") {
+      handleChangeShadowValue(propKey, value);
+    } else if (effectKey === "background") {
+      handleChangeBackgroundValue(propKey, value);
+    }
+  };
+
+  const handleTextStrokeColorChange = (color) => {
+    const updated = {
+      ...effects.textStroke,
+      color,
+    };
+    setEffects((prev) => ({
+      ...prev,
+      textStroke: updated,
+    }));
+  
+    if (effects.textStroke.enabled) {
+      updateStyle({
+        WebkitTextStroke: `${updated.value}px ${updated.color}`,
+      });
+    }
+  };
+  
+
+  const hexToRgb = (hex) => {
+    const bigint = parseInt(hex.slice(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r}, ${g}, ${b}`;
+  };
+
+
+
   return (
-    <div className="p-2 h-[400px] overflow-y-auto">
+    <div className="p-2 h-[500px] overflow-y-auto">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold">Effects</h2>
         <button
@@ -100,6 +236,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
               onChange={() => handleToggleEffect("blur")}
             />
             <span
+              onClick={() => handleToggleEffect("blur")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.blur.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -112,26 +249,26 @@ function TextEffectsTab({ onClose,selectedElementId }) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <Slider
-              min={0}
-              max={50}
+        {effects.blur.enabled && (
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Slider
+                min={0}
+                max={50}
+                value={effects.blur.value}
+                onChange={(value) => handleBlurChange(value)}
+              />
+            </div>
+            <input
+              type="number"
               value={effects.blur.value}
-              onChange={(value) => handleChangeEffectValue("blur", value)}
-              disabled={!effects.blur.enabled}
+              onChange={(e) =>
+                handleChangeEffectValue("blur", Number.parseInt(e.target.value))
+              }
+              className="w-12 p-1 text-sm border rounded-md"
             />
           </div>
-          <input
-            type="number"
-            value={effects.blur.value}
-            onChange={(e) =>
-              handleChangeEffectValue("blur", Number.parseInt(e.target.value))
-            }
-            className="w-12 p-1 text-sm border rounded-md"
-            disabled={!effects.blur.enabled}
-          />
-        </div>
+        )}
       </div>
 
       {/* Text Stroke Effect */}
@@ -146,6 +283,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
               onChange={() => handleToggleEffect("textStroke")}
             />
             <span
+              onClick={() => handleToggleEffect("textStroke")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.textStroke.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -158,49 +296,29 @@ function TextEffectsTab({ onClose,selectedElementId }) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 bg-gray-200 border border-gray-300 grid grid-cols-2 grid-rows-2">
-            <div className="bg-white"></div>
-            <div className="bg-gray-500"></div>
-            <div className="bg-gray-500"></div>
-            <div className="bg-white"></div>
-          </div>
-          <input
-            type="number"
-            value={effects.textStroke.value}
-            onChange={(e) =>
-              handleChangeEffectValue(
-                "textStroke",
-                Number.parseInt(e.target.value)
-              )
-            }
-            className="w-12 p-1 text-sm border rounded-md"
-            disabled={!effects.textStroke.enabled}
-          />
-          <div className="flex flex-col">
-            <button className="px-1 py-0.5 border rounded-t-md hover:bg-gray-100 text-xs">
-              ▲
-            </button>
-            <button className="px-1 py-0.5 border rounded-b-md border-t-0 hover:bg-gray-100 text-xs">
-              ▼
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs">Color</label>
-          <input
-            type="color"
-            value={effects.textStroke.color}
-            onChange={(e) =>
-              handleChangeEffectValue("textStroke", {
-                ...effects.textStroke,
-                color: e.target.value,
-              })
-            }
-            className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
-            disabled={!effects.textStroke.enabled}
-          />
-        </div>
+        {effects.textStroke.enabled && (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="color"
+                value={effects.textStroke.color}
+                onChange={(e) => handleTextStrokeColorChange(e.target.value)}
+                className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
+              />
+              <input
+                type="number"
+                value={effects.textStroke.value}
+                onChange={(e) =>
+                  handleChangeEffectValue(
+                    "textStroke",
+                    Number.parseInt(e.target.value)
+                  )
+                }
+                className="w-12 p-1 text-sm border rounded-md"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Background Effect */}
@@ -215,6 +333,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
               onChange={() => handleToggleEffect("background")}
             />
             <span
+              onClick={() => handleToggleEffect("background")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.background.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -227,112 +346,108 @@ function TextEffectsTab({ onClose,selectedElementId }) {
             </span>
           </div>
         </div>
-
-        {/* Corner Radius */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Corner radius</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={0}
-                max={100}
-                value={effects.background.cornerRadius}
-                onChange={(value) =>
-                  handleChangeBackgroundValue("cornerRadius", value)
-                }
-                disabled={!effects.background.enabled}
-              />
+        {effects.background.enabled && (
+          <>
+            {/* Corner Radius */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Corner radius</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={0}
+                    max={100}
+                    value={effects.background.cornerRadius}
+                    onChange={(value) =>
+                      handleChangeBackgroundValue("cornerRadius", value)
+                    }
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.background.cornerRadius}
+                  onChange={(e) =>
+                    handleChangeBackgroundValue(
+                      "cornerRadius",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.background.cornerRadius}
-              onChange={(e) =>
-                handleChangeBackgroundValue(
-                  "cornerRadius",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.background.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Padding */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Padding</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={0}
-                max={100}
-                value={effects.background.padding}
-                onChange={(value) =>
-                  handleChangeBackgroundValue("padding", value)
-                }
-                disabled={!effects.background.enabled}
-              />
+            {/* Padding */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Padding</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={0}
+                    max={100}
+                    value={effects.background.padding}
+                    onChange={(value) =>
+                      handleChangeBackgroundValue("padding", value)
+                    }
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.background.padding}
+                  onChange={(e) =>
+                    handleChangeBackgroundValue(
+                      "padding",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.background.padding}
-              onChange={(e) =>
-                handleChangeBackgroundValue(
-                  "padding",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.background.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Opacity */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Opacity</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={0}
-                max={100}
-                value={effects.background.opacity}
-                onChange={(value) =>
-                  handleChangeBackgroundValue("opacity", value)
-                }
-                disabled={!effects.background.enabled}
-              />
+            {/* Opacity */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Opacity</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={0}
+                    max={100}
+                    value={effects.background.opacity}
+                    onChange={(value) =>
+                      handleChangeBackgroundValue("opacity", value)
+                    }
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.background.opacity}
+                  onChange={(e) =>
+                    handleChangeBackgroundValue(
+                      "opacity",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.background.opacity}
-              onChange={(e) =>
-                handleChangeBackgroundValue(
-                  "opacity",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.background.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Color */}
-        <div className="ml-2 mb-2">
-          <div className="flex items-center gap-2">
-            <label className="text-xs">Color</label>
-            <input
-              type="color"
-              value={effects.background.color}
-              onChange={(e) =>
-                handleChangeBackgroundValue("color", e.target.value)
-              }
-              className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
-              disabled={!effects.background.enabled}
-            />
-          </div>
-        </div>
+            {/* Color */}
+            <div className="ml-2 mb-2">
+              <div className="flex items-center gap-2">
+                <label className="text-xs">Color</label>
+                <input
+                  type="color"
+                  value={effects.background.color}
+                  onChange={(e) =>
+                    handleChangeBackgroundValue("color", e.target.value)
+                  }
+                  className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Shadow Effect */}
@@ -347,6 +462,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
               onChange={() => handleToggleEffect("shadow")}
             />
             <span
+              onClick={() => handleToggleEffect("shadow")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.shadow.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -359,129 +475,123 @@ function TextEffectsTab({ onClose,selectedElementId }) {
             </span>
           </div>
         </div>
-
-        {/* Shadow Blur */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Blur</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={0}
-                max={50}
-                value={effects.shadow.blur}
-                onChange={(value) => handleChangeShadowValue("blur", value)}
-                disabled={!effects.shadow.enabled}
-              />
+        {effects.shadow.enabled && (
+          <>
+            {/* Shadow Blur */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Blur</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={0}
+                    max={50}
+                    value={effects.shadow.blur}
+                    onChange={(value) => handleChangeNestedEffectValue("shadow", "blur", value)}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.blur}
+                  onChange={(e) =>
+                    handleChangeNestedEffectValue("shadow", "blur", Number.parseInt(e.target.value))
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.blur}
-              onChange={(e) =>
-                handleChangeShadowValue("blur", Number.parseInt(e.target.value))
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Offset X */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Offset X</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={-50}
-                max={50}
-                value={effects.shadow.offsetX}
-                onChange={(value) => handleChangeShadowValue("offsetX", value)}
-                disabled={!effects.shadow.enabled}
-              />
+            {/* Shadow Offset X */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Offset X</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={-50}
+                    max={50}
+                    value={effects.shadow.offsetX}
+                    onChange={(value) => handleChangeShadowValue("offsetX", value)}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.offsetX}
+                  onChange={(e) =>
+                    handleChangeShadowValue(
+                      "offsetX",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.offsetX}
-              onChange={(e) =>
-                handleChangeShadowValue(
-                  "offsetX",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Offset Y */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Offset Y</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={-50}
-                max={50}
-                value={effects.shadow.offsetY}
-                onChange={(value) => handleChangeShadowValue("offsetY", value)}
-                disabled={!effects.shadow.enabled}
-              />
+            {/* Shadow Offset Y */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Offset Y</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={-50}
+                    max={50}
+                    value={effects.shadow.offsetY}
+                    onChange={(value) => handleChangeShadowValue("offsetY", value)}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.offsetY}
+                  onChange={(e) =>
+                    handleChangeShadowValue(
+                      "offsetY",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.offsetY}
-              onChange={(e) =>
-                handleChangeShadowValue(
-                  "offsetY",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Opacity */}
-        <div className="ml-2 mb-2">
-          <label className="block mb-1 text-xs">Opacity</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <Slider
-                min={0}
-                max={100}
-                value={effects.shadow.opacity}
-                onChange={(value) => handleChangeShadowValue("opacity", value)}
-                disabled={!effects.shadow.enabled}
-              />
+            {/* Shadow Opacity */}
+            <div className="ml-2 mb-2">
+              <label className="block mb-1 text-xs">Opacity</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Slider
+                    min={0}
+                    max={100}
+                    value={effects.shadow.opacity}
+                    onChange={(value) => handleChangeShadowValue("opacity", value)}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.opacity}
+                  onChange={(e) =>
+                    handleChangeShadowValue(
+                      "opacity",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.opacity}
-              onChange={(e) =>
-                handleChangeShadowValue(
-                  "opacity",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Color */}
-        <div className="ml-2 mb-2">
-          <div className="flex items-center gap-2">
-            <label className="text-xs">Color</label>
-            <input
-              type="color"
-              value={effects.shadow.color}
-              onChange={(e) => handleChangeShadowValue("color", e.target.value)}
-              className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
+            {/* Shadow Color */}
+            <div className="ml-2 mb-2">
+              <div className="flex items-center gap-2">
+                <label className="text-xs">Color</label>
+                <input
+                  type="color"
+                  value={effects.shadow.color}
+                  onChange={(e) => handleChangeShadowValue("color", e.target.value)}
+                  className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
