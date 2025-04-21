@@ -80,7 +80,7 @@ export default function PostDetails({ postData }) {
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            {postData?.image ? (
+            {postData?.domainInfo ? (
               <img
                 src={postData.domainInfo.siteLogo}
                 alt="Brand logo"
