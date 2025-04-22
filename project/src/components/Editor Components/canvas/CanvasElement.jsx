@@ -112,7 +112,6 @@ const CanvasElement = ({
             isSelected ? "border-2 border-blue-500" : "border"
           }`}
           style={{
-            ...styles,
             transform: styles.transform || "rotate(0deg)",
           }}
         >
@@ -132,6 +131,7 @@ const CanvasElement = ({
           {type === "image" && (
             <img
               src={props.src}
+              style={styles}
               alt="Canvas"
               className="w-full h-full object-cover"
               draggable={false}
@@ -140,6 +140,7 @@ const CanvasElement = ({
 
           {type === "shape" && (
             <div
+              style={styles}
               className="w-full h-full"
               dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
             />
