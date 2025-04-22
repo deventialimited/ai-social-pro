@@ -72,14 +72,14 @@ function EditorCanvas({
         }}
         onClick={handleCanvasClick}
       >
-        <div
+        {/* <div
           style={{
             transform: `scale(${zoom / 100})`,
             transformOrigin: "top left",
             width: "100%",
             height: "100%",
           }}
-        >
+        > */}
           {/* Canvas content */}
           {elements?.map((el) => (
             <CanvasElement
@@ -91,7 +91,7 @@ function EditorCanvas({
               setShowSelectorOverlay={setShowSelectorOverlay}
             />
           ))}
-        </div>
+        {/* </div> */}
       </div>
 
       {/* Zoom controls */}
