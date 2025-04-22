@@ -18,7 +18,7 @@ import { toast } from "react-hot-toast";
 import { FirstPostPopUp } from "./FirstPostPopUp";
 import { useUpdateDomainDetails } from "../libs/domainService";
 import { getFirstPost } from "../libs/postService";
-import { BusinessModal } from "../NewUIComponents/Modal";
+import { useSocket } from "../store/useSocket";
 export const BusinessSectionDummy = ({
   setComponentType,
   clientData,
@@ -46,6 +46,21 @@ export const BusinessSectionDummy = ({
       core_values: [],
     },
   });
+  const socket = useSocket();
+  useEffect(() => {
+    if (!socket) {
+      console.log("Socket not connected");
+      return;
+    }
+
+    socket.on("PostSaved", (data) => {
+      console.log("Post saved successfully!", data);
+    });
+
+    return () => {
+      socket.off("PostSaved");
+    };
+  }, []);
   const updateDomainDetails = useUpdateDomainDetails();
   const fileInputRef = useRef(null);
 
@@ -99,6 +114,7 @@ export const BusinessSectionDummy = ({
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
+
   const getPostData = async (e) => {
     e.preventDefault();
     setPopup(true);

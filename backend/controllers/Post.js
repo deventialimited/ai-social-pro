@@ -168,8 +168,13 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-    console.log("Post saved:", savedPost);
 
+    const io = req.app.get("io");
+    console.log(domain.userId.toString(), "user Id");
+    io.to(domain.userId.toString()).emit("PostSaved", {
+      message: "Post saved successfully",
+      post: newPost,
+    });
     res.status(201).json({
       message: "Post saved successfully",
       postId: savedPost.postId,
@@ -199,7 +204,8 @@ exports.getFirstPost = async (req, res) => {
     }
 
     // Find the first post for this domain (sorted by createdAt)
-    const firstPost = await Post.findOne({ domainId: id }).populate("domainId","clientName clientWebsite siteLogo")
+    const firstPost = await Post.findOne({ domainId: id })
+      .populate("domainId", "clientName clientWebsite siteLogo")
       .sort({ createdAt: 1 }) // Get the oldest post (first created)
       .lean(); // Convert to plain JavaScript object
     console.log(firstPost);

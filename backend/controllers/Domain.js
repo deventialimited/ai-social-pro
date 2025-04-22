@@ -127,8 +127,6 @@ exports.addDomain = async (req, res) => {
     state,
   } = req.body;
 
-  console.log("Received data:", req.body);
-
   try {
     // Helper to split numbered lists if needed
     const splitNumberedList = (value) => {
@@ -531,11 +529,6 @@ exports.uploadBrand = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-
-
-
-
 
 exports.updateDomainDetails = async (req, res) => {
   const domainId = req.params.id;

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AuthModal } from "../components/AuthModal";
@@ -21,6 +21,8 @@ import axios from "axios";
 import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation"; // use the correct named export
 import { BusinessSectionDummy } from "../NewUIComponents/businessDumy";
 import { BusinessModal } from "../NewUIComponents/Modal";
+import { io } from "socket.io-client";
+
 export function extractDomain(fullUrl) {
   try {
     // Trim whitespace and normalize input
@@ -36,6 +38,7 @@ export function extractDomain(fullUrl) {
     return null;
   }
 }
+const socket = io();
 
 export const HomePage = () => {
   const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
@@ -68,6 +71,23 @@ export const HomePage = () => {
   const addDomain = useAddDomainMutation();
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+  //socket COnnection
+// useEffect(() => {
+//   const user = JSON.parse(localStorage.getItem("user"));
+//   if (!user) return;
+
+//   const socket = io("http://localhost:4000");
+
+//   socket.on("connect", () => {
+//     console.log("Connected to socket server:", socket.id);
+//   });
+
+//   return () => {
+//     socket.disconnect(); // Proper cleanup
+//   };
+// }, []);
+
+
   const generateCompanyData = async (domain, user) => {
     try {
       if (!domain) {
@@ -84,7 +104,7 @@ export const HomePage = () => {
       );
       console.log("first res message:", firstResponse.data.message); // Debug log
       if (firstResponse.data.message == "Client already exists") {
-        console.error("Error in first API response:", firstResponse.status); // Debug log
+        console.error("Error in first API response:", firstResponse.data.messagee); // Debug log
         toast.error(`Try another website`);
         setisModalOpen(false);
         return;
@@ -110,31 +130,8 @@ export const HomePage = () => {
       });
       console.log("result:", result); // Debug log
 
-      // setClientData({
-      //   client_email: result?.client_email,
-      //   clientWebsite: result.clientWebsite,
-      //   clientName:
-      //     result.clientName || "Not provided,, setted null in the home jsx", // Providing defaults if not available
-      //   clientDescription:
-      //     result.clientDescription ||
-      //     "Not provided setted null in the home jsx",
-      //   industry: result.industry || "General setted null in the home jsx",
-      //   niche: result.niche || "General setted null in the home jsx",
-      //   colors: result.colors || ["#6B818C"],
-      //   language: result.language || "English setted null in the home jsx",
-      //   country: result.country || "Worldwide setted null in the home jsx",
-      //   state: result.state || "Unknown setted null in the home jsx",
-      //   userId: result.userId || "setted null in the home jsx",
-      //   siteLogo: result.siteLogo,
-      //   marketingStrategy: Data.marketingStrategy || {
-      //     audience: [],
-      //     audiencePains: [],
-      //     core_values: [],
-      //   },
-      // });
-
       setClientData({
-        id:result?._id,
+        id: result?._id,
         client_email: result?.client_email || "dummy data",
         clientWebsite: result?.clientWebsite || "dummy site",
         clientName: result?.clientName || "dummy ",
