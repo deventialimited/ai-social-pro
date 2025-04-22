@@ -36,7 +36,7 @@ function TransparencyPopup({ transparency = 100, onChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 right-44 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
+        <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
           <h3 className="font-medium mb-3">Transparency</h3>
           <div className="flex items-center gap-2">
             <input

@@ -8,7 +8,6 @@ import ShadowSettings from "../../common/popups/ShadowSettings";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function ShapeToolbar({ selectedElementId }) {
-  const [showEffects, setShowEffects] = useState(false);
   const [shapeColor, setShapeColor] = useState("#333333");
   const [transparency, setTransparency] = useState(100);
   const { updateElement, elements } = useEditor();
@@ -59,64 +58,49 @@ function ShapeToolbar({ selectedElementId }) {
 
   return (
     <>
-      <div className="flex items-center justify-between flex-wrap gap-2 w-full">
-        <div className="flex items-center gap-1">
-          <button className="p-2 rounded-md hover:bg-gray-100">
-            <RotateCcw className="h-5 w-5 text-gray-600" />
-          </button>
+      <div className="flex items-center flex-wrap gap-2">
+        <button className="p-2 rounded-md hover:bg-gray-100">
+          <RotateCcw className="h-5 w-5 text-gray-600" />
+        </button>
 
-          <button className="p-2 rounded-md hover:bg-gray-100">
-            <RotateCw className="h-5 w-5 text-gray-600" />
-          </button>
+        <button className="p-2 rounded-md hover:bg-gray-100">
+          <RotateCw className="h-5 w-5 text-gray-600" />
+        </button>
 
-          <ColorPicker
-            color={shapeColor}
-            onChange={handleColorChange}
-            showPalette={false}
-          />
+        <ColorPicker
+          color={shapeColor}
+          onChange={handleColorChange}
+          showPalette={false}
+        />
 
-          <StrokeSelector
-            stroke={stroke.width}
-            cornerRadius={stroke.cornerRadius}
-            onChange={handleStrokeChange}
-          />
-          <div className=" relative">
-            <button
-              className={`flex items-center gap-1 px-3 py-2 rounded-md ${
-                showEffects ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
-              }`}
-              onClick={() => setShowEffects(!showEffects)}
-            >
-              <Sparkles className="h-5 w-5" />
-              <span>Effects</span>
-            </button>
-            {showEffects && <ShadowSettings />}
-          </div>
-        </div>
+        <StrokeSelector
+          stroke={stroke.width}
+          cornerRadius={stroke.cornerRadius}
+          onChange={handleStrokeChange}
+        />
+        <ShadowSettings />
 
-        <div className="flex items-center gap-2">
-          <PositionPopup
-            onLayerPositionChange={handleLayerPositionChange}
-            onPositionChange={handlePositionChange}
-          />
+        <PositionPopup
+          onLayerPositionChange={handleLayerPositionChange}
+          onPositionChange={handlePositionChange}
+        />
 
-          <TransparencyPopup
-            transparency={transparency}
-            onChange={handleTransparencyChange}
-          />
+        <TransparencyPopup
+          transparency={transparency}
+          onChange={handleTransparencyChange}
+        />
 
-          <button className="p-2 rounded-md hover:bg-gray-100">
-            <Lock className="h-5 w-5 text-gray-600" />
-          </button>
+        <button className="p-2 rounded-md hover:bg-gray-100">
+          <Lock className="h-5 w-5 text-gray-600" />
+        </button>
 
-          <button className="p-2 rounded-md hover:bg-gray-100">
-            <Copy className="h-5 w-5 text-gray-600" />
-          </button>
+        <button className="p-2 rounded-md hover:bg-gray-100">
+          <Copy className="h-5 w-5 text-gray-600" />
+        </button>
 
-          <button className="p-2 rounded-md hover:bg-gray-100">
-            <Trash className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
+        <button className="p-2 rounded-md hover:bg-gray-100">
+          <Trash className="h-5 w-5 text-gray-600" />
+        </button>
       </div>
     </>
   );

@@ -37,7 +37,7 @@ function TextStylePopup({ lineHeight , letterSpacing , onChange }) {
   }
 
   return (
-    <div className="overflow-hidden" ref={popupRef}>
+    <div className=" relative" ref={popupRef}>
       <button className="p-2 rounded-md hover:bg-gray-100" onClick={() => setIsOpen(!isOpen)}>
         <List className="h-5 w-5 text-gray-600" />
       </button>

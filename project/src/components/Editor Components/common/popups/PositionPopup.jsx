@@ -14,8 +14,20 @@ import {
 } from "lucide-react";
 
 function PositionPopup({ onLayerPositionChange, onPositionChange }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const selectorRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectorRef.current && !selectorRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const handleLayeringAction = (action) => {
     if (onLayerPositionChange) {
       onLayerPositionChange(action);
@@ -31,7 +43,7 @@ function PositionPopup({ onLayerPositionChange, onPositionChange }) {
   };
 
   return (
-    <div className=" relative">
+    <div className=" relative" ref={selectorRef}>
       <button
         className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
         onClick={() => setIsOpen(!isOpen)}
