@@ -106,7 +106,17 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const addElement = useCallback((element) => {
-    setElements((prev) => [...prev, element]);
+    setElements((prev) => {
+      const newElement = {
+        ...element,
+        styles: {
+          ...element.styles,
+          zIndex: prev.length + 1, // Ensure that the new element gets the highest z-index
+        },
+        locked: false,
+      };
+      return [...prev, newElement];
+    });
   }, []);
 
   const updateElement = useCallback((id, newProps) => {

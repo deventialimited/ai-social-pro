@@ -128,6 +128,7 @@ function EditorModal({ onClose, isEditorOpen }) {
                         setSpecialActiveTab={setSpecialActiveTab}
                         selectedElementId={selectedElementId}
                         setSelectedElementId={setSelectedElementId}
+                        setActiveElement={setActiveElement}
                       />
                       <EditorCanvas
                         content={canvasContent}
@@ -136,7 +137,6 @@ function EditorModal({ onClose, isEditorOpen }) {
                         onElementSelect={handleElementSelect}
                         setSpecialActiveTab={setSpecialActiveTab}
                         specialActiveTab={specialActiveTab}
-
                       />
                     </div>
                   </div>
