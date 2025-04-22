@@ -1,9 +1,22 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Slider from "rc-slider";
+import { useEditor } from "../../../EditorStoreHooks/FullEditorHooks";
 import "rc-slider/assets/index.css";
 
-function ImageEffectsTab({ onClose }) {
+function ImageEffectsTab({ onClose, selectedElementId }) {
+  const [selectedElement, setSelectedElement] = useState(null);
+  const { updateElement, elements } = useEditor();
+
+  useEffect(() => {
+    if (selectedElementId) {
+      const selectedElement = elements.find(
+        (el) => el.id === selectedElementId
+      );
+      setSelectedElement(selectedElement);
+    }
+  }, [elements, selectedElementId]);
+
   const [effects, setEffects] = useState({
     blur: { enabled: true, value: 10 },
     brightness: { enabled: true, value: 100 },
@@ -22,37 +35,178 @@ function ImageEffectsTab({ onClose }) {
   });
 
   const handleToggleEffect = (effect) => {
-    setEffects((prev) => ({
-      ...prev,
-      [effect]: {
-        ...prev[effect],
-        enabled: !prev[effect].enabled,
+    setEffects((prev) => {
+      const newEnabled = !prev[effect].enabled;
+      const updatedEffect = { ...prev[effect], enabled: newEnabled };
+  
+      // Apply or remove styles
+      if (selectedElement) {
+        switch (effect) {
+          case "blur":
+            updateStyle({
+              filter: newEnabled ? `blur(${updatedEffect.value}px)` : "none",
+            });
+            break;
+  
+          case "brightness":
+            updateStyle({
+              filter: newEnabled ? `brightness(${updatedEffect.value}%)` : "none",
+            });
+            break;
+  
+          case "sepia":
+            updateStyle({
+              filter: newEnabled ? `sepia(${updatedEffect.value}%)` : "none",
+            });
+            break;
+  
+          case "grayscale":
+            updateStyle({
+              filter: newEnabled ? `grayscale(${updatedEffect.value}%)` : "none",
+            });
+            break;
+  
+          case "border":
+            updateStyle({
+              border: newEnabled ? `${updatedEffect.value}px solid ${updatedEffect.color}` : "none",
+            });
+            break;
+  
+          case "cornerRadius":
+            updateStyle({
+              borderRadius: newEnabled ? `${updatedEffect.value}px` : "0px",
+            });
+            break;
+  
+          case "shadow":
+            updateStyle({
+              boxShadow: newEnabled
+                ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${updatedEffect.blur}px rgba(${hexToRgb(
+                    updatedEffect.color
+                  )}, ${updatedEffect.opacity / 100})`
+                : "none",
+            });
+            break;
+        }
+      }
+  
+      return {
+        ...prev,
+        [effect]: updatedEffect,
+      };
+    });
+  };
+  
+  const updateStyle = (styleChanges) => {
+    if (!selectedElement) return;
+    updateElement(selectedElement.id, {
+      styles: {
+        ...selectedElement.styles,
+        ...styleChanges,
       },
-    }));
+    });
   };
 
   const handleChangeEffectValue = (effect, value) => {
+    const updated = {
+      ...effects[effect],
+      value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      [effect]: {
-        ...prev[effect],
-        value: value,
-      },
+      [effect]: updated,
     }));
+
+    if (selectedElement) {
+      switch (effect) {
+        case "blur":
+          updateStyle({
+            filter: `blur(${updated.value}px)`,
+          });
+          break;
+        case "brightness":
+          updateStyle({
+            filter: `brightness(${updated.value}%)`,
+          });
+          break;
+        case "sepia":
+          updateStyle({
+            filter: `sepia(${updated.value}%)`,
+          });
+          break;
+        case "grayscale":
+          updateStyle({
+            filter: `grayscale(${updated.value}%)`,
+          });
+          break;
+        case "border":
+          updateStyle({
+            border: `${updated.value}px solid ${updated.color}`,
+          });
+          break;
+        case "cornerRadius":
+          updateStyle({
+            borderRadius: `${updated.value}px`,
+          });
+          break;
+      }
+    }
   };
 
   const handleChangeShadowValue = (property, value) => {
+    const updated = {
+      ...effects.shadow,
+      [property]: value,
+    };
+
     setEffects((prev) => ({
       ...prev,
-      shadow: {
-        ...prev.shadow,
-        [property]: value,
-      },
+      shadow: updated,
     }));
+
+    if (effects.shadow.enabled && selectedElement) {
+      updateStyle({
+        boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${updated.blur}px rgba(${hexToRgb(
+          updated.color
+        )}, ${updated.opacity / 100})`,
+      });
+    }
+  };
+
+  const handleChangeNestedEffectValue = (effectKey, propKey, value) => {
+    if (effectKey === "shadow") {
+      handleChangeShadowValue(propKey, value);
+    }
+  };
+
+  const handleBorderColorChange = (color) => {
+    const updated = {
+      ...effects.border,
+      color,
+    };
+    setEffects((prev) => ({
+      ...prev,
+      border: updated,
+    }));
+  
+    if (effects.border.enabled && selectedElement) {
+      updateStyle({
+        border: `${updated.value}px solid ${updated.color}`,
+      });
+    }
+  };
+
+  const hexToRgb = (hex) => {
+    const bigint = parseInt(hex.slice(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `${r}, ${g}, ${b}`;
   };
 
   return (
-    <div className="p-4 h-[400px] overflow-y-auto">
+    <div className="p-4 h-[500px] overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Effects</h2>
         <button
@@ -75,6 +229,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("blur")}
             />
             <span
+              onClick={() => handleToggleEffect("blur")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.blur.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -87,35 +242,35 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-full">
-            <Slider
-              min={0}
-              max={50}
+        {effects.blur.enabled && (
+          <div className="flex items-center gap-2">
+            <div className="w-full">
+              <Slider
+                min={0}
+                max={50}
+                value={effects.blur.value}
+                onChange={(value) => handleChangeEffectValue("blur", value)}
+                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                handleStyle={{
+                  borderColor: "#3b82f6",
+                  height: 12,
+                  width: 12,
+                  marginTop: -5,
+                  backgroundColor: "#3b82f6",
+                }}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              />
+            </div>
+            <input
+              type="number"
               value={effects.blur.value}
-              onChange={(value) => handleChangeEffectValue("blur", value)}
-              disabled={!effects.blur.enabled}
-              trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-              handleStyle={{
-                borderColor: "#3b82f6",
-                height: 12,
-                width: 12,
-                marginTop: -5,
-                backgroundColor: "#3b82f6",
-              }}
-              railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              onChange={(e) =>
+                handleChangeEffectValue("blur", Number.parseInt(e.target.value))
+              }
+              className="w-12 p-1 text-sm border rounded-md"
             />
           </div>
-          <input
-            type="number"
-            value={effects.blur.value}
-            onChange={(e) =>
-              handleChangeEffectValue("blur", Number.parseInt(e.target.value))
-            }
-            className="w-12 p-1 text-sm border rounded-md"
-            disabled={!effects.blur.enabled}
-          />
-        </div>
+        )}
       </div>
 
       {/* Brightness Effect */}
@@ -130,6 +285,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("brightness")}
             />
             <span
+              onClick={() => handleToggleEffect("brightness")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.brightness.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -142,38 +298,38 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-full">
-            <Slider
-              min={0}
-              max={200}
+        {effects.brightness.enabled && (
+          <div className="flex items-center gap-2">
+            <div className="w-full">
+              <Slider
+                min={0}
+                max={200}
+                value={effects.brightness.value}
+                onChange={(value) => handleChangeEffectValue("brightness", value)}
+                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                handleStyle={{
+                  borderColor: "#3b82f6",
+                  height: 12,
+                  width: 12,
+                  marginTop: -5,
+                  backgroundColor: "#3b82f6",
+                }}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              />
+            </div>
+            <input
+              type="number"
               value={effects.brightness.value}
-              onChange={(value) => handleChangeEffectValue("brightness", value)}
-              disabled={!effects.brightness.enabled}
-              trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-              handleStyle={{
-                borderColor: "#3b82f6",
-                height: 12,
-                width: 12,
-                marginTop: -5,
-                backgroundColor: "#3b82f6",
-              }}
-              railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              onChange={(e) =>
+                handleChangeEffectValue(
+                  "brightness",
+                  Number.parseInt(e.target.value)
+                )
+              }
+              className="w-12 p-1 text-sm border rounded-md"
             />
           </div>
-          <input
-            type="number"
-            value={effects.brightness.value}
-            onChange={(e) =>
-              handleChangeEffectValue(
-                "brightness",
-                Number.parseInt(e.target.value)
-              )
-            }
-            className="w-12 p-1 text-sm border rounded-md"
-            disabled={!effects.brightness.enabled}
-          />
-        </div>
+        )}
       </div>
 
       {/* Sepia Effect */}
@@ -188,6 +344,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("sepia")}
             />
             <span
+              onClick={() => handleToggleEffect("sepia")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.sepia.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -200,6 +357,35 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
+        {effects.sepia.enabled && (
+          <div className="flex items-center gap-2">
+            <div className="w-full">
+              <Slider
+                min={0}
+                max={100}
+                value={effects.sepia.value}
+                onChange={(value) => handleChangeEffectValue("sepia", value)}
+                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                handleStyle={{
+                  borderColor: "#3b82f6",
+                  height: 12,
+                  width: 12,
+                  marginTop: -5,
+                  backgroundColor: "#3b82f6",
+                }}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              />
+            </div>
+            <input
+              type="number"
+              value={effects.sepia.value}
+              onChange={(e) =>
+                handleChangeEffectValue("sepia", Number.parseInt(e.target.value))
+              }
+              className="w-12 p-1 text-sm border rounded-md"
+            />
+          </div>
+        )}
       </div>
 
       {/* Grayscale Effect */}
@@ -214,6 +400,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("grayscale")}
             />
             <span
+              onClick={() => handleToggleEffect("grayscale")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.grayscale.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -226,6 +413,35 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
+        {effects.grayscale.enabled && (
+          <div className="flex items-center gap-2">
+            <div className="w-full">
+              <Slider
+                min={0}
+                max={100}
+                value={effects.grayscale.value}
+                onChange={(value) => handleChangeEffectValue("grayscale", value)}
+                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                handleStyle={{
+                  borderColor: "#3b82f6",
+                  height: 12,
+                  width: 12,
+                  marginTop: -5,
+                  backgroundColor: "#3b82f6",
+                }}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              />
+            </div>
+            <input
+              type="number"
+              value={effects.grayscale.value}
+              onChange={(e) =>
+                handleChangeEffectValue("grayscale", Number.parseInt(e.target.value))
+              }
+              className="w-12 p-1 text-sm border rounded-md"
+            />
+          </div>
+        )}
       </div>
 
       {/* Border Effect */}
@@ -240,6 +456,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("border")}
             />
             <span
+              onClick={() => handleToggleEffect("border")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.border.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -252,43 +469,45 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-full">
-            <Slider
-              min={0}
-              max={20}
-              value={effects.border.value}
-              onChange={(value) => handleChangeEffectValue("border", value)}
-              disabled={!effects.border.enabled}
-              trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-              handleStyle={{
-                borderColor: "#3b82f6",
-                height: 12,
-                width: 12,
-                marginTop: -5,
-                backgroundColor: "#3b82f6",
-              }}
-              railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
-            />
-          </div>
-          <input
-            type="number"
-            value={effects.border.value}
-            onChange={(e) =>
-              handleChangeEffectValue("border", Number.parseInt(e.target.value))
-            }
-            className="w-12 p-1 text-sm border rounded-md"
-            disabled={!effects.border.enabled}
-          />
-          <div className="flex flex-col">
-            <button className="px-1 py-0.5 text-xs border rounded-t-md hover:bg-gray-100">
-              ▲
-            </button>
-            <button className="px-1 py-0.5 text-xs border rounded-b-md border-t-0 hover:bg-gray-100">
-              ▼
-            </button>
-          </div>
-        </div>
+        {effects.border.enabled && (
+          <>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-full">
+                <Slider
+                  min={0}
+                  max={20}
+                  value={effects.border.value}
+                  onChange={(value) => handleChangeEffectValue("border", value)}
+                  trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                  handleStyle={{
+                    borderColor: "#3b82f6",
+                    height: 12,
+                    width: 12,
+                    marginTop: -5,
+                    backgroundColor: "#3b82f6",
+                  }}
+                  railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+                />
+              </div>
+              <input
+                type="number"
+                value={effects.border.value}
+                onChange={(e) =>
+                  handleChangeEffectValue("border", Number.parseInt(e.target.value))
+                }
+                className="w-12 p-1 text-sm border rounded-md"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={effects.border.color}
+                onChange={(e) => handleBorderColorChange(e.target.value)}
+                className="w-8 h-8 p-0 border border-gray-300"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Corner Radius Effect */}
@@ -303,6 +522,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("cornerRadius")}
             />
             <span
+              onClick={() => handleToggleEffect("cornerRadius")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.cornerRadius.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -315,58 +535,40 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-full">
-            <Slider
-              min={0}
-              max={500}
+        {effects.cornerRadius.enabled && (
+          <div className="flex items-center gap-2">
+            <div className="w-full">
+              <Slider
+                min={0}
+                max={500}
+                value={effects.cornerRadius.value}
+                onChange={(value) =>
+                  handleChangeEffectValue("cornerRadius", value)
+                }
+                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                handleStyle={{
+                  borderColor: "#3b82f6",
+                  height: 12,
+                  width: 12,
+                  marginTop: -5,
+                  backgroundColor: "#3b82f6",
+                }}
+                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              />
+            </div>
+            <input
+              type="number"
               value={effects.cornerRadius.value}
-              onChange={(value) =>
-                handleChangeEffectValue("cornerRadius", value)
+              onChange={(e) =>
+                handleChangeEffectValue(
+                  "cornerRadius",
+                  Number.parseInt(e.target.value)
+                )
               }
-              disabled={!effects.cornerRadius.enabled}
-              trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-              handleStyle={{
-                borderColor: "#3b82f6",
-                height: 12,
-                width: 12,
-                marginTop: -5,
-                backgroundColor: "#3b82f6",
-              }}
-              railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+              className="w-12 p-1 text-sm border rounded-md"
             />
           </div>
-          <input
-            type="number"
-            value={effects.cornerRadius.value}
-            onChange={(e) =>
-              handleChangeEffectValue(
-                "cornerRadius",
-                Number.parseInt(e.target.value)
-              )
-            }
-            className="w-12 p-1 text-sm border rounded-md"
-            disabled={!effects.cornerRadius.enabled}
-          />
-        </div>
-      </div>
-
-      {/* Border Color */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2">
-          <input
-            type="color"
-            value={effects.border.color}
-            onChange={(e) =>
-              handleChangeEffectValue("border", {
-                ...effects.border,
-                color: e.target.value,
-              })
-            }
-            className="w-8 h-8 p-0 border border-gray-300"
-            disabled={!effects.border.enabled}
-          />
-        </div>
+        )}
       </div>
 
       {/* Shadow Effect */}
@@ -381,6 +583,7 @@ function ImageEffectsTab({ onClose }) {
               onChange={() => handleToggleEffect("shadow")}
             />
             <span
+              onClick={() => handleToggleEffect("shadow")}
               className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
                 effects.shadow.enabled ? "bg-blue-500" : "bg-gray-300"
               }`}
@@ -393,165 +596,159 @@ function ImageEffectsTab({ onClose }) {
             </span>
           </div>
         </div>
-
-        {/* Shadow Blur */}
-        <div className="ml-4 mb-2">
-          <label className="block mb-1 text-xs">Blur</label>
-          <div className="flex items-center gap-2">
-            <div className="w-full">
-              <Slider
-                min={0}
-                max={50}
-                value={effects.shadow.blur}
-                onChange={(value) => handleChangeShadowValue("blur", value)}
-                disabled={!effects.shadow.enabled}
-                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-                handleStyle={{
-                  borderColor: "#3b82f6",
-                  height: 12,
-                  width: 12,
-                  marginTop: -5,
-                  backgroundColor: "#3b82f6",
-                }}
-                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
-              />
+        {effects.shadow.enabled && (
+          <>
+            {/* Shadow Blur */}
+            <div className="ml-4 mb-2">
+              <label className="block mb-1 text-xs">Blur</label>
+              <div className="flex items-center gap-2">
+                <div className="w-full">
+                  <Slider
+                    min={0}
+                    max={50}
+                    value={effects.shadow.blur}
+                    onChange={(value) => handleChangeNestedEffectValue("shadow", "blur", value)}
+                    trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                    handleStyle={{
+                      borderColor: "#3b82f6",
+                      height: 12,
+                      width: 12,
+                      marginTop: -5,
+                      backgroundColor: "#3b82f6",
+                    }}
+                    railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.blur}
+                  onChange={(e) =>
+                    handleChangeNestedEffectValue("shadow", "blur", Number.parseInt(e.target.value))
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.blur}
-              onChange={(e) =>
-                handleChangeShadowValue("blur", Number.parseInt(e.target.value))
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Offset X */}
-        <div className="ml-4 mb-2">
-          <label className="block mb-1 text-xs">Offset X</label>
-          <div className="flex items-center gap-2">
-            <div className="w-full">
-              <Slider
-                min={-50}
-                max={50}
-                value={effects.shadow.offsetX}
-                onChange={(value) => handleChangeShadowValue("offsetX", value)}
-                disabled={!effects.shadow.enabled}
-                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-                handleStyle={{
-                  borderColor: "#3b82f6",
-                  height: 12,
-                  width: 12,
-                  marginTop: -5,
-                  backgroundColor: "#3b82f6",
-                }}
-                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
-              />
+            {/* Shadow Offset X */}
+            <div className="ml-4 mb-2">
+              <label className="block mb-1 text-xs">Offset X</label>
+              <div className="flex items-center gap-2">
+                <div className="w-full">
+                  <Slider
+                    min={-50}
+                    max={50}
+                    value={effects.shadow.offsetX}
+                    onChange={(value) => handleChangeShadowValue("offsetX", value)}
+                    trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                    handleStyle={{
+                      borderColor: "#3b82f6",
+                      height: 12,
+                      width: 12,
+                      marginTop: -5,
+                      backgroundColor: "#3b82f6",
+                    }}
+                    railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.offsetX}
+                  onChange={(e) =>
+                    handleChangeShadowValue(
+                      "offsetX",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.offsetX}
-              onChange={(e) =>
-                handleChangeShadowValue(
-                  "offsetX",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Offset Y */}
-        <div className="ml-4 mb-2">
-          <label className="block mb-1 text-xs">Offset Y</label>
-          <div className="flex items-center gap-2">
-            <div className="w-full">
-              <Slider
-                min={-50}
-                max={50}
-                value={effects.shadow.offsetY}
-                onChange={(value) => handleChangeShadowValue("offsetY", value)}
-                disabled={!effects.shadow.enabled}
-                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-                handleStyle={{
-                  borderColor: "#3b82f6",
-                  height: 12,
-                  width: 12,
-                  marginTop: -5,
-                  backgroundColor: "#3b82f6",
-                }}
-                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
-              />
+            {/* Shadow Offset Y */}
+            <div className="ml-4 mb-2">
+              <label className="block mb-1 text-xs">Offset Y</label>
+              <div className="flex items-center gap-2">
+                <div className="w-full">
+                  <Slider
+                    min={-50}
+                    max={50}
+                    value={effects.shadow.offsetY}
+                    onChange={(value) => handleChangeShadowValue("offsetY", value)}
+                    trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                    handleStyle={{
+                      borderColor: "#3b82f6",
+                      height: 12,
+                      width: 12,
+                      marginTop: -5,
+                      backgroundColor: "#3b82f6",
+                    }}
+                    railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.offsetY}
+                  onChange={(e) =>
+                    handleChangeShadowValue(
+                      "offsetY",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.offsetY}
-              onChange={(e) =>
-                handleChangeShadowValue(
-                  "offsetY",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Opacity */}
-        <div className="ml-4 mb-2">
-          <label className="block mb-1 text-xs">Opacity</label>
-          <div className="flex items-center gap-2">
-            <div className="w-full">
-              <Slider
-                min={0}
-                max={100}
-                value={effects.shadow.opacity}
-                onChange={(value) => handleChangeShadowValue("opacity", value)}
-                disabled={!effects.shadow.enabled}
-                trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
-                handleStyle={{
-                  borderColor: "#3b82f6",
-                  height: 12,
-                  width: 12,
-                  marginTop: -5,
-                  backgroundColor: "#3b82f6",
-                }}
-                railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
-              />
+            {/* Shadow Opacity */}
+            <div className="ml-4 mb-2">
+              <label className="block mb-1 text-xs">Opacity</label>
+              <div className="flex items-center gap-2">
+                <div className="w-full">
+                  <Slider
+                    min={0}
+                    max={100}
+                    value={effects.shadow.opacity}
+                    onChange={(value) => handleChangeShadowValue("opacity", value)}
+                    trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
+                    handleStyle={{
+                      borderColor: "#3b82f6",
+                      height: 12,
+                      width: 12,
+                      marginTop: -5,
+                      backgroundColor: "#3b82f6",
+                    }}
+                    railStyle={{ backgroundColor: "#e5e7eb", height: 2 }}
+                  />
+                </div>
+                <input
+                  type="number"
+                  value={effects.shadow.opacity}
+                  onChange={(e) =>
+                    handleChangeShadowValue(
+                      "opacity",
+                      Number.parseInt(e.target.value)
+                    )
+                  }
+                  className="w-12 p-1 text-sm border rounded-md"
+                />
+              </div>
             </div>
-            <input
-              type="number"
-              value={effects.shadow.opacity}
-              onChange={(e) =>
-                handleChangeShadowValue(
-                  "opacity",
-                  Number.parseInt(e.target.value)
-                )
-              }
-              className="w-12 p-1 text-sm border rounded-md"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
 
-        {/* Shadow Color */}
-        <div className="ml-4 mb-2">
-          <label className="block mb-1 text-xs">Color</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={effects.shadow.color}
-              onChange={(e) => handleChangeShadowValue("color", e.target.value)}
-              className="w-8 h-8 p-0 border border-gray-300"
-              disabled={!effects.shadow.enabled}
-            />
-          </div>
-        </div>
+            {/* Shadow Color */}
+            <div className="ml-4 mb-2">
+              <label className="block mb-1 text-xs">Color</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={effects.shadow.color}
+                  onChange={(e) => handleChangeShadowValue("color", e.target.value)}
+                  className="w-8 h-8 p-0 border border-gray-300"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

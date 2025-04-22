@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash, Minus, Plus } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
@@ -9,6 +9,7 @@ function EditorCanvas({
   selectedElementId,
   setSelectedElementId,
   setSpecialActiveTab,
+  specialActiveTab,
 }) {
   const [zoom, setZoom] = useState(32);
   const { canvas, elements, allFiles } = useEditor();
@@ -24,6 +25,11 @@ function EditorCanvas({
     setSelectedElementId(id);
     onElementSelect(type);
   };
+  useEffect(() => {
+    if (specialActiveTab) {
+      setSpecialActiveTab(null);
+    }
+  }, [selectedElementId]);
   // Handle canvas click (background)
   const handleCanvasClick = (e) => {
     // Only select canvas if clicking directly on the canvas background
@@ -66,14 +72,14 @@ function EditorCanvas({
         }}
         onClick={handleCanvasClick}
       >
-        <div
+        {/* <div
           style={{
             transform: `scale(${zoom / 100})`,
             transformOrigin: "top left",
             width: "100%",
             height: "100%",
           }}
-        >
+        > */}
           {/* Canvas content */}
           {elements?.map((el) => (
             <CanvasElement
@@ -85,7 +91,7 @@ function EditorCanvas({
               setShowSelectorOverlay={setShowSelectorOverlay}
             />
           ))}
-        </div>
+        {/* </div> */}
       </div>
 
       {/* Zoom controls */}

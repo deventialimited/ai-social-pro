@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react";
 import {
   ChevronDown,
   ArrowUp,
@@ -11,50 +11,50 @@ import {
   AlignStartVertical,
   AlignCenterVertical,
   AlignEndVertical,
-} from "lucide-react"
+} from "lucide-react";
 
-function PositionPopup({ onPositionChange, onAlignChange }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const popupRef = useRef(null)
-  const buttonRef = useRef(null)
-  
+function PositionPopup({ onLayerPositionChange, onPositionChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectorRef = useRef(null);
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (popupRef.current && !popupRef.current.contains(event.target) && 
-          buttonRef.current && !buttonRef.current.contains(event.target)) {
-        setIsOpen(false)
+      if (selectorRef.current && !selectorRef.current.contains(event.target)) {
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const handleLayeringAction = (action) => {
+    if (onLayerPositionChange) {
+      onLayerPositionChange(action);
+    }
+    setIsOpen(false);
+  };
+
+  const handlePositionAction = (action) => {
     if (onPositionChange) {
       onPositionChange(action);
     }
     setIsOpen(false);
   };
-  
-  const handleAlignAction = (action) => {
-    if (onAlignChange) {
-      onAlignChange(action);
-    }
-    setIsOpen(false);
-  };
-  
 
   return (
-    <div className="inline-block relative" ref={popupRef}>
+    <div className=" relative" ref={selectorRef}>
       <button
-        ref={buttonRef}
         className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <svg className="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="h-5 w-5 text-gray-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <rect x="4" y="4" width="16" height="16" rx="2" />
           <path d="M4 12h16" />
           <path d="M12 4v16" />
@@ -64,12 +64,7 @@ function PositionPopup({ onPositionChange, onAlignChange }) {
       </button>
 
       {isOpen && (
-        <div className="fixed  z-50 bg-white rounded-md shadow-lg border" 
-             style={{
-               top: buttonRef.current ? buttonRef.current.getBoundingClientRect().bottom + 5 : 0,
-               left: buttonRef.current ? buttonRef.current.getBoundingClientRect().left : 0,
-               width: '16rem'
-             }}>
+        <div className=" absolute mt-2 w-72 p-4 border rounded-lg shadow-md bg-white z-[999999999999]">
           <div className="p-4 border-b">
             <h3 className="font-medium mb-3">Layering</h3>
             <div className="grid grid-cols-2 gap-2">
@@ -109,42 +104,42 @@ function PositionPopup({ onPositionChange, onAlignChange }) {
             <div className="grid grid-cols-2 gap-2">
               <button
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
-                onClick={() => handleAlignAction("left")}
+                onClick={() => handlePositionAction("left")}
               >
                 <AlignLeft className="h-5 w-5" />
                 <span>Align left</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
-                onClick={() => handleAlignAction("top")}
+                onClick={() => handlePositionAction("top")}
               >
                 <AlignStartVertical className="h-5 w-5" />
                 <span>Align top</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
-                onClick={() => handleAlignAction("center")}
+                onClick={() => handlePositionAction("center")}
               >
                 <AlignCenter className="h-5 w-5" />
                 <span>Align center</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
-                onClick={() => handleAlignAction("middle")}
+                onClick={() => handlePositionAction("middle")}
               >
                 <AlignCenterVertical className="h-5 w-5" />
                 <span>Align middle</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
-                onClick={() => handleAlignAction("right")}
+                onClick={() => handlePositionAction("right")}
               >
                 <AlignRight className="h-5 w-5" />
                 <span>Align right</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
-                onClick={() => handleAlignAction("bottom")}
+                onClick={() => handlePositionAction("bottom")}
               >
                 <AlignEndVertical className="h-5 w-5" />
                 <span>Align bottom</span>
@@ -154,7 +149,7 @@ function PositionPopup({ onPositionChange, onAlignChange }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default PositionPopup
+export default PositionPopup;

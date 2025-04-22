@@ -5,8 +5,8 @@ const EditorContext = createContext(null);
 export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
   const [canvas, setCanvas] = useState({
-    width: 1200,
-    height: 628,
+    width: 1080,
+    height: 1080,
     ratio: "1.91:1",
     styles: {
       boxShadow: "0 0 10px rgba(0,0,0,0.2)",
@@ -106,7 +106,17 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const addElement = useCallback((element) => {
-    setElements((prev) => [...prev, element]);
+    setElements((prev) => {
+      const newElement = {
+        ...element,
+        styles: {
+          ...element.styles,
+          zIndex: prev.length + 1, // Ensure that the new element gets the highest z-index
+        },
+        locked: false,
+      };
+      return [...prev, newElement];
+    });
   }, []);
 
   const updateElement = useCallback((id, newProps) => {

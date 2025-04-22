@@ -63,7 +63,7 @@ function FontSelector({ font = "Poppins", onChange }) {
   }
 
   return (
-    <div className="overflow-hidden " ref={selectorRef}>
+    <div className=" relative " ref={selectorRef}>
       <button
         className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
         onClick={() => setIsOpen(!isOpen)}

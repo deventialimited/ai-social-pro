@@ -9,6 +9,7 @@ function EditorToolbar({
   setSpecialActiveTab,
   selectedElementId,
   setSelectedElementId,
+  setActiveElement,
 }) {
   // This would be determined by what's selected in the canvas
   // For now we'll use a prop to control it
@@ -23,6 +24,7 @@ function EditorToolbar({
             setSpecialActiveTab={setSpecialActiveTab}
             selectedElementId={selectedElementId}
             setSelectedElementId={setSelectedElementId}
+            setActiveElement={setActiveElement}
           />
         );
       case "image":
@@ -30,10 +32,13 @@ function EditorToolbar({
           <ImageToolbar
             specialActiveTab={specialActiveTab}
             setSpecialActiveTab={setSpecialActiveTab}
+            selectedElementId={selectedElementId}
+            setSelectedElementId={setSelectedElementId}
+            setActiveElement={setActiveElement}
           />
         );
       case "shape":
-        return <ShapeToolbar />;
+        return <ShapeToolbar selectedElementId={selectedElementId} />;
       case "canvas":
       default:
         return <CanvasToolbar />;
