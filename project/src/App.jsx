@@ -12,6 +12,7 @@ import EditorModal from "./components/Editor Components/EditorModal";
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
+  const [isEditorOpen, setIsEditorOpen] = useState(true);
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -19,6 +20,12 @@ function App() {
 
   return (
     <div className={isDark ? "dark" : ""}>
+      {isEditorOpen && (
+        <EditorModal
+          onClose={() => setIsEditorOpen(false)}
+          isEditorOpen={isEditorOpen}
+        />
+      )}
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>

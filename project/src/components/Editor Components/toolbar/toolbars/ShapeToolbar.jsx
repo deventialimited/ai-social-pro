@@ -1,14 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RotateCcw, RotateCw, Lock, Copy, Trash, Sparkles } from "lucide-react";
 import ColorPicker from "../../common/popups/ColorPicker";
 import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import StrokeSelector from "../../common/popups/StrokeSelector";
+import ShadowSettings from "../../common/popups/ShadowSettings";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
-function ShapeToolbar() {
+function ShapeToolbar({ selectedElementId }) {
   const [showEffects, setShowEffects] = useState(false);
   const [shapeColor, setShapeColor] = useState("#333333");
   const [transparency, setTransparency] = useState(100);
+  const { updateElement, elements } = useEditor();
+  const [selectedElement, setSelectedElement] = useState(null);
+  useEffect(() => {
+    if (selectedElementId) {
+      const selectedElement = elements.find(
+        (el) => el.id === selectedElementId
+      );
+      console.log(selectedElement);
+      setSelectedElement(selectedElement);
+    }
+  }, [elements, selectedElementId]);
   const [stroke, setStroke] = useState({
     width: 0,
     style: "none",
@@ -19,12 +32,21 @@ function ShapeToolbar() {
     setShapeColor(color);
   };
 
-  const handlePositionChange = (action) => {
+  const handleLayerPositionChange = (action) => {
     console.log("Position action:", action);
   };
 
-  const handleAlignChange = (action) => {
+  const handlePositionChange = (action) => {
     console.log("Align action:", action);
+    updateElement(selectedElement?.id, {
+      position: { ...selectedElement?.position, y: 0 },
+      styles: {
+        ...selectedElement?.styles,
+        left: 0, // Optional: You can change this as needed depending on the requirement
+        transform: `translate(${selectedElement?.position?.x}px, 0)`, // Apply translate with X from position.x and y=0
+        position: "absolute", // Set the position to absolute
+      },
+    });
   };
 
   const handleTransparencyChange = (value) => {
@@ -37,7 +59,7 @@ function ShapeToolbar() {
 
   return (
     <>
-      <div className="flex items-center justify-between w-max overflow-x-auto">
+      <div className="flex items-center justify-between flex-wrap gap-2 w-full">
         <div className="flex items-center gap-1">
           <button className="p-2 rounded-md hover:bg-gray-100">
             <RotateCcw className="h-5 w-5 text-gray-600" />
@@ -58,22 +80,24 @@ function ShapeToolbar() {
             cornerRadius={stroke.cornerRadius}
             onChange={handleStrokeChange}
           />
-
-          <button
-            className={`flex items-center gap-1 px-3 py-2 rounded-md ${
-              showEffects ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
-            }`}
-            onClick={() => setShowEffects(!showEffects)}
-          >
-            <Sparkles className="h-5 w-5" />
-            <span>Effects</span>
-          </button>
+          <div className=" relative">
+            <button
+              className={`flex items-center gap-1 px-3 py-2 rounded-md ${
+                showEffects ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
+              }`}
+              onClick={() => setShowEffects(!showEffects)}
+            >
+              <Sparkles className="h-5 w-5" />
+              <span>Effects</span>
+            </button>
+            {showEffects && <ShadowSettings />}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <PositionPopup
+            onLayerPositionChange={handleLayerPositionChange}
             onPositionChange={handlePositionChange}
-            onAlignChange={handleAlignChange}
           />
 
           <TransparencyPopup

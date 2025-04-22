@@ -66,7 +66,7 @@ function ColorPicker({
   ];
 
   return (
-    <div className="overflow-hidden" ref={pickerRef}>
+    <div className=" relative" ref={pickerRef}>
       <button
         className="flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}

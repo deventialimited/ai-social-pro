@@ -1,35 +1,37 @@
-import { useState, useRef, useEffect } from "react"
-import { Droplet } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import { Droplet } from "lucide-react";
 
 function TransparencyPopup({ transparency = 100, onChange }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [value, setValue] = useState(transparency)
-  const popupRef = useRef(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState(transparency);
+  const popupRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleChange = (newValue) => {
-    setValue(newValue)
+    setValue(newValue);
     if (onChange) {
-      onChange(newValue / 100)
-
+      onChange(newValue / 100);
     }
-  }
+  };
 
   return (
-    <div className="overflow-hidden" ref={popupRef}>
-      <button className="p-2 rounded-md hover:bg-gray-100" onClick={() => setIsOpen(!isOpen)}>
+    <div className=" relative" ref={popupRef}>
+      <button
+        className="p-2 rounded-md hover:bg-gray-100"
+        onClick={() => setIsOpen(!isOpen)}
+      >
         <Droplet className="h-5 w-5 text-gray-600" />
       </button>
 
@@ -57,7 +59,7 @@ function TransparencyPopup({ transparency = 100, onChange }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default TransparencyPopup
+export default TransparencyPopup;
