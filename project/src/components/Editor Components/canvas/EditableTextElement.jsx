@@ -16,6 +16,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
       onBlur={handleBlur}
       style={{
         ...styles,
+        
         background: "transparent",
         outline: "none",
       }}

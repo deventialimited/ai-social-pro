@@ -29,6 +29,7 @@ const CanvasElement = ({
     };
   };
   const onResize = ({ deltaX, deltaY }, direction) => {
+    if (!element || element.locked) return;
     const { width, height, fontSize: rawFontSize } = startSizeRef.current;
     const fontSize = parseFloat(rawFontSize);
 
@@ -88,6 +89,7 @@ const CanvasElement = ({
     });
   };
   const { handleRotateMouseDown } = useElementRotate((angle) => {
+    if (!element || element.locked) return;
     updateElement(id, {
       styles: {
         ...styles,
@@ -99,19 +101,42 @@ const CanvasElement = ({
     <Rnd
       key={id}
       size={{ width: styles.width, height: styles.height }}
-      position={{ x: position.x, y: position.y }}
-      // bounds="parent"
-      onDragStop={(e, d) => updateElement(id, { position: { x: d.x, y: d.y } })}
+      position={
+        styles?.position === "absolute"
+          ? { x: 0, y: styles?.bottom === 0 ? 300 : 0 }
+          : { x: position.x, y: position.y }
+      }
+      style={{
+        position: styles?.position === "absolute" ? "static" : "absolute",
+        zIndex: styles?.zIndex,
+      }}
+      onDragStop={(e, d) => {
+        if (!element || element.locked) return;
+        updateElement(id, {
+          position: { x: d.x, y: d.y },
+          styles: {
+            ...styles,
+            position: "static",
+            left: null,
+            right: null,
+            top: null,
+            bottom: null,
+          },
+        });
+      }}
       onClick={() => onSelect(id, type)}
       enableResizing={false} // we handle resizing manually
     >
       {["text", "image", "shape"].includes(type) && (
         <div
           ref={elementRef}
-          className={`absolute ${
-            isSelected ? "border-2 border-blue-500" : "border"
-          }`}
+          className={`${isSelected ? "border-2 border-blue-500" : null}`}
           style={{
+            position: styles?.position,
+            left: styles?.left,
+            right: styles?.right,
+            bottom: styles?.bottom,
+            top: styles?.top,
             transform: styles.transform || "rotate(0deg)",
           }}
         >
@@ -120,11 +145,13 @@ const CanvasElement = ({
               text={props.text}
               styles={{
                 ...styles,
+                position: "static",
                 transform: "rotate(0deg)",
               }}
-              onChange={(newText) =>
-                updateElement(id, { props: { ...props, text: newText } })
-              }
+              onChange={(newText) => {
+                if (!element || element.locked) return;
+                updateElement(id, { props: { ...props, text: newText } });
+              }}
             />
           )}
 

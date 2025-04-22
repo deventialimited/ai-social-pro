@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import Slider from "rc-slider";
 import { useEditor } from "../../../EditorStoreHooks/FullEditorHooks";
 import "rc-slider/assets/index.css";
 
-function TextEffectsTab({ onClose,selectedElementId }) {
+function TextEffectsTab({ onClose, selectedElementId }) {
   const [selectedElement, setSelectedElement] = useState(null);
   const { updateElement, elements } = useEditor();
 
@@ -40,7 +40,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
     setEffects((prev) => {
       const newEnabled = !prev[effect].enabled;
       const updatedEffect = { ...prev[effect], enabled: newEnabled };
-  
+
       // Apply or remove styles
       if (selectedElement) {
         switch (effect) {
@@ -49,7 +49,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
               filter: newEnabled ? `blur(${updatedEffect.value}px)` : "none",
             });
             break;
-  
+
           case "textStroke":
             updateStyle({
               WebkitTextStroke: newEnabled
@@ -57,7 +57,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                 : "none",
             });
             break;
-  
+
           case "background":
             updateStyle(
               newEnabled
@@ -75,29 +75,30 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                   }
             );
             break;
-  
+
           case "shadow":
             updateStyle({
               boxShadow: newEnabled
-                ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${updatedEffect.blur}px rgba(${hexToRgb(
-                    updatedEffect.color
-                  )}, ${updatedEffect.opacity / 100})`
+                ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${
+                    updatedEffect.blur
+                  }px rgba(${hexToRgb(updatedEffect.color)}, ${
+                    updatedEffect.opacity / 100
+                  })`
                 : "none",
             });
             break;
         }
       }
-  
+
       return {
         ...prev,
         [effect]: updatedEffect,
       };
     });
   };
-  
 
   const updateStyle = (styleChanges) => {
-    if (!selectedElement) return;
+    if (!selectedElement || selectedElement.locked) return;
     updateElement(selectedElement.id, {
       styles: {
         ...selectedElement.styles,
@@ -105,9 +106,6 @@ function TextEffectsTab({ onClose,selectedElementId }) {
       },
     });
   };
-  
-
- 
 
   const handleChangeEffectValue = (effect, value) => {
     const updated = {
@@ -147,13 +145,15 @@ function TextEffectsTab({ onClose,selectedElementId }) {
 
     if (effects.background.enabled) {
       updateStyle({
-        backgroundColor: `rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
-        // transform: `scale(${1 + updated.padding / 100})`, 
-        // transformOrigin: "center", 
-        padding:updated.padding,
+        backgroundColor: `rgba(${hexToRgb(updated.color)}, ${
+          updated.opacity / 100
+        })`,
+        // transform: `scale(${1 + updated.padding / 100})`,
+        // transformOrigin: "center",
+        padding: updated.padding,
         borderRadius: `${updated.cornerRadius}px`,
         position: "relative",
-            });
+      });
     }
   };
 
@@ -170,9 +170,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
 
     if (effects.shadow.enabled) {
       updateStyle({
-        boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${updated.blur}px rgba(${hexToRgb(
-          updated.color
-        )}, ${updated.opacity / 100})`,
+        boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${
+          updated.blur
+        }px rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
       });
     }
   };
@@ -194,14 +194,13 @@ function TextEffectsTab({ onClose,selectedElementId }) {
       ...prev,
       textStroke: updated,
     }));
-  
+
     if (effects.textStroke.enabled) {
       updateStyle({
         WebkitTextStroke: `${updated.value}px ${updated.color}`,
       });
     }
   };
-  
 
   const hexToRgb = (hex) => {
     const bigint = parseInt(hex.slice(1), 16);
@@ -210,8 +209,6 @@ function TextEffectsTab({ onClose,selectedElementId }) {
     const b = bigint & 255;
     return `${r}, ${g}, ${b}`;
   };
-
-
 
   return (
     <div className="p-2 h-[500px] overflow-y-auto">
@@ -226,7 +223,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
       </div>
 
       {/* Blur Effect */}
-      <div className="mb-3  " >
+      <div className="mb-3  ">
         <div className="flex items-center justify-between mb-1">
           <label className="text-xs">Blur</label>
           <div className="relative inline-block w-8 h-4">
@@ -487,14 +484,20 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                     min={0}
                     max={50}
                     value={effects.shadow.blur}
-                    onChange={(value) => handleChangeNestedEffectValue("shadow", "blur", value)}
+                    onChange={(value) =>
+                      handleChangeNestedEffectValue("shadow", "blur", value)
+                    }
                   />
                 </div>
                 <input
                   type="number"
                   value={effects.shadow.blur}
                   onChange={(e) =>
-                    handleChangeNestedEffectValue("shadow", "blur", Number.parseInt(e.target.value))
+                    handleChangeNestedEffectValue(
+                      "shadow",
+                      "blur",
+                      Number.parseInt(e.target.value)
+                    )
                   }
                   className="w-12 p-1 text-sm border rounded-md"
                 />
@@ -510,7 +513,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                     min={-50}
                     max={50}
                     value={effects.shadow.offsetX}
-                    onChange={(value) => handleChangeShadowValue("offsetX", value)}
+                    onChange={(value) =>
+                      handleChangeShadowValue("offsetX", value)
+                    }
                   />
                 </div>
                 <input
@@ -536,7 +541,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                     min={-50}
                     max={50}
                     value={effects.shadow.offsetY}
-                    onChange={(value) => handleChangeShadowValue("offsetY", value)}
+                    onChange={(value) =>
+                      handleChangeShadowValue("offsetY", value)
+                    }
                   />
                 </div>
                 <input
@@ -562,7 +569,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                     min={0}
                     max={100}
                     value={effects.shadow.opacity}
-                    onChange={(value) => handleChangeShadowValue("opacity", value)}
+                    onChange={(value) =>
+                      handleChangeShadowValue("opacity", value)
+                    }
                   />
                 </div>
                 <input
@@ -586,7 +595,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
                 <input
                   type="color"
                   value={effects.shadow.color}
-                  onChange={(e) => handleChangeShadowValue("color", e.target.value)}
+                  onChange={(e) =>
+                    handleChangeShadowValue("color", e.target.value)
+                  }
                   className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
                 />
               </div>
