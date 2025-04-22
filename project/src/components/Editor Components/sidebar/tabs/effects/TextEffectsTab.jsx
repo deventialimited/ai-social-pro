@@ -147,10 +147,9 @@ function TextEffectsTab({ onClose,selectedElementId }) {
 
     if (effects.background.enabled) {
       updateStyle({
-        backgroundColor: updated.color,
+        backgroundColor: `rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
         padding: updated.padding,
         borderRadius: `${updated.cornerRadius}px`,
-        opacity: updated.opacity / 100,
         display: 'block', // or 'block'
       });
     }
