@@ -30,6 +30,7 @@ function EditorToolbar({
           <ImageToolbar
             specialActiveTab={specialActiveTab}
             setSpecialActiveTab={setSpecialActiveTab}
+            selectedElementId={selectedElementId}
           />
         );
       case "shape":
