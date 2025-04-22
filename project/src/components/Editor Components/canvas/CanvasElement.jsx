@@ -128,15 +128,18 @@ const CanvasElement = ({
             />
           )}
 
-          {type === "image" && (
-            <img
-              src={props.src}
-              style={styles}
-              alt="Canvas"
-              className="w-full h-full object-cover"
-              draggable={false}
-            />
-          )}
+{type === "image" && (
+  <img
+    src={props.src}
+    style={{
+      ...styles,
+      clipPath: props.mask || "none", // Apply the mask if it exists, otherwise none
+    }}
+    alt="Canvas"
+    className="w-full h-full object-cover"
+    draggable={false}
+  />
+)}
 
           {type === "shape" && (
             <div
