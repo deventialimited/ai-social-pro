@@ -33,7 +33,7 @@ function EditorToolbar({
           />
         );
       case "shape":
-        return <ShapeToolbar />;
+        return <ShapeToolbar selectedElementId={selectedElementId} />;
       case "canvas":
       default:
         return <CanvasToolbar />;

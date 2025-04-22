@@ -135,6 +135,8 @@ function EditorModal({ onClose, isEditorOpen }) {
                         setSelectedElementId={setSelectedElementId}
                         onElementSelect={handleElementSelect}
                         setSpecialActiveTab={setSpecialActiveTab}
+                        specialActiveTab={specialActiveTab}
+
                       />
                     </div>
                   </div>
