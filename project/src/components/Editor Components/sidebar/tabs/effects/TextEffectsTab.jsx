@@ -148,10 +148,12 @@ function TextEffectsTab({ onClose,selectedElementId }) {
     if (effects.background.enabled) {
       updateStyle({
         backgroundColor: `rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
-        padding: updated.padding,
+        // transform: `scale(${1 + updated.padding / 100})`, 
+        // transformOrigin: "center", 
+        padding:updated.padding,
         borderRadius: `${updated.cornerRadius}px`,
-        display: 'block', // or 'block'
-      });
+        position: "relative",
+            });
     }
   };
 
@@ -224,7 +226,7 @@ function TextEffectsTab({ onClose,selectedElementId }) {
       </div>
 
       {/* Blur Effect */}
-      <div className="mb-3">
+      <div className="mb-3  " >
         <div className="flex items-center justify-between mb-1">
           <label className="text-xs">Blur</label>
           <div className="relative inline-block w-8 h-4">
