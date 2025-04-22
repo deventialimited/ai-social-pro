@@ -17,7 +17,7 @@ export const SocketProvider = ({ children }) => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) return;
 
-    const socket = io("http://localhost:4000");
+    const socket = io("https://api.oneyearsocial.com");
 
     socket.on("connect", () => {
       console.log("Connected to socket server:", socket.id);
