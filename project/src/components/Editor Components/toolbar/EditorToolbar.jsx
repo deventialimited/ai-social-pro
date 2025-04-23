@@ -38,7 +38,15 @@ function EditorToolbar({
           />
         );
       case "shape":
-        return <ShapeToolbar selectedElementId={selectedElementId} />;
+        return (
+          <ShapeToolbar
+            specialActiveTab={specialActiveTab}
+            setSpecialActiveTab={setSpecialActiveTab}
+            selectedElementId={selectedElementId}
+            setSelectedElementId={setSelectedElementId}
+            setActiveElement={setActiveElement}
+          />
+        );
       case "canvas":
       default:
         return <CanvasToolbar />;

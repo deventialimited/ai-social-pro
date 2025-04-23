@@ -183,7 +183,9 @@ const CanvasElement = ({
             <div
               style={{
                 ...styles,
-                color: styles.fill || styles.color || 'currentColor'
+                color: styles.fill || styles.color || "currentColor",
+                position: "static",
+                transform: "rotate(0deg)",
               }}
               className="w-full h-full"
               dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
