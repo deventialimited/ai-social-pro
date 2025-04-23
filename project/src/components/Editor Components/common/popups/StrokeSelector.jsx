@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { AlignJustify } from "lucide-react";
+import Slider from "rc-slider";
 
 function StrokeSelector({ stroke = 0, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,13 +102,13 @@ function StrokeSelector({ stroke = 0, onChange }) {
               Stroke Width
             </label>
             <div className="flex items-center gap-2">
-              <input
+              <Slider
                 type="range"
-                min="0"
-                max="20"
+                min={0}
+                max={10}
                 value={strokeWidth}
-                onChange={(e) =>
-                  handleStrokeWidthChange(Number(e.target.value))
+                onChange={
+                  handleStrokeWidthChange
                 }
                 className="w-full"
               />
