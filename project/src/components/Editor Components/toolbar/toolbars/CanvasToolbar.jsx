@@ -54,10 +54,6 @@ function CanvasToolbar() {
 
     updateCanvasStyles({
       backgroundImage: `url(${imageURL})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      backgroundColor: "",
     });
 
     updateBackground("image", imageURL);

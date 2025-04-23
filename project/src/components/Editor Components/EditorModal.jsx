@@ -53,7 +53,7 @@ function EditorModal({ onClose, isEditorOpen }) {
       <Transition appear show={isEditorOpen} as={Fragment}>
         <Dialog
           as="div"
-          className="relative z-[99999999]"
+          className="relative z-[9999]"
           onClose={() => console.log("hii")}
         >
           <Transition.Child
@@ -79,7 +79,7 @@ function EditorModal({ onClose, isEditorOpen }) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-6xl min-h-screen flex flex-col transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-6xl h-[90vh] flex flex-col transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 py-2 border-b">
                     <div className="flex items-center gap-2">
@@ -110,7 +110,7 @@ function EditorModal({ onClose, isEditorOpen }) {
                   </div>
 
                   {/* Main Content */}
-                  <div className="flex flex-1 ">
+                  <div className="flex flex-1 h-full ">
                     {/* Sidebar */}
                     <EditorSidebar
                       activeTab={activeTab}
