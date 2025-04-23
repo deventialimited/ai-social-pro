@@ -142,7 +142,7 @@ function EditorModal({ onClose, isEditorOpen }) {
                   </div>
 
                   {/* Element type selector for demo purposes */}
-                  <div className="fixed bottom-4 right-4 bg-white p-2 rounded-md shadow-lg border">
+                  {/* <div className="fixed bottom-4 right-4 bg-white p-2 rounded-md shadow-lg border">
                     <div className="flex flex-col gap-2">
                       <p className="text-sm font-medium">
                         Demo: Select Element Type
@@ -190,7 +190,7 @@ function EditorModal({ onClose, isEditorOpen }) {
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </Dialog.Panel>
               </Transition.Child>
             </div>
