@@ -85,7 +85,7 @@ function ShapeToolbar({ selectedElementId }) {
           cornerRadius={stroke.cornerRadius}
           onChange={handleStrokeChange}
         />
-        <ShadowSettings />
+        <ShadowSettings selectedElement={selectedElement} updateElement={updateElement} />
 
         <PositionPopup
           onLayerPositionChange={handleLayerPositionChange}
