@@ -59,9 +59,19 @@ function ShapeToolbar({ selectedElementId }) {
     setTransparency(value);
   };
 
-  const handleStrokeChange = (strokeSettings) => {
-    setStroke(strokeSettings);
-  };
+    const handleStrokeChange = (strokeSettings) => {
+      setStroke(strokeSettings);
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement?.styles,
+          stroke: strokeSettings.color,
+          strokeWidth: strokeSettings.width,
+          strokeDasharray: strokeSettings.style === "dashed" ? "4 2" : "none",
+        },
+      });
+      
+      console.log(strokeSettings)
+    };
 
   return (
     <>
@@ -81,8 +91,7 @@ function ShapeToolbar({ selectedElementId }) {
         />
 
         <StrokeSelector
-          stroke={stroke.width}
-          cornerRadius={stroke.cornerRadius}
+          stroke={stroke}
           onChange={handleStrokeChange}
         />
         <ShadowSettings selectedElement={selectedElement} updateElement={updateElement} />
