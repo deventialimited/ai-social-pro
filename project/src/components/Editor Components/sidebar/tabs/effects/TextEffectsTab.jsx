@@ -1,8 +1,8 @@
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 import Slider from "rc-slider";
-import { useEditor } from "../../../EditorStoreHooks/FullEditorHooks";
 import "rc-slider/assets/index.css";
+import { useEditor } from "../../../EditorStoreHooks/FullEditorHooks";
 
 function TextEffectsTab({ onClose, selectedElementId }) {
   const [selectedElement, setSelectedElement] = useState(null);

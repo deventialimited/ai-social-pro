@@ -32,6 +32,7 @@ function ImagesTab() {
             client_id: "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk",
           },
         });
+        console.log(response);
         setImages((prev) => [...prev, ...response.data]);
       }
     } catch (err) {
@@ -44,6 +45,7 @@ function ImagesTab() {
   }, [page, query]);
 
   const handleScroll = (e) => {
+    console.log(e)
     const bottom =
       e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
     if (bottom) setPage((prev) => prev + 1);
@@ -84,13 +86,13 @@ function ImagesTab() {
   };
   console.log(images);
   return (
-    <div className="p-4">
+    <div className="p-4 h-full">
       <div className="flex gap-2 mb-4">
         <div className="flex items-center gap-2">
           <Upload className="h-4 w-4" />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="bg-primary text-white px-3 py-1 rounded text-sm"
+            className="bg-primary text-black px-3 py-1 rounded text-sm"
           >
             Upload
           </button>
@@ -119,23 +121,22 @@ function ImagesTab() {
         </div>
       </div>
 
-      <div
-        className="grid grid-cols-2 gap-2 h-max overflow-y-auto"
-        onScroll={handleScroll}
-      >
-        {images?.map((img) => (
-          <div
-            key={img.id}
-            onClick={() => handleAddImage(img.urls.small)}
-            className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
-          >
-            <img
-              src={img.urls.small}
-              alt={img.alt_description}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
+      <div className=" overflow-y-auto h-full w-full">
+        <div className="grid grid-cols-2 gap-2 h-max" onScroll={handleScroll}>
+          {images?.map((img, index) => (
+            <div
+              key={index}
+              onClick={() => handleAddImage(img.urls.small)}
+              className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+            >
+              <img
+                src={img.urls.small}
+                alt={img.alt_description}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
