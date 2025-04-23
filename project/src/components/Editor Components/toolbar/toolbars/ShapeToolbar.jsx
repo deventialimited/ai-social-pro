@@ -29,7 +29,14 @@ function ShapeToolbar({ selectedElementId }) {
 
   const handleColorChange = (color) => {
     setShapeColor(color);
-  };
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement?.styles,
+        fill:color,
+       
+      },
+    });
+      };
 
   const handleLayerPositionChange = (action) => {
     console.log("Position action:", action);
