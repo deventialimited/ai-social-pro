@@ -57,7 +57,13 @@ function ShapeToolbar({ selectedElementId }) {
 
   const handleTransparencyChange = (value) => {
     setTransparency(value);
-  };
+
+          updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement?.styles,
+          opacity: value,
+          
+      }})}
 
     const handleStrokeChange = (strokeSettings) => {
       setStroke(strokeSettings);
