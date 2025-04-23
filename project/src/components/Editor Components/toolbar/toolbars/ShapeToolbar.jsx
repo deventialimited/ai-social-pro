@@ -29,7 +29,14 @@ function ShapeToolbar({ selectedElementId }) {
 
   const handleColorChange = (color) => {
     setShapeColor(color);
-  };
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement?.styles,
+        fill:color,
+       
+      },
+    });
+      };
 
   const handleLayerPositionChange = (action) => {
     console.log("Position action:", action);
@@ -50,11 +57,27 @@ function ShapeToolbar({ selectedElementId }) {
 
   const handleTransparencyChange = (value) => {
     setTransparency(value);
-  };
 
-  const handleStrokeChange = (strokeSettings) => {
-    setStroke(strokeSettings);
-  };
+          updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement?.styles,
+          opacity: value,
+          
+      }})}
+
+    const handleStrokeChange = (strokeSettings) => {
+      setStroke(strokeSettings);
+      updateElement(selectedElement?.id, {
+        styles: {
+          ...selectedElement?.styles,
+          stroke: strokeSettings.color,
+          strokeWidth: strokeSettings.width,
+          strokeDasharray: strokeSettings.style === "dashed" ? "4 2" : "none",
+        },
+      });
+      
+      console.log(strokeSettings)
+    };
 
   return (
     <>
@@ -74,11 +97,10 @@ function ShapeToolbar({ selectedElementId }) {
         />
 
         <StrokeSelector
-          stroke={stroke.width}
-          cornerRadius={stroke.cornerRadius}
+          stroke={stroke}
           onChange={handleStrokeChange}
         />
-        <ShadowSettings />
+        <ShadowSettings selectedElement={selectedElement} updateElement={updateElement} />
 
         <PositionPopup
           onLayerPositionChange={handleLayerPositionChange}

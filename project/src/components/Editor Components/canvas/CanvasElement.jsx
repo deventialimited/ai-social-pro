@@ -170,7 +170,10 @@ const CanvasElement = ({
 
           {type === "shape" && (
             <div
-              style={styles}
+              style={{
+                ...styles,
+                color: styles.fill || styles.color || 'currentColor'
+              }}
               className="w-full h-full"
               dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
             />
