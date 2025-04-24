@@ -57,12 +57,6 @@ const SizeTab = () => {
       description: "(1200x628)",
     },
     {
-      icon: <Facebook className="w-6 h-6 text-gray-600" />,
-      name: "Facebook Ad",
-      dimensions: [1200, 628],
-      description: "(1200x628)",
-    },
-    {
       icon: <Pinterest className="w-6 h-6 text-gray-600" />,
       name: "Pinterest Post",
       dimensions: [1000, 1500],
@@ -77,7 +71,7 @@ const SizeTab = () => {
   };
 
   return (
-    <div className="p-4 h-full">
+    <div className="p-4 h-full flex flex-col">
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between flex-wrap gap-3">
           <label htmlFor="width" className="block text-sm mb-1">
@@ -106,24 +100,26 @@ const SizeTab = () => {
         </div>
       </div>
 
-      <div className="space-y-3 h-full overflow-y-auto ">
-        {presetSizes.map((preset, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-3 w-full p-2 hover:bg-gray-50 rounded-md cursor-pointer"
-            onClick={() =>
-              handlePresetClick(preset.dimensions[0], preset.dimensions[1])
-            }
-          >
-            <div className="h-5 w-5 text-gray-600">{preset.icon}</div>
-            <div className="text-sm">
-              {preset.name}{" "}
-              <span className="text-xs text-gray-500 ml-auto">
-                {preset.description}
-              </span>
+      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 300px)" }}>
+        <div className="space-y-3 pb-12">
+          {presetSizes.map((preset, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 w-full p-2 hover:bg-gray-50 rounded-md cursor-pointer"
+              onClick={() =>
+                handlePresetClick(preset.dimensions[0], preset.dimensions[1])
+              }
+            >
+              <div className="h-5 w-5 text-gray-600">{preset.icon}</div>
+              <div className="text-sm">
+                {preset.name}{" "}
+                <span className="text-xs text-gray-500 ml-auto">
+                  {preset.description}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
