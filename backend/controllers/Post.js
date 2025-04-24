@@ -168,12 +168,17 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-
+    console.log("saved Post ........In the Post Controller", savedPost);
+    const postData = await Post.findById(savedPost._id).populate(
+      "domainId",
+      "clientName clientWebsite siteLogo"
+    );
+    console.log("Post Data after save:", postData);
     const io = req.app.get("io");
     console.log(domain.userId.toString(), "user Id");
     io.to(`room_${domain?.userId}_${domain?._id}`).emit("PostSaved", {
       message: "Post saved successfully",
-      post: newPost,
+      post: postData,
     });
     res.status(201).json({
       message: "Post saved successfully",

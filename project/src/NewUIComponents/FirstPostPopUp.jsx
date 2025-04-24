@@ -4,12 +4,12 @@ import { Sparkles } from "lucide-react";
 import clsx from "clsx";
 
 export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
-  useEffect(() => {
-    if (isOpen) {
-      const timeout = setTimeout(onClose, 9000);
-      return () => clearTimeout(timeout);
-    }
-  }, [isOpen, onClose]);
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     const timeout = setTimeout(onClose, 9000);
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [isOpen, onClose]);
 
   return (
     <Transition appear show={isOpen} onClose={()=>{}} as={Fragment}>

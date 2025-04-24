@@ -6,13 +6,6 @@ const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-
-  // useEffect(() => {
-  //   const newSocket = io("http://localhost:4000");
-  //   setSocket(newSocket);
-
-  //   return () => newSocket.disconnect();
-  // }, []);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) return;

@@ -80,9 +80,9 @@ export default function PostDetails({ postData }) {
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            {postData?.domainInfo ? (
+            {postData?.domainId ? (
               <img
-                src={postData.domainInfo.siteLogo}
+                src={postData.domainId.siteLogo}
                 alt="Brand logo"
                 className="w-full h-full object-cover"
               />
@@ -94,11 +94,11 @@ export default function PostDetails({ postData }) {
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-0.5">
-              {postData?.domainInfo?.clientName || "Your Brand"}
+              {postData?.domainId?.clientName || "Your Brand"}
             </h3>
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                ID: #{postData.id}
+                ID: #{postData.domainId}
               </span>
             </div>
           </div>

@@ -47,20 +47,7 @@ export const BusinessSectionDummy = ({
     },
   });
   const socket = useSocket();
-  useEffect(() => {
-    if (!socket) {
-      console.log("Socket not connected");
-      return;
-    }
 
-    socket.on("PostSaved", (data) => {
-      console.log("Post saved successfully!", data);
-    });
-
-    return () => {
-      socket.off("PostSaved");
-    };
-  }, []);
   const updateDomainDetails = useUpdateDomainDetails();
   const fileInputRef = useRef(null);
 
@@ -114,26 +101,45 @@ export const BusinessSectionDummy = ({
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
+  useEffect(() => {
+    if (!socket) {
+      console.log("Socket not connected");
+      return;
+    }
 
-  const getPostData = async (e) => {
-    e.preventDefault();
-    setPopup(true);
-    try {
-      const res = await getFirstPost(clientData.id);
-      console.log(res, "post data in business section");
+    socket.on("PostSaved", (data) => {
+      console.log("Post saved successfully!", data);
       setPostData({
-        ...res?.data,
-        domainId: clientData.id,
-        userId: clientData.userId,
+        ...data?.post,
       });
+
       setComponentType("postDetails");
       setPopup(false);
-    } catch (err) {
-      console.log(err);
-      setPopup(false);
-      toast.error("Error fetching post data");
-    }
-  };
+    });
+
+    return () => {
+      socket.off("PostSaved");
+    };
+  }, []);
+  // const getPostData = async (e) => {
+  //   e.preventDefault();
+  //   setPopup(true);
+  //   try {
+  //     const res = await getFirstPost(clientData.id);
+  //     console.log(res, "post data in business section");
+  //     setPostData({
+  //       ...res?.data,
+  //       domainId: clientData.id,
+  //       userId: clientData.userId,
+  //     });
+  //     setComponentType("postDetails");
+  //     setPopup(false);
+  //   } catch (err) {
+  //     console.log(err);
+  //     setPopup(false);
+  //     toast.error("Error fetching post data");
+  //   }
+  // };
 
   const handleCancel = () => {
     if (clientData) {
@@ -462,7 +468,9 @@ export const BusinessSectionDummy = ({
                 <span className="text-sm">Edit</span>
               </button>
               <button
-                onClick={getPostData}
+                onClick={() => {
+                  setPopup(true);
+                }}
                 className="px-5 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
               >
                 Looking Good! Let's Continue
