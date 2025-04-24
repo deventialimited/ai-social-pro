@@ -136,6 +136,24 @@ export const EditorProvider = ({ children }) => {
   const removeFileByName = useCallback((fileName) => {
     setAllFiles((prev) => prev.filter((file) => file.name !== fileName));
   }, []);
+  const updateFile = useCallback((fileName, updatedFile) => {
+    setAllFiles((prev) => {
+      // Find the index of the file to be updated
+      const fileIndex = prev.findIndex((file) => file.name === fileName);
+
+      if (fileIndex === -1) {
+        // If file doesn't exist, return the current state
+        console.log("File not found for update:", fileName);
+        return prev;
+      }
+
+      // Update the file by replacing it with the new one
+      const updatedFiles = [...prev];
+      updatedFiles[fileIndex] = updatedFile;
+
+      return updatedFiles;
+    });
+  }, []);
 
   const clearEditor = useCallback(() => {
     setCanvas({
@@ -184,6 +202,7 @@ export const EditorProvider = ({ children }) => {
     removeElement,
     addFile,
     removeFileByName,
+    updateFile,
     clearEditor,
   };
 

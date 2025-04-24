@@ -18,7 +18,7 @@ const CanvasElement = ({
   setShowSelectorOverlay,
 }) => {
   const { id, type, position, styles = {}, props = {} } = element;
-  const { updateElement } = useEditor();
+  const { updateElement, canvas } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef(); // ✅ Declare it before using
   const onResizeStart = () => {
@@ -97,13 +97,20 @@ const CanvasElement = ({
       },
     });
   });
+  console.log(Math.max(Math.min(canvas.height / 3, 600)) - styles.height);
   return (
     <Rnd
       key={id}
       size={{ width: styles.width, height: styles.height }}
       position={
         styles?.position === "absolute"
-          ? { x: 0, y: styles?.bottom === 0 ? 300 : 0 }
+          ? {
+              x: 0,
+              y:
+                styles?.bottom === 0
+                  ? Math.max(Math.min(canvas.height / 3, 600)) - styles.height
+                  : 0,
+            }
           : { x: position.x, y: position.y }
       }
       style={{
@@ -137,7 +144,10 @@ const CanvasElement = ({
             right: styles?.right,
             bottom: styles?.bottom,
             top: styles?.top,
-            transform: styles.transform || "rotate(0deg)",
+            transform:
+              styles.transform && styles.transform.startsWith("rotate")
+                ? styles.transform
+                : "rotate(0deg)",
           }}
         >
           {type === "text" && (
@@ -155,22 +165,28 @@ const CanvasElement = ({
             />
           )}
 
-{type === "image" && (
-  <img
-    src={props.src}
-    style={{
-      ...styles,
-      clipPath: props.mask || "none", // Apply the mask if it exists, otherwise none
-    }}
-    alt="Canvas"
-    className="w-full h-full object-cover"
-    draggable={false}
-  />
-)}
+          {type === "image" && (
+            <img
+              id={element.id}
+              src={props.src}
+              style={{
+                ...styles,
+                position: "static",
+                transform: "rotate(0deg)",
+              }}
+              alt="Canvas"
+              className="w-full h-full object-cover"
+            />
+          )}
 
           {type === "shape" && (
             <div
-              style={styles}
+              style={{
+                ...styles,
+                color: styles.fill || styles.color || "currentColor",
+                position: "static",
+                transform: "rotate(0deg)",
+              }}
               className="w-full h-full"
               dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
             />

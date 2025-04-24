@@ -58,7 +58,7 @@ function EditorSidebar({
   }
 
   return (
-    <div className=" border-r flex">
+    <div className=" border-r h-full flex">
       {/* Tab buttons */}
       <div className="w-[96px] border-r bg-gray-50">
         {tabs.map((tab) => (

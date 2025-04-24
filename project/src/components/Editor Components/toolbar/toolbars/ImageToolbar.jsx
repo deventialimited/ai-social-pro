@@ -15,6 +15,8 @@ import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
+import { createImageElement } from "../../sidebar/hooks/ImagesHooks";
+import CropButton from "../../common/popups/CropButton";
 
 function ImageToolbar({
   specialActiveTab,
@@ -24,12 +26,79 @@ function ImageToolbar({
   setActiveElement,
 }) {
   const [transparency, setTransparency] = useState(100);
-  const { updateElement, addElement, removeElement, elements, canvas } =
-    useEditor();
+  const {
+    updateElement,
+    addElement,
+    removeElement,
+    updateCanvasStyles,
+    updateBackground,
+    elements,
+    updateFile,
+    addFile,
+    allFiles,
+    canvas,
+  } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const handleFlip = (direction) => {
-    console.log("Flip direction:", direction);
+    if (!selectedElement || selectedElement.locked) return;
+
+    let newStyles = { ...selectedElement.styles };
+    // Initialize the transform property if not already set
+    if (!newStyles.transform) {
+      newStyles.transform = "";
+    }
+
+    // Check if scaleX or scaleY is already applied
+    const scaleXExists = /\s*scaleX\((-?[\d.]+)\)\s*(;)?/.test(
+      newStyles.transform
+    );
+
+    const scaleYExists = /\s*scaleY\((-?[\d.]+)\)\s*(;)?/.test(
+      newStyles.transform
+    );
+    // Handle horizontal flip (scaleX)
+    if (direction === "horizontal") {
+      if (scaleXExists) {
+        // If scaleX exists, toggle its value
+        newStyles.transform = newStyles.transform.replace(
+          /scaleX\((-?[\d.]+)\)/,
+          (match, value) => {
+            return value === "1" ? "scaleX(-1)" : "scaleX(1)";
+          }
+        );
+      } else {
+        // If scaleX doesn't exist, add scaleX(-1)
+        newStyles.transform = `${newStyles.transform} scaleX(-1)`;
+      }
+    }
+
+    // Handle vertical flip (scaleY)
+    if (direction === "vertical") {
+      if (scaleYExists) {
+        // If scaleY exists, toggle its value
+        newStyles.transform = newStyles.transform.replace(
+          /scaleY\((-?[\d.]+)\)/,
+          (match, value) => {
+            return value === "1" ? "scaleY(-1)" : "scaleY(1)";
+          }
+        );
+      } else {
+        // If scaleY doesn't exist, add scaleY(-1)
+        newStyles.transform = `${newStyles.transform} scaleY(-1)`;
+      }
+    }
+    // Update the element with the new styles
+    updateElement(selectedElement.id, {
+      styles: newStyles,
+    });
+    // Directly update the element's transform style in the DOM
+    const element = document.getElementById(selectedElement.id);
+    if (element) {
+      element.style.transform = newStyles.transform; // Apply the transform directly without !important
+    }
+    console.log("Updated Styles:", newStyles);
   };
+
   useEffect(() => {
     if (selectedElementId) {
       const selectedElement = elements.find(
@@ -39,7 +108,18 @@ function ImageToolbar({
     }
   }, [elements, selectedElementId]);
   const handleTransparencyChange = (value) => {
-    setTransparency(value);
+    if (!selectedElement || selectedElement.locked) return;
+
+    // Check if the value is between 0 (fully transparent) and 1 (fully opaque)
+    const newOpacity = Math.min(Math.max(value, 0), 1); // Ensure the value is clamped between 0 and 1
+
+    // Update the selected element's style using the updateElement function
+    updateElement(selectedElement.id, {
+      styles: {
+        ...selectedElement.styles,
+        opacity: newOpacity, // Update the opacity
+      },
+    });
   };
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
@@ -225,6 +305,54 @@ function ImageToolbar({
     setSelectedElementId(null);
     setActiveElement("canvas");
   };
+  const handleFitToPage = () => {
+    if (!selectedElement || selectedElement.locked) return;
+
+    const imageURL = selectedElement.props.src; // Get the image URL from the selected element
+
+    // 1. Update the background using updateBackground function
+    updateBackground("image", imageURL);
+
+    // 2. Update the canvas styles with the background image
+    updateCanvasStyles({
+      backgroundImage: `url(${imageURL})`,
+    });
+    // 3. Remove the selected element
+    removeElement(selectedElement.id);
+    const addedFile = allFiles?.find(
+      (item) => item?.name === selectedElement?.id
+    );
+    if (!addedFile) {
+      console.log("File not found with name:", selectedElement?.id);
+      return;
+    }
+    // Create a new file object with an updated name (e.g., to set the background name)
+    const updatedFile = new File([addedFile], `background`, {
+      type: addedFile.type,
+    });
+
+    // Now, update the file using the updateFile function
+    updateFile(addedFile.name, updatedFile);
+  };
+  const handleUpload = async (e) => {
+    const uploadedFile = e.target.files[0];
+    if (!uploadedFile) return; // If no file is selected, return
+
+    // 1. Read the file as a Blob (or you can directly use the file as you have in the existing code)
+    const blob = uploadedFile;
+
+    // 2. Generate a local object URL for rendering in the frontend
+    const objectUrl = URL.createObjectURL(blob);
+
+    // 3. Create and add the canvas element with local object URL
+    const newElement = createImageElement(objectUrl); // includes a unique `id`
+    addElement(newElement);
+
+    // 4. Store the file with element ID as the name for backend API use
+    const fileForBackend = new File([blob], newElement.id, { type: blob.type });
+    addFile(fileForBackend);
+    setSelectedElementId(newElement?.id);
+  };
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
@@ -254,7 +382,10 @@ function ImageToolbar({
           <span className="w-max">Effects</span>
         </button>
 
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100">
+        <button
+          onClick={handleFitToPage}
+          className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100"
+        >
           <span className="w-max">Fit to page</span>
         </button>
 
@@ -273,25 +404,39 @@ function ImageToolbar({
           <span className="w-max">Apply mask</span>
         </button>
 
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
-          <Crop className="h-5 w-5 text-gray-600" />
-          <span className="w-max">Crop</span>
-        </button>
+        <CropButton
+          selectedElement={selectedElement}
+          updateElement={updateElement}
+        />
 
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
-          <Upload className="h-5 w-5 text-gray-600" />
-          <span className="w-max">Upload</span>
-        </button>
+        <div>
+          {/* Upload Button */}
+          <button
+            className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
+            onClick={() => document.getElementById("file-upload-input").click()} // Trigger file input click
+          >
+            <Upload className="h-5 w-5 text-gray-600" />
+            <span className="w-max">Upload</span>
+          </button>
+
+          {/* Hidden file input */}
+          <input
+            id="file-upload-input"
+            type="file"
+            style={{ display: "none" }} // Hide the input field
+            onChange={handleUpload} // Call the handleUpload function when file is selected
+          />
+        </div>
 
         <button className="flex items-center gap-1 px-3 py-2 rounded-md text-gray-400 border cursor-not-allowed">
           <ImageIcon className="h-5 w-5" />
           <span className="w-max">Change Image</span>
         </button>
 
-        {/* <PositionPopup
+        <PositionPopup
           onLayerPositionChange={handleLayerPositionChange} // For element positioning
           onPositionChange={handlePositionChange} // For text alignment
-        /> */}
+        />
 
         <TransparencyPopup
           transparency={transparency}

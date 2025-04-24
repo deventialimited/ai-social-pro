@@ -77,7 +77,7 @@ const SizeTab = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full">
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between flex-wrap gap-3">
           <label htmlFor="width" className="block text-sm mb-1">
@@ -106,7 +106,7 @@ const SizeTab = () => {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 h-full overflow-y-auto ">
         {presetSizes.map((preset, index) => (
           <div
             key={index}

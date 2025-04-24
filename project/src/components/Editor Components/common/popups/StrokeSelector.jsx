@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { AlignJustify } from "lucide-react";
+import Slider from "rc-slider";
 
-function StrokeSelector({ stroke = 0, cornerRadius = 0, onChange }) {
+function StrokeSelector({ stroke = 0, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [strokeWidth, setStrokeWidth] = useState(stroke);
-  const [radius, setRadius] = useState(cornerRadius);
   const [selectedStyle, setSelectedStyle] = useState("none");
+  const [strokeColor, setStrokeColor] = useState("#000000");
   const selectorRef = useRef(null);
 
   const strokeStyles = [
@@ -32,30 +33,26 @@ function StrokeSelector({ stroke = 0, cornerRadius = 0, onChange }) {
   const handleStrokeWidthChange = (newWidth) => {
     setStrokeWidth(newWidth);
     if (onChange) {
-      onChange({ width: newWidth, style: selectedStyle, cornerRadius: radius });
-    }
-  };
-
-  const handleCornerRadiusChange = (newRadius) => {
-    setRadius(newRadius);
-    if (onChange) {
-      onChange({
-        width: strokeWidth,
-        style: selectedStyle,
-        cornerRadius: newRadius,
-      });
+      onChange({ width: newWidth, style: selectedStyle, color: strokeColor });
     }
   };
 
   const handleStyleSelect = (style) => {
     setSelectedStyle(style);
     if (onChange) {
-      onChange({ width: strokeWidth, style, cornerRadius: radius });
+      onChange({ width: strokeWidth, style, color: strokeColor });
+    }
+  };
+
+  const handleColorChange = (color) => {
+    setStrokeColor(color);
+    if (onChange) {
+      onChange({ width: strokeWidth, style: selectedStyle, color });
     }
   };
 
   return (
-    <div className=" relative" ref={selectorRef}>
+    <div className="relative" ref={selectorRef}>
       <button
         className="p-2 rounded-md hover:bg-gray-100"
         onClick={() => setIsOpen(!isOpen)}
@@ -105,13 +102,13 @@ function StrokeSelector({ stroke = 0, cornerRadius = 0, onChange }) {
               Stroke Width
             </label>
             <div className="flex items-center gap-2">
-              <input
+              <Slider
                 type="range"
-                min="0"
-                max="20"
+                min={0}
+                max={10}
                 value={strokeWidth}
-                onChange={(e) =>
-                  handleStrokeWidthChange(Number(e.target.value))
+                onChange={
+                  handleStrokeWidthChange
                 }
                 className="w-full"
               />
@@ -130,29 +127,16 @@ function StrokeSelector({ stroke = 0, cornerRadius = 0, onChange }) {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Corner Radius
+              Stroke Color
             </label>
             <div className="flex items-center gap-2">
               <input
-                type="range"
-                min="0"
-                max="50"
-                value={radius}
-                onChange={(e) =>
-                  handleCornerRadiusChange(Number(e.target.value))
-                }
-                className="w-full"
+                type="color"
+                value={strokeColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+                className="w-10 h-10 p-1 border rounded-md cursor-pointer"
               />
-              <input
-                type="number"
-                value={radius}
-                onChange={(e) =>
-                  handleCornerRadiusChange(Number(e.target.value))
-                }
-                className="w-16 p-2 border rounded-md"
-                min="0"
-                max="50"
-              />
+             
             </div>
           </div>
         </div>
