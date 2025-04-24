@@ -58,7 +58,8 @@ export default function PostDetails({ postData }) {
   }, [postData?.content]);
 
   const handleSeeAllPosts = () => {
-    navigate(`/dashboard?domainId=${post?.domainId?._id}`);
+    console.log("curent domainId", postData?.domainId?._id);
+    navigate(`/dashboard?domainId=${postData?.domainId?._id}`);
   };
 
   return (
