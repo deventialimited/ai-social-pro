@@ -45,11 +45,7 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
       imgRef.current &&
       previewCanvasRef.current
     ) {
-      canvasPreview(
-        imgRef.current,
-        previewCanvasRef.current,
-        completedCrop
-      );
+      canvasPreview(imgRef.current, previewCanvasRef.current, completedCrop);
     }
   }, [completedCrop]);
 
@@ -282,7 +278,6 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
     </Transition>
   );
 }
-
 
 export default function CropButton({ selectedElement, updateElement }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
