@@ -17,17 +17,17 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     }
   }, [elements, selectedElementId]);
   const [effects, setEffects] = useState({
-    blur: { enabled: true, value: 0 },
-    textStroke: { enabled: true, value: 2, color: "#808080" },
+    blur: { enabled: false, value: 3 },
+    textStroke: { enabled: false, value: 2, color: "#808080" },
     background: {
-      enabled: true,
+      enabled: false,
       cornerRadius: 0,
       padding: 0,
       opacity: 100,
       color: "#FFFFFF",
     },
     shadow: {
-      enabled: true,
+      enabled: false,
       blur: 0,
       offsetX: 0,
       offsetY: 0,
@@ -346,6 +346,21 @@ function TextEffectsTab({ onClose, selectedElementId }) {
         </div>
         {effects.background.enabled && (
           <>
+
+             {/* Color */}
+             <div className="ml-2 mb-2">
+              <div className="flex items-center gap-2">
+                <label className="text-xs">Color</label>
+                <input
+                  type="color"
+                  value={effects.background.color}
+                  onChange={(e) =>
+                    handleChangeBackgroundValue("color", e.target.value)
+                  }
+                  className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
+                />
+              </div>
+            </div>
             {/* Corner Radius */}
             <div className="ml-2 mb-2">
               <label className="block mb-1 text-xs">Corner radius</label>
@@ -430,20 +445,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
               </div>
             </div>
 
-            {/* Color */}
-            <div className="ml-2 mb-2">
-              <div className="flex items-center gap-2">
-                <label className="text-xs">Color</label>
-                <input
-                  type="color"
-                  value={effects.background.color}
-                  onChange={(e) =>
-                    handleChangeBackgroundValue("color", e.target.value)
-                  }
-                  className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
-                />
-              </div>
-            </div>
+         
           </>
         )}
       </div>

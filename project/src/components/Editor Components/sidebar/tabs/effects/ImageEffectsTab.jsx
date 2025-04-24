@@ -18,14 +18,14 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
   }, [elements, selectedElementId]);
 
   const [effects, setEffects] = useState({
-    blur: { enabled: true, value: 10 },
-    brightness: { enabled: true, value: 100 },
-    sepia: { enabled: true, value: 0 },
-    grayscale: { enabled: true, value: 0 },
-    border: { enabled: true, value: 2, color: "#000000" },
-    cornerRadius: { enabled: true, value: 150 },
+    blur: { enabled: false, value: 10 },
+    brightness: { enabled: false, value: 100 },
+    sepia: { enabled: false, value: 0 },
+    grayscale: { enabled: false, value: 0 },
+    border: { enabled: false, value: 2, color: "#000000" },
+    cornerRadius: { enabled: false, value: 150 },
     shadow: {
-      enabled: true,
+      enabled: false,
       blur: 5,
       offsetX: 0,
       offsetY: 0,
