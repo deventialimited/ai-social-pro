@@ -46,9 +46,9 @@ function ElementsTab() {
         </div>
       </div> */}
 
-      <div>
+      <div className="h-full">
         <h3 className="text-sm font-medium mb-2">Shapes</h3>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 h-max max-h-[90%] overflow-y-auto gap-2">
           {hardCodedShapes?.map((shape) => (
             <button
               key={shape.id}
