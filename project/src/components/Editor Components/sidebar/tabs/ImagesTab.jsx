@@ -120,9 +120,8 @@ function ImagesTab() {
           />
         </div>
       </div>
-
-      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
-        <div className="grid grid-cols-2 gap-2" onScroll={handleScroll}>
+      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 2px)" }} onScroll={handleScroll}>
+        <div className="grid grid-cols-2 gap-2" >
           {images?.map((img, index) => (
             <div
               key={index}
