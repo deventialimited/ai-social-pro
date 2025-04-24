@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { updateSelectedDomain } from "../libs/authService";
 
 const getImageStyle = (platform) => {
   const style = {
@@ -57,8 +58,20 @@ export default function PostDetails({ postData }) {
     }
   }, [postData?.content]);
 
-  const handleSeeAllPosts = () => {
+  const handleSeeAllPosts = async () => {
     console.log("curent domainId", postData?.domainId?._id);
+    try {
+      const result = await updateSelectedDomain(
+        postData.userId,
+        postData?.domainId?._id
+      );
+      console.log(result);
+    } catch (err) {
+      console.error(
+        "[LeftMenu] Error updating selected domain on backend:",
+        err
+      );
+    }
     navigate(`/dashboard?domainId=${postData?.domainId?._id}`);
   };
 
