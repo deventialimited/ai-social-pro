@@ -31,6 +31,7 @@
     "cropperjs": "^2.0.0",
     "date-fns": "^3.3.1",
     "firebase": "^11.5.0",
+    "framer-motion": "^12.7.4",
     "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",

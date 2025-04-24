@@ -21,7 +21,7 @@ import axios from "axios";
 import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation"; // use the correct named export
 import { BusinessSectionDummy } from "../NewUIComponents/businessDumy";
 import { BusinessModal } from "../NewUIComponents/Modal";
-import { io } from "socket.io-client";
+import { useSocket } from "../store/useSocket";
 
 export function extractDomain(fullUrl) {
   try {
@@ -38,7 +38,6 @@ export function extractDomain(fullUrl) {
     return null;
   }
 }
-const socket = io();
 
 export const HomePage = () => {
   const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
@@ -71,22 +70,7 @@ export const HomePage = () => {
   const addDomain = useAddDomainMutation();
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  //socket COnnection
-// useEffect(() => {
-//   const user = JSON.parse(localStorage.getItem("user"));
-//   if (!user) return;
-
-//   const socket = io("http://localhost:4000");
-
-//   socket.on("connect", () => {
-//     console.log("Connected to socket server:", socket.id);
-//   });
-
-//   return () => {
-//     socket.disconnect(); // Proper cleanup
-//   };
-// }, []);
-
+  const socket = useSocket();
 
   const generateCompanyData = async (domain, user) => {
     try {
@@ -104,7 +88,10 @@ export const HomePage = () => {
       );
       console.log("first res message:", firstResponse.data.message); // Debug log
       if (firstResponse.data.message == "Client already exists") {
-        console.error("Error in first API response:", firstResponse.data.messagee); // Debug log
+        console.error(
+          "Error in first API response:",
+          firstResponse.data.messagee
+        ); // Debug log
         toast.error(`Try another website`);
         setisModalOpen(false);
         return;
@@ -128,8 +115,22 @@ export const HomePage = () => {
         ...Data,
         userId: user?._id,
       });
-      console.log("result:", result); // Debug log
 
+      console.log("result:", result); // Debug log
+      socket.emit(
+        "JoinRoom",
+        {
+          userId: user?._id,
+          domainId: result?._id,
+        },
+        (response) => {
+          if (response.success) {
+            console.log("Joined room successfully:", response); // Debug log
+          } else {
+            console.error("Error joining room:", response); // Debug log
+          }
+        }
+      );
       setClientData({
         id: result?._id,
         client_email: result?.client_email || "dummy data",

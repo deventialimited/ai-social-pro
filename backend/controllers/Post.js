@@ -171,7 +171,7 @@ exports.processPubSub = async (req, res) => {
 
     const io = req.app.get("io");
     console.log(domain.userId.toString(), "user Id");
-    io.to(domain.userId.toString()).emit("PostSaved", {
+    io.to(`room_${domain?.userId}_${domain?._id}`).emit("PostSaved", {
       message: "Post saved successfully",
       post: newPost,
     });
