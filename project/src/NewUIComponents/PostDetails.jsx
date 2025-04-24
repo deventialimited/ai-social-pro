@@ -98,7 +98,7 @@ export default function PostDetails({ postData }) {
             </h3>
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                ID: #{postData.domainId}
+                ID: #{postData?.domainId._id}
               </span>
             </div>
           </div>
