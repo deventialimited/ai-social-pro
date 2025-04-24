@@ -164,7 +164,6 @@ export const HomePage = () => {
         },
       });
       toast.success("Domain successfully added!");
-      // navigate(`/dashboard?domainId=${result?._id}`);
     } catch (error) {
       console.error("Error in generateCompanyData:", error);
       toast.error(error || "Failed to generate company data.");
