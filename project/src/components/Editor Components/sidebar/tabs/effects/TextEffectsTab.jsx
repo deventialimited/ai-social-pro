@@ -211,7 +211,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
   };
 
   return (
-    <div className="p-2 h-[500px] overflow-y-auto">
+    <div className="p-2 h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold">Effects</h2>
         <button

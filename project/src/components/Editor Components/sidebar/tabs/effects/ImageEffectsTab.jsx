@@ -206,7 +206,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
   };
 
   return (
-    <div className="p-4 h-[500px] overflow-y-auto">
+    <div className="p-4 h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Effects</h2>
         <button
