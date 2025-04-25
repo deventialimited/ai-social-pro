@@ -12,6 +12,7 @@ import {
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { updateSelectedDomain } from "../libs/authService";
+import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 
 const getImageStyle = (platform) => {
   const style = {
@@ -94,26 +95,32 @@ export default function PostDetails({ postData }) {
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            {postData?.domainId ? (
-              <img
-                src={postData.domainId.siteLogo}
-                alt="Brand logo"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                <Type className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </div>
-            )}
+            <Tooltip title="Domain Logo" arrow>
+              {postData?.domainId ? (
+                <img
+                  src={postData.domainId.siteLogo}
+                  alt="Brand logo"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                  <Type className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                </div>
+              )}
+            </Tooltip>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-0.5">
-              {postData?.domainId?.clientName || "Your Brand"}
-            </h3>
+            <Tooltip title="Domain Name" arrow>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-0.5">
+                {postData?.domainId?.clientName || "Your Brand"}
+              </h3>
+            </Tooltip>
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                ID: #{postData?.domainId._id}
-              </span>
+              <Tooltip title="Post Id">
+                <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+                  ID: #{postData?.domainId._id}
+                </span>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -156,9 +163,11 @@ export default function PostDetails({ postData }) {
       {/* Post Content */}
       <div className="p-4 space-y-4">
         <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
-          <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
-            {postData?.content || "Your post content will appear here"}
-          </p>
+          <Tooltip title="Post Content" arrow>
+            <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
+              {postData?.content || "Your post content will appear here"}
+            </p>
+          </Tooltip>
           {isClamped && (
             <button
               onClick={() => setShowFullText(!showFullText)}
@@ -168,51 +177,66 @@ export default function PostDetails({ postData }) {
             </button>
           )}
         </div>
-        {postData?.image ? (
-          <img
-            src={postData.image}
-            alt="Post"
-            className="cursor-pointer"
-            style={getImageStyle(primaryPlatform)}
-          />
-        ) : (
-          <div
-            className="w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
-            style={getImageStyle(primaryPlatform)}
-          >
-            <Image className="w-12 h-12 text-gray-400" />
-          </div>
-        )}
+
+        <Tooltip title="Post Image" arrow>
+          {postData?.image ? (
+            <img
+              src={postData.image}
+              alt="Post"
+              className="cursor-pointer"
+              style={getImageStyle(primaryPlatform)}
+            />
+          ) : (
+            <div
+              className="w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
+              style={getImageStyle(primaryPlatform)}
+            >
+              <Image className="w-12 h-12 text-gray-400" />
+            </div>
+          )}
+        </Tooltip>
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
-          <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
-            Approve <Check className="text-white w-4 h-4" />
-          </button>
+          <Tooltip title="Approve the Post" arrow>
+            <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
+              Approve <Check className="text-white w-4 h-4" />
+            </button>
+          </Tooltip>
           <div className="flex items-center text-xs text-gray-800 dark:text-white">
             <CalendarDays className="h-4 w-4" />
             <span className="ml-2">
-              {postData?.date
-                ? format(new Date(postData.date), "MMM d, yyyy")
-                : "Today"}
+              <Tooltip title="Post Date" arrow>
+                {postData?.date
+                  ? format(new Date(postData.date), "MMM d, yyyy")
+                  : "Today"}
+              </Tooltip>
             </span>
           </div>
           <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-            {primaryPlatform}
+            <Tooltip title="Platform" arrow>
+              {primaryPlatform}
+            </Tooltip>
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <Edit className="w-4 h-4" />
+            <Tooltip title="Edit Post" arrow>
+              <Edit className="w-4 h-4" />
+            </Tooltip>
           </button>
           <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <Download className="w-4 h-4" />
+            <Tooltip title="Download Post" arrow>
+              <Download className="w-4 h-4" />
+            </Tooltip>
           </button>
           <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <Trash2 className="w-4 h-4" />
+            <Tooltip title="Delete Post" arrow>
+              <Trash2 className="w-4 h-4" />
+            </Tooltip>
           </button>
         </div>
       </div>
