@@ -13,14 +13,14 @@ export const hardCodedShapes = [
     id: "circle",
     name: "Circle",
     svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="50" r="40" fill="currentColor" />
+        <circle cx="50" cy="50" r="45" fill="currentColor" />
       </svg>`,
   },
   {
     id: "star",
     name: "Star",
     svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 15L63 40L90 45L70 65L75 90L50 78L25 90L30 65L10 45L37 40L50 15Z" fill="currentColor"/>
+        <path d="M50 15L62 40L90 42L68 61L74 88L50 75L26 88L32 61L10 42L38 40L50 15Z" fill="currentColor"/>
       </svg>`,
   },
   {
@@ -34,7 +34,7 @@ export const hardCodedShapes = [
     id: "right-triangle",
     name: "Right Triangle",
     svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="10,10 10,90 90,90" fill="currentColor" />
+        <polygon points="5,5 5,95 95,95" fill="currentColor" />
       </svg>`,
   },
   {
@@ -456,6 +456,63 @@ export const hardCodedShapes = [
         <path d="M20 60C20 40 35 20 50 20C65 20 80 40 80 60V80H20V60Z" fill="currentColor"/>
       </svg>`,
   },
+  {
+    id: "heart",
+    name: "Heart",
+    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 85L42.5 77.5C20 57.5 5 45 5 30C5 17.5 15 7.5 27.5 7.5C35 7.5 42.5 11.25 47.5 17.5C52.5 11.25 60 7.5 67.5 7.5C80 7.5 90 17.5 90 30C90 45 75 57.5 52.5 77.5L50 85Z" fill="currentColor"/>
+      </svg>`,
+  },
+];
+
+// Define line shapes
+export const lineShapes = [
+  {
+    id: "solid-line",
+    name: "Solid Line",
+    svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" />
+    </svg>`,
+  },
+  {
+    id: "dashed-line",
+    name: "Dashed Line",
+    svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" stroke-dasharray="20,12" />
+    </svg>`,
+  },
+  {
+    id: "dotted-line",
+    name: "Dotted Line",
+    svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" stroke-dasharray="6,10" />
+    </svg>`,
+  },
+  {
+    id: "arrow-line",
+    name: "Arrow Line",
+    svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="20" x2="165" y2="20" stroke="currentColor" stroke-width="8" />
+      <polygon points="165,6 195,20 165,34" fill="currentColor" />
+    </svg>`,
+  },
+  {
+    id: "circle-arrow-line",
+    name: "Circle Arrow Line",
+    svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="12" fill="currentColor" />
+      <line x1="32" y1="20" x2="165" y2="20" stroke="currentColor" stroke-width="8" />
+      <polygon points="165,6 195,20 165,34" fill="currentColor" />
+    </svg>`,
+  },
+  {
+    id: "square-dashed-line",
+    name: "Square Dashed Line",
+    svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="8" width="24" height="24" fill="currentColor" />
+      <line x1="32" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" stroke-dasharray="20,12" />
+    </svg>`,
+  },
 ];
 export const createShapeElement = (svgString) => {
   return {
@@ -465,8 +522,8 @@ export const createShapeElement = (svgString) => {
     styles: {
       width: 200,
       height: 200,
-      color: "#000000",
-      fill: "#000000",
+      color: "#D3D3D3",
+      fill: "#D3D3D3",
     },
     props: {
       svg: svgString,

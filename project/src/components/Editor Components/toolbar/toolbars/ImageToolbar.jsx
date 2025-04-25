@@ -6,6 +6,7 @@ import {
   Crop,
   ImageIcon,
   Lock,
+  Unlock,
   Copy,
   Trash,
   Sparkles,
@@ -25,7 +26,6 @@ function ImageToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const [transparency, setTransparency] = useState(100);
   const {
     updateElement,
     addElement,
@@ -37,6 +37,7 @@ function ImageToolbar({
     addFile,
     allFiles,
     canvas,
+    handleLock,
   } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const handleFlip = (direction) => {
@@ -271,18 +272,6 @@ function ImageToolbar({
     // If you want to maintain their relative stacking, you can skip updating those
     // that don't need to be changed.
   };
-  const handleLockToggle = () => {
-    if (!selectedElement) return;
-
-    // Toggle the locked state of the selected element
-    updateElement(selectedElement.id, {
-      styles: { ...selectedElement.styles }, // Keep the existing styles
-      locked: !selectedElement.locked, // Toggle locked state
-    });
-
-    // Optionally, you can change the lock button's appearance depending on the lock state
-    // Example: Change color or icon based on whether it's locked
-  };
   const handleCopy = () => {
     if (!selectedElement) return;
 
@@ -356,13 +345,13 @@ function ImageToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        <button className="p-2 rounded-md hover:bg-gray-100">
+        {/* <button className="p-2 rounded-md hover:bg-gray-100">
           <RotateCcw className="h-5 w-5 text-gray-600" />
         </button>
 
         <button className="p-2 rounded-md hover:bg-gray-100">
           <RotateCw className="h-5 w-5 text-gray-600" />
-        </button>
+        </button> */}
 
         <FlipPopup onFlip={handleFlip} />
 
@@ -439,17 +428,21 @@ function ImageToolbar({
         />
 
         <TransparencyPopup
-          transparency={transparency}
+          transparency={selectedElement?.styles?.opacity}
           onChange={handleTransparencyChange}
         />
 
         <button
-          onClick={handleLockToggle}
+          onClick={() => handleLock(selectedElement?.id)}
           className={`p-2 rounded-md hover:bg-gray-100 ${
             selectedElement?.locked ? "bg-gray-300" : null
           }`}
         >
-          <Lock className="h-5 w-5 text-gray-600" />
+          {selectedElement?.locked ? (
+            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
+          ) : (
+            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
+          )}
         </button>
 
         <button

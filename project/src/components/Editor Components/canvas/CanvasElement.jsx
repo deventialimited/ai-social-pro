@@ -17,7 +17,15 @@ const CanvasElement = ({
   showSelectorOverlay,
   setShowSelectorOverlay,
 }) => {
-  const { id, type, position, styles = {}, props = {} } = element;
+  const {
+    id,
+    type,
+    position,
+    styles = {},
+    props = {},
+    visible,
+    locked,
+  } = element;
   const { updateElement, canvas } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef(); // ✅ Declare it before using
@@ -116,6 +124,7 @@ const CanvasElement = ({
       style={{
         position: styles?.position === "absolute" ? "static" : "absolute",
         zIndex: styles?.zIndex,
+        display: visible ? "block" : "none",
       }}
       onDragStop={(e, d) => {
         if (!element || element.locked) return;
@@ -133,6 +142,7 @@ const CanvasElement = ({
       }}
       onClick={() => onSelect(id, type)}
       enableResizing={false} // we handle resizing manually
+      disableDragging={locked} // Disable dragging if locked
     >
       {["text", "image", "shape"].includes(type) && (
         <div
@@ -183,11 +193,11 @@ const CanvasElement = ({
             <div
               style={{
                 ...styles,
+                height: " max-content",
                 color: styles.fill || styles.color || "currentColor",
                 position: "static",
                 transform: "rotate(0deg)",
               }}
-              className="w-full h-full"
               dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
             />
           )}

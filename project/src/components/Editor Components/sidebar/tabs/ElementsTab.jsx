@@ -1,12 +1,28 @@
-import { Search } from "lucide-react";
-import { createShapeElement, hardCodedShapes } from "../hooks/ShapesHooks";
-import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
+
+import { useState } from "react"
+import { Search } from "lucide-react"
+import { createShapeElement, hardCodedShapes, lineShapes } from "../hooks/ShapesHooks"
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks"
+
 function ElementsTab() {
-  const { addElement } = useEditor();
-  const handleAddShape = (svgString) => {
-    const shapeElement = createShapeElement(svgString);
-    addElement(shapeElement);
-  };
+  const { addElement } = useEditor()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [activeTab, setActiveTab] = useState("shapes") // 'shapes' or 'lines'
+
+  const handleAddShape = (shape) => {
+    const shapeElement = createShapeElement(shape)
+    addElement(shapeElement)
+  }
+
+  // Filter shapes based on search query
+  const filteredShapes = searchQuery
+    ? hardCodedShapes.filter((shape) => shape.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : hardCodedShapes
+
+  // Filter lines based on search query
+  const filteredLines = searchQuery
+    ? lineShapes.filter((line) => line.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : lineShapes
 
   return (
     <div className="p-4 h-full flex flex-col">
@@ -16,55 +32,66 @@ function ElementsTab() {
           type="text"
           placeholder="Search..."
           className="w-full pl-9 pr-3 py-2 border rounded-md text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
-      {/* <div className="mb-6">
-        <h3 className="text-sm font-medium mb-2">Lines</h3>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="h-2 bg-gray-300 rounded-md my-3"></div>
-          <div className="h-0.5 border border-dashed border-gray-300 my-4"></div>
-          <div className="h-0.5 border border-dotted border-gray-300 my-4"></div>
-
-          <div className="h-6 flex items-center">
-            <div className="w-full h-0.5 bg-gray-300 relative">
-              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-3 h-3 border-t-2 border-r-2 border-gray-300 rotate-45"></div>
-            </div>
-          </div>
-
-          <div className="h-6 flex items-center">
-            <div className="w-full h-0.5 bg-gray-300 relative">
-              <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gray-300"></div>
-            </div>
-          </div>
-
-          <div className="h-6 flex items-center">
-            <div className="w-full h-0.5 bg-gray-300 relative">
-              <div className="absolute right-0 w-3 h-3 bg-gray-300"></div>
-            </div>
-          </div>
-        </div>
-      </div> */}
+      {/* Tab navigation */}
+      <div className="flex mb-4 border-b">
+        <button
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === "shapes" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("shapes")}
+        >
+          Shapes
+        </button>
+        <button
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === "lines" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setActiveTab("lines")}
+        >
+          Lines
+        </button>
+      </div>
 
       <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
-        <h3 className="text-sm font-medium mb-2">Shapes</h3>
-        <div className="grid grid-cols-4 gap-2">
-          {hardCodedShapes?.map((shape) => (
-            <button
-              key={shape.id}
-              onClick={() => handleAddShape(shape)}
-              className="aspect-square bg-gray-100 border rounded flex items-center justify-center hover:bg-gray-200"
-            >
-              <div
-                dangerouslySetInnerHTML={{ __html: shape.svg }}
-                className="w-6 h-6"
-              />
-            </button>
-          ))}
-        </div>
+        {activeTab === "shapes" ? (
+          <>
+            <h3 className="text-sm font-medium mb-2">Shapes</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {filteredShapes.map((shape) => (
+                <button
+                  key={shape.id}
+                  onClick={() => handleAddShape(shape)}
+                  className="aspect-square text-[#D3D3D3] rounded flex items-center justify-center hover:bg-gray-200"
+                >
+                  <div dangerouslySetInnerHTML={{ __html: shape.svg }} className="w-16 h-16" />
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className="text-sm font-medium mb-2">Lines</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {filteredLines.map((line) => (
+                <button
+                  key={line.id}
+                  onClick={() => handleAddShape(line)}
+                  className="h-16 text-[#D3D3D3] rounded flex items-center justify-center hover:bg-gray-200"
+                >
+                  <div dangerouslySetInnerHTML={{ __html: line.svg }} className="w-full h-6" />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
-  );
+  )
 }
 
-export default ElementsTab;
+export default ElementsTab

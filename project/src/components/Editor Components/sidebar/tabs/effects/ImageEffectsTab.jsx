@@ -98,7 +98,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
   };
   
   const updateStyle = (styleChanges) => {
-    if (!selectedElement) return;
+    if (!selectedElement || selectedElement.locked) return;
     updateElement(selectedElement.id, {
       styles: {
         ...selectedElement.styles,

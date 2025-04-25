@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 const EditorContext = createContext(null);
 
@@ -113,8 +114,20 @@ export const EditorProvider = ({ children }) => {
           ...element.styles,
           zIndex: prev.length + 1, // Ensure that the new element gets the highest z-index
         },
+        visible: true,
         locked: false,
       };
+      // ✅ Add corresponding layer
+      setLayers((prevLayers) => [
+        ...prevLayers,
+        {
+          id: `layer-${uuidv4()}`,
+          type: element.type,
+          elementId: element.id,
+          visible: true,
+          locked: false,
+        },
+      ]);
       return [...prev, newElement];
     });
   }, []);
@@ -127,6 +140,9 @@ export const EditorProvider = ({ children }) => {
 
   const removeElement = useCallback((id) => {
     setElements((prev) => prev.filter((el) => el.id !== id));
+    setLayers((prevLayers) =>
+      prevLayers.filter((layer) => layer.elementId !== id)
+    );
   }, []);
 
   const addFile = useCallback((file) => {
@@ -154,6 +170,77 @@ export const EditorProvider = ({ children }) => {
       return updatedFiles;
     });
   }, []);
+
+  const updateLayer = useCallback((id, newProps) => {
+    setLayers((prev) =>
+      prev.map((layer) =>
+        layer.id === id
+          ? {
+              ...layer,
+              ...newProps,
+            }
+          : layer
+      )
+    );
+  }, []);
+
+  // Handle Lock functionality for both elements and layers
+  const handleLock = useCallback(
+    (selectedElementId) => {
+      const selectedElement = elements.find(
+        (el) => el.id === selectedElementId
+      );
+
+      if (selectedElement) {
+        const newLockedState = !selectedElement.locked;
+
+        updateElement(selectedElement.id, {
+          styles: { ...selectedElement.styles },
+          locked: newLockedState,
+        });
+
+        const correspondingLayer = layers.find(
+          (layer) => layer.elementId === selectedElementId
+        );
+
+        if (correspondingLayer) {
+          updateLayer(correspondingLayer.id, {
+            locked: newLockedState,
+          });
+        }
+      }
+    },
+    [elements, layers, updateElement, updateLayer]
+  );
+
+  // Handle Visible functionality for both elements and layers
+  const handleVisible = useCallback(
+    (selectedElementId) => {
+      const selectedElement = elements.find(
+        (el) => el.id === selectedElementId
+      );
+
+      if (selectedElement) {
+        const newVisibleState = !selectedElement.visible;
+
+        updateElement(selectedElement.id, {
+          styles: { ...selectedElement.styles },
+          visible: newVisibleState,
+        });
+
+        const correspondingLayer = layers.find(
+          (layer) => layer.elementId === selectedElementId
+        );
+
+        if (correspondingLayer) {
+          updateLayer(correspondingLayer.id, {
+            visible: newVisibleState,
+          });
+        }
+      }
+    },
+    [elements, layers, updateElement, updateLayer]
+  );
 
   const clearEditor = useCallback(() => {
     setCanvas({
@@ -203,6 +290,9 @@ export const EditorProvider = ({ children }) => {
     addFile,
     removeFileByName,
     updateFile,
+    updateLayer,
+    handleLock,
+    handleVisible,
     clearEditor,
   };
 
