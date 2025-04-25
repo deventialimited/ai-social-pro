@@ -68,7 +68,7 @@ function EditorModal({ onClose, isEditorOpen }) {
       });
     setTimeout(onClose, 1000);
   };
-
+//tfdtrdt
   return (
     <EditorProvider>
       <Transition appear show={isEditorOpen} as={Fragment}>
