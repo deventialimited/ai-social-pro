@@ -121,25 +121,6 @@ export const BusinessSectionDummy = ({
       socket.off("PostSaved");
     };
   }, []);
-  // const getPostData = async (e) => {
-  //   e.preventDefault();
-  //   setPopup(true);
-  //   try {
-  //     const res = await getFirstPost(clientData.id);
-  //     console.log(res, "post data in business section");
-  //     setPostData({
-  //       ...res?.data,
-  //       domainId: clientData.id,
-  //       userId: clientData.userId,
-  //     });
-  //     setComponentType("postDetails");
-  //     setPopup(false);
-  //   } catch (err) {
-  //     console.log(err);
-  //     setPopup(false);
-  //     toast.error("Error fetching post data");
-  //   }
-  // };
 
   const handleCancel = () => {
     if (clientData) {
@@ -478,17 +459,20 @@ export const BusinessSectionDummy = ({
             </div>
           )}
         </div>
+        
       </div>
 
       {PopUp && (
-        <FirstPostPopUp
-          isOpen={PopUp}
-          onClose={() => {
-            setPopup(false);
-          }}
-          title="Time to Create Compelling Content!"
-          description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-lg">
+          <FirstPostPopUp
+            isOpen={PopUp}
+            onClose={() => {
+              setPopup(false);
+            }}
+            title="Time to Create Compelling Content!"
+            description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
+          />
+        </div>
       )}
     </>
   );

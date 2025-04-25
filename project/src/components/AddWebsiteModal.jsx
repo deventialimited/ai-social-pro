@@ -12,6 +12,8 @@ import {
 import { useAddDomainMutation } from "../libs/domainService";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import axios from "axios";
+import { updateSelectedDomain } from "../libs/authService.js";
 
 export function extractDomain(fullUrl) {
   try {
@@ -80,49 +82,41 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
 
   const generateCompanyData = async (domain, user) => {
     try {
-      if (!domain) {
-        throw new Error("Invalid domain extracted from URL.");
-      }
+      if (!domain) throw new Error("Invalid domain extracted from URL.");
+      console.log("Generating data for domain:", domain);
 
-      console.log("Generating data for domain:", domain); // Debug log
-
-      // First API call
-      const firstResponse = await fetch(
-        `https://hook.us2.make.com/hq4rboy9yg0pxnsh7mb2ri9vj4orsj0m?clientWebsite=${domain}&username=${user?.email}`
+      // Call the unified API
+      const firstResponse = await axios.post(
+        "https://social-api-107470285539.us-central1.run.app/create-client",
+        {
+          user_email: user?.email,
+          client_Website: domain,
+        }
       );
-      if (!firstResponse.ok) {
-        throw new Error("Try another website");
+
+      const Data = firstResponse.data;
+      console.log("API Response:", Data);
+
+      // Handle existing client case
+      if (Data.message === "Client already exists") {
+        toast.error("Try another website");
+        return;
       }
 
-      // Wait 15 seconds before the second API call
-      await sleep(15000);
-
-      setProgress(0);
-      setCurrentStep(0);
+      // Simulate loading steps (if UI needs progress)
+      setProgress?.(0);
+      setCurrentStep?.(0);
 
       for (let i = 0; i < steps.length; i++) {
-        setCurrentStep(i);
+        setCurrentStep?.(i);
         for (let p = 0; p <= 100; p += 2) {
-          setProgress((i * 100 + p) / steps.length);
+          setProgress?.((i * 100 + p) / steps.length);
           await new Promise((resolve) => setTimeout(resolve, 30));
         }
       }
 
-      // Second API call
-      const secondResponse = await fetch(
-        `https://hook.us2.make.com/yljp8ebfpmyb7qxusmkxmh89cx3dt5zo?clientWebsite=${domain}`
-      );
-
-      if (!secondResponse.ok) {
-        throw new Error(
-          `Site data extraction failed with status: ${secondResponse.status}`
-        );
-      }
-
-      const secondData = await secondResponse.json();
-      console.log("Second API response:", secondData); // Debug log
-      const { client_email, clientWebsite, clientDescription } = secondData;
-
+      // Check essential data
+      const { client_email, clientWebsite, clientDescription } = Data;
       if (!client_email || !clientWebsite || !clientDescription) {
         if (!client_email) toast.error("Client email is required.");
         if (!clientWebsite) toast.error("Client website is required.");
@@ -130,18 +124,29 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
         return;
       }
 
+      // Save domain in DB
       const result = await addDomain.mutateAsync({
-        ...secondData,
+        ...Data,
         userId: user?._id,
       });
 
       toast.success("Domain successfully added!");
-      console.log("Domain added:", result); // Debug log
+      console.log("Domain saved:", result);
+
+      try {
+        const updateSelectedDom = await updateSelectedDomain(
+          user?._id,
+          result?._id
+        );
+        console.log(updateSelectedDom);
+      } catch (err) {
+        console.log(err);
+      }
+
       navigate(`/dashboard?domainId=${result?._id}`);
     } catch (error) {
-      console.error("Error in generateCompanyData:", error);
       toast.error(error.message || "Failed to generate company data.");
-      setError(error.message || "Failed to generate company data.");
+      setError?.(error.message || "Failed to generate company data.");
     }
   };
 
