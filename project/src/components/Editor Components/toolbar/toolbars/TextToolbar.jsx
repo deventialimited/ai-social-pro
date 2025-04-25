@@ -3,6 +3,7 @@ import {
   RotateCcw,
   RotateCw,
   Lock,
+  Unlock,
   Copy,
   Trash,
   AlignLeft,
@@ -33,8 +34,14 @@ function TextToolbar({
   setActiveElement,
 }) {
   const [transparency, setTransparency] = useState(100);
-  const { updateElement, addElement, removeElement, elements, canvas } =
-    useEditor();
+  const {
+    updateElement,
+    addElement,
+    handleLock,
+    removeElement,
+    elements,
+    canvas,
+  } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const [textStyle, setTextStyle] = useState({
     lineHeight: 1.5,
@@ -255,18 +262,7 @@ function TextToolbar({
       },
     });
   };
-  const handleLockToggle = () => {
-    if (!selectedElement) return;
 
-    // Toggle the locked state of the selected element
-    updateElement(selectedElement.id, {
-      styles: { ...selectedElement.styles }, // Keep the existing styles
-      locked: !selectedElement.locked, // Toggle locked state
-    });
-
-    // Optionally, you can change the lock button's appearance depending on the lock state
-    // Example: Change color or icon based on whether it's locked
-  };
   // This should handle TEXT ALIGNMENT (not to be confused with element positioning)
   const handleAlignChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
@@ -303,13 +299,13 @@ function TextToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        <button className="p-2 rounded-md hover:bg-gray-100">
+        {/* <button className="p-2 rounded-md hover:bg-gray-100">
           <RotateCcw className="h-5 w-5 text-gray-600" />
         </button>
 
         <button className="p-2 rounded-md hover:bg-gray-100">
           <RotateCw className="h-5 w-5 text-gray-600" />
-        </button>
+        </button> */}
 
         <ColorPicker
           color={selectedElement?.styles?.color}
@@ -498,12 +494,16 @@ function TextToolbar({
         />
 
         <button
-          onClick={handleLockToggle}
+          onClick={() => handleLock(selectedElement?.id)}
           className={`p-2 rounded-md hover:bg-gray-100 ${
             selectedElement?.locked ? "bg-gray-300" : null
           }`}
         >
-          <Lock className="h-5 w-5 text-gray-600" />
+          {selectedElement?.locked ? (
+            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
+          ) : (
+            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
+          )}
         </button>
 
         <button

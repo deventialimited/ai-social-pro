@@ -64,13 +64,13 @@ function CanvasToolbar() {
 
   return (
     <div className="flex items-center flex-wrap gap-2">
-      <button className="p-2 rounded-md hover:bg-gray-100">
+      {/* <button className="p-2 rounded-md hover:bg-gray-100">
         <RotateCcw className="h-5 w-5 text-gray-600" />
       </button>
 
       <button className="p-2 rounded-md hover:bg-gray-100">
         <RotateCw className="h-5 w-5 text-gray-600" />
-      </button>
+      </button> */}
 
       {/* <DurationSelector duration={duration} onChange={handleDurationChange} /> */}
 

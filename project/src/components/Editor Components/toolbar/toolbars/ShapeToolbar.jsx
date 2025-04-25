@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { RotateCcw, RotateCw, Lock, Copy, Trash, Sparkles } from "lucide-react";
+import {
+  RotateCcw,
+  RotateCw,
+  Lock,
+  Unlock,
+  Copy,
+  Trash,
+  Sparkles,
+} from "lucide-react";
 import ColorPicker from "../../common/popups/ColorPicker";
 import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
@@ -15,9 +23,8 @@ function ShapeToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const [shapeColor, setShapeColor] = useState("#333333");
-  const [transparency, setTransparency] = useState(100);
-  const { updateElement, elements, addElement, removeElement } = useEditor();
+  const { updateElement, handleLock, elements, addElement, removeElement } =
+    useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   useEffect(() => {
     if (selectedElementId) {
@@ -28,14 +35,9 @@ function ShapeToolbar({
       setSelectedElement(selectedElement);
     }
   }, [elements, selectedElementId]);
-  const [stroke, setStroke] = useState({
-    width: 0,
-    style: "none",
-    cornerRadius: 0,
-  });
 
   const handleColorChange = (color) => {
-    setShapeColor(color);
+    if (!selectedElement || selectedElement.locked) return;
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement?.styles,
@@ -208,18 +210,7 @@ function ShapeToolbar({
     // If you want to maintain their relative stacking, you can skip updating those
     // that don't need to be changed.
   };
-  const handleLockToggle = () => {
-    if (!selectedElement) return;
 
-    // Toggle the locked state of the selected element
-    updateElement(selectedElement.id, {
-      styles: { ...selectedElement.styles }, // Keep the existing styles
-      locked: !selectedElement.locked, // Toggle locked state
-    });
-
-    // Optionally, you can change the lock button's appearance depending on the lock state
-    // Example: Change color or icon based on whether it's locked
-  };
   const handleCopy = () => {
     if (!selectedElement) return;
 
@@ -243,7 +234,7 @@ function ShapeToolbar({
     setActiveElement("canvas");
   };
   const handleStrokeChange = (strokeSettings) => {
-    setStroke(strokeSettings);
+    if (!selectedElement || selectedElement.locked) return;
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement?.styles,
@@ -252,28 +243,33 @@ function ShapeToolbar({
         strokeDasharray: strokeSettings.style === "dashed" ? "4 2" : "none",
       },
     });
-
-    console.log(strokeSettings);
   };
 
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        <button className="p-2 rounded-md hover:bg-gray-100">
+        {/* <button className="p-2 rounded-md hover:bg-gray-100">
           <RotateCcw className="h-5 w-5 text-gray-600" />
         </button>
 
         <button className="p-2 rounded-md hover:bg-gray-100">
           <RotateCw className="h-5 w-5 text-gray-600" />
-        </button>
+        </button> */}
 
         <ColorPicker
-          color={shapeColor}
+          color={selectedElement?.styles?.fill}
           onChange={handleColorChange}
           showPalette={false}
         />
 
-        <StrokeSelector stroke={stroke} onChange={handleStrokeChange} />
+        <StrokeSelector
+          stroke={{
+            width: selectedElement?.styles?.strokeWidth,
+            style: selectedElement?.styles?.strokeDasharray,
+            color: selectedElement?.styles?.stroke,
+          }}
+          onChange={handleStrokeChange}
+        />
         <ShadowSettings
           selectedElement={selectedElement}
           updateElement={updateElement}
@@ -285,17 +281,21 @@ function ShapeToolbar({
         />
 
         <TransparencyPopup
-          transparency={transparency}
+          transparency={selectedElement?.styles?.opacity}
           onChange={handleTransparencyChange}
         />
 
         <button
-          onClick={handleLockToggle}
+          onClick={() => handleLock(selectedElement?.id)}
           className={`p-2 rounded-md hover:bg-gray-100 ${
             selectedElement?.locked ? "bg-gray-300" : null
           }`}
         >
-          <Lock className="h-5 w-5 text-gray-600" />
+          {selectedElement?.locked ? (
+            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
+          ) : (
+            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
+          )}
         </button>
 
         <button
