@@ -77,7 +77,7 @@ const SizeTabContent = ({ canvas, updateCanvasSize }) => {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto p-4">
+    <div className="w-full max-w-lg mx-auto p-4 h-full overflow-y-auto">
       <div className="mb-8">
         <div className="mb-4 flex items-center justify-between flex-wrap gap-3">
           <label htmlFor="width" className="block text-lg font-medium mb-2">

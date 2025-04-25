@@ -86,7 +86,7 @@ function ImagesTab() {
   };
   console.log(images);
   return (
-    <div className="p-4 h-full">
+    <div className="p-4 h-full flex flex-col">
       <div className="flex gap-2 mb-4">
         <div className="flex items-center gap-2">
           <Upload className="h-4 w-4" />
@@ -120,9 +120,8 @@ function ImagesTab() {
           />
         </div>
       </div>
-
-      <div className=" overflow-y-auto h-full w-full">
-        <div className="grid grid-cols-2 gap-2 h-max" onScroll={handleScroll}>
+      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 2px)" }} onScroll={handleScroll}>
+        <div className="grid grid-cols-2 gap-2" >
           {images?.map((img, index) => (
             <div
               key={index}
