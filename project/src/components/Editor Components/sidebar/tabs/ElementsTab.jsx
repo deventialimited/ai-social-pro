@@ -9,7 +9,7 @@ function ElementsTab() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full flex flex-col">
       <div className="relative mb-4">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
         <input
@@ -46,9 +46,9 @@ function ElementsTab() {
         </div>
       </div> */}
 
-      <div className="h-full">
+      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
         <h3 className="text-sm font-medium mb-2">Shapes</h3>
-        <div className="grid grid-cols-4 h-max max-h-[90%] overflow-y-auto gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {hardCodedShapes?.map((shape) => (
             <button
               key={shape.id}

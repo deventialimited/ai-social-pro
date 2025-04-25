@@ -736,7 +736,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             </div>
 
             {/* Shadow Color */}
-            <div className="ml-4 mb-2">
+            <div className="ml-4 mb-16">
               <label className="block mb-1 text-xs">Color</label>
               <div className="flex items-center gap-2">
                 <input

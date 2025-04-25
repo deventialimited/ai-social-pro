@@ -591,7 +591,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
             </div>
 
             {/* Shadow Color */}
-            <div className="ml-2 mb-2">
+            <div className="ml-2 mb-16">
               <div className="flex items-center gap-2">
                 <label className="text-xs">Color</label>
                 <input
