@@ -1,11 +1,10 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash, Minus, Plus } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
 
 function EditorCanvas({
+  canvasContainerRef,
   content,
   onElementSelect,
   selectedElementId,
@@ -17,7 +16,6 @@ function EditorCanvas({
   const { canvas, elements, allFiles } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const containerRef = useRef(null);
-  const canvasContainerRef = useRef(null);
 
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 200));
