@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Path to your environment file
+        // Path to your environment file.
         ENV_FILE_PATH = '/var/lib/jenkins/jenkinsEnvs/ai-social-pro'
         DEPLOY_PATH = '/var/lib/jenkins/ai-social-pro'
         FRONTEND_ENV_FILE = 'project/.env' // Frontend env file path
