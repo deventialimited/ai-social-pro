@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import EditableTextElement from "./EditableTextElement";
@@ -29,6 +29,42 @@ const CanvasElement = ({
   const { updateElement, canvas } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef(); // ✅ Declare it before using
+
+  // Add keyboard event handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isSelected || locked) return;
+      
+      const moveStep = 10; // Pixels to move per key press
+      let newX = position.x;
+      let newY = position.y;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          newX = Math.max(0, position.x - moveStep);
+          break;
+        case "ArrowRight":
+          newX = Math.min(canvas.width - (styles.width || 100), position.x + moveStep);
+          break;
+        case "ArrowUp":
+          newY = Math.max(0, position.y - moveStep);
+          break;
+        case "ArrowDown":
+          newY = Math.min(canvas.height - (styles.height || 30), position.y + moveStep);
+          break;
+        default:
+          return;
+      }
+
+      updateElement(id, {
+        position: { x: newX, y: newY },
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSelected, locked, position, id, updateElement, canvas.width, canvas.height, styles.width, styles.height]);
+
   const onResizeStart = () => {
     startSizeRef.current = {
       width: styles.width || 100,
