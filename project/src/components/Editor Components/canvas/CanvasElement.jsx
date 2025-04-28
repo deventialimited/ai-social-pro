@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import EditableTextElement from "./EditableTextElement";
@@ -29,6 +29,42 @@ const CanvasElement = ({
   const { updateElement, canvas } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef(); // ✅ Declare it before using
+
+  // Add keyboard event handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isSelected || locked) return;
+      
+      const moveStep = 10; // Pixels to move per key press
+      let newX = position.x;
+      let newY = position.y;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          newX = Math.max(0, position.x - moveStep);
+          break;
+        case "ArrowRight":
+          newX = Math.min(canvas.width - (styles.width || 100), position.x + moveStep);
+          break;
+        case "ArrowUp":
+          newY = Math.max(0, position.y - moveStep);
+          break;
+        case "ArrowDown":
+          newY = Math.min(canvas.height - (styles.height || 30), position.y + moveStep);
+          break;
+        default:
+          return;
+      }
+
+      updateElement(id, {
+        position: { x: newX, y: newY },
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSelected, locked, position, id, updateElement, canvas.width, canvas.height, styles.width, styles.height]);
+
   const onResizeStart = () => {
     startSizeRef.current = {
       width: styles.width || 100,
@@ -92,7 +128,7 @@ const CanvasElement = ({
         ...styles,
         width: newWidth,
         height: newHeight,
-        // fontSize: `${newFontSize}px`,
+        fontSize: `${newFontSize}px`,
       },
     });
   };
@@ -172,6 +208,17 @@ const CanvasElement = ({
                 if (!element || element.locked) return;
                 updateElement(id, { props: { ...props, text: newText } });
               }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                const textElement = e.target;
+                if (textElement) {
+                  const range = document.createRange();
+                  range.selectNodeContents(textElement);
+                  const selection = window.getSelection();
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              }}
             />
           )}
 
@@ -188,19 +235,24 @@ const CanvasElement = ({
               className="w-full h-full object-cover"
             />
           )}
+{type === "shape" && (
+  <div
+    style={{
+      ...styles,
+      position: "static",
+      transform: "rotate(0deg)",
+      overflow: "hidden",
+    }}
+    dangerouslySetInnerHTML={{
+      __html: props.svg?.svg
+        ?.replace(
+          /<svg([^>]*)>/,
+          `<svg$1 width="${styles.width}" height="${styles.height}" preserveAspectRatio="none">`        ),
+    }}
+  />
+)}
 
-          {type === "shape" && (
-            <div
-              style={{
-                ...styles,
-                height: " max-content",
-                color: styles.fill || styles.color || "currentColor",
-                position: "static",
-                transform: "rotate(0deg)",
-              }}
-              dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
-            />
-          )}
+
           {isSelected && (
             <>
               {/* Resize Handles */}
