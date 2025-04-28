@@ -199,19 +199,24 @@ const CanvasElement = ({
               className="w-full h-full object-cover"
             />
           )}
+{type === "shape" && (
+  <div
+    style={{
+      ...styles,
+      position: "static",
+      transform: "rotate(0deg)",
+      overflow: "hidden",
+    }}
+    dangerouslySetInnerHTML={{
+      __html: props.svg?.svg
+        ?.replace(
+          /<svg([^>]*)>/,
+          `<svg$1 width="${styles.width}" height="${styles.height}" preserveAspectRatio="none">`        ),
+    }}
+  />
+)}
 
-          {type === "shape" && (
-            <div
-              style={{
-                ...styles,
-                height: " max-content",
-                color: styles.fill || styles.color || "currentColor",
-                position: "static",
-                transform: "rotate(0deg)",
-              }}
-              dangerouslySetInnerHTML={{ __html: props.svg?.svg }}
-            />
-          )}
+
           {isSelected && (
             <>
               {/* Resize Handles */}
