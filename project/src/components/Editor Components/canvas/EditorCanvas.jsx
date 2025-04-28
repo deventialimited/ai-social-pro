@@ -98,6 +98,7 @@ function EditorCanvas({
         >
           {/* Canvas */}
           <div
+            id="#canvas"
             className="bg-white shadow-lg overflow-hidden relative"
             style={{
               width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
