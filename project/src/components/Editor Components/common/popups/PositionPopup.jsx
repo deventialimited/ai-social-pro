@@ -43,9 +43,9 @@ function PositionPopup({ onLayerPositionChange, onPositionChange }) {
   };
 
   return (
-    <div className=" relative" ref={selectorRef}>
+    <div className="relative" ref={selectorRef}>
       <button
-        className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
+        className="flex items-center gap-1 px-3 py-1.5 rounded-md hover:bg-gray-100 border"
         onClick={() => setIsOpen(!isOpen)}
       >
         <svg
@@ -64,84 +64,84 @@ function PositionPopup({ onLayerPositionChange, onPositionChange }) {
       </button>
 
       {isOpen && (
-        <div className=" absolute mt-2 w-72 p-4 border rounded-lg shadow-md bg-white z-[999999999999]">
-          <div className="p-4 border-b">
-            <h3 className="font-medium mb-3">Layering</h3>
-            <div className="grid grid-cols-2 gap-2">
+        <div className="absolute mt-1 w-72 border rounded-lg shadow-lg bg-white z-50">
+          <div className="p-2 border-b">
+            <h3 className="text-sm font-medium mb-1.5">Layering</h3>
+            <div className="grid grid-cols-2 gap-1">
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("up")}
               >
-                <ArrowUp className="h-5 w-5" />
+                <ArrowUp className="h-4 w-4" />
                 <span>Up</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("down")}
               >
-                <ArrowDown className="h-5 w-5" />
+                <ArrowDown className="h-4 w-4" />
                 <span>Down</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("toFront")}
               >
-                <ChevronsUp className="h-5 w-5" />
+                <ChevronsUp className="h-4 w-4" />
                 <span>To forward</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("toBack")}
               >
-                <ChevronsDown className="h-5 w-5" />
+                <ChevronsDown className="h-4 w-4" />
                 <span>To bottom</span>
               </button>
             </div>
           </div>
 
-          <div className="p-4">
-            <h3 className="font-medium mb-3">Position</h3>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="p-2">
+            <h3 className="text-sm font-medium mb-1.5">Position</h3>
+            <div className="grid grid-cols-2 gap-1">
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("left")}
               >
-                <AlignLeft className="h-5 w-5" />
+                <AlignLeft className="h-4 w-4" />
                 <span>Align left</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("top")}
               >
-                <AlignStartVertical className="h-5 w-5" />
+                <AlignStartVertical className="h-4 w-4" />
                 <span>Align top</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("center")}
               >
-                <AlignCenter className="h-5 w-5" />
+                <AlignCenter className="h-4 w-4" />
                 <span>Align center</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("middle")}
               >
-                <AlignCenterVertical className="h-5 w-5" />
+                <AlignCenterVertical className="h-4 w-4" />
                 <span>Align middle</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("right")}
               >
-                <AlignRight className="h-5 w-5" />
+                <AlignRight className="h-4 w-4" />
                 <span>Align right</span>
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md"
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("bottom")}
               >
-                <AlignEndVertical className="h-5 w-5" />
+                <AlignEndVertical className="h-4 w-4" />
                 <span>Align bottom</span>
               </button>
             </div>
