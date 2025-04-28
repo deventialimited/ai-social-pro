@@ -92,7 +92,7 @@ const CanvasElement = ({
         ...styles,
         width: newWidth,
         height: newHeight,
-        // fontSize: `${newFontSize}px`,
+        fontSize: `${newFontSize}px`,
       },
     });
   };
@@ -171,6 +171,17 @@ const CanvasElement = ({
               onChange={(newText) => {
                 if (!element || element.locked) return;
                 updateElement(id, { props: { ...props, text: newText } });
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                const textElement = e.target;
+                if (textElement) {
+                  const range = document.createRange();
+                  range.selectNodeContents(textElement);
+                  const selection = window.getSelection();
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
               }}
             />
           )}
