@@ -296,33 +296,29 @@ function ImageToolbar({
   };
   const handleFitToPage = () => {
     if (!selectedElement || selectedElement.locked) return;
+    // 1. Get the canvas element by its id
+    const canvasElement = document.getElementById("#canvas");
 
-    const imageURL = selectedElement.props.src; // Get the image URL from the selected element
-
-    // 1. Update the background using updateBackground function
-    updateBackground("image", imageURL);
-
-    // 2. Update the canvas styles with the background image
-    updateCanvasStyles({
-      backgroundImage: `url(${imageURL})`,
-    });
-    // 3. Remove the selected element
-    removeElement(selectedElement.id);
-    const addedFile = allFiles?.find(
-      (item) => item?.name === selectedElement?.id
-    );
-    if (!addedFile) {
-      console.log("File not found with name:", selectedElement?.id);
+    if (!canvasElement) {
+      console.log("Canvas element not found.");
       return;
     }
-    // Create a new file object with an updated name (e.g., to set the background name)
-    const updatedFile = new File([addedFile], `background`, {
-      type: addedFile.type,
-    });
 
-    // Now, update the file using the updateFile function
-    updateFile(addedFile.name, updatedFile);
+    // 2. Get the width and height of the canvas element
+    const canvasWidth = canvasElement.offsetWidth;
+    const canvasHeight = canvasElement.offsetHeight;
+    // Update the selected element with the new z-index
+    updateElement(selectedElement.id, {
+      position: { x: 0, y: 0 },
+      styles: {
+        ...selectedElement.styles,
+        width: canvasWidth,
+        height: canvasHeight,
+        zIndex: 0,
+      },
+    });
   };
+
   const handleUpload = async (e) => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return; // If no file is selected, return

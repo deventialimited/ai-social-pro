@@ -17,16 +17,16 @@ function App() {
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
-// hsdbsds
+  // hsdbsds
   return (
     <div className={isDark ? "dark" : ""}>
-      {isEditorOpen && (
-        <EditorModal
-          onClose={() => setIsEditorOpen(false)}
-          isEditorOpen={isEditorOpen}
-        />
-      )}
       <QueryClientProvider client={queryClient}>
+        {isEditorOpen && (
+          <EditorModal
+            onClose={() => setIsEditorOpen(false)}
+            isEditorOpen={isEditorOpen}
+          />
+        )}
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />

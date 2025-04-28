@@ -1,8 +1,12 @@
 import { Upload, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { createImageElement } from "../hooks/ImagesHooks";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
+import {
+  useUploadUserImageMutation,
+  useUploadedImagesQuery,
+} from "../../../../libs/uploadedImageService";
+import { createImageElement } from "../hooks/ImagesHooks";
 
 function ImagesTab() {
   const [query, setQuery] = useState("");
@@ -10,6 +14,20 @@ function ImagesTab() {
   const [page, setPage] = useState(1);
   const fileInputRef = useRef(null);
   const { addElement, addFile } = useEditor();
+  const { mutate: uploadImage } = useUploadUserImageMutation(); // For image upload
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?._id) {
+      setUserId(storedUser._id);
+    }
+  }, []);
+  const {
+    data: uploadedImages,
+    isLoading,
+    isError,
+  } = useUploadedImagesQuery(userId);
+  // Fetch Unsplash images
   const fetchImages = async () => {
     try {
       let response;
@@ -32,20 +50,17 @@ function ImagesTab() {
             client_id: "FVuPZz9YhT7O4DdL8zWtjSQTCFMj9ubMCF06bDR52lk",
           },
         });
-        console.log(response);
         setImages((prev) => [...prev, ...response.data]);
       }
     } catch (err) {
       console.error("Error fetching images:", err);
     }
   };
-
   useEffect(() => {
     fetchImages();
   }, [page, query]);
 
   const handleScroll = (e) => {
-    console.log(e)
     const bottom =
       e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
     if (bottom) setPage((prev) => prev + 1);
@@ -53,22 +68,15 @@ function ImagesTab() {
 
   const handleAddImage = async (src) => {
     try {
-      // 1. Fetch image from the remote URL
       const response = await fetch(src);
       const blob = await response.blob();
 
-      // 2. Generate a local object URL for rendering in the frontend
       const objectUrl = URL.createObjectURL(blob);
-
-      // 3. Create and add the canvas element with local object URL
       const newElement = createImageElement(objectUrl); // includes a unique `id`
       addElement(newElement);
 
-      // 4. Store file with element ID as the name for backend API use
       const file = new File([blob], newElement.id, { type: blob.type });
       addFile(file);
-
-      // ✅ Now the element is visible on canvas and its original file is stored for API upload
     } catch (error) {
       console.error("Failed to add image:", error);
     }
@@ -77,14 +85,12 @@ function ImagesTab() {
   const handleUploadImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file); // 'file' is the input file
+    formData.append("userId", userId);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      handleAddImage(reader.result); // This adds image to canvas
-    };
-    reader.readAsDataURL(file);
+    uploadImage(formData); // Calling the mutation or API function
   };
-  console.log(images);
   return (
     <div className="p-4 h-full flex flex-col">
       <div className="flex gap-2 mb-4">
@@ -120,8 +126,30 @@ function ImagesTab() {
           />
         </div>
       </div>
-      <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 2px)" }} onScroll={handleScroll}>
-        <div className="grid grid-cols-2 gap-2" >
+
+      {/* Gallery Section */}
+      <div
+        className="overflow-y-auto"
+        style={{ maxHeight: "calc(100vh - 2px)" }}
+        onScroll={handleScroll}
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {/* Display uploaded images */}
+          {uploadedImages?.map((img) => (
+            <div
+              key={img._id}
+              onClick={() => handleAddImage(img.imageUrl)}
+              className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+            >
+              <img
+                src={img.imageUrl}
+                alt="Uploaded"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
+
+          {/* Display Unsplash images */}
           {images?.map((img, index) => (
             <div
               key={index}
