@@ -123,9 +123,8 @@ exports.processPubSub = async (req, res) => {
 
     const domain = await Domain.findOne({
       client_email: jsonData?.client_email,
-      clientWebsite: jsonData?.website,
+      // clientWebsite: jsonData?.website,
     });
-
     if (!domain) {
       return res.status(404).json({ message: "Domain not found" });
     }

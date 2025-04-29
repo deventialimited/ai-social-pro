@@ -86,8 +86,10 @@ export const HomePage = () => {
           client_Website: domain,
         }
       );
+
+      const responseData = firstResponse.data;
       console.log("first res message:", firstResponse.data.message); // Debug log
-      if (firstResponse.data.message == "Client already exists") {
+      if (responseData.code === "DUPLICATE_CLIENT") {
         console.error(
           "Error in first API response:",
           firstResponse.data.messagee
@@ -166,7 +168,14 @@ export const HomePage = () => {
       toast.success("Domain successfully added!");
     } catch (error) {
       console.error("Error in generateCompanyData:", error);
-      toast.error(error || "Failed to generate company data.");
+      setisModalOpen(false);
+      if (axios.isAxiosError(error)) {
+        const apiError =
+          error?.response?.data?.error || "Failed to generate company data.";
+        toast.error(apiError);
+      } else {
+        toast.error(error?.message || "Failed to generate company data.");
+      }
     }
   };
 
