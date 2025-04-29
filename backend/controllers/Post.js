@@ -122,7 +122,7 @@ exports.processPubSub = async (req, res) => {
     console.log("Generated Post:", JSON.stringify(jsonData));
 
     const domain = await Domain.findOne({
-      client_email: jsonData?.client_email,
+      client_id: jsonData?.client_id,
       // clientWebsite: jsonData?.website,
     });
     if (!domain) {
