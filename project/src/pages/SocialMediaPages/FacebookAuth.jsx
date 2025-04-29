@@ -1,5 +1,21 @@
-import React from "react";
+import { React, useState } from "react";
+import { SocialConnectLoader } from "../../PopUps/SocialMediaPopup";
 
 export const FacebookAuth = () => {
-  return <div>Facebook Connected</div>;
+  const [popUp, setPopUp] = useState(true);
+  const handleClick = () => {
+    setPopUp(true);
+  };
+  return (
+    <div>
+      Facebook Connected
+      {popUp && (
+        <SocialConnectLoader
+          isOpen={popUp}
+          onClose={() => {}}
+          platform="Facebook"
+        />
+      )}
+    </div>
+  );
 };

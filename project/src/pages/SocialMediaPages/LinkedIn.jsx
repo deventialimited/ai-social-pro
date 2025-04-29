@@ -1,7 +1,17 @@
-import React from "react";
+import { React, useState } from "react";
+import { SocialConnectLoader } from "../../PopUps/SocialMediaPopup";
 
-const LinkedIn = () => {
-  return <div>LinkedIn Connected</div>;
+export const LinkedIn = () => {
+  const [popUp, setPopUp] = useState(true);
+  const handleClick = () => {
+    setPopUp(true);
+  };
+  return (
+    <div>
+      LinkedIn Connected
+      {popUp && (
+        <SocialConnectLoader isOpen={popUp} onClose={() => {}} platform="LinkedIn" />
+      )}
+    </div>
+  );
 };
-
-export default LinkedIn;

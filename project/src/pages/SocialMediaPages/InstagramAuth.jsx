@@ -1,9 +1,17 @@
-import React from 'react'
+import { React, useState } from "react";
+import { SocialConnectLoader } from "../../PopUps/SocialMediaPopup";
 
-const InstagramAuth = () => {
+export const InstagramAuth = () => {
+  const [popUp, setPopUp] = useState(true);
+  const handleClick = () => {
+    setPopUp(true);
+  };
   return (
-    <div>Instagram Connected</div>
-  )
-}
-
-export default InstagramAuth
+    <div>
+      Instagram Connected
+      {popUp && (
+        <SocialConnectLoader isOpen={popUp} onClose={() => {}} platform="Instagram" />
+      )}
+    </div>
+  );
+};
