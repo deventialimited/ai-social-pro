@@ -126,7 +126,7 @@ exports.processPubSub = async (req, res) => {
       // clientWebsite: jsonData?.website,
     });
     if (!domain) {
-      return res.status(404).json({ message: "Domain not found" });
+      return res.status(404).json({ message: "client id not found" });
     }
 
     let uploadedImageUrl = "";
