@@ -4,7 +4,7 @@ import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import EditableTextElement from "./EditableTextElement";
 import { useElementResize } from "./helpers/useElementResize";
 import { useElementRotate } from "./helpers/useElementRotate";
-import { MoveDiagonal, RotateCcw } from "lucide-react"; // ✅ Add this at top with other imports
+import { MoveDiagonal, RotateCcw } from "lucide-react"; 
 import { ResizeHandle } from "./ResizeHandle";
 
 /**
@@ -28,7 +28,7 @@ const CanvasElement = ({
   } = element;
   const { updateElement, canvas } = useEditor();
   const elementRef = useRef(null);
-  const startSizeRef = useRef(); // ✅ Declare it before using
+  const startSizeRef = useRef();
 
   // Add keyboard event handler
   useEffect(() => {
@@ -38,7 +38,6 @@ const CanvasElement = ({
       const moveStep = 10; // Pixels to move per key press
       let newX = position.x;
       let newY = position.y;
-
       switch (e.key) {
         case "ArrowLeft":
           newX = Math.max(0, position.x - moveStep);
@@ -55,12 +54,10 @@ const CanvasElement = ({
         default:
           return;
       }
-
       updateElement(id, {
         position: { x: newX, y: newY },
       });
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSelected, locked, position, id, updateElement, canvas.width, canvas.height, styles.width, styles.height]);
@@ -72,16 +69,15 @@ const CanvasElement = ({
       fontSize: styles.fontSize || "16px",
     };
   };
+
   const onResize = ({ deltaX, deltaY }, direction) => {
     if (!element || element.locked) return;
     const { width, height, fontSize: rawFontSize } = startSizeRef.current;
     const fontSize = parseFloat(rawFontSize);
-
     let newWidth = width;
     let newHeight = height;
     let newX = position.x;
     let newY = position.y;
-
     switch (direction) {
       case "n":
         newHeight = Math.max(height - deltaY, 20);
@@ -118,10 +114,8 @@ const CanvasElement = ({
         newHeight = Math.max(height + deltaY, 20);
         break;
     }
-
     const scale = Math.max(newWidth / width, newHeight / height);
     const newFontSize = Math.max(fontSize * scale, 8);
-
     updateElement(id, {
       position: { x: newX, y: newY },
       styles: {
@@ -132,6 +126,7 @@ const CanvasElement = ({
       },
     });
   };
+
   const { handleRotateMouseDown } = useElementRotate((angle) => {
     if (!element || element.locked) return;
     updateElement(id, {
@@ -141,7 +136,45 @@ const CanvasElement = ({
       },
     });
   });
-  console.log(Math.max(Math.min(canvas.height / 3, 600)) - styles.height);
+
+  // Handle image drag optimization - ADDED CODE
+  const handleDragStart = (e) => {
+    if (type === "image" && elementRef.current) {
+      // Apply optimizations during drag to improve performance
+      elementRef.current.style.willChange = "transform";
+      const img = elementRef.current.querySelector('img');
+      if (img) {
+        img.style.pointerEvents = "none";
+      }
+    }
+  };
+
+  const handleDragStop = (e, d) => {
+    if (!element || element.locked) return;
+    
+    // Reset optimization styles - ADDED CODE
+    if (type === "image" && elementRef.current) {
+      elementRef.current.style.willChange = "auto";
+      const img = elementRef.current.querySelector('img');
+      if (img) {
+        img.style.pointerEvents = "auto";
+      }
+    }
+    
+    // Original update logic - without bounds restriction
+    updateElement(id, {
+      position: { x: d.x, y: d.y },
+      styles: {
+        ...styles,
+        position: "static",
+        left: null,
+        right: null,
+        top: null,
+        bottom: null,
+      },
+    });
+  };
+
   return (
     <Rnd
       key={id}
@@ -161,24 +194,14 @@ const CanvasElement = ({
         position: styles?.position === "absolute" ? "static" : "absolute",
         zIndex: styles?.zIndex,
         display: visible ? "block" : "none",
+        touchAction: "none", // ADDED: Improve touch handling
       }}
-      onDragStop={(e, d) => {
-        if (!element || element.locked) return;
-        updateElement(id, {
-          position: { x: d.x, y: d.y },
-          styles: {
-            ...styles,
-            position: "static",
-            left: null,
-            right: null,
-            top: null,
-            bottom: null,
-          },
-        });
-      }}
+      onDragStart={handleDragStart} // ADDED: optimization handler
+      onDragStop={handleDragStop}
       onClick={() => onSelect(id, type)}
       enableResizing={false} // we handle resizing manually
       disableDragging={locked} // Disable dragging if locked
+      // bounds removed to allow dragging outside canvas
     >
       {["text", "image", "shape"].includes(type) && (
         <div
@@ -221,7 +244,7 @@ const CanvasElement = ({
               }}
             />
           )}
-
+          
           {type === "image" && (
             <img
               id={element.id}
@@ -233,26 +256,27 @@ const CanvasElement = ({
               }}
               alt="Canvas"
               className="w-full h-full object-cover"
+              draggable={false} // ADDED: Prevent default browser dragging
             />
           )}
-{type === "shape" && (
-  <div
-    style={{
-      ...styles,
-      position: "static",
-      transform: "rotate(0deg)",
-      overflow: "hidden",
-    }}
-    dangerouslySetInnerHTML={{
-      __html: props.svg?.svg
-        ?.replace(
-          /<svg([^>]*)>/,
-          `<svg$1 width="${styles.width}" height="${styles.height}" preserveAspectRatio="none">`        ),
-    }}
-  />
-)}
-
-
+          
+          {type === "shape" && (
+            <div
+              style={{
+                ...styles,
+                position: "static",
+                transform: "rotate(0deg)",
+                overflow: "hidden",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: props.svg?.svg
+                  ?.replace(
+                    /<svg([^>]*)>/,
+                    `<svg$1 width="${styles.width}" height="${styles.height}" preserveAspectRatio="none">`        ),
+              }}
+            />
+          )}
+          
           {isSelected && (
             <>
               {/* Resize Handles */}
@@ -281,7 +305,6 @@ const CanvasElement = ({
                 position="se"
                 className="absolute z-10 bottom-0 right-0"
               />
-
               {/* Edges */}
               <ResizeHandle
                 onResize={onResize}
@@ -307,7 +330,6 @@ const CanvasElement = ({
                 position="e"
                 className="absolute z-10 right-0 top-1/2 -translate-y-1/2"
               />
-
               {/* Rotate Handle */}
               <div
                 onMouseDown={(e) => handleRotateMouseDown(e, elementRef)}
