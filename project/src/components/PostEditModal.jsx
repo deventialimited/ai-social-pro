@@ -5,6 +5,7 @@ import MultiSelectDropdown from "./MultiSelectDropdown";
 import toast from "react-hot-toast";
 import GraphicEditorModal from "./GraphicEditorModal";
 import { Dialog, Transition } from "@headlessui/react";
+import EditorModal from "./Editor Components/EditorModal";
 
 export const PostEditModal = ({
   post,
@@ -55,11 +56,16 @@ export const PostEditModal = ({
 
   return (
     <>
-      <GraphicEditorModal
+      {/* <GraphicEditorModal
         postImageDetails={postImageDetails}
         setPostImageDetails={setPostImageDetails}
         isGraphicEditorModal={isGraphicEditorModal}
         setIsGraphicEditorModal={setIsGraphicEditorModal}
+      /> */}
+      <EditorModal
+        post={post}
+        onClose={() => setIsGraphicEditorModal(false)}
+        isEditorOpen={isGraphicEditorModal}
       />
       <Transition appear show={showEditModal} as={Fragment}>
         <Dialog

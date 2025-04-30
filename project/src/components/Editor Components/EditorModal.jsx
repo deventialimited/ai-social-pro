@@ -6,7 +6,7 @@ import EditorCanvas from "./canvas/EditorCanvas";
 import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider } from "./EditorStoreHooks/FullEditorHooks";
 import SaveAndClose from "./common/SaveAndClose";
-function EditorModal({ onClose, isEditorOpen }) {
+function EditorModal({ post, onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
@@ -111,6 +111,7 @@ function EditorModal({ onClose, isEditorOpen }) {
                         setSpecialActiveTab={setSpecialActiveTab}
                         canvasContainerRef={canvasContainerRef}
                         onClose={onClose}
+                        postId={post._id}
                       />
                     </div>
                   </div>

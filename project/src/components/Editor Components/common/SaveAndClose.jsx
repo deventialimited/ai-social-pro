@@ -10,7 +10,7 @@ const SaveAndClose = ({
   setSpecialActiveTab,
   canvasContainerRef,
   onClose,
-  postId = null,
+  postId,
 }) => {
   const { postDesignData, allFiles } = useEditor();
   const [isSaveLoading, setIsSaveLoading] = useState(false);
