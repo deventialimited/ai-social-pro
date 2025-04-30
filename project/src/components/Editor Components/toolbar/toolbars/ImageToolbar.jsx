@@ -18,6 +18,7 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
 import { createImageElement } from "../../sidebar/hooks/ImagesHooks";
 import CropButton from "../../common/popups/CropButton";
+import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
 
 function ImageToolbar({
   specialActiveTab,
@@ -124,94 +125,11 @@ function ImageToolbar({
   };
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    const updatedPosition = { ...selectedElement.position };
-
-    switch (action) {
-      case "left":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: 0,
-            top: updatedPosition?.y,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "top":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            top: 0,
-            left: updatedPosition?.x,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "center":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              Math.max(Math.min(canvas.width / 3, 600)) -
-              selectedElement?.styles?.width, // Centers on X-axis
-            top:
-              selectedElement?.styles?.top ||
-              Math.max(Math.min(canvas.height / 3, 600)) -
-                selectedElement?.styles?.height, // Maintains top if available or centers vertically
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-      case "middle":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              selectedElement?.left ||
-              Math.max(Math.min(canvas.width / 3, 600)) -
-                selectedElement?.styles?.width, // Maintains left if available or centers horizontally
-            top: Math.max(Math.min(canvas.height / 3, 600)) / 3,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-        break;
-      case "right":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            right: 0,
-            top: updatedPosition?.y,
-            left: null,
-          },
-        });
-        break;
-      case "bottom":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            bottom: 0,
-            left: updatedPosition?.x,
-            top: null,
-            right: null,
-          },
-        });
-        break;
-      default:
-        break;
-    }
+    
+    const newPosition = setElementPosition(selectedElement, action, canvas);
+    updateElement(selectedElement.id, {
+      position: newPosition
+    });
   };
 
   // This should handle TEXT ALIGNMENT (not to be confused with element positioning)
