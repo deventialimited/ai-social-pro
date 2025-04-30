@@ -18,6 +18,7 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
 import { createImageElement } from "../../sidebar/hooks/ImagesHooks";
 import CropButton from "../../common/popups/CropButton";
+import { setPosition } from "../../sidebar/hooks/CommonHooks";
 
 function ImageToolbar({
   specialActiveTab,
@@ -124,16 +125,16 @@ function ImageToolbar({
   };
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    const updatedPosition = { ...selectedElement.position };
 
     switch (action) {
       case "left":
         updateElement(selectedElement?.id, {
+          position: { x: 0, y: selectedElement?.position?.y },
           styles: {
             ...selectedElement.styles,
             position: "absolute",
             left: 0,
-            top: updatedPosition?.y,
+            top: selectedElement?.position?.y,
             bottom: null,
             right: null,
           },
@@ -141,69 +142,69 @@ function ImageToolbar({
         break;
       case "top":
         updateElement(selectedElement?.id, {
+          position: { x: selectedElement?.position?.x, y: 0 },
           styles: {
             ...selectedElement.styles,
             position: "absolute",
             top: 0,
-            left: updatedPosition?.x,
+            left: selectedElement?.position?.x,
             bottom: null,
             right: null,
           },
         });
         break;
       case "center":
+        const centerX = Math.max(Math.min(canvas.width / 3, 600)) - selectedElement?.styles?.width;
+        const centerY = selectedElement?.styles?.top || Math.max(Math.min(canvas.height / 3, 600)) - selectedElement?.styles?.height;
         updateElement(selectedElement?.id, {
+          position: { x: centerX, y: centerY },
           styles: {
             ...selectedElement.styles,
             position: "absolute",
-            left:
-              Math.max(Math.min(canvas.width / 3, 600)) -
-              selectedElement?.styles?.width, // Centers on X-axis
-            top:
-              selectedElement?.styles?.top ||
-              Math.max(Math.min(canvas.height / 3, 600)) -
-                selectedElement?.styles?.height, // Maintains top if available or centers vertically
+            left: centerX,
+            top: centerY,
             bottom: null,
             right: null,
           },
         });
         break;
-
       case "middle":
+        const middleX = selectedElement?.left || Math.max(Math.min(canvas.width / 3, 600)) - selectedElement?.styles?.width;
+        const middleY = Math.max(Math.min(canvas.height / 3, 600)) / 3;
         updateElement(selectedElement?.id, {
+          position: { x: middleX, y: middleY },
           styles: {
             ...selectedElement.styles,
             position: "absolute",
-            left:
-              selectedElement?.left ||
-              Math.max(Math.min(canvas.width / 3, 600)) -
-                selectedElement?.styles?.width, // Maintains left if available or centers horizontally
-            top: Math.max(Math.min(canvas.height / 3, 600)) / 3,
+            left: middleX,
+            top: middleY,
             bottom: null,
             right: null,
           },
         });
-        break;
-
         break;
       case "right":
+        const rightX = canvas.width - selectedElement?.styles?.width;
         updateElement(selectedElement?.id, {
+          position: { x: rightX, y: selectedElement?.position?.y },
           styles: {
             ...selectedElement.styles,
             position: "absolute",
             right: 0,
-            top: updatedPosition?.y,
+            top: selectedElement?.position?.y,
             left: null,
           },
         });
         break;
       case "bottom":
+        const bottomY = canvas.height - selectedElement?.styles?.height;
         updateElement(selectedElement?.id, {
+          position: { x: selectedElement?.position?.x, y: bottomY },
           styles: {
             ...selectedElement.styles,
             position: "absolute",
             bottom: 0,
-            left: updatedPosition?.x,
+            left: selectedElement?.position?.x,
             top: null,
             right: null,
           },
