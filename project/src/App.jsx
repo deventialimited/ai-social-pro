@@ -13,7 +13,8 @@ import { FacebookAuth } from "./pages/SocialMediaPages/FacebookAuth";
 import { InstagramAuth } from "./pages/SocialMediaPages/InstagramAuth";
 import { LinkedIn } from "./pages/SocialMediaPages/LinkedIn";
 import { XAuth } from "./pages/SocialMediaPages/XAuth";
-
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
@@ -46,6 +47,8 @@ function App() {
             <Route path="/dashboard/FacebookAuth" element={<FacebookAuth />} />
             <Route path="/dashboard/XAuth" element={<XAuth />} />
             <Route path="/dashboard/LinkedinAuth" element={<LinkedIn />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-condition" element={<TermsAndConditions />} />
           </Routes>
           <Toaster />
         </BrowserRouter>
