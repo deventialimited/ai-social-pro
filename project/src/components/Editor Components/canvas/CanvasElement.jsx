@@ -252,6 +252,7 @@ const CanvasElement = ({
                 position: "static",
                 transform: "rotate(0deg)",
                 overflow: "hidden",
+                color: styles.fill || styles.color || "#D3D3D3",
               }}
               dangerouslySetInnerHTML={{
                 __html: props.svg?.svg

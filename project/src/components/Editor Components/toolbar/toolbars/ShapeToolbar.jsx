@@ -16,7 +16,7 @@ import ShadowSettings from "../../common/popups/ShadowSettings";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
 import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
-
+import Tooltip from "../../../common/Tooltip";
 function ShapeToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -174,28 +174,35 @@ function ShapeToolbar({
           <RotateCw className="h-5 w-5 text-gray-600" />
         </button> */}
 
-        <ColorPicker
-          color={selectedElement?.styles?.fill}
-          onChange={handleColorChange}
-          showPalette={false}
-        />
+        <Tooltip id="color-picker-tooltip" content="Change shape color">
+          <ColorPicker
+            color={selectedElement?.styles?.fill}
+            onChange={handleColorChange}
+            showPalette={false}
+          />
+        </Tooltip>
 
-        <StrokeSelector
-          stroke={{
-            width: selectedElement?.styles?.strokeWidth,
-            style: selectedElement?.styles?.strokeDasharray,
-            color: selectedElement?.styles?.stroke,
-          }}
-          onChange={handleStrokeChange}
-        />
-        <ShadowSettings
-          selectedElement={selectedElement}
-          updateElement={updateElement}
-        />
+        <Tooltip id="stroke-tooltip" content="Adjust stroke settings">
+          <StrokeSelector
+            stroke={{
+              width: selectedElement?.styles?.strokeWidth,
+              style: selectedElement?.styles?.strokeDasharray,
+              color: selectedElement?.styles?.stroke,
+            }}
+            onChange={handleStrokeChange}
+          />
+        </Tooltip>
+
+        <Tooltip id="shadow-tooltip" content="Adjust shadow settings">
+          <ShadowSettings
+            selectedElement={selectedElement}
+            updateElement={updateElement}
+          />
+        </Tooltip>
 
         <PositionPopup
-          onLayerPositionChange={handleLayerPositionChange} // For element positioning
-          onPositionChange={handlePositionChange} // For text alignment
+          onLayerPositionChange={handleLayerPositionChange}
+          onPositionChange={handlePositionChange}
         />
 
         <TransparencyPopup
@@ -203,32 +210,38 @@ function ShapeToolbar({
           onChange={handleTransparencyChange}
         />
 
-        <button
-          onClick={() => handleLock(selectedElement?.id)}
-          className={`p-2 rounded-md hover:bg-gray-100 ${
-            selectedElement?.locked ? "bg-gray-300" : null
-          }`}
-        >
-          {selectedElement?.locked ? (
-            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
-          ) : (
-            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
-          )}
-        </button>
+        <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+          <button
+            onClick={() => handleLock(selectedElement?.id)}
+            className={`p-2 rounded-md hover:bg-gray-100 ${
+              selectedElement?.locked ? "bg-gray-300" : null
+            }`}
+          >
+            {selectedElement?.locked ? (
+              <Lock className="h-4 w-4 text-gray-600" />
+            ) : (
+              <Unlock className="h-4 w-4 text-gray-600" />
+            )}
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleCopy}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Copy className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="copy-tooltip" content="Copy element">
+          <button
+            onClick={handleCopy}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Copy className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleDelete}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Trash className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="delete-tooltip" content="Delete element">
+          <button
+            onClick={handleDelete}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Trash className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
       </div>
     </>
   );
