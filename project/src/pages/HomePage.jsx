@@ -52,6 +52,7 @@ export const HomePage = () => {
     clientDescription: "",
     industry: "",
     niche: "",
+    client_id: "",
     colors: [],
     language: "",
     country: "",

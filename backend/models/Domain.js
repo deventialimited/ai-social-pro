@@ -59,6 +59,9 @@ const domainSchema = new mongoose.Schema(
       ref: "User", // References the User model
       index: true, // Ensures efficient querying
     },
+    client_id: {
+      type: String,
+    },
     marketingStrategy: marketingStrategySchema, // Embedded marketing strategy
   },
   {

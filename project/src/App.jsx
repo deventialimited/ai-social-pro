@@ -9,6 +9,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import FullEditor from "./pages/ImageEditor/FullEditor";
 import Fulljs from "./pages/ImageEditor/FullEditorjs";
 import EditorModal from "./components/Editor Components/EditorModal";
+import { FacebookAuth } from "./pages/SocialMediaPages/FacebookAuth";
+import { InstagramAuth } from "./pages/SocialMediaPages/InstagramAuth";
+import { LinkedIn } from "./pages/SocialMediaPages/LinkedIn";
+import { XAuth } from "./pages/SocialMediaPages/XAuth";
+
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
@@ -33,8 +38,14 @@ function App() {
             <Route path="/dashboard/*" element={<Dashboard />} />
             {/* <Route path="/fullEditor" element={<FullEditor />} />  */}
             <Route path="/fullEditor" element={<Fulljs />} />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />{" "}
+            <Route
+              path="/dashboard/InstagramAuth"
+              element={<InstagramAuth />}
+            />{" "}
+            <Route path="/dashboard/FacebookAuth" element={<FacebookAuth />} />
+            <Route path="/dashboard/XAuth" element={<XAuth />} />
+            <Route path="/dashboard/LinkedinAuth" element={<LinkedIn />} />
           </Routes>
           <Toaster />
         </BrowserRouter>

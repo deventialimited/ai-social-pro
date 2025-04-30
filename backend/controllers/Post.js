@@ -122,11 +122,11 @@ exports.processPubSub = async (req, res) => {
     console.log("Generated Post:", JSON.stringify(jsonData));
 
     const domain = await Domain.findOne({
-      client_email: jsonData?.client_email,
+      client_id: jsonData?.client_id,
       // clientWebsite: jsonData?.website,
     });
     if (!domain) {
-      return res.status(404).json({ message: "Domain not found" });
+      return res.status(404).json({ message: "client id not found" });
     }
 
     let uploadedImageUrl = "";

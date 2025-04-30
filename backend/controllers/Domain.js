@@ -125,6 +125,7 @@ exports.addDomain = async (req, res) => {
     language,
     country,
     state,
+    client_id,
   } = req.body;
 
   try {
@@ -153,6 +154,7 @@ exports.addDomain = async (req, res) => {
       country,
       state,
       marketingStrategy,
+      client_id,
     };
 
     // Start logo generation logic
