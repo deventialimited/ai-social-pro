@@ -111,7 +111,7 @@ function EditorModal({ post, onClose, isEditorOpen }) {
                         setSpecialActiveTab={setSpecialActiveTab}
                         canvasContainerRef={canvasContainerRef}
                         onClose={onClose}
-                        postId={post._id}
+                        postId={post?._id}
                       />
                     </div>
                   </div>
