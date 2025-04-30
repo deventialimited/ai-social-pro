@@ -411,16 +411,20 @@ function TextToolbar({
             <Wand2 className="h-5 w-5 text-gray-600" />
             <span>AI write</span>
           </button> */}
+        <Tooltip id="position-tooltip" content="Adjust element position">
 
         <PositionPopup
           onLayerPositionChange={handleLayerPositionChange} // For element positioning
           onPositionChange={handlePositionChange} // For text alignment
         />
+        </Tooltip>
+        <Tooltip id="transparency-tooltip" content="Adjust transparency">
 
         <TransparencyPopup
           transparency={transparency}
           onChange={handleTransparencyChange}
         />
+        </Tooltip>
 
         <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
           <button

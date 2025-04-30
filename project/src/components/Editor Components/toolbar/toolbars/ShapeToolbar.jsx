@@ -200,15 +200,19 @@ function ShapeToolbar({
           />
         </Tooltip>
 
-        <PositionPopup
-          onLayerPositionChange={handleLayerPositionChange}
-          onPositionChange={handlePositionChange}
-        />
+        <Tooltip id="position-tooltip" content="Adjust element position">
+          <PositionPopup
+            onLayerPositionChange={handleLayerPositionChange}
+            onPositionChange={handlePositionChange}
+          />
+        </Tooltip>
 
-        <TransparencyPopup
-          transparency={selectedElement?.styles?.opacity}
-          onChange={handleTransparencyChange}
+        <Tooltip id="transparency-tooltip" content="Adjust transparency">
+          <TransparencyPopup
+            transparency={selectedElement?.styles?.opacity}
+            onChange={handleTransparencyChange}
         />
+        </Tooltip>
 
         <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
           <button
