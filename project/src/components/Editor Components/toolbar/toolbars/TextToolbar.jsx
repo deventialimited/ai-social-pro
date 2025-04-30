@@ -25,7 +25,7 @@ import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import TextStylePopup from "../../common/popups/TextStylePopup";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
-import { setPosition } from "../../sidebar/hooks/CommonHooks";
+import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
 
 function TextToolbar({
   specialActiveTab,
@@ -92,94 +92,11 @@ function TextToolbar({
 
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-
-    switch (action) {
-      case "left":
-        updateElement(selectedElement?.id, {
-          position: { x: 0, y: selectedElement?.position?.y },
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: 0,
-            top: selectedElement?.position?.y,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "top":
-        updateElement(selectedElement?.id, {
-          position: { x: selectedElement?.position?.x, y: 0 },
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            top: 0,
-            left: selectedElement?.position?.x,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "center":
-        const centerX = Math.max(Math.min(canvas.width / 3, 600)) - selectedElement?.styles?.width;
-        const centerY = selectedElement?.styles?.top || Math.max(Math.min(canvas.height / 3, 600)) - selectedElement?.styles?.height;
-        updateElement(selectedElement?.id, {
-          position: { x: centerX, y: centerY },
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: centerX,
-            top: centerY,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "middle":
-        const middleX = selectedElement?.left || Math.max(Math.min(canvas.width / 3, 600)) - selectedElement?.styles?.width;
-        const middleY = Math.max(Math.min(canvas.height / 3, 600)) / 3;
-        updateElement(selectedElement?.id, {
-          position: { x: middleX, y: middleY },
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: middleX,
-            top: middleY,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "right":
-        const rightX = canvas.width - selectedElement?.styles?.width;
-        updateElement(selectedElement?.id, {
-          position: { x: rightX, y: selectedElement?.position?.y },
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            right: 0,
-            top: selectedElement?.position?.y,
-            left: null,
-          },
-        });
-        break;
-      case "bottom":
-        const bottomY = canvas.height - selectedElement?.styles?.height;
-        updateElement(selectedElement?.id, {
-          position: { x: selectedElement?.position?.x, y: bottomY },
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            bottom: 0,
-            left: selectedElement?.position?.x,
-            top: null,
-            right: null,
-          },
-        });
-        break;
-      default:
-        break;
-    }
+    
+    const newPosition = setElementPosition(selectedElement, action, canvas);
+    updateElement(selectedElement.id, {
+      position: newPosition
+    });
   };
 
   // This should handle TEXT ALIGNMENT (not to be confused with element positioning)

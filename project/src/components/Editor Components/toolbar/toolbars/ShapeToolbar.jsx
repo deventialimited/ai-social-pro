@@ -15,7 +15,7 @@ import StrokeSelector from "../../common/popups/StrokeSelector";
 import ShadowSettings from "../../common/popups/ShadowSettings";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
-import { setPosition } from "../../sidebar/hooks/CommonHooks";
+import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
 
 function ShapeToolbar({
   specialActiveTab,
@@ -24,7 +24,7 @@ function ShapeToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const { updateElement, handleLock, elements, addElement, removeElement } =
+  const { updateElement, handleLock, elements, addElement, removeElement, canvas } =
     useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   useEffect(() => {
@@ -64,9 +64,9 @@ function ShapeToolbar({
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
     
-    const updatedStyles = setPosition(selectedElement, action);
+    const newPosition = setElementPosition(selectedElement, action, canvas);
     updateElement(selectedElement.id, {
-      styles: updatedStyles
+      position: newPosition
     });
   };
 

@@ -134,75 +134,39 @@ export function setTransparency(element, percentage) {
   }
 
   
-export const setPosition = (element, action) => {
-  const updatedStyles = { ...element.styles };
+export const setElementPosition = (element, action, canvas) => {
+  const elementWidth = element.styles.width || 100;
+  const elementHeight = element.styles.height || 30;
+  const canvasWidth = Math.max(Math.min(canvas.width / 3, 600));
+  const canvasHeight = Math.max(Math.min(canvas.height / 3, 600));
 
-  // Handle layering/z-index changes
-  if (action === "up" || action === "down" || action === "toFront" || action === "toBack") {
-    const currentZIndex = parseInt(updatedStyles.zIndex || 0) || 0;
-    const zIndexChange = {
-      up: 1,
-      down: -1,
-      toFront: 999,
-      toBack: -999
-    }[action];
-    updatedStyles.zIndex = currentZIndex + zIndexChange;
-    return updatedStyles;
-  }
-
-  // Handle positioning
-  updatedStyles.position = "absolute";
+  let newX = element.position.x;
+  let newY = element.position.y;
 
   switch (action) {
     case "left":
-      updatedStyles.left = 0;
-      updatedStyles.right = null;
-      updatedStyles.transform = null;
+      newX = 0;
       break;
     case "right":
-      updatedStyles.left = "100%";
-      updatedStyles.right = null;
-      updatedStyles.transform = null;
-      break;
-    case "top":
-      updatedStyles.top = 0;
-      updatedStyles.bottom = null;
-      updatedStyles.transform = null;
-      break;
-    case "bottom":
-      updatedStyles.bottom = 0;
-      updatedStyles.top = null;
-      updatedStyles.transform = null;
+      newX = canvasWidth - elementWidth;
       break;
     case "center":
-      // Center both horizontally and vertically
-      updatedStyles.left = "50%";
-      updatedStyles.top = "50%";
-      updatedStyles.right = null;
-      updatedStyles.bottom = null;
-      updatedStyles.transform = "translate(-50%, -50%)";
+      newX = (canvasWidth - elementWidth) / 2;
+      break;
+    case "top":
+      newY = 0;
+      break;
+    case "bottom":
+      newY = canvasHeight - elementHeight;
       break;
     case "middle":
-      // If element is already centered horizontally, center vertically
-      if (updatedStyles.left === "50%" && updatedStyles.transform?.includes("translateX(-50%)")) {
-        updatedStyles.top = "50%";
-        updatedStyles.transform = "translate(-50%, -50%)";
-      } 
-      // If element is already centered vertically, center horizontally
-      else if (updatedStyles.top === "50%" && updatedStyles.transform?.includes("translateY(-50%)")) {
-        updatedStyles.left = "50%";
-        updatedStyles.transform = "translate(-50%, -50%)";
-      }
-      // Otherwise, center vertically
-      else {
-        updatedStyles.top = "50%";
-        updatedStyles.bottom = null;
-        updatedStyles.transform = "translateY(-50%)";
-      }
+      newY = (canvasHeight - elementHeight) / 2;
+      break;
+    default:
       break;
   }
 
-  return updatedStyles;
+  return { x: newX, y: newY };
 };
   
 
