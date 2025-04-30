@@ -18,7 +18,7 @@ function EditorCanvas({
   const containerRef = useRef(null);
 
   const increaseZoom = () => {
-    setZoom((prev) => Math.min(prev + 10, 200));
+    setZoom((prev) => Math.min(prev + 10, 150));
   };
 
   const decreaseZoom = () => {
@@ -61,13 +61,11 @@ function EditorCanvas({
       ref={containerRef}
       className="flex-1 bg-gray-200 overflow-auto h-full"
       style={{
-        minHeight: "100%",
-        minWidth: "100%",
         position: "relative",
       }}
     >
       {/* Canvas controls */}
-      <div className="sticky top-4 right-4 float-right z-10 flex flex-col gap-1 ml-auto mr-4">
+      <div className=" fixed top-32 right-4 float-right z-10 flex flex-col gap-1 ml-auto mr-4">
         <button className="p-1 bg-white rounded-md shadow hover:bg-gray-50">
           <Copy className="h-4 w-4" />
         </button>
@@ -83,21 +81,27 @@ function EditorCanvas({
       </div>
 
       {/* Canvas container with centering and extra space for scrolling */}
-      <div
-        className="flex items-center justify-center min-h-full min-w-full p-8"
-        style={{ paddingBottom: "200px", paddingTop: "100px" }} // Ensure enough space at the bottom for scrolling
-      >
+      <div className="flex items-center justify-center h-max p-8">
         {/* Zoom container */}
         <div
-          ref={canvasContainerRef}
-          className="transform-gpu"
           style={{
-            transformOrigin: "center",
-            transition: "transform 0.2s ease-out",
+            transform: `scale(${zoom / 100})`,
+            transformOrigin: "top left",
+            transition: "transform 0.3s ease",
+            display: "inline-block",
+            width: `${
+              Math.max(Math.min(canvas.width / 3, 600)) * (zoom / 100)
+            }px`,
+            height: `${
+              Math.max(Math.min(canvas.height / 3, 600)) * (zoom / 100)
+            }px`,
+            marginTop: `${(zoom - 100) * 0.25}rem`, // Adjust multiplier as needed
+            marginLeft: `${(zoom - 100) * 0.25}rem`, // Adjust multiplier as needed
           }}
         >
           {/* Canvas */}
           <div
+            ref={canvasContainerRef}
             id="#canvas"
             className="bg-white shadow-lg overflow-hidden relative"
             style={{
@@ -122,9 +126,6 @@ function EditorCanvas({
           </div>
         </div>
       </div>
-
-      {/* Spacer div to ensure scrollability */}
-      <div style={{ height: "100px" }}></div>
 
       {/* Zoom controls - fixed at bottom right */}
       <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-50">

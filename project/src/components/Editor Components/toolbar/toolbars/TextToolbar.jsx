@@ -25,7 +25,9 @@ import PositionPopup from "../../common/popups/PositionPopup";
 import TransparencyPopup from "../../common/popups/TransparencyPopup";
 import TextStylePopup from "../../common/popups/TextStylePopup";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
-import { setPosition } from "../../sidebar/hooks/CommonHooks";
+import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
+import Tooltip from "../../../common/Tooltip";
+
 function TextToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -91,94 +93,11 @@ function TextToolbar({
 
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    const updatedPosition = { ...selectedElement.position };
-
-    switch (action) {
-      case "left":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: 0,
-            top: updatedPosition?.y,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "top":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            top: 0,
-            left: updatedPosition?.x,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "center":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              Math.max(Math.min(canvas.width / 3, 600)) -
-              selectedElement?.styles?.width, // Centers on X-axis
-            top:
-              selectedElement?.styles?.top ||
-              Math.max(Math.min(canvas.height / 3, 600)) -
-                selectedElement?.styles?.height, // Maintains top if available or centers vertically
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-      case "middle":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              selectedElement?.left ||
-              Math.max(Math.min(canvas.width / 3, 600)) -
-                selectedElement?.styles?.width, // Maintains left if available or centers horizontally
-            top: Math.max(Math.min(canvas.height / 3, 600)) / 3,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-        break;
-      case "right":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            right: 0,
-            top: updatedPosition?.y,
-            left: null,
-          },
-        });
-        break;
-      case "bottom":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            bottom: 0,
-            left: updatedPosition?.x,
-            top: null,
-            right: null,
-          },
-        });
-        break;
-      default:
-        break;
-    }
+    
+    const newPosition = setElementPosition(selectedElement, action, canvas);
+    updateElement(selectedElement.id, {
+      position: newPosition
+    });
   };
 
   // This should handle TEXT ALIGNMENT (not to be confused with element positioning)
@@ -307,218 +226,238 @@ function TextToolbar({
           <RotateCw className="h-5 w-5 text-gray-600" />
         </button> */}
 
-        <ColorPicker
-          color={selectedElement?.styles?.color}
-          onChange={handleColorChange}
-          showPalette={false}
-        />
-
-        <FontSelector
-          font={selectedElement?.styles?.fontFamily}
-          onChange={handleFontChange}
-        />
-
-        <div className="w-16">
-          <input
-            type="number"
-            value={parseFloat(selectedElement?.styles?.fontSize)}
-            onChange={handleFontSizeChange}
-            className="w-full px-2 py-1 border rounded-md text-sm"
+        <Tooltip id="color-picker-tooltip" content="Change text color">
+          <ColorPicker
+            color={selectedElement?.styles?.color}
+            onChange={handleColorChange}
+            showPalette={false}
           />
-        </div>
+        </Tooltip>
 
-        <div className="flex border rounded-md">
-          <button
-            className={`p-2 hover:bg-gray-100 ${
-              (selectedElement?.styles?.textAlign ?? "left") === "left"
-                ? "bg-gray-200"
-                : ""
-            }`}
-            onClick={() => handleAlignChange("left")}
-          >
-            <AlignLeft className="h-5 w-5 text-gray-600" />
-          </button>
-          <button
-            className={`p-2 hover:bg-gray-100 ${
-              selectedElement?.styles?.textAlign === "center"
-                ? "bg-gray-200"
-                : ""
-            }`}
-            onClick={() => handleAlignChange("center")}
-          >
-            <AlignCenter className="h-5 w-5 text-gray-600" />
-          </button>
-          <button
-            className={`p-2 hover:bg-gray-100 ${
-              selectedElement?.styles?.textAlign === "right"
-                ? "bg-gray-200"
-                : ""
-            }`}
-            onClick={() => handleAlignChange("right")}
-          >
-            <AlignRight className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
+        <Tooltip id="font-selector-tooltip" content="Change font family">
+          <FontSelector
+            font={selectedElement?.styles?.fontFamily}
+            onChange={handleFontChange}
+          />
+        </Tooltip>
 
-        <div className="flex border rounded-md">
+        <Tooltip id="font-size-tooltip" content="Change font size">
+          <div className="w-16">
+            <input
+              type="number"
+              value={parseFloat(selectedElement?.styles?.fontSize)}
+              onChange={handleFontSizeChange}
+              className="w-full px-2 py-1 border rounded-md text-sm"
+            />
+          </div>
+        </Tooltip>
+
+        <Tooltip id="text-align-tooltip" content="Text alignment">
+          <div className="flex border rounded-md">
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                (selectedElement?.styles?.textAlign ?? "left") === "left"
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => handleAlignChange("left")}
+            >
+              <AlignLeft className="h-5 w-5 text-gray-600" />
+            </button>
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                selectedElement?.styles?.textAlign === "center"
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => handleAlignChange("center")}
+            >
+              <AlignCenter className="h-5 w-5 text-gray-600" />
+            </button>
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                selectedElement?.styles?.textAlign === "right"
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => handleAlignChange("right")}
+            >
+              <AlignRight className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
+        </Tooltip>
+
+        <Tooltip id="text-style-tooltip" content="Text formatting">
+          <div className="flex border rounded-md">
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                selectedElement?.styles?.fontWeight === "bold"
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => {
+                if (!selectedElement || selectedElement.locked) return;
+                updateElement(selectedElement?.id, {
+                  styles: {
+                    ...selectedElement.styles,
+                    fontWeight:
+                      selectedElement?.styles?.fontWeight === "bold"
+                        ? "normal"
+                        : "bold",
+                  },
+                });
+              }}
+            >
+              <Bold className="h-5 w-5 text-gray-600" />
+            </button>
+
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                selectedElement?.styles?.fontStyle === "italic"
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => {
+                if (!selectedElement || selectedElement.locked) return;
+                updateElement(selectedElement?.id, {
+                  styles: {
+                    ...selectedElement.styles,
+                    fontStyle:
+                      selectedElement?.styles?.fontStyle === "italic"
+                        ? "normal"
+                        : "italic",
+                  },
+                });
+              }}
+            >
+              <Italic className="h-5 w-5 text-gray-600" />
+            </button>
+
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                selectedElement?.styles?.textDecoration?.includes("underline")
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => {
+                const current = selectedElement?.styles?.textDecoration || "";
+                const isActive = current.includes("underline");
+                if (!selectedElement || selectedElement.locked) return;
+                updateElement(selectedElement?.id, {
+                  styles: {
+                    ...selectedElement.styles,
+                    textDecoration: isActive
+                      ? current.replace("underline", "").trim()
+                      : `${current} underline`.trim(),
+                  },
+                });
+              }}
+            >
+              <Underline className="h-5 w-5 text-gray-600" />
+            </button>
+
+            <button
+              className={`p-2 hover:bg-gray-100 ${
+                selectedElement?.styles?.textDecoration?.includes("line-through")
+                  ? "bg-gray-200"
+                  : ""
+              }`}
+              onClick={() => {
+                const current = selectedElement?.styles?.textDecoration || "";
+                const isActive = current.includes("line-through");
+                if (!selectedElement || selectedElement.locked) return;
+                updateElement(selectedElement?.id, {
+                  styles: {
+                    ...selectedElement.styles,
+                    textDecoration: isActive
+                      ? current.replace("line-through", "").trim()
+                      : `${current} line-through`.trim(),
+                  },
+                });
+              }}
+            >
+              <Strikethrough className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
+        </Tooltip>
+
+        <Tooltip id="text-style-popup-tooltip" content="Advanced text styling">
+          <TextStylePopup
+            lineHeight={textStyle.lineHeight}
+            letterSpacing={textStyle.letterSpacing}
+            onChange={handleTextStyleChange}
+          />
+        </Tooltip>
+
+        <Tooltip id="text-effects-tooltip" content="Apply text effects">
           <button
-            className={`p-2 hover:bg-gray-100 ${
-              selectedElement?.styles?.fontWeight === "bold"
-                ? "bg-gray-200"
-                : ""
+            className={`flex items-center gap-1 px-3 py-2 rounded-md ${
+              specialActiveTab === "text-effects"
+                ? "bg-blue-100 text-blue-600"
+                : "hover:bg-gray-100"
             }`}
             onClick={() => {
-              if (!selectedElement || selectedElement.locked) return;
-
-              updateElement(selectedElement?.id, {
-                styles: {
-                  ...selectedElement.styles,
-                  fontWeight:
-                    selectedElement?.styles?.fontWeight === "bold"
-                      ? "normal"
-                      : "bold",
-                },
-              });
+              specialActiveTab === "text-effects"
+                ? setSpecialActiveTab(null)
+                : setSpecialActiveTab("text-effects");
             }}
           >
-            <Bold className="h-5 w-5 text-gray-600" />
+            <Sparkles className="h-5 w-5" />
+            <span>Effects</span>
           </button>
-
-          <button
-            className={`p-2 hover:bg-gray-100 ${
-              selectedElement?.styles?.fontStyle === "italic"
-                ? "bg-gray-200"
-                : ""
-            }`}
-            onClick={() => {
-              if (!selectedElement || selectedElement.locked) return;
-
-              updateElement(selectedElement?.id, {
-                styles: {
-                  ...selectedElement.styles,
-                  fontStyle:
-                    selectedElement?.styles?.fontStyle === "italic"
-                      ? "normal"
-                      : "italic",
-                },
-              });
-            }}
-          >
-            <Italic className="h-5 w-5 text-gray-600" />
-          </button>
-
-          <button
-            className={`p-2 hover:bg-gray-100 ${
-              selectedElement?.styles?.textDecoration?.includes("underline")
-                ? "bg-gray-200"
-                : ""
-            }`}
-            onClick={() => {
-              const current = selectedElement?.styles?.textDecoration || "";
-              const isActive = current.includes("underline");
-              if (!selectedElement || selectedElement.locked) return;
-
-              updateElement(selectedElement?.id, {
-                styles: {
-                  ...selectedElement.styles,
-                  textDecoration: isActive
-                    ? current.replace("underline", "").trim()
-                    : `${current} underline`.trim(),
-                },
-              });
-            }}
-          >
-            <Underline className="h-5 w-5 text-gray-600" />
-          </button>
-
-          <button
-            className={`p-2 hover:bg-gray-100 ${
-              selectedElement?.styles?.textDecoration?.includes("line-through")
-                ? "bg-gray-200"
-                : ""
-            }`}
-            onClick={() => {
-              const current = selectedElement?.styles?.textDecoration || "";
-              const isActive = current.includes("line-through");
-              if (!selectedElement || selectedElement.locked) return;
-
-              updateElement(selectedElement?.id, {
-                styles: {
-                  ...selectedElement.styles,
-                  textDecoration: isActive
-                    ? current.replace("line-through", "").trim()
-                    : `${current} line-through`.trim(),
-                },
-              });
-            }}
-          >
-            <Strikethrough className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
-
-        <TextStylePopup
-          lineHeight={textStyle.lineHeight}
-          letterSpacing={textStyle.letterSpacing}
-          onChange={handleTextStyleChange}
-        />
-
-        <button
-          className={`flex items-center gap-1 px-3 py-2 rounded-md ${
-            specialActiveTab === "text-effects"
-              ? "bg-blue-100 text-blue-600"
-              : "hover:bg-gray-100"
-          }`}
-          onClick={() => {
-            specialActiveTab === "text-effects"
-              ? setSpecialActiveTab(null)
-              : setSpecialActiveTab("text-effects");
-          }}
-        >
-          <Sparkles className="h-5 w-5" />
-          <span>Effects</span>
-        </button>
+        </Tooltip>
 
         {/* <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
             <Wand2 className="h-5 w-5 text-gray-600" />
             <span>AI write</span>
           </button> */}
+        <Tooltip id="position-tooltip" content="Adjust element position">
 
         <PositionPopup
           onLayerPositionChange={handleLayerPositionChange} // For element positioning
           onPositionChange={handlePositionChange} // For text alignment
         />
+        </Tooltip>
+        <Tooltip id="transparency-tooltip" content="Adjust transparency">
 
         <TransparencyPopup
           transparency={transparency}
           onChange={handleTransparencyChange}
         />
+        </Tooltip>
 
-        <button
-          onClick={() => handleLock(selectedElement?.id)}
-          className={`p-2 rounded-md hover:bg-gray-100 ${
-            selectedElement?.locked ? "bg-gray-300" : null
-          }`}
-        >
-          {selectedElement?.locked ? (
-            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
-          ) : (
-            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
-          )}
-        </button>
+        <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+          <button
+            onClick={() => handleLock(selectedElement?.id)}
+            className={`p-2 rounded-md hover:bg-gray-100 ${
+              selectedElement?.locked ? "bg-gray-300" : null
+            }`}
+          >
+            {selectedElement?.locked ? (
+              <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
+            ) : (
+              <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
+            )}
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleCopy}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Copy className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="copy-tooltip" content="Copy element">
+          <button
+            onClick={handleCopy}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Copy className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleDelete}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Trash className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="delete-tooltip" content="Delete element">
+          <button
+            onClick={handleDelete}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Trash className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
       </div>
     </>
   );

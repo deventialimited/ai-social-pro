@@ -5,7 +5,14 @@ const {
   processPubSub,
   updatePost,
   getFirstPost,
+  updatePostImage,
 } = require("../controllers/Post.js");
+// routes/postRoutes.js or similar
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+router.patch("/updatePostImage/:id", upload.single("image"), updatePostImage);
 
 router.get("/getAllPostsBydomainId/:domainId", getAllPostsBydomainId);
 // Update a post using MongoDB _id

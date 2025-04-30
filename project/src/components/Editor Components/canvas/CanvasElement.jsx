@@ -179,40 +179,25 @@ const CanvasElement = ({
     <Rnd
       key={id}
       size={{ width: styles.width, height: styles.height }}
-      position={
-        styles?.position === "absolute"
-          ? {
-              x: 0,
-              y:
-                styles?.bottom === 0
-                  ? Math.max(Math.min(canvas.height / 3, 600)) - styles.height
-                  : 0,
-            }
-          : { x: position.x, y: position.y }
-      }
+      position={{ x: position.x, y: position.y }}
       style={{
-        position: styles?.position === "absolute" ? "static" : "absolute",
+        position: "absolute",
         zIndex: styles?.zIndex,
         display: visible ? "block" : "none",
-        touchAction: "none", // ADDED: Improve touch handling
+        touchAction: "none",
       }}
-      onDragStart={handleDragStart} // ADDED: optimization handler
+      onDragStart={handleDragStart}
       onDragStop={handleDragStop}
       onClick={() => onSelect(id, type)}
-      enableResizing={false} // we handle resizing manually
-      disableDragging={locked} // Disable dragging if locked
-      // bounds removed to allow dragging outside canvas
+      enableResizing={false}
+      disableDragging={locked}
     >
-      {["text", "image", "shape"].includes(type) && (
+      {(["text", "image", "shape"].includes(type)) && (
         <div
           ref={elementRef}
           className={`${isSelected ? "border-2 border-blue-500" : null}`}
           style={{
-            position: styles?.position,
-            left: styles?.left,
-            right: styles?.right,
-            bottom: styles?.bottom,
-            top: styles?.top,
+            position: "static",
             transform:
               styles.transform && styles.transform.startsWith("rotate")
                 ? styles.transform
@@ -267,6 +252,7 @@ const CanvasElement = ({
                 position: "static",
                 transform: "rotate(0deg)",
                 overflow: "hidden",
+                color: styles.fill || styles.color || "#D3D3D3",
               }}
               dangerouslySetInnerHTML={{
                 __html: props.svg?.svg

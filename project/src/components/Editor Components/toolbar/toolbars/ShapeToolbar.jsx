@@ -15,7 +15,8 @@ import StrokeSelector from "../../common/popups/StrokeSelector";
 import ShadowSettings from "../../common/popups/ShadowSettings";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
-
+import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
+import Tooltip from "../../../common/Tooltip";
 function ShapeToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -23,7 +24,7 @@ function ShapeToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const { updateElement, handleLock, elements, addElement, removeElement } =
+  const { updateElement, handleLock, elements, addElement, removeElement, canvas } =
     useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   useEffect(() => {
@@ -62,94 +63,11 @@ function ShapeToolbar({
   };
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    const updatedPosition = { ...selectedElement.position };
-
-    switch (action) {
-      case "left":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: 0,
-            top: updatedPosition?.y,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "top":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            top: 0,
-            left: updatedPosition?.x,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "center":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              Math.max(Math.min(canvas.width / 3, 600)) -
-              selectedElement?.styles?.width, // Centers on X-axis
-            top:
-              selectedElement?.styles?.top ||
-              Math.max(Math.min(canvas.height / 3, 600)) -
-                selectedElement?.styles?.height, // Maintains top if available or centers vertically
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-      case "middle":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              selectedElement?.left ||
-              Math.max(Math.min(canvas.width / 3, 600)) -
-                selectedElement?.styles?.width, // Maintains left if available or centers horizontally
-            top: Math.max(Math.min(canvas.height / 3, 600)) / 3,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-        break;
-      case "right":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            right: 0,
-            top: updatedPosition?.y,
-            left: null,
-          },
-        });
-        break;
-      case "bottom":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            bottom: 0,
-            left: updatedPosition?.x,
-            top: null,
-            right: null,
-          },
-        });
-        break;
-      default:
-        break;
-    }
+    
+    const newPosition = setElementPosition(selectedElement, action, canvas);
+    updateElement(selectedElement.id, {
+      position: newPosition
+    });
   };
 
   // This should handle TEXT ALIGNMENT (not to be confused with element positioning)
@@ -256,61 +174,78 @@ function ShapeToolbar({
           <RotateCw className="h-5 w-5 text-gray-600" />
         </button> */}
 
-        <ColorPicker
-          color={selectedElement?.styles?.fill}
-          onChange={handleColorChange}
-          showPalette={false}
+        <Tooltip id="color-picker-tooltip" content="Change shape color">
+          <ColorPicker
+            color={selectedElement?.styles?.fill}
+            onChange={handleColorChange}
+            showPalette={false}
+          />
+        </Tooltip>
+
+        <Tooltip id="stroke-tooltip" content="Adjust stroke settings">
+          <StrokeSelector
+            stroke={{
+              width: selectedElement?.styles?.strokeWidth,
+              style: selectedElement?.styles?.strokeDasharray,
+              color: selectedElement?.styles?.stroke,
+            }}
+            onChange={handleStrokeChange}
+          />
+        </Tooltip>
+
+        <Tooltip id="shadow-tooltip" content="Adjust shadow settings">
+          <ShadowSettings
+            selectedElement={selectedElement}
+            updateElement={updateElement}
+          />
+        </Tooltip>
+
+        <Tooltip id="position-tooltip" content="Adjust element position">
+          <PositionPopup
+            onLayerPositionChange={handleLayerPositionChange}
+            onPositionChange={handlePositionChange}
+          />
+        </Tooltip>
+
+        <Tooltip id="transparency-tooltip" content="Adjust transparency">
+          <TransparencyPopup
+            transparency={selectedElement?.styles?.opacity}
+            onChange={handleTransparencyChange}
         />
+        </Tooltip>
 
-        <StrokeSelector
-          stroke={{
-            width: selectedElement?.styles?.strokeWidth,
-            style: selectedElement?.styles?.strokeDasharray,
-            color: selectedElement?.styles?.stroke,
-          }}
-          onChange={handleStrokeChange}
-        />
-        <ShadowSettings
-          selectedElement={selectedElement}
-          updateElement={updateElement}
-        />
+        <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+          <button
+            onClick={() => handleLock(selectedElement?.id)}
+            className={`p-2 rounded-md hover:bg-gray-100 ${
+              selectedElement?.locked ? "bg-gray-300" : null
+            }`}
+          >
+            {selectedElement?.locked ? (
+              <Lock className="h-4 w-4 text-gray-600" />
+            ) : (
+              <Unlock className="h-4 w-4 text-gray-600" />
+            )}
+          </button>
+        </Tooltip>
 
-        <PositionPopup
-          onLayerPositionChange={handleLayerPositionChange} // For element positioning
-          onPositionChange={handlePositionChange} // For text alignment
-        />
+        <Tooltip id="copy-tooltip" content="Copy element">
+          <button
+            onClick={handleCopy}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Copy className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-        <TransparencyPopup
-          transparency={selectedElement?.styles?.opacity}
-          onChange={handleTransparencyChange}
-        />
-
-        <button
-          onClick={() => handleLock(selectedElement?.id)}
-          className={`p-2 rounded-md hover:bg-gray-100 ${
-            selectedElement?.locked ? "bg-gray-300" : null
-          }`}
-        >
-          {selectedElement?.locked ? (
-            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
-          ) : (
-            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
-          )}
-        </button>
-
-        <button
-          onClick={handleCopy}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Copy className="h-5 w-5 text-gray-600" />
-        </button>
-
-        <button
-          onClick={handleDelete}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Trash className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="delete-tooltip" content="Delete element">
+          <button
+            onClick={handleDelete}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Trash className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
       </div>
     </>
   );

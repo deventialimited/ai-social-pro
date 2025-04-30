@@ -103,9 +103,8 @@ exports.getPostDesignById = async (req, res) => {
 
 exports.saveOrUpdatePostDesign = async (req, res) => {
   try {
-    const { postId, canvas, elements, layers, backgrounds } = JSON.parse(
-      req.body.data
-    );
+    const { postId } = req.params;
+    const { canvas, elements, layers, backgrounds } = JSON.parse(req.body.data);
     const files = req.files?.files || [];
 
     const existingDesign = await PostDesign.findOne({ postId });
@@ -124,8 +123,7 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
         const el = elements.find((el) => el.id === id);
         if (el) el.props.url = url;
       } else if (type === "background") {
-        if (!backgrounds.urls) backgrounds.urls = [];
-        backgrounds.urls.push(url);
+        backgrounds.url = url;
       }
     });
 
@@ -149,12 +147,8 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
         JSON.stringify(existingDesign.backgrounds) !==
         JSON.stringify(backgrounds)
       ) {
-        if (existingDesign.backgrounds?.urls) {
-          existingDesign.backgrounds.urls.forEach((oldBgUrl) => {
-            if (!backgrounds.urls.includes(oldBgUrl)) {
-              filesToDelete.push(oldBgUrl);
-            }
-          });
+        if (existingDesign.backgrounds?.url) {
+          filesToDelete.push(existingDesign.backgrounds?.url);
         }
       }
 
