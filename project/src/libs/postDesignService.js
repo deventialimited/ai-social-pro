@@ -148,6 +148,8 @@ export const transformToEditorData = (postDesign) => {
 };
 
 export const saveOrUpdatePostDesignFrontendController = async (
+  postId,
+  postImage,
   postDesignData,
   allFiles
 ) => {
@@ -159,7 +161,7 @@ export const saveOrUpdatePostDesignFrontendController = async (
 
     // Only include files for element types that require them
     const validElementIds = elements
-      .filter((el) => ["image", "shape"].includes(el.type))
+      .filter((el) => ["image"].includes(el.type))
       .map((el) => el.id);
 
     // Only include background if type is "image" or "video"
@@ -176,9 +178,21 @@ export const saveOrUpdatePostDesignFrontendController = async (
         formData.append("files", file, file.name);
       }
     });
+    // If postImage is provided, update the post image separately
+    if (postImage) {
+      const imageFormData = new FormData();
+      imageFormData.append("image", postImage);
 
+      await axios.patch(
+        `${API_URL}/api/v1/posts/updatePostImage/${postId}`,
+        imageFormData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+    }
     const response = await axios.post(
-      `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign`,
+      `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign/${postId}`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },

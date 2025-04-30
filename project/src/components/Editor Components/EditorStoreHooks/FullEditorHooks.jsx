@@ -15,12 +15,7 @@ export const EditorProvider = ({ children }) => {
     },
   });
 
-  const [backgrounds, setBackgrounds] = useState({
-    type: "image", // "color" | "gradient" | "image" | "video"
-    url: "",
-    color: "",
-    gradient: null,
-  });
+  const [backgrounds, setBackgrounds] = useState(null);
 
   const [elements, setElements] = useState([]);
 

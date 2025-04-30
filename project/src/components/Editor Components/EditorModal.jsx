@@ -5,7 +5,7 @@ import EditorToolbar from "./toolbar/EditorToolbar";
 import EditorCanvas from "./canvas/EditorCanvas";
 import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider } from "./EditorStoreHooks/FullEditorHooks";
-import domtoimage from "dom-to-image";
+import SaveAndClose from "./common/SaveAndClose";
 function EditorModal({ onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
@@ -49,26 +49,8 @@ function EditorModal({ onClose, isEditorOpen }) {
   const handleElementSelect = (elementType) => {
     setActiveElement(elementType);
   };
-  const handleSaveAndClose = () => {
-    setActiveElement("canvas");
-    setSpecialActiveTab(null);
-    setSelectedElementId(null);
-    const node = canvasContainerRef.current;
 
-    domtoimage
-      .toPng(node)
-      .then(function (dataUrl) {
-        const link = document.createElement("a");
-        link.download = "canvas-image.png";
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch(function (error) {
-        console.error("Oops, something went wrong!", error);
-      });
-    setTimeout(onClose, 1000);
-  };
-//tfdtrdt
+  //tfdtrdt
   return (
     <EditorProvider>
       <Transition appear show={isEditorOpen} as={Fragment}>
@@ -123,13 +105,13 @@ function EditorModal({ onClose, isEditorOpen }) {
                         </button>
                       </div>
 
-                      <button
-                        onClick={handleSaveAndClose}
-                        className="flex items-center gap-2 px-4 py-1.5 bg-black text-white rounded-md hover:bg-gray-800"
-                      >
-                        <Save className="h-4 w-4" />
-                        <span>Save and Close</span>
-                      </button>
+                      <SaveAndClose
+                        setActiveElement={setActiveElement}
+                        setSelectedElementId={setSelectedElementId}
+                        setSpecialActiveTab={setSpecialActiveTab}
+                        canvasContainerRef={canvasContainerRef}
+                        onClose={onClose}
+                      />
                     </div>
                   </div>
 
