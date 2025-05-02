@@ -2,6 +2,7 @@ const {
   uploadToS3ForPostDesign,
   deleteFromS3ForPostDesign,
 } = require("../libs/s3Controllers");
+const Post = require("../models/Post");
 const PostDesign = require("../models/PostDesign");
 const path = require("path");
 exports.getPostDesignById = async (req, res) => {
@@ -23,84 +24,6 @@ exports.getPostDesignById = async (req, res) => {
   }
 };
 
-// exports.saveOrUpdatePostDesign = async (req, res) => {
-//   try {
-//     const { postId, canvas, elements, layers, backgrounds } = req.body;
-
-//     if (!postId) {
-//       return res.status(400).json({ message: "postId is required" });
-//     }
-
-//     // Ensure postId is a string
-//     const stringPostId = String(postId);
-
-//     let existingDesign = await PostDesign.findOne({ postId: stringPostId });
-
-//     if (existingDesign) {
-//       let updated = false;
-
-//       // Compare and update canvas
-//       if (JSON.stringify(existingDesign.canvas) !== JSON.stringify(canvas)) {
-//         existingDesign.canvas = canvas;
-//         updated = true;
-//       }
-
-//       // Compare and update elements
-//       if (JSON.stringify(existingDesign.elements) !== JSON.stringify(elements)) {
-//         existingDesign.elements = elements;
-//         updated = true;
-//       }
-
-//       // Compare and update layers
-//       if (JSON.stringify(existingDesign.layers) !== JSON.stringify(layers)) {
-//         existingDesign.layers = layers;
-//         updated = true;
-//       }
-
-//       // Compare and update backgrounds
-//       if (JSON.stringify(existingDesign.backgrounds) !== JSON.stringify(backgrounds)) {
-//         existingDesign.backgrounds = backgrounds;
-//         updated = true;
-//       }
-
-//       if (updated) {
-//         existingDesign.updatedAt = new Date();
-//         await existingDesign.save();
-//         return res.status(200).json({
-//           message: "PostDesign updated successfully",
-//           postDesign: existingDesign,
-//         });
-//       } else {
-//         return res.status(200).json({
-//           message: "No changes detected, PostDesign remains the same",
-//           postDesign: existingDesign,
-//         });
-//       }
-//     } else {
-//       // Create new
-//       const newPostDesign = new PostDesign({
-//         postId: stringPostId,
-//         canvas,
-//         elements,
-//         layers,
-//         backgrounds,
-//       });
-
-//       await newPostDesign.save();
-//       return res.status(201).json({
-//         message: "PostDesign created successfully",
-//         postDesign: newPostDesign,
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error in saveOrUpdatePostDesign:", error);
-//     return res.status(500).json({
-//       message: "Internal server error",
-//       error: error.message,
-//     });
-//   }
-// };
-
 exports.saveOrUpdatePostDesign = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -121,9 +44,9 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
     newFileUrls.forEach(({ type, id, url }) => {
       if (type === "element") {
         const el = elements.find((el) => el.id === id);
-        if (el) el.props.url = url;
+        if (el) el.props.src = url;
       } else if (type === "background") {
-        backgrounds.url = url;
+        backgrounds.src = url;
       }
     });
 
@@ -137,8 +60,8 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
         // Find old file URLs not used anymore
         existingDesign.elements.forEach((oldEl) => {
           const match = elements.find((el) => el.id === oldEl.id);
-          if (!match && oldEl.props?.url) {
-            filesToDelete.push(oldEl.props.url);
+          if (!match && oldEl.props?.src) {
+            filesToDelete.push(oldEl.props.src);
           }
         });
       }
@@ -147,8 +70,8 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
         JSON.stringify(existingDesign.backgrounds) !==
         JSON.stringify(backgrounds)
       ) {
-        if (existingDesign.backgrounds?.url) {
-          filesToDelete.push(existingDesign.backgrounds?.url);
+        if (existingDesign.backgrounds?.src) {
+          filesToDelete.push(existingDesign.backgrounds?.src);
         }
       }
 
@@ -156,12 +79,12 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       // Step 3: Sync background to canvas.styles
       if (!canvas.styles) canvas.styles = {};
 
-      if (backgrounds.type === "color") {
-        canvas.styles.backgroundColor = backgrounds.value;
-      } else if (backgrounds.type === "image") {
-        canvas.styles.backgroundImage = `url(${backgrounds.value})`;
-      } else if (backgrounds.type === "video") {
-        canvas.styles.backgroundVideo = backgrounds.value; // if you handle it
+      if (backgrounds?.type === "color") {
+        canvas.styles.backgroundColor = backgrounds?.color;
+      } else if (backgrounds?.type === "image") {
+        canvas.styles.backgroundImage = `url(${backgrounds?.src})`;
+      } else if (backgrounds?.type === "video") {
+        canvas.styles.backgroundVideo = backgrounds?.src; // if you handle it
       }
       // Update
       existingDesign.canvas = canvas;
@@ -171,10 +94,14 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       existingDesign.updatedAt = new Date();
 
       await existingDesign.save();
+      const latestPost = await Post.findByIdAndUpdate(postId, {
+        editorStatus: "edited",
+      });
 
       return res.status(200).json({
         message: "PostDesign updated successfully",
         postDesign: existingDesign,
+        latestPost,
       });
     } else {
       const newPostDesign = new PostDesign({

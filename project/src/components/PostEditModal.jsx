@@ -56,21 +56,10 @@ export const PostEditModal = ({
 
   return (
     <>
-      {/* <GraphicEditorModal
-        postImageDetails={postImageDetails}
-        setPostImageDetails={setPostImageDetails}
-        isGraphicEditorModal={isGraphicEditorModal}
-        setIsGraphicEditorModal={setIsGraphicEditorModal}
-      /> */}
-      <EditorModal
-        post={post}
-        onClose={() => setIsGraphicEditorModal(false)}
-        isEditorOpen={isGraphicEditorModal}
-      />
       <Transition appear show={showEditModal} as={Fragment}>
         <Dialog
           as="div"
-          className="relative z-[999999999]"
+          className="relative z-[999]"
           onClose={() => {
             // setIsGraphicEditorModal(false);
             console.log("no close");
@@ -87,7 +76,11 @@ export const PostEditModal = ({
           >
             <div className="fixed inset-0 bg-black/25" />
           </Transition.Child>
-
+          <EditorModal
+            post={post}
+            onClose={() => setIsGraphicEditorModal(false)}
+            isEditorOpen={isGraphicEditorModal}
+          />
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex h-full items-center justify-center p-4 text-center">
               <Transition.Child
@@ -149,7 +142,10 @@ export const PostEditModal = ({
                             Visual
                           </label>
                           <button
-                            onClick={() => setIsGraphicEditorModal(true)}
+                            onClick={() => {
+                              setIsGraphicEditorModal(true);
+                              // onClose();
+                            }}
                             className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
                           >
                             <Pencil className="w-3 h-3" />
@@ -163,7 +159,7 @@ export const PostEditModal = ({
                           <img
                             src={post.image}
                             alt="Post preview"
-                            className="w-full h-auto min-h-64 object-cover rounded-lg"
+                            className="w-full h-64 object-contain rounded-lg"
                           />
                         </div>
                       </div>

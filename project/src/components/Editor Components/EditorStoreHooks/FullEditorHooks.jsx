@@ -85,16 +85,16 @@ export const EditorProvider = ({ children }) => {
 
     if (type === "color") {
       bg.color = value;
-      bg.url = "";
+      bg.src = "";
       bg.gradient = null;
     } else if (type === "image" || type === "video") {
-      bg.url = value;
+      bg.src = value;
       bg.color = "";
       bg.gradient = null;
     } else if (type === "gradient") {
       bg.gradient = value;
       bg.color = "";
-      bg.url = "";
+      bg.src = "";
       // You can handle CSS gradient parsing or styling in rendering components
     }
 
@@ -239,19 +239,15 @@ export const EditorProvider = ({ children }) => {
 
   const clearEditor = useCallback(() => {
     setCanvas({
-      width: 1200,
-      height: 628,
+      width: 1080,
+      height: 1080,
       ratio: "1.91:1",
       styles: {
         boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+        // You can extend with other canvas-level styles here
       },
     });
-    setBackgrounds({
-      type: "image",
-      url: "",
-      color: "",
-      gradient: null,
-    });
+    setBackgrounds(null);
     setElements([]);
     setLayers([]);
     setAllFiles([]);

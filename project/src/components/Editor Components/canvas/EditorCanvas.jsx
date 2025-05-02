@@ -16,7 +16,6 @@ function EditorCanvas({
   const { canvas, elements, allFiles } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const containerRef = useRef(null);
-
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 150));
   };
@@ -55,7 +54,6 @@ function EditorCanvas({
       }
     }
   };
-
   return (
     <div
       ref={containerRef}

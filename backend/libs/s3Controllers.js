@@ -154,12 +154,12 @@ exports.validatePostDesignUpload = (req, res, next) => {
     }
 
     // From background
-    if (["image", "video"].includes(backgrounds.type)) {
+    if (["image", "video"].includes(backgrounds?.type)) {
       requiredFileIds.add("background");
     }
 
     // Step 2: Verify uploaded files match required
-    const uploadedFileIds = new Set(files.map((file) => file.originalname));
+    const uploadedFileIds = new Set(files?.map((file) => file.originalname));
 
     const missingFiles = [...requiredFileIds].filter(
       (id) => !uploadedFileIds.has(id)
