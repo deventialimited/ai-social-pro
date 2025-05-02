@@ -21,7 +21,7 @@ import { Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import axios from "axios";
-import { saveOrUpdatePostDesign, getPostDesignById, transformToPostDesignSchema, transformToEditorData } from "../../libs/postDesignService";
+import {  getPostDesignById, } from "../../libs/postDesignService";
 
 import ShapesTabContent from "./shapTabContent";
 import CanvasEditor from "./CanvasEditor";
@@ -183,7 +183,7 @@ const FullEditor = ({
         version: 1
       };
 
-      await saveOrUpdatePostDesign(postDesignData);
+      // await saveOrUpdatePostDesign(postDesignData);
       console.log("Data saved successfully to backend");
     } catch (error) {
       console.error("Error saving to backend:", error);
@@ -196,7 +196,7 @@ const FullEditor = ({
       const postId = postImageDetails?._id || post_id;
       const idToUse = postId || "1";
       const postDesign = await getPostDesignById(idToUse);
-      const editorData = transformToEditorData(postDesign);
+      // const editorData = transformToEditorData(postDesign);
       
       if (editorData) {
         console.log("Data retrieved from backend:", editorData);

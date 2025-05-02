@@ -16,7 +16,6 @@ function EditorCanvas({
   const { canvas, elements, allFiles } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const containerRef = useRef(null);
-
   // Calculate initial zoom based on screen size
   useEffect(() => {
     const calculateInitialZoom = () => {
@@ -36,6 +35,7 @@ function EditorCanvas({
     window.addEventListener('resize', calculateInitialZoom);
     return () => window.removeEventListener('resize', calculateInitialZoom);
   }, []);
+
 
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 150));
@@ -75,7 +75,6 @@ function EditorCanvas({
       }
     }
   };
-
   return (
     <div
       ref={containerRef}

@@ -5,7 +5,7 @@ import EditorToolbar from "./toolbar/EditorToolbar";
 import EditorCanvas from "./canvas/EditorCanvas";
 import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider } from "./EditorStoreHooks/FullEditorHooks";
-import SaveAndClose from "./common/SaveAndClose";
+import TopHeaderBtns from "./common/TopHeaderBtns";
 function EditorModal({ post, onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
@@ -44,7 +44,6 @@ function EditorModal({ post, onClose, isEditorOpen }) {
       },
     ],
   });
-
   // Function to handle element selection in the canvas
   const handleElementSelect = (elementType) => {
     setActiveElement(elementType);
@@ -90,30 +89,17 @@ function EditorModal({ post, onClose, isEditorOpen }) {
                       <span className="font-medium">Image Post Editor</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={onClose}
-                        className="px-4 py-1.5 border rounded-md hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-
-                      <div className="relative">
-                        <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50">
-                          <span>Change to Video</span>
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      <SaveAndClose
-                        setActiveElement={setActiveElement}
-                        setSelectedElementId={setSelectedElementId}
-                        setSpecialActiveTab={setSpecialActiveTab}
-                        canvasContainerRef={canvasContainerRef}
-                        onClose={onClose}
-                        postId={post?._id}
-                      />
-                    </div>
+                    <TopHeaderBtns
+                      setActiveElement={setActiveElement}
+                      setSelectedElementId={setSelectedElementId}
+                      setSpecialActiveTab={setSpecialActiveTab}
+                      canvasContainerRef={canvasContainerRef}
+                      onClose={onClose}
+                      postId={post?._id}
+                      postImage={
+                        post?.editorStatus === "not_edited" ? post?.image : null
+                      }
+                    />
                   </div>
 
                   {/* Main Content */}
