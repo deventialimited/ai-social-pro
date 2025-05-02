@@ -122,6 +122,13 @@ const CanvasElement = ({
       newFontSize = Math.max(fontSize * scale, 8);
     }
 
+    // For vertical resizing, adjust line height instead of font size
+    let newLineHeight = styles.lineHeight;
+    if (direction === "n" || direction === "s") {
+      const heightScale = newHeight / height;
+      newLineHeight = `${heightScale * 100}%`;
+    }
+
     updateElement(id, {
       position: { x: newX, y: newY },
       styles: {
@@ -129,6 +136,7 @@ const CanvasElement = ({
         width: newWidth,
         height: newHeight,
         fontSize: `${newFontSize}px`,
+        lineHeight: newLineHeight
       },
     });
   };
