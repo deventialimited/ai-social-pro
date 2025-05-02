@@ -30,6 +30,8 @@ const postDesignSchema = new mongoose.Schema({
       zIndex: Number,
       styles: Object, // flexible style object (e.g., color, fontSize, backgroundImage, borderRadius, etc.)
       props: Object, // specific props (e.g., text content, image URL, etc.)
+      visible: Boolean,
+      locked: Boolean,
     },
   ],
 

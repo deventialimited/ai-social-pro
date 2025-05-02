@@ -2,7 +2,7 @@ const Domain = require("../models/Domain");
 const Post = require("../models/Post");
 const getRawBody = require("raw-body");
 const axios = require("axios");
-const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
+const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const mongoose = require("mongoose");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
