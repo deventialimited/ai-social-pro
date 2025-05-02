@@ -114,8 +114,14 @@ const CanvasElement = ({
         newHeight = Math.max(height + deltaY, 20);
         break;
     }
-    const scale = Math.max(newWidth / width, newHeight / height);
-    const newFontSize = Math.max(fontSize * scale, 8);
+
+    // Only scale font size during diagonal resizing
+    let newFontSize = fontSize;
+    if (direction === "nw" || direction === "ne" || direction === "sw" || direction === "se") {
+      const scale = Math.max(newWidth / width, newHeight / height);
+      newFontSize = Math.max(fontSize * scale, 8);
+    }
+
     updateElement(id, {
       position: { x: newX, y: newY },
       styles: {
@@ -246,22 +252,37 @@ const CanvasElement = ({
           )}
           
           {type === "shape" && (
-            <div
-              style={{
-                ...styles,
-                position: "static",
-                transform: "rotate(0deg)",
-                overflow: "hidden",
-                color: styles.fill || styles.color || "#D3D3D3",
-              }}
-              dangerouslySetInnerHTML={{
-                __html: props.svg?.svg
-                  ?.replace(
-                    /<svg([^>]*)>/,
-                    `<svg$1 width="${styles.width}" height="${styles.height}" preserveAspectRatio="none">`        ),
-              }}
-            />
-          )}
+  <div
+    style={{
+      ...styles,
+      position: "static",
+      transform: "rotate(0deg)",
+      overflow: "hidden",
+      color: styles.fill || styles.color || "#D3D3D3",
+      // Remove any default padding/margin that might create space
+      padding: 0,
+      margin: 0,
+      // Ensure the div fits exactly to its content
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}
+  >
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex" 
+      }}
+      dangerouslySetInnerHTML={{
+        __html: props.svg?.svg
+          ?.replace(
+            /<svg([^>]*)>/,
+            `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`)
+      }}
+    />
+  </div>
+)}
           
           {isSelected && (
             <>
