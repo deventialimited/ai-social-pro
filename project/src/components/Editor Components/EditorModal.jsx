@@ -99,6 +99,7 @@ function EditorModal({ post, onClose, isEditorOpen }) {
                       postImage={
                         post?.editorStatus === "not_edited" ? post?.image : null
                       }
+                      defaultPlatform={post?.platforms?.[0]}
                     />
                   </div>
 
