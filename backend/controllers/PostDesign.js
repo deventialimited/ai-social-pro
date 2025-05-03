@@ -44,7 +44,10 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
     newFileUrls.forEach(({ type, id, url }) => {
       if (type === "element") {
         const el = elements.find((el) => el.id === id);
-        if (el) el.props.src = url;
+        if (el) {
+          el.props.src = url;
+          el.props.previewUrl = url;
+        }
       } else if (type === "background") {
         backgrounds.src = url;
       }

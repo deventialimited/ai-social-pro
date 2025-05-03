@@ -8,6 +8,7 @@ import {
   useSaveOrUpdatePostDesign,
 } from "../../../libs/postDesignService";
 import { createImageElement } from "../sidebar/hooks/ImagesHooks";
+import { presetSizes } from "../sidebar/tabs/SizeTab";
 
 const TopHeaderBtns = ({
   setActiveElement,
@@ -17,6 +18,7 @@ const TopHeaderBtns = ({
   onClose,
   postId,
   postImage,
+  defaultPlatform,
 }) => {
   const {
     postDesignData,
@@ -29,10 +31,10 @@ const TopHeaderBtns = ({
     setBackgrounds,
     setElements,
     setLayers,
+    updateCanvasSize,
   } = useEditor();
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const onSave = useSaveOrUpdatePostDesign();
-
   const handleSaveAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
@@ -125,7 +127,15 @@ const TopHeaderBtns = ({
     } else if (postId) {
       fetchPostDesign();
     }
-  }, [postId, postImage]);
+    if (defaultPlatform) {
+      const platform = presetSizes.find((p) => p?.id === defaultPlatform);
+
+      if (platform && platform?.dimensions) {
+        const [width, height] = platform?.dimensions;
+        updateCanvasSize(width, height);
+      }
+    }
+  }, [postId, postImage, defaultPlatform]);
   return (
     <div className="flex items-center gap-2">
       <button
