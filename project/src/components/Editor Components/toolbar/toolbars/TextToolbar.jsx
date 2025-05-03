@@ -9,6 +9,9 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  ArrowUp,
+  Minus,
+  ArrowDown,
   Bold,
   Italic,
   Underline,
@@ -192,6 +195,18 @@ function TextToolbar({
       },
     });
   };
+
+  // This should handle VERTICAL TEXT ALIGNMENT
+  const handleVerticalAlignChange = (action) => {
+    if (!selectedElement || selectedElement.locked) return;
+    updateElement(selectedElement?.id, {
+      styles: {
+        ...selectedElement.styles,
+        verticalAlign: action,
+      },
+    });
+  };
+
   const handleCopy = () => {
     if (!selectedElement) return;
 
@@ -253,37 +268,71 @@ function TextToolbar({
         </Tooltip>
 
         <Tooltip id="text-align-tooltip" content="Text alignment">
-          <div className="flex border rounded-md">
-            <button
-              className={`p-2 hover:bg-gray-100 ${
-                (selectedElement?.styles?.textAlign ?? "left") === "left"
-                  ? "bg-gray-200"
-                  : ""
-              }`}
-              onClick={() => handleAlignChange("left")}
-            >
-              <AlignLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <button
-              className={`p-2 hover:bg-gray-100 ${
-                selectedElement?.styles?.textAlign === "center"
-                  ? "bg-gray-200"
-                  : ""
-              }`}
-              onClick={() => handleAlignChange("center")}
-            >
-              <AlignCenter className="h-5 w-5 text-gray-600" />
-            </button>
-            <button
-              className={`p-2 hover:bg-gray-100 ${
-                selectedElement?.styles?.textAlign === "right"
-                  ? "bg-gray-200"
-                  : ""
-              }`}
-              onClick={() => handleAlignChange("right")}
-            >
-              <AlignRight className="h-5 w-5 text-gray-600" />
-            </button>
+          <div className="flex flex-row gap-2  rounded-md">
+            <div className="flex border rounded-md">
+              <button
+                className={`p-2 hover:bg-gray-100 ${
+                  (selectedElement?.styles?.textAlign ?? "left") === "left"
+                    ? "bg-gray-200"
+                    : ""
+                }`}
+                onClick={() => handleAlignChange("left")}
+              >
+                <AlignLeft className="h-5 w-5 text-gray-600" />
+              </button>
+              <button
+                className={`p-2 hover:bg-gray-100 ${
+                  selectedElement?.styles?.textAlign === "center"
+                    ? "bg-gray-200"
+                    : ""
+                }`}
+                onClick={() => handleAlignChange("center")}
+              >
+                <AlignCenter className="h-5 w-5 text-gray-600" />
+              </button>
+              <button
+                className={`p-2 hover:bg-gray-100 ${
+                  selectedElement?.styles?.textAlign === "right"
+                    ? "bg-gray-200"
+                    : ""
+                }`}
+                onClick={() => handleAlignChange("right")}
+              >
+                <AlignRight className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
+            <div className="flex border rounded-md">
+              <button
+                className={`p-2 hover:bg-gray-100 ${
+                  (selectedElement?.styles?.verticalAlign ?? "top") === "top"
+                    ? "bg-gray-200"
+                    : ""
+                }`}
+                onClick={() => handleVerticalAlignChange("top")}
+              >
+                <ArrowUp className="h-5 w-5 text-gray-600" />
+              </button>
+              <button
+                className={`p-2 hover:bg-gray-100 ${
+                  selectedElement?.styles?.verticalAlign === "middle"
+                    ? "bg-gray-200"
+                    : ""
+                }`}
+                onClick={() => handleVerticalAlignChange("middle")}
+              >
+                <Minus className="h-5 w-5 text-gray-600" />
+              </button>
+              <button
+                className={`p-2 hover:bg-gray-100 ${
+                  selectedElement?.styles?.verticalAlign === "bottom"
+                    ? "bg-gray-200"
+                    : ""
+                }`}
+                onClick={() => handleVerticalAlignChange("bottom")}
+              >
+                <ArrowDown className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
           </div>
         </Tooltip>
 

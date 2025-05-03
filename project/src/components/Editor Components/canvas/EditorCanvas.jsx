@@ -16,26 +16,6 @@ function EditorCanvas({
   const { canvas, elements, allFiles } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const containerRef = useRef(null);
-  // Calculate initial zoom based on screen size
-  useEffect(() => {
-    const calculateInitialZoom = () => {
-      const screenWidth = window.innerWidth;
-      if (screenWidth >= 1920) {
-        setZoom(130);
-      } else if (screenWidth >= 1440) {
-        setZoom(120);
-      } else if (screenWidth >= 1024) {
-        setZoom(110);
-      } else {
-        setZoom(100);
-      }
-    };
-
-    calculateInitialZoom();
-    window.addEventListener('resize', calculateInitialZoom);
-    return () => window.removeEventListener('resize', calculateInitialZoom);
-  }, []);
-
 
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 150));
@@ -100,18 +80,22 @@ function EditorCanvas({
       </div>
 
       {/* Canvas container with centering and extra space for scrolling */}
-      <div className="flex items-center justify-center h-full w-full p-4">
+      <div className="flex items-center justify-center h-max p-8">
         {/* Zoom container */}
         <div
           style={{
             transform: `scale(${zoom / 100})`,
-            transformOrigin: "center",
+            transformOrigin: "top left",
             transition: "transform 0.3s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%",
+            display: "inline-block",
+            width: `${
+              Math.max(Math.min(canvas.width / 3, 600)) * (zoom / 100)
+            }px`,
+            height: `${
+              Math.max(Math.min(canvas.height / 3, 600)) * (zoom / 100)
+            }px`,
+            marginTop: `${(zoom - 100) * 0.25}rem`, // Adjust multiplier as needed
+            marginLeft: `${(zoom - 100) * 0.25}rem`, // Adjust multiplier as needed
           }}
         >
           {/* Canvas */}
