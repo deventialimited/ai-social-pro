@@ -35,7 +35,7 @@ const CanvasElement = ({
     const handleKeyDown = (e) => {
       if (!isSelected || locked) return;
       
-      const moveStep = 10; // Pixels to move per key press
+      const moveStep = 1; // Pixels to move per key press
       let newX = position.x;
       let newY = position.y;
       switch (e.key) {
