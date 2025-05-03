@@ -67,6 +67,7 @@ export interface CanvasElement {
     fontSize?: number;
     fontFamily?: string;
     textAlign?: 'left' | 'center' | 'right';
+    verticalAlign?: 'top' | 'middle' | 'bottom';
     zIndex: number;
   };
 }
