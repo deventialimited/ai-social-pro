@@ -55,12 +55,59 @@ function EditorCanvas({
       }
     }
   };
+
+  // Prevent default text selection behavior and improve event handling
+  useEffect(() => {
+    const handleSelectStart = (e) => {
+      // Only prevent selection if clicking on canvas or elements
+      if (e.target.closest('#canvas')) {
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      // Prevent Ctrl+A selection
+      if (e.ctrlKey && e.key === 'a' && e.target.closest('#canvas')) {
+        e.preventDefault();
+      }
+    };
+
+    const handleMouseDown = (e) => {
+      // If clicking on canvas background, clear selection
+      if (e.target.id === '#canvas') {
+        setSelectedElementId(null);
+        onElementSelect("canvas");
+      }
+    };
+
+    const handleMouseUp = (e) => {
+      // Clear any text selection that might have occurred
+      window.getSelection()?.removeAllRanges();
+    };
+
+    window.addEventListener('selectstart', handleSelectStart);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      window.removeEventListener('selectstart', handleSelectStart);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [onElementSelect]);
+
   return (
     <div
       ref={containerRef}
       className="flex-1 bg-gray-200 overflow-auto h-full"
       style={{
         position: "relative",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
     >
       {/* Canvas controls */}
