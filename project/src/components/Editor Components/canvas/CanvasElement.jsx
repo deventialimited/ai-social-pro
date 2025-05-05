@@ -153,8 +153,9 @@ const CanvasElement = ({
 
   // Handle image drag optimization - ADDED CODE
   const handleDragStart = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (type === "image" && elementRef.current) {
-      // Apply optimizations during drag to improve performance
       elementRef.current.style.willChange = "transform";
       const img = elementRef.current.querySelector('img');
       if (img) {
@@ -164,9 +165,10 @@ const CanvasElement = ({
   };
 
   const handleDragStop = (e, d) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (!element || element.locked) return;
     
-    // Reset optimization styles - ADDED CODE
     if (type === "image" && elementRef.current) {
       elementRef.current.style.willChange = "auto";
       const img = elementRef.current.querySelector('img');
@@ -175,7 +177,6 @@ const CanvasElement = ({
       }
     }
     
-    // Original update logic - without bounds restriction
     updateElement(id, {
       position: { x: d.x, y: d.y },
       styles: {
@@ -189,6 +190,12 @@ const CanvasElement = ({
     });
   };
 
+  const handleClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onSelect(id, type);
+  };
+
   return (
     <Rnd
       key={id}
@@ -199,23 +206,33 @@ const CanvasElement = ({
         zIndex: styles?.zIndex,
         display: visible ? "block" : "none",
         touchAction: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
+        cursor: isSelected ? "move" : "default",
       }}
       onDragStart={handleDragStart}
       onDragStop={handleDragStop}
-      onClick={() => onSelect(id, type)}
+      onClick={handleClick}
       enableResizing={false}
       disableDragging={locked}
+      dragHandleClassName={isSelected ? "drag-handle" : ""}
     >
       {(["text", "image", "shape"].includes(type)) && (
         <div
           ref={elementRef}
-          className={`${isSelected ? "border-2 border-blue-500" : null}`}
+          className={`${isSelected ? "border-2 border-blue-500" : ""} drag-handle`}
           style={{
             position: "static",
             transform:
               styles.transform && styles.transform.startsWith("rotate")
                 ? styles.transform
                 : "rotate(0deg)",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            MozUserSelect: "none",
+            msUserSelect: "none",
           }}
         >
           {type === "text" && (
