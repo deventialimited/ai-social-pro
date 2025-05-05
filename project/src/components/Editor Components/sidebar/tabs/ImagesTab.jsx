@@ -68,7 +68,10 @@ function ImagesTab() {
 
   const handleAddImage = async (src) => {
     try {
-      const response = await fetch(src);
+      const response = await fetch(src, {
+        method: "GET",
+        mode: "cors", // this is REQUIRED for CORS
+      });
       const blob = await response.blob();
 
       const objectUrl = URL.createObjectURL(blob);

@@ -134,41 +134,40 @@ export function setTransparency(element, percentage) {
   }
 
   
-  export const setPosition = (element, action) => {
-    const updatedStyles = { ...element.styles };
-  
-    if (action === "up" || action === "down" || action === "toFront" || action === "toBack") {
-      updatedStyles.zIndex = (parseInt(updatedStyles.zIndex || 0) || 0) + (action === "up" ? 1 : action === "down" ? -1 : action === "toFront" ? 999 : -999);
-      return updatedStyles;
-    }
-  
-    updatedStyles.position = "absolute";
-  
-    switch (action) {
-      case "left":
-        updatedStyles.left = 0;
-        break;
-      case "right":
-        updatedStyles.right = 0;
-        break;
-      case "top":
-        updatedStyles.top = 0;
-        break;
-      case "bottom":
-        updatedStyles.bottom = 0;
-        break;
-      case "center":
-        updatedStyles.left = "50%";
-        updatedStyles.transform = "translateX(-50%)";
-        break;
-      case "middle":
-        updatedStyles.top = "50%";
-        updatedStyles.transform = "translateY(-50%)";
-        break;
-    }
-  
-    return updatedStyles;
-  };
+export const setElementPosition = (element, action, canvas) => {
+  const elementWidth = element.styles.width || 100;
+  const elementHeight = element.styles.height || 30;
+  const canvasWidth = Math.max(Math.min(canvas.width / 3, 600));
+  const canvasHeight = Math.max(Math.min(canvas.height / 3, 600));
+
+  let newX = element.position.x;
+  let newY = element.position.y;
+
+  switch (action) {
+    case "left":
+      newX = 0;
+      break;
+    case "right":
+      newX = canvasWidth - elementWidth;
+      break;
+    case "center":
+      newX = (canvasWidth - elementWidth) / 2;
+      break;
+    case "top":
+      newY = 0;
+      break;
+    case "bottom":
+      newY = canvasHeight - elementHeight;
+      break;
+    case "middle":
+      newY = (canvasHeight - elementHeight) / 2;
+      break;
+    default:
+      break;
+  }
+
+  return { x: newX, y: newY };
+};
   
 
 

@@ -5,8 +5,8 @@ import EditorToolbar from "./toolbar/EditorToolbar";
 import EditorCanvas from "./canvas/EditorCanvas";
 import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider } from "./EditorStoreHooks/FullEditorHooks";
-import domtoimage from "dom-to-image";
-function EditorModal({ onClose, isEditorOpen }) {
+import TopHeaderBtns from "./common/TopHeaderBtns";
+function EditorModal({ post, onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
@@ -44,31 +44,12 @@ function EditorModal({ onClose, isEditorOpen }) {
       },
     ],
   });
-
   // Function to handle element selection in the canvas
   const handleElementSelect = (elementType) => {
     setActiveElement(elementType);
   };
-  const handleSaveAndClose = () => {
-    setActiveElement("canvas");
-    setSpecialActiveTab(null);
-    setSelectedElementId(null);
-    const node = canvasContainerRef.current;
 
-    domtoimage
-      .toPng(node)
-      .then(function (dataUrl) {
-        const link = document.createElement("a");
-        link.download = "canvas-image.png";
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch(function (error) {
-        console.error("Oops, something went wrong!", error);
-      });
-    setTimeout(onClose, 1000);
-  };
-//tfdtrdt
+  //tfdtrdt
   return (
     <EditorProvider>
       <Transition appear show={isEditorOpen} as={Fragment}>
@@ -108,29 +89,18 @@ function EditorModal({ onClose, isEditorOpen }) {
                       <span className="font-medium">Image Post Editor</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={onClose}
-                        className="px-4 py-1.5 border rounded-md hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-
-                      <div className="relative">
-                        <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50">
-                          <span>Change to Video</span>
-                          <ChevronDown className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      <button
-                        onClick={handleSaveAndClose}
-                        className="flex items-center gap-2 px-4 py-1.5 bg-black text-white rounded-md hover:bg-gray-800"
-                      >
-                        <Save className="h-4 w-4" />
-                        <span>Save and Close</span>
-                      </button>
-                    </div>
+                    <TopHeaderBtns
+                      setActiveElement={setActiveElement}
+                      setSelectedElementId={setSelectedElementId}
+                      setSpecialActiveTab={setSpecialActiveTab}
+                      canvasContainerRef={canvasContainerRef}
+                      onClose={onClose}
+                      postId={post?._id}
+                      postImage={
+                        post?.editorStatus === "not_edited" ? post?.image : null
+                      }
+                      defaultPlatform={post?.platforms?.[0]}
+                    />
                   </div>
 
                   {/* Main Content */}

@@ -5,6 +5,7 @@ import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
   const [crop, setCrop] = useState();
@@ -12,7 +13,7 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const [aspect, setAspect] = useState(undefined);
-
+  const { updateFile } = useEditor();
   // Function to center and set the crop aspect ratio
   const centerAspectCrop = (mediaWidth, mediaHeight, aspect) => {
     return centerCrop(
@@ -90,9 +91,33 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
 
     ctx.restore();
   };
-
   const handleDone = () => {
-    if (imgRef.current && completedCrop?.width && completedCrop?.height) {
+    if (
+      imgRef.current &&
+      completedCrop?.width &&
+      completedCrop?.height &&
+      previewCanvasRef.current
+    ) {
+      // Convert canvas to Blob
+      previewCanvasRef.current.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], selectedElement?.id, {
+            type: "image/png",
+          });
+          console.log("Cropped Image File:", file);
+
+          // OPTIONAL: Create a temporary URL if you want to preview or download
+          const src = URL.createObjectURL(file);
+          console.log("Cropped Image URL:", src);
+
+          updateElement(selectedElement?.id, {
+            props: { ...selectedElement?.props, src: src },
+          });
+          updateFile(selectedElement?.id, file);
+          // NOTE: Clean up URL object later if used
+        }
+      }, "image/png");
+      // Update styles or dimensions as before
       const updatedStyles = {
         ...selectedElement?.styles,
         width: completedCrop.width,
@@ -103,6 +128,7 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
         styles: updatedStyles,
       });
     }
+
     closeModal();
   };
 
@@ -161,7 +187,7 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="border rounded-md p-4 bg-gray-50">
                     <h3 className="text-sm font-medium mb-2">Adjust Crop</h3>
-                    {selectedElement?.props?.src && (
+                    {selectedElement?.props?.previewUrl && (
                       <ReactCrop
                         crop={crop}
                         onChange={(c) => setCrop(c)}
@@ -172,7 +198,10 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
                         <img
                           ref={imgRef}
                           alt="Crop me"
-                          src={selectedElement.props.src || "/placeholder.svg"}
+                          src={
+                            selectedElement.props.previewUrl ||
+                            "/placeholder.svg"
+                          }
                           onLoad={onImageLoad}
                           crossOrigin="anonymous"
                         />

@@ -78,7 +78,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
 
           case "shadow":
             updateStyle({
-              boxShadow: newEnabled
+              textShadow: newEnabled
                 ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${
                     updatedEffect.blur
                   }px rgba(${hexToRgb(updatedEffect.color)}, ${
@@ -170,7 +170,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
 
     if (effects.shadow.enabled) {
       updateStyle({
-        boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${
+        textShadow: `${updated.offsetX}px ${updated.offsetY}px ${
           updated.blur
         }px rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
       });
@@ -597,9 +597,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
                 <input
                   type="color"
                   value={effects.shadow.color}
-                  onChange={(e) =>
-                    handleChangeShadowValue("color", e.target.value)
-                  }
+                  onChange={(e) => handleChangeShadowValue("color", e.target.value)}
                   className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
                 />
               </div>

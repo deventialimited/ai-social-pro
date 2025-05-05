@@ -35,7 +35,7 @@ const CanvasElement = ({
     const handleKeyDown = (e) => {
       if (!isSelected || locked) return;
       
-      const moveStep = 10; // Pixels to move per key press
+      const moveStep = 1; // Pixels to move per key press
       let newX = position.x;
       let newY = position.y;
       switch (e.key) {
@@ -114,8 +114,21 @@ const CanvasElement = ({
         newHeight = Math.max(height + deltaY, 20);
         break;
     }
-    const scale = Math.max(newWidth / width, newHeight / height);
-    const newFontSize = Math.max(fontSize * scale, 8);
+
+    // Only scale font size during diagonal resizing
+    let newFontSize = fontSize;
+    if (direction === "nw" || direction === "ne" || direction === "sw" || direction === "se") {
+      const scale = Math.max(newWidth / width, newHeight / height);
+      newFontSize = Math.max(fontSize * scale, 8);
+    }
+
+    // For vertical resizing, adjust line height instead of font size
+    let newLineHeight = styles.lineHeight;
+    if (direction === "n" || direction === "s") {
+      const heightScale = newHeight / height;
+      newLineHeight = `${heightScale * 100}%`;
+    }
+
     updateElement(id, {
       position: { x: newX, y: newY },
       styles: {
@@ -123,6 +136,7 @@ const CanvasElement = ({
         width: newWidth,
         height: newHeight,
         fontSize: `${newFontSize}px`,
+        lineHeight: newLineHeight
       },
     });
   };
@@ -179,40 +193,25 @@ const CanvasElement = ({
     <Rnd
       key={id}
       size={{ width: styles.width, height: styles.height }}
-      position={
-        styles?.position === "absolute"
-          ? {
-              x: 0,
-              y:
-                styles?.bottom === 0
-                  ? Math.max(Math.min(canvas.height / 3, 600)) - styles.height
-                  : 0,
-            }
-          : { x: position.x, y: position.y }
-      }
+      position={{ x: position.x, y: position.y }}
       style={{
-        position: styles?.position === "absolute" ? "static" : "absolute",
+        position: "absolute",
         zIndex: styles?.zIndex,
         display: visible ? "block" : "none",
-        touchAction: "none", // ADDED: Improve touch handling
+        touchAction: "none",
       }}
-      onDragStart={handleDragStart} // ADDED: optimization handler
+      onDragStart={handleDragStart}
       onDragStop={handleDragStop}
       onClick={() => onSelect(id, type)}
-      enableResizing={false} // we handle resizing manually
-      disableDragging={locked} // Disable dragging if locked
-      // bounds removed to allow dragging outside canvas
+      enableResizing={false}
+      disableDragging={locked}
     >
-      {["text", "image", "shape"].includes(type) && (
+      {(["text", "image", "shape"].includes(type)) && (
         <div
           ref={elementRef}
           className={`${isSelected ? "border-2 border-blue-500" : null}`}
           style={{
-            position: styles?.position,
-            left: styles?.left,
-            right: styles?.right,
-            bottom: styles?.bottom,
-            top: styles?.top,
+            position: "static",
             transform:
               styles.transform && styles.transform.startsWith("rotate")
                 ? styles.transform
@@ -261,21 +260,37 @@ const CanvasElement = ({
           )}
           
           {type === "shape" && (
-            <div
-              style={{
-                ...styles,
-                position: "static",
-                transform: "rotate(0deg)",
-                overflow: "hidden",
-              }}
-              dangerouslySetInnerHTML={{
-                __html: props.svg?.svg
-                  ?.replace(
-                    /<svg([^>]*)>/,
-                    `<svg$1 width="${styles.width}" height="${styles.height}" preserveAspectRatio="none">`        ),
-              }}
-            />
-          )}
+  <div
+    style={{
+      ...styles,
+      position: "static",
+      transform: "rotate(0deg)",
+      overflow: "hidden",
+      color: styles.fill || styles.color || "#D3D3D3",
+      // Remove any default padding/margin that might create space
+      padding: 0,
+      margin: 0,
+      // Ensure the div fits exactly to its content
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}
+  >
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex" 
+      }}
+      dangerouslySetInnerHTML={{
+        __html: props.svg?.svg
+          ?.replace(
+            /<svg([^>]*)>/,
+            `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`)
+      }}
+    />
+  </div>
+)}
           
           {isSelected && (
             <>

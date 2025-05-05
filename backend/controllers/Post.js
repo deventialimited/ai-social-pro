@@ -2,7 +2,7 @@ const Domain = require("../models/Domain");
 const Post = require("../models/Post");
 const getRawBody = require("raw-body");
 const axios = require("axios");
-const { uploadToS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
+const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const mongoose = require("mongoose");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
@@ -259,3 +259,77 @@ exports.getFirstPost = async (req, res) => {
     });
   }
 };
+
+exports.updatePostImage = async (req, res) => {
+  const { id } = req.params;
+  const file = req.file;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: "Post ID is required",
+    });
+  }
+
+  if (!file) {
+    return res.status(400).json({
+      success: false,
+      message: "Image file is required",
+    });
+  }
+
+  try {
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // If old image exists, delete it from S3
+    if (post.image) {
+      const oldImageKey = getS3KeyFromUrl(post.image);
+      if (oldImageKey) {
+        await deleteFromS3([oldImageKey]);
+      }
+    }
+
+    // Upload new image
+    const fileForS3 = {
+      originalname: `post_image_${Date.now()}_${file.originalname}`,
+      mimetype: file.mimetype,
+      buffer: file.buffer,
+    };
+
+    const uploadedImageUrl = await uploadToS3(fileForS3);
+
+    // Update DB
+    post.image = uploadedImageUrl;
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Post image updated successfully",
+      post,
+    });
+  } catch (error) {
+    console.error("Error updating post image:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error uploading image or updating post",
+      error: error.message,
+    });
+  }
+};
+
+function getS3KeyFromUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    const key = decodeURIComponent(urlObj.pathname).substring(1); // remove leading '/'
+    return key;
+  } catch (e) {
+    console.error("Invalid URL:", url);
+    return null;
+  }
+}

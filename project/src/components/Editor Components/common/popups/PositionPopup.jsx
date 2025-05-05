@@ -13,9 +13,10 @@ import {
   AlignEndVertical,
 } from "lucide-react";
 
-function PositionPopup({ onLayerPositionChange, onPositionChange }) {
+function PositionPopup({ onLayerPositionChange, onPositionChange, canvas }) {
   const [isOpen, setIsOpen] = useState(false);
   const selectorRef = useRef(null);
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectorRef.current && !selectorRef.current.contains(event.target)) {
@@ -28,6 +29,7 @@ function PositionPopup({ onLayerPositionChange, onPositionChange }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   const handleLayeringAction = (action) => {
     if (onLayerPositionChange) {
       onLayerPositionChange(action);
@@ -73,76 +75,76 @@ function PositionPopup({ onLayerPositionChange, onPositionChange }) {
                 onClick={() => handleLayeringAction("up")}
               >
                 <ArrowUp className="h-4 w-4" />
-                <span>Up</span>
+                <span>Bring Forward</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("down")}
               >
                 <ArrowDown className="h-4 w-4" />
-                <span>Down</span>
+                <span>Send Backward</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("toFront")}
               >
                 <ChevronsUp className="h-4 w-4" />
-                <span>To forward</span>
+                <span>Bring to Front</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handleLayeringAction("toBack")}
               >
                 <ChevronsDown className="h-4 w-4" />
-                <span>To bottom</span>
+                <span>Send to Back</span>
               </button>
             </div>
           </div>
 
           <div className="p-2">
-            <h3 className="text-sm font-medium mb-1.5">Position</h3>
-            <div className="grid grid-cols-2 gap-1">
+            <h3 className="text-sm font-medium mb-1.5">Alignment</h3>
+            <div className="grid grid-cols-3 gap-1">
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("left")}
               >
                 <AlignLeft className="h-4 w-4" />
-                <span>Align left</span>
-              </button>
-              <button
-                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
-                onClick={() => handlePositionAction("top")}
-              >
-                <AlignStartVertical className="h-4 w-4" />
-                <span>Align top</span>
+                <span>Left</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("center")}
               >
                 <AlignCenter className="h-4 w-4" />
-                <span>Align center</span>
-              </button>
-              <button
-                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
-                onClick={() => handlePositionAction("middle")}
-              >
-                <AlignCenterVertical className="h-4 w-4" />
-                <span>Align middle</span>
+                <span>Center</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("right")}
               >
                 <AlignRight className="h-4 w-4" />
-                <span>Align right</span>
+                <span>Right</span>
+              </button>
+              <button
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
+                onClick={() => handlePositionAction("top")}
+              >
+                <AlignStartVertical className="h-4 w-4" />
+                <span>Top</span>
+              </button>
+              <button
+                className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
+                onClick={() => handlePositionAction("middle")}
+              >
+                <AlignCenterVertical className="h-4 w-4" />
+                <span>Middle</span>
               </button>
               <button
                 className="flex items-center gap-2 px-3 py-1 hover:bg-gray-100 rounded-md text-sm"
                 onClick={() => handlePositionAction("bottom")}
               >
                 <AlignEndVertical className="h-4 w-4" />
-                <span>Align bottom</span>
+                <span>Bottom</span>
               </button>
             </div>
           </div>

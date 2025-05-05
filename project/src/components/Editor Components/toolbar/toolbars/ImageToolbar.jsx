@@ -18,6 +18,8 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
 import { createImageElement } from "../../sidebar/hooks/ImagesHooks";
 import CropButton from "../../common/popups/CropButton";
+import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
+import Tooltip from "../../../common/Tooltip";
 
 function ImageToolbar({
   specialActiveTab,
@@ -124,94 +126,11 @@ function ImageToolbar({
   };
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    const updatedPosition = { ...selectedElement.position };
-
-    switch (action) {
-      case "left":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left: 0,
-            top: updatedPosition?.y,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "top":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            top: 0,
-            left: updatedPosition?.x,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-      case "center":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              Math.max(Math.min(canvas.width / 3, 600)) -
-              selectedElement?.styles?.width, // Centers on X-axis
-            top:
-              selectedElement?.styles?.top ||
-              Math.max(Math.min(canvas.height / 3, 600)) -
-                selectedElement?.styles?.height, // Maintains top if available or centers vertically
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-      case "middle":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            left:
-              selectedElement?.left ||
-              Math.max(Math.min(canvas.width / 3, 600)) -
-                selectedElement?.styles?.width, // Maintains left if available or centers horizontally
-            top: Math.max(Math.min(canvas.height / 3, 600)) / 3,
-            bottom: null,
-            right: null,
-          },
-        });
-        break;
-
-        break;
-      case "right":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            right: 0,
-            top: updatedPosition?.y,
-            left: null,
-          },
-        });
-        break;
-      case "bottom":
-        updateElement(selectedElement?.id, {
-          styles: {
-            ...selectedElement.styles,
-            position: "absolute",
-            bottom: 0,
-            left: updatedPosition?.x,
-            top: null,
-            right: null,
-          },
-        });
-        break;
-      default:
-        break;
-    }
+    
+    const newPosition = setElementPosition(selectedElement, action, canvas);
+    updateElement(selectedElement.id, {
+      position: newPosition
+    });
   };
 
   // This should handle TEXT ALIGNMENT (not to be confused with element positioning)
@@ -341,119 +260,133 @@ function ImageToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        {/* <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCcw className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="flip-tooltip" content="Flip image">
+          <FlipPopup onFlip={handleFlip} />
+        </Tooltip>
 
-        <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCw className="h-5 w-5 text-gray-600" />
-        </button> */}
+        <Tooltip id="effects-tooltip" content="Apply image effects">
+          <button
+            className={`flex items-center gap-1 px-3 py-2 rounded-md ${
+              specialActiveTab === "image-effects"
+                ? "bg-blue-100 text-blue-600"
+                : "hover:bg-gray-100"
+            }`}
+            onClick={() => {
+              specialActiveTab === "image-effects"
+                ? setSpecialActiveTab(null)
+                : setSpecialActiveTab("image-effects");
+            }}
+          >
+            <Sparkles className="h-5 w-5" />
+            <span className="w-max">Effects</span>
+          </button>
+        </Tooltip>
 
-        <FlipPopup onFlip={handleFlip} />
+        <Tooltip id="fit-tooltip" content="Fit image to page">
+          <button
+            onClick={handleFitToPage}
+            className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100"
+          >
+            <span className="w-max">Fit to page</span>
+          </button>
+        </Tooltip>
 
-        <button
-          className={`flex items-center gap-1 px-3 py-2 rounded-md ${
-            specialActiveTab === "image-effects"
-              ? "bg-blue-100 text-blue-600"
-              : "hover:bg-gray-100"
-          }`}
-          onClick={() => {
-            specialActiveTab === "image-effects"
-              ? setSpecialActiveTab(null)
-              : setSpecialActiveTab("image-effects");
-          }}
-        >
-          <Sparkles className="h-5 w-5" />
-          <span className="w-max">Effects</span>
-        </button>
+        <Tooltip id="mask-tooltip" content="Apply mask to image">
+          <button
+            className={`flex items-center gap-1 px-3 py-2 rounded-md ${
+              specialActiveTab === "apply-mask"
+                ? "bg-blue-100 text-blue-600"
+                : "hover:bg-gray-100"
+            }`}
+            onClick={() => {
+              specialActiveTab === "apply-mask"
+                ? setSpecialActiveTab(null)
+                : setSpecialActiveTab("apply-mask");
+            }}
+          >
+            <span className="w-max">Apply mask</span>
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleFitToPage}
-          className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100"
-        >
-          <span className="w-max">Fit to page</span>
-        </button>
-
-        <button
-          className={`flex items-center gap-1 px-3 py-2 rounded-md ${
-            specialActiveTab === "apply-mask"
-              ? "bg-blue-100 text-blue-600"
-              : "hover:bg-gray-100"
-          }`}
-          onClick={() => {
-            specialActiveTab === "apply-mask"
-              ? setSpecialActiveTab(null)
-              : setSpecialActiveTab("apply-mask");
-          }}
-        >
-          <span className="w-max">Apply mask</span>
-        </button>
-
-        <CropButton
-          selectedElement={selectedElement}
-          updateElement={updateElement}
-        />
+        <Tooltip id="crop-tooltip" content="Crop image">
+          <CropButton
+            selectedElement={selectedElement}
+            updateElement={updateElement}
+          />
+        </Tooltip>
 
         <div>
-          {/* Upload Button */}
-          <button
-            className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
-            onClick={() => document.getElementById("file-upload-input").click()} // Trigger file input click
-          >
-            <Upload className="h-5 w-5 text-gray-600" />
-            <span className="w-max">Upload</span>
-          </button>
+          <Tooltip id="upload-tooltip" content="Upload new image">
+            <button
+              className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
+              onClick={() => document.getElementById("file-upload-input").click()}
+            >
+              <Upload className="h-5 w-5 text-gray-600" />
+              <span className="w-max">Upload</span>
+            </button>
+          </Tooltip>
 
-          {/* Hidden file input */}
           <input
             id="file-upload-input"
             type="file"
-            style={{ display: "none" }} // Hide the input field
-            onChange={handleUpload} // Call the handleUpload function when file is selected
+            style={{ display: "none" }}
+            onChange={handleUpload}
           />
         </div>
 
-        <button className="flex items-center gap-1 px-3 py-2 rounded-md text-gray-400 border cursor-not-allowed">
-          <ImageIcon className="h-5 w-5" />
-          <span className="w-max">Change Image</span>
-        </button>
+        <Tooltip id="change-image-tooltip" content="Change current image">
+          <button className="flex items-center gap-1 px-3 py-2 rounded-md text-gray-400 border cursor-not-allowed">
+            <ImageIcon className="h-5 w-5" />
+            <span className="w-max">Change Image</span>
+          </button>
+        </Tooltip>
 
-        <PositionPopup
-          onLayerPositionChange={handleLayerPositionChange} // For element positioning
-          onPositionChange={handlePositionChange} // For text alignment
-        />
+        <Tooltip id="position-tooltip" content="Adjust element position">
+          <PositionPopup
+            onLayerPositionChange={handleLayerPositionChange}
+            onPositionChange={handlePositionChange}
+          />
+        </Tooltip>
 
-        <TransparencyPopup
-          transparency={selectedElement?.styles?.opacity}
-          onChange={handleTransparencyChange}
-        />
+        <Tooltip id="transparency-tooltip" content="Adjust transparency">
+          <TransparencyPopup
+            transparency={selectedElement?.styles?.opacity}
+            onChange={handleTransparencyChange}
+          />
+        </Tooltip>
 
-        <button
-          onClick={() => handleLock(selectedElement?.id)}
-          className={`p-2 rounded-md hover:bg-gray-100 ${
-            selectedElement?.locked ? "bg-gray-300" : null
-          }`}
-        >
-          {selectedElement?.locked ? (
-            <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
-          ) : (
-            <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
-          )}
-        </button>
+        <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+          <button
+            onClick={() => handleLock(selectedElement?.id)}
+            className={`p-2 rounded-md hover:bg-gray-100 ${
+              selectedElement?.locked ? "bg-gray-300" : null
+            }`}
+          >
+            {selectedElement?.locked ? (
+              <Lock className="h-4 w-4 text-gray-600" />
+            ) : (
+              <Unlock className="h-4 w-4 text-gray-600" />
+            )}
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleCopy}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Copy className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="copy-tooltip" content="Copy element">
+          <button
+            onClick={handleCopy}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Copy className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-        <button
-          onClick={handleDelete}
-          className="p-2 rounded-md hover:bg-gray-100"
-        >
-          <Trash className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="delete-tooltip" content="Delete element">
+          <button
+            onClick={handleDelete}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Trash className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
       </div>
     </>
   );
