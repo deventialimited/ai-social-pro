@@ -5,6 +5,7 @@ const EditorContext = createContext(null);
 
 export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
+  const [isCanvasLoading, setCanvasLoading] = useState(false);
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
@@ -263,6 +264,8 @@ export const EditorProvider = ({ children }) => {
     setElements,
     layers,
     setLayers,
+    isCanvasLoading,
+    setCanvasLoading,
 
     // Files
     allFiles,
