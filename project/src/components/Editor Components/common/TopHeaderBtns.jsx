@@ -32,6 +32,7 @@ const TopHeaderBtns = ({
     setElements,
     setLayers,
     updateCanvasSize,
+    setCanvasLoading,
   } = useEditor();
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const onSave = useSaveOrUpdatePostDesign();
@@ -60,14 +61,14 @@ const TopHeaderBtns = ({
         },
         {
           onSuccess: () => {
-            setIsSaveLoading(false); // Runs regardless of success or error
+            setTimeout(() => {
+              setIsSaveLoading(false); // Runs regardless of success or error
+              onClose(); // Close only on success
+              clearEditor();
+            }, 3000);
           },
           onError: (error) => {
             console.error("Error saving design:", error);
-          },
-          onSettled: () => {
-            onClose(); // Close only on success
-            clearEditor();
           },
         }
       );
@@ -77,7 +78,14 @@ const TopHeaderBtns = ({
   };
   const handleAddImage = async (src) => {
     try {
-      const response = await fetch(src);
+      setCanvasLoading(true);
+      const response = await fetch(src, {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
       const blob = await response.blob();
 
       const objectUrl = URL.createObjectURL(blob);
@@ -107,17 +115,22 @@ const TopHeaderBtns = ({
           zIndex: 0,
         },
       });
+      setCanvasLoading(false);
     } catch (error) {
+      setCanvasLoading(false);
       console.error("Failed to add image:", error);
     }
   };
   const fetchPostDesign = async () => {
     try {
+      setCanvasLoading(true);
       const res = await getPostDesignById(postId);
       setCanvas(res?.canvas);
       setElements(res?.elements);
       setLayers(res?.layers);
+      setCanvasLoading(false);
     } catch (error) {
+      setCanvasLoading(false);
       console.log(error);
     }
   };

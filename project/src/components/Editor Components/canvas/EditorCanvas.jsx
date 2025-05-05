@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash, Minus, Plus } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
+import LoadingOverlay from "../common/LoadingOverlay";
 
 function EditorCanvas({
   canvasContainerRef,
@@ -13,10 +14,9 @@ function EditorCanvas({
   specialActiveTab,
 }) {
   const [zoom, setZoom] = useState(100);
-  const { canvas, elements, allFiles } = useEditor();
+  const { canvas, elements, isCanvasLoading } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const containerRef = useRef(null);
-
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 150));
   };
@@ -63,6 +63,7 @@ function EditorCanvas({
         position: "relative",
       }}
     >
+      {isCanvasLoading && <LoadingOverlay />}
       {/* Canvas controls */}
       <div className=" fixed top-32 right-4 float-right z-10 flex flex-col gap-1 ml-auto mr-4">
         <button className="p-1 bg-white rounded-md shadow hover:bg-gray-50">
@@ -127,7 +128,7 @@ function EditorCanvas({
       </div>
 
       {/* Zoom controls - fixed at bottom right */}
-      <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-50">
+      <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-40">
         <button
           onClick={decreaseZoom}
           className="p-2 hover:bg-gray-100 rounded-full"

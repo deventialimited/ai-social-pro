@@ -13,7 +13,7 @@ function ImagesTab() {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const fileInputRef = useRef(null);
-  const { addElement, addFile } = useEditor();
+  const { addElement, addFile, setCanvasLoading } = useEditor();
   const { mutate: uploadImage } = useUploadUserImageMutation(); // For image upload
   const [userId, setUserId] = useState(null);
   useEffect(() => {
@@ -68,9 +68,14 @@ function ImagesTab() {
 
   const handleAddImage = async (src) => {
     try {
+      setCanvasLoading(true);
+
       const response = await fetch(src, {
         method: "GET",
-        mode: "cors", // this is REQUIRED for CORS
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
       const blob = await response.blob();
 
@@ -80,7 +85,9 @@ function ImagesTab() {
 
       const file = new File([blob], newElement.id, { type: blob.type });
       addFile(file);
+      setCanvasLoading(false);
     } catch (error) {
+      setCanvasLoading(false);
       console.error("Failed to add image:", error);
     }
   };
