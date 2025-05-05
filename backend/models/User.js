@@ -61,13 +61,25 @@ const userSchema = new mongoose.Schema(
     },
 
     selectedWebsiteId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Domain",
-         default: null,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Domain",
+      default: null,
+    },
+    PlatformConnected: [
+      {
+        platformName: {
+          type: String,
+        },
+        status: {
+          type: String,
+          enum: ["connected", "disconnected"],
+          default: "disconnected",
+        },
+        _id:false
+      },
+    ],
+  },
 
-  },
-  },
-  
   { timestamps: true }
 );
 

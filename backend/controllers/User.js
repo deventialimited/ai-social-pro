@@ -49,7 +49,7 @@ exports.sendPhoneVerificationOtp = async (req, res) => {
 
     // Generate OTP
     const otp = crypto.randomInt(100000, 999999).toString();
-console.log("OTP sent to phone:", otp); // For testing purposes
+    console.log("OTP sent to phone:", otp); // For testing purposes
     // Include userId in the token
     const token = jwt.sign({ userId, phone, otp }, process.env.JWT_SECRET, {
       expiresIn: "5m",
@@ -134,7 +134,7 @@ exports.editProfile = async (req, res) => {
 
 // Register user
 exports.register = async (req, res) => {
-  const {username, email, password } = req.body;
+  const { username, email, password } = req.body;
   try {
     // Check if a user with the provided email already exists
     let user = await User.findOne({ email });
@@ -209,7 +209,7 @@ exports.login = async (req, res) => {
       const token = jwt.sign({ email, otp }, process.env.JWT_SECRET, {
         expiresIn: "5m",
       });
-console.log("OTP sent to email:", otp); // For testing purposes
+      console.log("OTP sent to email:", otp); // For testing purposes
       // await sendVerificationEmail(email, otp);
 
       return res.status(200).json({
@@ -239,7 +239,7 @@ console.log("OTP sent to email:", otp); // For testing purposes
         success: true,
         message: "Two-factor authentication required",
         twoFactorRequired: true,
-        user  ,  
+        user,
         methods,
         token: methods.email ? token : undefined, // Include the token if email 2FA is enabled
       });
@@ -282,7 +282,7 @@ exports.sendEmailVerificationOtp = async (req, res) => {
       expiresIn: "5m",
     });
     await sendVerificationEmail(email, otp);
-    // console.log("OTP sent to email:", otp); // For testing purposes                 
+    // console.log("OTP sent to email:", otp); // For testing purposes
     res.status(200).json({
       success: true,
       message: "OTP sent to email successfully.",
@@ -342,7 +342,7 @@ exports.verifyOtp = async (req, res) => {
 
     // If email is verified, send a welcome email
     if (method === "email") {
-      await sendWelcomeEmail(user.email,user.username);
+      await sendWelcomeEmail(user.email, user.username);
     }
 
     res.status(200).json({
@@ -384,10 +384,9 @@ exports.googleAuth = async (req, res) => {
         profileImage: picture || profileImage,
         emailVerified: true, // Google accounts are generally verified
       });
-      await sendWelcomeEmail(email,name);
+      await sendWelcomeEmail(email, name);
       userType = "new";
     } else {
-      
       // If user exists but doesn't have googleId, update googleId and emailVerified
       if (!user.googleId) {
         user.googleId = googleId;
@@ -946,34 +945,75 @@ exports.deleteUserByAdmin = async (req, res) => {
   }
 };
 
-
 exports.updateSelectedDomain = async (req, res) => {
   const { userId, selectedWebsiteId } = req.body;
 
   try {
     // Ensure valid input
     if (!userId || !selectedWebsiteId) {
-      return res.status(400).json({ error: "User ID and Domain ID are required." });
+      return res
+        .status(400)
+        .json({ error: "User ID and Domain ID are required." });
     }
 
     const user = await User.findById(userId);
-  
+
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
 
     // Update the user's selected domain
-    console.log("current website" ,user.selectedWebsiteId);
+    console.log("current website", user.selectedWebsiteId);
     user.selectedWebsiteId = selectedWebsiteId;
-    console.log("new website" ,user.selectedWebsiteId);
+    console.log("new website", user.selectedWebsiteId);
     await user.save();
 
     // Return the updated user
-    res.status(200).json({ message: "Selected domain updated successfully.", user });
+    res
+      .status(200)
+      .json({ message: "Selected domain updated successfully.", user });
   } catch (error) {
     console.error("Error updating selected domain:", error);
-    res.status(500).json({ error: "Server error while updating selected domain." });
+    res
+      .status(500)
+      .json({ error: "Server error while updating selected domain." });
   }
 };
 
+exports.updatePlatformConnection = async (req, res) => {
+  const { userId, platformName, status } = req.body;
+  console.log(req.body, "request body");
+  if (!userId || !platformName || !status) {
+    return res
+      .status(400)
+      .json({ error: "userId, platformName and status are required." });
+  }
 
+  try {
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) return res.status(404).json({ error: "User not found." });
+
+    const platformIndex = user.PlatformConnected.findIndex(
+      (item) => item.platformName.toLowerCase() === platformName.toLowerCase()
+    );
+
+    if (platformIndex > -1) {
+      // Update existing platform
+      user.PlatformConnected[platformIndex].status = status;
+    } else {
+      // Add new platform
+      user.PlatformConnected.push({ platformName, status });
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Platform connection updated successfully.",
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating platform connection:", error);
+    res.status(500).json({ error: "Server error while updating platform." });
+  }
+};

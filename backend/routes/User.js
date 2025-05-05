@@ -17,7 +17,8 @@ const {
   updateUserStatus,
   getUserAccountStatus,
   deleteUserByAdmin,
-  updateSelectedDomain
+  updateSelectedDomain,
+  updatePlatformConnection,
 } = require("../controllers/User");
 
 const router = express.Router();
@@ -65,6 +66,6 @@ router.post("/edit-profile/:id", upload.single("profileImage"), editProfile);
 router.get("/", getAllUsers);
 
 router.post("/updateSelectedDomain", updateSelectedDomain);
-
+router.post("/updatePlatformConnection", updatePlatformConnection);
 
 module.exports = router;

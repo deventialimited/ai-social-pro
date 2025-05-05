@@ -13,7 +13,7 @@ const iconMap = {
   facebook: <FacebookFilled className="text-blue-600" />,
   instagram: <InstagramFilled className="text-pink-500" />,
   linkedin: <LinkedinFilled className="text-blue-700" />,
-  twitter: <TwitterSquareFilled className="text-black" />,
+  X: <TwitterSquareFilled className="text-black" />,
   tiktok: <TikTokOutlined className="text-black" />,
 };
 

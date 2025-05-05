@@ -4,16 +4,21 @@ const baseURL = "https://api.oneyearsocial.com";
 // Base URL of your API
 const API_URL = `${baseURL}/api/v1/users`;
 export const updateSelectedDomain = async (userId, selectedWebsiteId) => {
-  
   try {
     const response = await axios.post(`${API_URL}/updateSelectedDomain`, {
       userId,
       selectedWebsiteId,
     });
-    console.log(`[updateSelectedDomain] Domain updated successfully for user ${userId}:`, response.data);
+    console.log(
+      `[updateSelectedDomain] Domain updated successfully for user ${userId}:`,
+      response.data
+    );
     return response.data;
   } catch (error) {
-    console.error(`[updateSelectedDomain] Error updating domain for user ${userId}:`, error.message);
+    console.error(
+      `[updateSelectedDomain] Error updating domain for user ${userId}:`,
+      error.message
+    );
     throw error;
   }
 };
@@ -37,7 +42,6 @@ export const updateProfile = async (userId, formData) => {
 // Register user manually
 export const registerUser = async (username, email, password) => {
   try {
-   
     const response = await axios.post(`${API_URL}/register`, {
       username,
       email,
@@ -219,5 +223,28 @@ export const getUserAccountStatus = async (userId) => {
       error.response?.data?.error || "Error fetching account status"
     );
     throw error.response?.data?.error || "Failed to fetch account status.";
+  }
+};
+
+export const updatePlatformConnection = async (
+  userId,
+  platformName,
+  status
+) => {
+  try {
+    const response = await axios.post(`${API_URL}/updatePlatformConnection`, {
+      userId,
+      platformName,
+      status,
+    });
+
+    console.log(
+      `[updatePlatformConnection] Updated for ${platformName}:`,
+      response.data
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`[updatePlatformConnection] Error:`, error.message);
+    throw error;
   }
 };

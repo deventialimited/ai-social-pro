@@ -10,7 +10,7 @@ export const XAuth = () => {
     <div>
       <button onClick={handleClick}>Lets connect X</button>
       {popUp && (
-        <SocialConnectLoader isOpen={popUp} onClose={() => {}} platform="X" />
+        <SocialConnectLoader isOpen={popUp} onClose={() => {}} platform="x" />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FacebookFilled,
   InstagramFilled,
@@ -8,10 +8,20 @@ import {
 } from "@ant-design/icons";
 
 export const SocialAccount = ({ onContinue, onClose }) => {
+  
   const platforms = [
-    { name: "Facebook", icon: <FacebookFilled className="text-blue-600" /> },
-    { name: "Instagram", icon: <InstagramFilled className="text-pink-500" /> },
-    { name: "Twitter", icon: <TwitterSquareFilled className="text-sky-500" /> },
+    {
+      name: "Facebook",
+      icon: <FacebookFilled className="text-blue-600" />,
+    },
+    {
+      name: "Instagram",
+      icon: <InstagramFilled className="text-pink-500" />,
+    },
+    {
+      name: "Twitter",
+      icon: <TwitterSquareFilled className="text-sky-500" />,
+    },
     { name: "LinkedIn", icon: <LinkedinFilled className="text-blue-700" /> },
   ];
 
