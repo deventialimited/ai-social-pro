@@ -60,21 +60,21 @@ function EditorCanvas({
   useEffect(() => {
     const handleSelectStart = (e) => {
       // Only prevent selection if clicking on canvas or elements
-      if (e.target.closest('#canvas')) {
+      if (e.target.closest("#canvas")) {
         e.preventDefault();
       }
     };
 
     const handleKeyDown = (e) => {
       // Prevent Ctrl+A selection
-      if (e.ctrlKey && e.key === 'a' && e.target.closest('#canvas')) {
+      if (e.ctrlKey && e.key === "a" && e.target.closest("#canvas")) {
         e.preventDefault();
       }
     };
 
     const handleMouseDown = (e) => {
       // If clicking on canvas background, clear selection
-      if (e.target.id === '#canvas') {
+      if (e.target.id === "#canvas") {
         setSelectedElementId(null);
         onElementSelect("canvas");
       }
@@ -85,16 +85,16 @@ function EditorCanvas({
       window.getSelection()?.removeAllRanges();
     };
 
-    window.addEventListener('selectstart', handleSelectStart);
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
-    
+    window.addEventListener("selectstart", handleSelectStart);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+
     return () => {
-      window.removeEventListener('selectstart', handleSelectStart);
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener("selectstart", handleSelectStart);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [onElementSelect]);
 
@@ -110,7 +110,6 @@ function EditorCanvas({
         msUserSelect: "none",
       }}
     >
-      {isCanvasLoading && <LoadingOverlay />}
       {/* Canvas controls */}
       <div className=" fixed top-32 right-4 float-right z-10 flex flex-col gap-1 ml-auto mr-4">
         <button className="p-1 bg-white rounded-md shadow hover:bg-gray-50">
@@ -146,6 +145,8 @@ function EditorCanvas({
             marginLeft: `${(zoom - 100) * 0.25}rem`, // Adjust multiplier as needed
           }}
         >
+          {isCanvasLoading && <LoadingOverlay />}
+
           {/* Canvas */}
           <div
             ref={canvasContainerRef}
