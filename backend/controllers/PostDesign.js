@@ -116,10 +116,13 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       });
 
       await newPostDesign.save();
-
+      const latestPost = await Post.findByIdAndUpdate(postId, {
+        editorStatus: "edited",
+      });
       return res.status(201).json({
         message: "PostDesign created successfully",
         postDesign: newPostDesign,
+        latestPost,
       });
     }
   } catch (error) {
