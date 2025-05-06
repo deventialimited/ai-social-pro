@@ -85,7 +85,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
       }
       
       clickCountRef.current = 0;
-    }, 300);
+    }, 200);
   };
 
   const handleBlur = () => {
