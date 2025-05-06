@@ -134,7 +134,7 @@ exports.deleteFromS3ForPostDesign = async (urls) => {
   }
 };
 
-const allowedElementTypesWithFiles = ["image", "shape"];
+const allowedElementTypesWithFiles = ["image"];
 const allowedFileFields = ["files"];
 
 exports.validatePostDesignUpload = (req, res, next) => {
@@ -146,18 +146,19 @@ exports.validatePostDesignUpload = (req, res, next) => {
     // Step 1: Prepare allowed file IDs
     const requiredFileIds = new Set();
 
-    // From elements
-    for (const el of elements) {
-      if (allowedElementTypesWithFiles.includes(el.type)) {
-        requiredFileIds.add(el.id);
+    if (files?.length > 0) {
+      // From elements
+      for (const el of elements) {
+        if (allowedElementTypesWithFiles.includes(el.type)) {
+          requiredFileIds.add(el.id);
+        }
+      }
+
+      // From background
+      if (["image", "video"].includes(backgrounds?.type)) {
+        requiredFileIds.add("background");
       }
     }
-
-    // From background
-    if (["image", "video"].includes(backgrounds?.type)) {
-      requiredFileIds.add("background");
-    }
-
     // Step 2: Verify uploaded files match required
     const uploadedFileIds = new Set(files?.map((file) => file.originalname));
 
