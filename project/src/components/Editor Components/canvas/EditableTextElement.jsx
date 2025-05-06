@@ -3,7 +3,9 @@ import { useState, useRef, useEffect } from "react";
 const EditableTextElement = ({ text, styles = {}, onChange }) => {
   const [currentText, setCurrentText] = useState(text || "");
   const [isEditing, setIsEditing] = useState(false);
+  const [verticalOffset, setVerticalOffset] = useState(0);
   const inputRef = useRef(null);
+  const textRef = useRef(null);
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
   
@@ -13,6 +15,31 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
       setCurrentText(text || "");
     }
   }, [text, isEditing]);
+
+  useEffect(() => {
+    // Calculate vertical alignment when text or styles change
+    if (textRef.current && inputRef.current) {
+      const containerHeight = inputRef.current.clientHeight;
+      const textHeight = textRef.current.scrollHeight;
+      
+      // Calculate vertical offset based on verticalAlign style
+      let offset = 0;
+      switch (styles.verticalAlign) {
+        case 'middle':
+          offset = Math.max(0, (containerHeight - textHeight) / 2);
+          break;
+        case 'bottom':
+          offset = Math.max(0, containerHeight - textHeight);
+          break;
+        case 'top':
+        default:
+          offset = 0;
+          break;
+      }
+      
+      setVerticalOffset(offset);
+    }
+  }, [currentText, styles, styles.verticalAlign]);
 
   const getWordBoundaries = (text, position) => {
     if (!text || position < 0 || position > text.length) {
@@ -108,7 +135,8 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        overflow: "hidden"
+        overflow: "hidden",
+        position: "relative"
       }}
     >
       <textarea
@@ -129,14 +157,34 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
           overflow: "hidden",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
-          // Preserve original styling while ensuring consistent text rendering
           fontFamily: styles.fontFamily || "inherit",
           fontSize: styles.fontSize || "inherit",
           lineHeight: styles.lineHeight || "normal",
           padding: styles.padding || "0",
-          margin: styles.margin || "0"
+          margin: styles.margin || "0",
+          position: "absolute",
+          top: verticalOffset,
+          left: 0,
+          right: 0
         }}
       />
+      <div
+        ref={textRef}
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+          fontFamily: styles.fontFamily || "inherit",
+          fontSize: styles.fontSize || "inherit",
+          lineHeight: styles.lineHeight || "normal",
+          padding: styles.padding || "0",
+          margin: styles.margin || "0",
+          width: "100%"
+        }}
+      >
+        {currentText}
+      </div>
     </div>
   );
 };
