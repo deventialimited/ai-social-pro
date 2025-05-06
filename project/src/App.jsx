@@ -46,7 +46,7 @@ function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-condition" element={<TermsAndConditions />} />
           </Routes>
-          <Toaster />
+          <Toaster toastOptions={{ style: { zIndex: 999999999999 } }} />
         </BrowserRouter>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
