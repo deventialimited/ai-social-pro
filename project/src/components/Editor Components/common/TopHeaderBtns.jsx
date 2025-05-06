@@ -9,7 +9,7 @@ import {
 } from "../../../libs/postDesignService";
 import { createImageElement } from "../sidebar/hooks/ImagesHooks";
 import { presetSizes } from "../sidebar/tabs/SizeTab";
-
+import toast from "react-hot-toast";
 const TopHeaderBtns = ({
   setActiveElement,
   setSelectedElementId,
@@ -65,9 +65,12 @@ const TopHeaderBtns = ({
               setIsSaveLoading(false); // Runs regardless of success or error
               onClose(); // Close only on success
               clearEditor();
+              toast.success("Save Post Successfully");
             }, 3000);
           },
           onError: (error) => {
+            toast.error(error?.response?.data?.message);
+            setIsSaveLoading(false);
             console.error("Error saving design:", error);
           },
         }
