@@ -225,6 +225,7 @@ const CanvasElement = ({
           className={`${isSelected ? "border-2 border-blue-500" : ""} drag-handle`}
           style={{
             position: "static",
+            height:"inherit",
             transform:
               styles.transform && styles.transform.startsWith("rotate")
                 ? styles.transform
