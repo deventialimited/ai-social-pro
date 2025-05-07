@@ -21,6 +21,7 @@ function socketConnection(io) {
       socket.join(`room_${userId}_${domainId}`);
       return callback({ success: true });
     });
+  
   });
 }
 
@@ -47,4 +48,4 @@ async function verifyUserDomain(userId, domainId) {
     return false;
   }
 }
-module.exports = socketConnection;
+module.exports = { socketConnection };

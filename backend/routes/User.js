@@ -19,6 +19,8 @@ const {
   deleteUserByAdmin,
   updateSelectedDomain,
   updatePlatformConnection,
+  getSocialAccountsStatus,
+  disconnectPlatform,
 } = require("../controllers/User");
 
 const router = express.Router();
@@ -67,5 +69,7 @@ router.get("/", getAllUsers);
 
 router.post("/updateSelectedDomain", updateSelectedDomain);
 router.post("/updatePlatformConnection", updatePlatformConnection);
+router.get("/getSocialAccountData", getSocialAccountsStatus);
+router.post("/disconnectPlatform", disconnectPlatform);
 
 module.exports = router;

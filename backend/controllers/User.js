@@ -981,8 +981,11 @@ exports.updateSelectedDomain = async (req, res) => {
 };
 
 exports.updatePlatformConnection = async (req, res) => {
+  console.log("into update Platform COnnection");
   const { userId, platformName, status } = req.body;
-  console.log(req.body, "request body");
+  console.log("userId", userId);
+  console.log(platformName, "platform Name");
+  console.log(status, "status");
   if (!userId || !platformName || !status) {
     return res
       .status(400)
@@ -1004,6 +1007,7 @@ exports.updatePlatformConnection = async (req, res) => {
     } else {
       // Add new platform
       user.PlatformConnected.push({ platformName, status });
+      console.log("new platform added");
     }
 
     await user.save();
@@ -1015,5 +1019,68 @@ exports.updatePlatformConnection = async (req, res) => {
   } catch (error) {
     console.error("Error updating platform connection:", error);
     res.status(500).json({ error: "Server error while updating platform." });
+  }
+};
+
+exports.getSocialAccountsStatus = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const foundUser = await User.findById(userId).lean();
+
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const connectedPlatforms =
+      foundUser.PlatformConnected?.filter((p) => p.status === "connected") ||
+      [];
+
+    res.status(200).json(connectedPlatforms);
+  } catch (error) {
+    console.error("Error fetching social account status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+exports.disconnectPlatform = async (req, res) => {
+  try {
+    const { userId, platformName } = req.body;
+    console.log("Disconnect ", req.body);
+    if (!userId || !platformName) {
+      return res
+        .status(400)
+        .json({ message: "userId and platformName are required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const before = user.PlatformConnected.length;
+
+    user.PlatformConnected = user.PlatformConnected.filter(
+      (acc) => acc.platformName.toLowerCase() !== platformName.toLowerCase()
+    );
+
+    const after = user.PlatformConnected.length;
+
+    if (before === after) {
+      return res
+        .status(400)
+        .json({ message: "Platform not found or already removed" });
+    }
+
+    await user.save();
+    return res
+      .status(200)
+      .json({ message: `${platformName} disconnected`, user });
+  } catch (error) {
+    console.error("Error disconnecting social platform:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

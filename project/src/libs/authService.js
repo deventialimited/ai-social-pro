@@ -226,11 +226,15 @@ export const getUserAccountStatus = async (userId) => {
   }
 };
 
-export const updatePlatformConnection = async (
+export const updatePlatformConnection = async ({
   userId,
   platformName,
-  status
-) => {
+  status,
+}) => {
+  console.log(userId, "this is id in the update Platform");
+  console.log(platformName, "this is platformname in the update Platform");
+  console.log(status, "this is status in the update Platform");
+
   try {
     const response = await axios.post(`${API_URL}/updatePlatformConnection`, {
       userId,
@@ -238,13 +242,37 @@ export const updatePlatformConnection = async (
       status,
     });
 
-    console.log(
-      `[updatePlatformConnection] Updated for ${platformName}:`,
-      response.data
-    );
+    console.log(response, "updatedPlatformRep");
     return response.data;
   } catch (error) {
     console.error(`[updatePlatformConnection] Error:`, error.message);
+    throw error;
+  }
+};
+export const getSocialAccountData = async (userId) => {
+  console.log("into the getSocialAccount");
+  try {
+    const response = await axios.get(`${API_URL}/getSocialAccountData`, {
+      params: { userId }, // This will become ?userId=xxx in the URL
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`[updatePlatformConnection] Error:`, error.message);
+    throw error;
+  }
+};
+
+export const disconnectPlatform = async (userId, platformName) => {
+  try {
+    const response = await axios.post(`${API_URL}/disconnectPlatform`, {
+      userId,
+      platformName,
+    });
+    console.log("disconnected Platform response", response.data.user);
+    
+    return response.data;
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 };

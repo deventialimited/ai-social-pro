@@ -9,7 +9,7 @@ const PostRoutes = require("./routes/Post");
 const PostDesignRoutes = require("./routes/PostDesign");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const socketConnection = require("./utils/SocketConnection");
+const {socketConnection} = require("./utils/SocketConnection");
 require("dotenv").config();
 
 // ch
