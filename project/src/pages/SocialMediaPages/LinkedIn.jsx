@@ -1,18 +1,18 @@
 import { React, useState, useEffect } from "react";
 import { SocialConnectLoader } from "../../PopUps/SocialMediaPopup";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { updatePlatformConnection } from "../../libs/authService";
+import { useSocket } from "../../store/useSocket";
 
 export const LinkedIn = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const uid = searchParams.get("uid");
-  console.log("status", uid);
-  console.log("status", status);
+  const socket = useSocket();
+  const navigate = useNavigate();
   const [popUp, setPopUp] = useState(true);
   const platform = location.pathname.split("/").pop();
-  console.log("into the linkedIn Loader");
   const getPlatformName = (raw) => {
     if (raw === "LinkedinAuth") return "LinkedIn";
   };
@@ -20,7 +20,6 @@ export const LinkedIn = () => {
     if (raw === "success") return "connected";
   };
   useEffect(() => {
-    console.log("into the useEffect in the linkedin auth component");
     const updatePlatform = async () => {
       if (status === "success" && uid) {
         const user = await updatePlatformConnection({
@@ -28,12 +27,15 @@ export const LinkedIn = () => {
           userId: uid,
           status: setStatus(status),
         });
-        localStorage.setItem("user", JSON.stringify(user.user));
       }
     };
-    updatePlatform();
-  }, [status, uid, platform]);
-  console.log("hello man how are you");
+
+    if (socket?.connected) {
+      updatePlatform();
+      setPopUp(false);
+      navigate("/");
+    }
+  }, [status, uid, platform, socket]);
   return (
     <div>
       {/* LinkedIn Connected */}

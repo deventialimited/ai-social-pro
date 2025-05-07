@@ -10,6 +10,7 @@ const sendTwoFactorOtpEmail = require("../helpers/email/twoFactorEmail");
 const sendResetPasswordEmail = require("../helpers/email/resetPasswordEmail");
 const sendVerificationEmail = require("../helpers/email/verificationEmail");
 const { sendSms } = require("../helpers/sms/sendSms");
+const socket = require("../utils/socket");
 exports.sendPhoneVerificationOtp = async (req, res) => {
   const { phone, userId } = req.body;
 
@@ -981,18 +982,14 @@ exports.updateSelectedDomain = async (req, res) => {
 };
 
 exports.updatePlatformConnection = async (req, res) => {
-  console.log("into update Platform COnnection");
-  const { userId, platformName, status } = req.body;
-  console.log("userId", userId);
-  console.log(platformName, "platform Name");
-  console.log(status, "status");
-  if (!userId || !platformName || !status) {
-    return res
-      .status(400)
-      .json({ error: "userId, platformName and status are required." });
-  }
-
   try {
+    const { userId, platformName, status } = req.body;
+    if (!userId || !platformName || !status) {
+      return res
+        .status(400)
+        .json({ error: "userId, platformName and status are required." });
+    }
+
     const user = await User.findById(userId).select("-password");
 
     if (!user) return res.status(404).json({ error: "User not found." });
@@ -1007,10 +1004,15 @@ exports.updatePlatformConnection = async (req, res) => {
     } else {
       // Add new platform
       user.PlatformConnected.push({ platformName, status });
-      console.log("new platform added");
     }
 
     await user.save();
+    const io = socket.getIO(); // Get the Socket.IO instance
+    if (!io) {
+      console.error("Socket.IO instance is not initialized");
+    }
+    // Emit an event to the specific user
+    io.emit("userUpdated", user);
 
     res.status(200).json({
       message: "Platform connection updated successfully.",

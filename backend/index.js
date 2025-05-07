@@ -8,8 +8,8 @@ const DomainRoutes = require("./routes/Domain");
 const PostRoutes = require("./routes/Post");
 const PostDesignRoutes = require("./routes/PostDesign");
 const { createServer } = require("http");
-const { Server } = require("socket.io");
-const {socketConnection} = require("./utils/SocketConnection");
+const { SocketHandler } = require("./utils/SocketHandler");
+const socket = require("./utils/socket");
 require("dotenv").config();
 
 // ch
@@ -46,22 +46,12 @@ app.get("/", (req, res) => {
 });
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: [
-      "https://dev.oneyearsocial.com",
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5176/",
-    ],
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"],
-    credentials: true,
-  },
-});
-socketConnection(io);
-app.set("io", io); // now you can access `io` from req.app.get("io")
 
+// Initialize Socket.IO
+socket.initialize(httpServer); // Ensure only one instance of Socket.IO is initialized
+
+// Pass the `io` instance to the SocketHandler
+SocketHandler(socket.getIO());
 // Start the server
 httpServer.listen(PORT, async () => {
   await require("./libs/db")();

@@ -4,7 +4,7 @@ import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import EditableTextElement from "./EditableTextElement";
 import { useElementResize } from "./helpers/useElementResize";
 import { useElementRotate } from "./helpers/useElementRotate";
-import { MoveDiagonal, RotateCcw } from "lucide-react"; 
+import { MoveDiagonal, RotateCcw } from "lucide-react";
 import { ResizeHandle } from "./ResizeHandle";
 
 /**
@@ -34,7 +34,7 @@ const CanvasElement = ({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isSelected || locked) return;
-      
+
       const moveStep = 1; // Pixels to move per key press
       let newX = position.x;
       let newY = position.y;
@@ -43,13 +43,19 @@ const CanvasElement = ({
           newX = Math.max(0, position.x - moveStep);
           break;
         case "ArrowRight":
-          newX = Math.min(canvas.width - (styles.width || 100), position.x + moveStep);
+          newX = Math.min(
+            canvas.width - (styles.width || 100),
+            position.x + moveStep
+          );
           break;
         case "ArrowUp":
           newY = Math.max(0, position.y - moveStep);
           break;
         case "ArrowDown":
-          newY = Math.min(canvas.height - (styles.height || 30), position.y + moveStep);
+          newY = Math.min(
+            canvas.height - (styles.height || 30),
+            position.y + moveStep
+          );
           break;
         default:
           return;
@@ -60,7 +66,17 @@ const CanvasElement = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSelected, locked, position, id, updateElement, canvas.width, canvas.height, styles.width, styles.height]);
+  }, [
+    isSelected,
+    locked,
+    position,
+    id,
+    updateElement,
+    canvas.width,
+    canvas.height,
+    styles.width,
+    styles.height,
+  ]);
 
   const onResizeStart = () => {
     startSizeRef.current = {
@@ -117,16 +133,14 @@ const CanvasElement = ({
 
     // Only scale font size during diagonal resizing
     let newFontSize = fontSize;
-    if (direction === "nw" || direction === "ne" || direction === "sw" || direction === "se") {
+    if (
+      direction === "nw" ||
+      direction === "ne" ||
+      direction === "sw" ||
+      direction === "se"
+    ) {
       const scale = Math.max(newWidth / width, newHeight / height);
       newFontSize = Math.max(fontSize * scale, 8);
-    }
-
-    // For vertical resizing, adjust line height instead of font size
-    let newLineHeight = styles.lineHeight;
-    if (direction === "n" || direction === "s") {
-      const heightScale = newHeight / height;
-      newLineHeight = `${heightScale * 100}%`;
     }
 
     updateElement(id, {
@@ -136,7 +150,6 @@ const CanvasElement = ({
         width: newWidth,
         height: newHeight,
         fontSize: `${newFontSize}px`,
-        lineHeight: newLineHeight
       },
     });
   };
@@ -157,7 +170,7 @@ const CanvasElement = ({
     e.preventDefault();
     if (type === "image" && elementRef.current) {
       elementRef.current.style.willChange = "transform";
-      const img = elementRef.current.querySelector('img');
+      const img = elementRef.current.querySelector("img");
       if (img) {
         img.style.pointerEvents = "none";
       }
@@ -168,15 +181,15 @@ const CanvasElement = ({
     e.stopPropagation();
     e.preventDefault();
     if (!element || element.locked) return;
-    
+
     if (type === "image" && elementRef.current) {
       elementRef.current.style.willChange = "auto";
-      const img = elementRef.current.querySelector('img');
+      const img = elementRef.current.querySelector("img");
       if (img) {
         img.style.pointerEvents = "auto";
       }
     }
-    
+
     updateElement(id, {
       position: { x: d.x, y: d.y },
       styles: {
@@ -219,13 +232,15 @@ const CanvasElement = ({
       disableDragging={locked}
       dragHandleClassName={isSelected ? "drag-handle" : ""}
     >
-      {(["text", "image", "shape"].includes(type)) && (
+      {["text", "image", "shape"].includes(type) && (
         <div
           ref={elementRef}
-          className={`${isSelected ? "border-2 border-blue-500" : ""} drag-handle`}
+          className={`${
+            isSelected ? "border-2 border-blue-500" : ""
+          } drag-handle`}
           style={{
             position: "static",
-            height:"inherit",
+            height: "inherit",
             transform:
               styles.transform && styles.transform.startsWith("rotate")
                 ? styles.transform
@@ -261,7 +276,7 @@ const CanvasElement = ({
               }}
             />
           )}
-          
+
           {type === "image" && (
             <img
               id={element.id}
@@ -276,40 +291,40 @@ const CanvasElement = ({
               draggable={false} // ADDED: Prevent default browser dragging
             />
           )}
-          
+
           {type === "shape" && (
-  <div
-    style={{
-      ...styles,
-      position: "static",
-      transform: "rotate(0deg)",
-      overflow: "hidden",
-      color: styles.fill || styles.color || "#D3D3D3",
-      // Remove any default padding/margin that might create space
-      padding: 0,
-      margin: 0,
-      // Ensure the div fits exactly to its content
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-  >
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex" 
-      }}
-      dangerouslySetInnerHTML={{
-        __html: props.svg?.svg
-          ?.replace(
-            /<svg([^>]*)>/,
-            `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`)
-      }}
-    />
-  </div>
-)}
-          
+            <div
+              style={{
+                ...styles,
+                position: "static",
+                transform: "rotate(0deg)",
+                overflow: "hidden",
+                color: styles.fill || styles.color || "#D3D3D3",
+                // Remove any default padding/margin that might create space
+                padding: 0,
+                margin: 0,
+                // Ensure the div fits exactly to its content
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: props.svg?.svg?.replace(
+                    /<svg([^>]*)>/,
+                    `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`
+                  ),
+                }}
+              />
+            </div>
+          )}
+
           {isSelected && (
             <>
               {/* Resize Handles */}
