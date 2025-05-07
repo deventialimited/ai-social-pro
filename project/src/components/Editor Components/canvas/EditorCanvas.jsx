@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash, Minus, Plus } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
+import LoadingOverlay from "../common/LoadingOverlay";
 
 function EditorCanvas({
   canvasContainerRef,
@@ -13,10 +14,9 @@ function EditorCanvas({
   specialActiveTab,
 }) {
   const [zoom, setZoom] = useState(100);
-  const { canvas, elements, allFiles } = useEditor();
+  const { canvas, elements, isCanvasLoading } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const containerRef = useRef(null);
-
   const increaseZoom = () => {
     setZoom((prev) => Math.min(prev + 10, 150));
   };
@@ -55,12 +55,59 @@ function EditorCanvas({
       }
     }
   };
+
+  // Prevent default text selection behavior and improve event handling
+  useEffect(() => {
+    const handleSelectStart = (e) => {
+      // Only prevent selection if clicking on canvas or elements
+      if (e.target.closest("#canvas")) {
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      // Prevent Ctrl+A selection
+      if (e.ctrlKey && e.key === "a" && e.target.closest("#canvas")) {
+        e.preventDefault();
+      }
+    };
+
+    const handleMouseDown = (e) => {
+      // If clicking on canvas background, clear selection
+      if (e.target.id === "#canvas") {
+        setSelectedElementId(null);
+        onElementSelect("canvas");
+      }
+    };
+
+    const handleMouseUp = (e) => {
+      // Clear any text selection that might have occurred
+      window.getSelection()?.removeAllRanges();
+    };
+
+    window.addEventListener("selectstart", handleSelectStart);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("selectstart", handleSelectStart);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [onElementSelect]);
+
   return (
     <div
       ref={containerRef}
       className="flex-1 bg-gray-200 overflow-auto h-full"
       style={{
         position: "relative",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
     >
       {/* Canvas controls */}
@@ -98,6 +145,8 @@ function EditorCanvas({
             marginLeft: `${(zoom - 100) * 0.25}rem`, // Adjust multiplier as needed
           }}
         >
+          {isCanvasLoading && <LoadingOverlay />}
+
           {/* Canvas */}
           <div
             ref={canvasContainerRef}
@@ -127,7 +176,7 @@ function EditorCanvas({
       </div>
 
       {/* Zoom controls - fixed at bottom right */}
-      <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-50">
+      <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-40">
         <button
           onClick={decreaseZoom}
           className="p-2 hover:bg-gray-100 rounded-full"

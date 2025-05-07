@@ -156,9 +156,12 @@ function ShapeToolbar({
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement?.styles,
-        stroke: strokeSettings.color,
-        strokeWidth: strokeSettings.width,
-        strokeDasharray: strokeSettings.style === "dashed" ? "4 2" : "none",
+        stroke: strokeSettings.style === "none" ? "none" : strokeSettings.color,
+        strokeWidth: strokeSettings.style === "none" ? 0 : strokeSettings.width,
+        strokeDasharray: strokeSettings.style === "dashed" ? "14 2" : 
+                        strokeSettings.style === "dotted" ? "6 2" :
+                        strokeSettings.style === "dotted-dense" ? "3 2  " :
+                        "none",
       },
     });
   };

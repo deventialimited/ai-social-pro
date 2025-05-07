@@ -31,27 +31,29 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
     const files = req.files?.files || [];
 
     const existingDesign = await PostDesign.findOne({ postId });
+    let newFileUrls;
+    if (files?.length > 0) {
+      // Upload new files and map URLs back to props and backgrounds
+      newFileUrls = await uploadToS3ForPostDesign({
+        postId,
+        files,
+        elements,
+        backgrounds,
+      });
 
-    // Upload new files and map URLs back to props and backgrounds
-    const newFileUrls = await uploadToS3ForPostDesign({
-      postId,
-      files,
-      elements,
-      backgrounds,
-    });
-
-    // Merge file URLs into elements and backgrounds
-    newFileUrls.forEach(({ type, id, url }) => {
-      if (type === "element") {
-        const el = elements.find((el) => el.id === id);
-        if (el) {
-          el.props.src = url;
-          el.props.previewUrl = url;
+      // Merge file URLs into elements and backgrounds
+      newFileUrls?.forEach(({ type, id, url }) => {
+        if (type === "element") {
+          const el = elements.find((el) => el.id === id);
+          if (el) {
+            el.props.src = url;
+            el.props.previewUrl = url;
+          }
+        } else if (type === "background") {
+          backgrounds.src = url;
         }
-      } else if (type === "background") {
-        backgrounds.src = url;
-      }
-    });
+      });
+    }
 
     if (existingDesign) {
       // Determine files to delete
@@ -116,10 +118,13 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       });
 
       await newPostDesign.save();
-
+      const latestPost = await Post.findByIdAndUpdate(postId, {
+        editorStatus: "edited",
+      });
       return res.status(201).json({
         message: "PostDesign created successfully",
         postDesign: newPostDesign,
+        latestPost,
       });
     }
   } catch (error) {
