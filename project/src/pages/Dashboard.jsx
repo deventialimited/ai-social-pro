@@ -109,10 +109,6 @@ export const Dashboard = () => {
     console.log("Reschedule post:", id);
   };
 
-  const handleSaveToDraft = (id) => {
-    console.log("Save to draft:", id);
-  };
-
   const handleBusinessEdit = (section) => {
     console.log("Edit business section:", section);
   };
@@ -161,7 +157,6 @@ export const Dashboard = () => {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onReschedule={handleReschedule}
-                    onSaveToDraft={handleSaveToDraft}
                     view={view}
                   />
                 </div>
@@ -170,13 +165,13 @@ export const Dashboard = () => {
           </div>
         );
       case "business":
-      return (
-        <BusinessSection
-          selectedWebsiteId={selectedWebsite}
-          userId={userId}
-          onEdit={handleBusinessEdit}
-        />
-      );
+        return (
+          <BusinessSection
+            selectedWebsiteId={selectedWebsite}
+            userId={userId}
+            onEdit={handleBusinessEdit}
+          />
+        );
       case "socials":
         return <SocialsTab />;
       default:

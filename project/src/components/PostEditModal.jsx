@@ -11,7 +11,7 @@ export const PostEditModal = ({
   post,
   showEditModal,
   onClose,
-  onSaveToDrafts,
+  onSave,
 }) => {
   console.log(post);
   const [topic, setTopic] = useState("");
@@ -39,14 +39,14 @@ export const PostEditModal = ({
 
     return hasTopicChanged || hasContentChanged || hasPlatformsChanged;
   };
-  const handleSaveToDrafts = () => {
+  const handleSave = () => {
     if (!validateChanges()) {
       // Show toast message if no changes were made
       toast.error("No changes made to the post.");
       onClose();
       return;
     }
-    onSaveToDrafts({
+    onSave({
       ...post,
       topic,
       content,
@@ -183,10 +183,10 @@ export const PostEditModal = ({
                         Cancel
                       </button>
                       <button
-                        onClick={handleSaveToDrafts}
+                        onClick={handleSave}
                         className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                       >
-                        Save to Drafts
+                        Save Changes
                       </button>
                       <button className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1">
                         Schedule
