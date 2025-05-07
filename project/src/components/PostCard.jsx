@@ -15,14 +15,7 @@ import {
 import { format } from "date-fns";
 import { PostEditModal } from "./PostEditModal";
 
-export const PostCard = ({
-  post,
-  onEdit,
-  onDelete,
-  onReschedule,
-  onSaveToDraft,
-  view,
-}) => {
+export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("image");
   const [showFullText, setShowFullText] = useState(false);
@@ -73,7 +66,7 @@ export const PostCard = ({
 
   const getStatusBadge = () => {
     switch (post.status) {
-      case "draft":
+      case "drafted":
         return (
           <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
             Draft
@@ -96,8 +89,8 @@ export const PostCard = ({
     }
   };
 
-  const handleSaveToDrafts = (updatedPost) => {
-    onEdit(updatedPost, "drafted");
+  const handleSave = (updatedPost) => {
+    onEdit(updatedPost, "generated");
     setShowEditModal(false);
   };
 
@@ -247,9 +240,11 @@ export const PostCard = ({
             >
               <Edit className="w-4 h-4" />
             </button>
-            {post.status !== "draft" && (
+            {post.status !== "drafted" && (
               <button
-                onClick={() => onSaveToDraft(post._id)}
+                onClick={() => {
+                  onEdit(post, "drafted");
+                }}
                 className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                 title="Save to drafts"
               >
@@ -287,7 +282,7 @@ export const PostCard = ({
           post={post}
           showEditModal={showEditModal}
           onClose={() => setShowEditModal(false)}
-          onSaveToDrafts={handleSaveToDrafts}
+          onSave={handleSave}
         />
       )}
     </>
