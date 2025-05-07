@@ -81,9 +81,17 @@ function StrokeSelector({ stroke = 0, onChange }) {
                 ) : style.id === "solid" ? (
                   <div className="w-6 h-0.5 bg-black"></div>
                 ) : style.id === "dashed" ? (
-                  <div className="w-6 h-0.5 bg-black border-dashed border-t border-black"></div>
+                  <div className="w-6 h-0.5 flex items-center justify-between">
+                    <div className="w-1 h-0.5 bg-black"></div>
+                    <div className="w-1 h-0.5 bg-black"></div>
+                    <div className="w-1 h-0.5 bg-black"></div>
+                  </div>
                 ) : style.id === "dotted" ? (
-                  <div className="w-6 h-0.5 bg-black border-dotted border-t border-black"></div>
+                  <div className="w-6 h-0.5 flex items-center justify-between">
+                    <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
+                    <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
+                    <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
+                  </div>
                 ) : (
                   <div className="w-6 h-0.5 flex items-center justify-between">
                     <div className="w-0.5 h-0.5 bg-black rounded-full"></div>
@@ -107,9 +115,7 @@ function StrokeSelector({ stroke = 0, onChange }) {
                 min={0}
                 max={10}
                 value={strokeWidth}
-                onChange={
-                  handleStrokeWidthChange
-                }
+                onChange={handleStrokeWidthChange}
                 className="w-full"
               />
               <input
@@ -136,7 +142,6 @@ function StrokeSelector({ stroke = 0, onChange }) {
                 onChange={(e) => handleColorChange(e.target.value)}
                 className="w-10 h-10 p-1 border rounded-md cursor-pointer"
               />
-             
             </div>
           </div>
         </div>
