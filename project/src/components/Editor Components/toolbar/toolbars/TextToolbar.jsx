@@ -48,10 +48,6 @@ function TextToolbar({
     canvas,
   } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
-  const [textStyle, setTextStyle] = useState({
-    lineHeight: 1.5,
-    letterSpacing: 0,
-  });
   useEffect(() => {
     if (selectedElementId) {
       const selectedElement = elements.find(
@@ -96,10 +92,10 @@ function TextToolbar({
 
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    
+
     const newPosition = setElementPosition(selectedElement, action, canvas);
     updateElement(selectedElement.id, {
-      position: newPosition
+      position: newPosition,
     });
   };
 
@@ -175,7 +171,6 @@ function TextToolbar({
 
   const handleTextStyleChange = ({ lineHeight, letterSpacing }) => {
     if (!selectedElement || selectedElement.locked) return;
-    setTextStyle({ lineHeight, letterSpacing });
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
@@ -407,7 +402,9 @@ function TextToolbar({
 
             <button
               className={`p-2 hover:bg-gray-100 ${
-                selectedElement?.styles?.textDecoration?.includes("line-through")
+                selectedElement?.styles?.textDecoration?.includes(
+                  "line-through"
+                )
                   ? "bg-gray-200"
                   : ""
               }`}
@@ -432,8 +429,8 @@ function TextToolbar({
 
         <Tooltip id="text-style-popup-tooltip" content="Advanced text styling">
           <TextStylePopup
-            lineHeight={textStyle.lineHeight}
-            letterSpacing={textStyle.letterSpacing}
+            lineHeight={selectedElement?.styles?.lineHeight}
+            letterSpacing={selectedElement?.styles?.letterSpacing}
             onChange={handleTextStyleChange}
           />
         </Tooltip>
@@ -461,21 +458,22 @@ function TextToolbar({
             <span>AI write</span>
           </button> */}
         <Tooltip id="position-tooltip" content="Adjust element position">
-
-        <PositionPopup
-          onLayerPositionChange={handleLayerPositionChange} // For element positioning
-          onPositionChange={handlePositionChange} // For text alignment
-        />
+          <PositionPopup
+            onLayerPositionChange={handleLayerPositionChange} // For element positioning
+            onPositionChange={handlePositionChange} // For text alignment
+          />
         </Tooltip>
         <Tooltip id="transparency-tooltip" content="Adjust transparency">
-
-        <TransparencyPopup
-          transparency={transparency}
-          onChange={handleTransparencyChange}
-        />
+          <TransparencyPopup
+            transparency={transparency}
+            onChange={handleTransparencyChange}
+          />
         </Tooltip>
 
-        <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+        <Tooltip
+          id="lock-tooltip"
+          content={selectedElement?.locked ? "Unlock element" : "Lock element"}
+        >
           <button
             onClick={() => handleLock(selectedElement?.id)}
             className={`p-2 rounded-md hover:bg-gray-100 ${
