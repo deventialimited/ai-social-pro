@@ -8,7 +8,10 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
   const textRef = useRef(null);
   const clickCountRef = useRef(0);
   const clickTimerRef = useRef(null);
-  
+  const initialFontSize = parseInt(styles?.fontSize) || 16;
+  const minFontSize = 0.1;
+  const [fontSize, setFontSize] = useState(initialFontSize);
+
   useEffect(() => {
     // Update local state if prop changes externally
     if (text !== currentText && !isEditing) {
@@ -21,22 +24,22 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
     if (textRef.current && inputRef.current) {
       const containerHeight = inputRef.current.clientHeight;
       const textHeight = textRef.current.scrollHeight;
-      
+
       // Calculate vertical offset based on verticalAlign style
       let offset = 0;
       switch (styles.verticalAlign) {
-        case 'middle':
+        case "middle":
           offset = Math.max(0, (containerHeight - textHeight) / 2);
           break;
-        case 'bottom':
+        case "bottom":
           offset = Math.max(0, containerHeight - textHeight);
           break;
-        case 'top':
+        case "top":
         default:
           offset = 0;
           break;
       }
-      
+
       setVerticalOffset(offset);
     }
   }, [currentText, styles, styles.verticalAlign]);
@@ -63,56 +66,42 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
     const textarea = inputRef.current;
     if (!textarea) return;
 
-    // Get the click position relative to the textarea
     const rect = textarea.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Calculate the approximate character position
     const style = window.getComputedStyle(textarea);
-    const lineHeight = parseInt(style.lineHeight) || parseInt(style.fontSize) * 1.2;
-    const charWidth = parseInt(style.fontSize) * 0.6;
+    const lineHeight =
+      parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+    const charWidth = parseFloat(style.fontSize) * 0.6;
+
     const line = Math.floor(y / lineHeight);
     const char = Math.floor(x / charWidth);
 
-    // Get the current text and selection
     const text = textarea.value;
-    const lines = text.split('\n');
+    const lines = text.split("\n");
     let position = 0;
-
-    // Calculate the actual position in the text
     for (let i = 0; i < line && i < lines.length; i++) {
       position += lines[i].length + 1;
     }
     position = Math.min(position + char, text.length);
 
-    clickCountRef.current++;
-    
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
+    // Use native click count
+    const clickCount = e.detail;
+
+    textarea.focus();
+
+    if (clickCount === 1) {
+      textarea.setSelectionRange(position, position);
+      setIsEditing(true);
+    } else if (clickCount === 2) {
+      const { start, end } = getWordBoundaries(text, position);
+      textarea.setSelectionRange(start, end);
+      setIsEditing(true);
+    } else if (clickCount >= 3) {
+      textarea.setSelectionRange(0, text.length);
+      setIsEditing(true);
     }
-    
-    clickTimerRef.current = setTimeout(() => {
-      if (clickCountRef.current === 1) {
-        // Single click - place cursor at click position
-        textarea.focus();
-        textarea.setSelectionRange(position, position);
-        setIsEditing(true);
-      } else if (clickCountRef.current === 2) {
-        // Double click - select word
-        const { start, end } = getWordBoundaries(text, position);
-        textarea.focus();
-        textarea.setSelectionRange(start, end);
-        setIsEditing(true);
-      } else if (clickCountRef.current === 3) {
-        // Triple click - select entire text
-        textarea.focus();
-        textarea.setSelectionRange(0, text.length);
-        setIsEditing(true);
-      }
-      
-      clickCountRef.current = 0;
-    }, 200);
   };
 
   const handleBlur = () => {
@@ -125,9 +114,33 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
       handleBlur();
     }
   };
+  const adjustFontSizeToFit = () => {
+    if (!inputRef.current || !textRef.current) return;
+
+    const containerHeight = inputRef.current.clientHeight;
+    const containerWidth = inputRef.current.clientWidth;
+
+    let size = initialFontSize;
+    textRef.current.style.fontSize = size + "px";
+
+    while (
+      (textRef.current.scrollHeight > containerHeight ||
+        textRef.current.scrollWidth > containerWidth) &&
+      size > minFontSize
+    ) {
+      size--;
+      textRef.current.style.fontSize = size + "px";
+    }
+
+    setFontSize(size); // Update font size for textarea
+  };
+
+  useEffect(() => {
+    adjustFontSizeToFit();
+  }, [currentText, styles]);
 
   return (
-    <div 
+    <div
       className="text-container"
       style={{
         width: "100%",
@@ -136,7 +149,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
         alignItems: "flex-start",
         justifyContent: "flex-start",
         overflow: "hidden",
-        position: "relative"
+        position: "relative",
       }}
     >
       <textarea
@@ -158,14 +171,14 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
           fontFamily: styles.fontFamily || "inherit",
-          fontSize: styles.fontSize || "inherit",
+          fontSize: fontSize + "px",
           lineHeight: styles.lineHeight || "normal",
           padding: styles.padding || "0",
           margin: styles.margin || "0",
           position: "absolute",
           top: verticalOffset,
           left: 0,
-          right: 0
+          right: 0,
         }}
       />
       <div
@@ -180,7 +193,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
           lineHeight: styles.lineHeight || "normal",
           padding: styles.padding || "0",
           margin: styles.margin || "0",
-          width: "100%"
+          width: "100%",
         }}
       >
         {currentText}
