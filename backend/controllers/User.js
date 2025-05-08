@@ -1086,3 +1086,50 @@ exports.disconnectPlatform = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.addPostSchedule = async (req, res) => {
+  try {
+    const { userId, days, times, randomize } = req.body;
+    console.log("Add Post Schedule ", req.body);
+
+    if (!days || !times) {
+      console.log("days and times are required.");
+      return res.status(400).json({
+        success: false,
+        message: "days and times are required.",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        postSchedule: {
+          selectedDays: Array.isArray(days) ? days.join(", ") : days,
+          publishingTimes: Array.isArray(times) ? times.join(", ") : times,
+          randomizeTime: randomize || "0 min",
+          createdAt: new Date(),
+        },
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Post schedule updated successfully.",
+      postSchedule: user.postSchedule,
+    });
+  } catch (error) {
+    console.error("Error updating post schedule:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error.",
+    });
+  }
+};

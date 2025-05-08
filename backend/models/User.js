@@ -1,6 +1,27 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const PostScheduleSchema = new mongoose.Schema(
+  {
+    selectedDays: {
+      type: [String],
+      default: [], // e.g., ['Monday', 'Wednesday']
+    },
+    publishingTimes: {
+      type: String,
+    },
+    randomizeTime: {
+      type: String, // e.g., '0 min (disabled)', '15 min'
+      default: "0 min",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -75,9 +96,10 @@ const userSchema = new mongoose.Schema(
           enum: ["connected", "disconnected"],
           default: "disconnected",
         },
-        _id:false
+        _id: false,
       },
     ],
+    postSchedule: PostScheduleSchema,
   },
 
   { timestamps: true }
