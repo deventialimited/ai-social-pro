@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Settings, X, Sparkles, Clock, Calendar, Info, Plus } from "lucide-react";
+import {
+  Settings,
+  X,
+  Sparkles,
+  Clock,
+  Calendar,
+  Info,
+  Plus,
+} from "lucide-react";
 import { SocialConnectModal } from "./SocialConnectModal";
 import { disconnectPlatform, updatePostSchedule } from "../libs/authService";
 
@@ -10,10 +18,10 @@ export const SocialsTab = () => {
   const [connectedPlatforms, setConnectedPlatforms] = useState([]);
   const [user, setUser] = useState(null);
   const [selectedDays, setSelectedDays] = useState(["Mon", "Wed", "Fri"]);
-  const [publishingTimes, setPublishingTimes] = useState(["03:00 PM"]);
+  const [publishingTimes, setPublishingTimes] = useState("03:00 PM");
   const [randomizeTime, setRandomizeTime] = useState("0 min (disabled)");
   const [isEditingSchedule, setIsEditingSchedule] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const getUserFromStorage = () => {
       const userString = localStorage.getItem("user");
@@ -26,7 +34,12 @@ export const SocialsTab = () => {
     };
 
     const storedUser = getUserFromStorage();
-
+    console.log("pub time:", storedUser);
+    setPublishingTimes(storedUser?.postSchedule?.publishingTimes || "00:00 PM");
+    setRandomizeTime(
+      storedUser?.postSchedule?.randomizeTime || "0 min (dummy)"
+    );
+    setSelectedDays(storedUser?.postSchedule?.selectedDays || ["Mon", "Wed"]);
     setUser(storedUser);
     setConnectedPlatforms(storedUser?.PlatformConnected || []);
     console.log(
@@ -81,6 +94,7 @@ export const SocialsTab = () => {
         )
       );
       setPlatformToDisconnect(null); // Reset after disconnect
+      console.log("user:", result);
       localStorage.setItem("user", JSON.stringify(result.user));
     } catch (error) {
       console.error("Failed to disconnect platform:", error);
@@ -106,20 +120,14 @@ export const SocialsTab = () => {
 
   const toggleDaySelection = (day) => {
     if (selectedDays.includes(day)) {
-      setSelectedDays(selectedDays.filter(d => d !== day));
+      setSelectedDays(selectedDays.filter((d) => d !== day));
     } else {
       setSelectedDays([...selectedDays, day]);
     }
   };
 
-  const addPublishingTime = () => {
-    setPublishingTimes([...publishingTimes, "03:00 PM"]);
-  };
-
-  const updatePublishingTime = (index, newTime) => {
-    const updatedTimes = [...publishingTimes];
-    updatedTimes[index] = newTime;
-    setPublishingTimes(updatedTimes);
+  const updatePublishingTime = (newTime) => {
+    setPublishingTimes(newTime);
   };
 
   const removePublishingTime = (index) => {
@@ -136,13 +144,16 @@ export const SocialsTab = () => {
 
     const postScheduleData = {
       days: selectedDays,
-      times: publishingTimes,
+      times: publishingTimes, // publishingTimes is now a single string
       randomize: randomizeTime,
     };
 
     try {
+      setLoading(true);
       const response = await updatePostSchedule(user._id, postScheduleData);
       console.log("Schedule saved to backend:", response);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      setLoading(false);
       setIsEditingSchedule(false);
       // Optionally update localStorage or show toast
     } catch (error) {
@@ -150,7 +161,6 @@ export const SocialsTab = () => {
       // Optionally show toast error
     }
   };
-
 
   const getSelectedDaysString = () => {
     return selectedDays.join(", ");
@@ -167,7 +177,8 @@ export const SocialsTab = () => {
                 Publishing Schedule
               </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                When you click <span className="italic">schedule</span> on a post, we will schedule it to go out at these times.
+                When you click <span className="italic">schedule</span> on a
+                post, we will schedule it to go out at these times.
               </p>
             </div>
 
@@ -196,46 +207,23 @@ export const SocialsTab = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 At
               </h3>
-              <div className="space-y-4">
-                {publishingTimes.map((time, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className="relative w-64">
-                      <input
-                        type="time"
-                        value={time.split(" ")[0]}
-                        onChange={(e) => {
-                          const hours = parseInt(e.target.value.split(":")[0]);
-                          const mins = e.target.value.split(":")[1];
-                          const period = hours >= 12 ? "PM" : "AM";
-                          const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
-                          updatePublishingTime(index, `${displayHours.toString().padStart(2, "0")}:${mins} ${period}`);
-                        }}
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 pr-10"
-                      />
-                      <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    </div>
-                    {publishingTimes.length > 1 && (
-                      <button
-                        onClick={() => removePublishingTime(index)}
-                        className="ml-3 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-
-                {/* <button
-                  onClick={addPublishingTime}
-                  className="flex items-center gap-2 text-purple-600 dark:text-purple-400 font-medium"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                    <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm3 7h-2v2h-2v-2H9v-2h2V9h2v2h2v2z"/>
-                  </svg>
-                  Add another time
-                </button> */}
-              </div>
+              <input
+                type="time"
+                value={publishingTimes.split(" ")[0]} // Extract time part for the input
+                onChange={(e) => {
+                  const hours = parseInt(e.target.value.split(":")[0]);
+                  const mins = e.target.value.split(":")[1];
+                  const period = hours >= 12 ? "PM" : "AM";
+                  const displayHours =
+                    hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+                  updatePublishingTime(
+                    `${displayHours
+                      .toString()
+                      .padStart(2, "0")}:${mins} ${period}`
+                  );
+                }}
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 pr-10"
+              />
             </div>
 
             <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700">
@@ -261,8 +249,18 @@ export const SocialsTab = () => {
                     <option>60 min</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -270,43 +268,81 @@ export const SocialsTab = () => {
             </div>
 
             <div className="px-8 py-6 flex justify-end gap-4">
-              <button 
-                onClick={() => setIsEditingSchedule(false)}
-                className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors">
-                Cancel
-              </button>
-              <button 
-                onClick={handleSaveSchedule}
-                className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
-                Save
-              </button>
+              {loading ? (
+                <button
+                  disabled
+                  className="flex items-center px-6 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg cursor-not-allowed"
+                >
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-700 dark:text-gray-200"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </button>
+              ) : (
+                <button
+                  onClick={handleSaveSchedule}
+                  className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Save
+                </button>
+              )}
             </div>
           </>
         ) : (
           <div className="p-6 space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Publishing Schedule</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Publishing Schedule
+              </h2>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                When you click <span className="italic">schedule</span> on a post, we will schedule it to go out at these times.
+                When you click <span className="italic">schedule</span> on a
+                post, we will schedule it to go out at these times.
               </p>
             </div>
-            
+
             <div>
-              <h3 className="font-medium text-gray-700 dark:text-gray-300">Post on</h3>
-              <p className="text-lg text-gray-900 dark:text-white">{getSelectedDaysString()}</p>
-            </div>
-            
-            <div>
-              <h3 className="font-medium text-gray-700 dark:text-gray-300">At</h3>
+              <h3 className="font-medium text-gray-700 dark:text-gray-300">
+                Post on
+              </h3>
               <p className="text-lg text-gray-900 dark:text-white">
-                {publishingTimes.join(", ")}
+                {getSelectedDaysString()}
               </p>
             </div>
-            
+
+            <div>
+              <h3 className="font-medium text-gray-700 dark:text-gray-300">
+                At
+              </h3>
+              <p className="text-lg text-gray-900 dark:text-white">
+                {publishingTimes}
+              </p>
+            </div>
+
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-gray-700 dark:text-gray-300">Vary posting by</h3>
+              <h3 className="font-medium text-gray-700 dark:text-gray-300">
+                Vary posting by
+              </h3>
               <div className="flex items-center">
-                <span className="text-lg text-gray-900 dark:text-white">{randomizeTime}</span>
+                <span className="text-lg text-gray-900 dark:text-white">
+                  {randomizeTime}
+                </span>
                 <Info className="w-4 h-4 text-gray-500 ml-2" />
               </div>
             </div>
@@ -391,7 +427,7 @@ export const SocialsTab = () => {
           })}
         </div>
       </div>
-      
+
       {/* Modals */}
       {showModal && selectedPlatform && (
         <SocialConnectModal

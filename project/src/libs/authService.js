@@ -1,6 +1,6 @@
 import axios from "axios";
-// const baseURL = "https://api.oneyearsocial.com";
-const baseURL = "http://localhost:4000";
+const baseURL = "https://api.oneyearsocial.com";
+// const baseURL = "http://localhost:4000";
 // Base URL of your API
 const API_URL = `${baseURL}/api/v1/users`;
 export const updateSelectedDomain = async (userId, selectedWebsiteId) => {
@@ -278,10 +278,11 @@ export const disconnectPlatform = async (userId, platformName) => {
 };
 export const updatePostSchedule = async (userId, postScheduleData) => {
   try {
-    console.log("Into the updatePostSchedule", userId,postScheduleData);
+    console.log("Into the updatePostSchedule", userId, postScheduleData);
+    console.log("data coming", userId, postScheduleData.days);
     const response = await axios.post(`${API_URL}/post-schedule`, {
       userId,
-      ...postScheduleData,
+      postScheduleData,
     });
 
     console.log("Post schedule updated:", response.data.postSchedule);

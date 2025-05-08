@@ -1089,24 +1089,26 @@ exports.disconnectPlatform = async (req, res) => {
 
 exports.addPostSchedule = async (req, res) => {
   try {
-    const { userId, days, times, randomize } = req.body;
-    console.log("Add Post Schedule ", req.body);
-
+    const { userId, postScheduleData } = req.body;
+    const { days, times, randomize } = postScheduleData;
+    console.log("selected DAYS", days);
+    console.log(postScheduleData);
+    console.log("publishong fdats", times);
     if (!days || !times) {
-      console.log("days and times are required.");
+      console.log("selectedDays and publishing times mising");
       return res.status(400).json({
         success: false,
-        message: "days and times are required.",
+        message: "selectedDays and publishingTimes are required.",
       });
     }
-
+    console.log("selected DAYS", days);
     const user = await User.findByIdAndUpdate(
       userId,
       {
         postSchedule: {
-          selectedDays: Array.isArray(days) ? days.join(", ") : days,
-          publishingTimes: Array.isArray(times) ? times.join(", ") : times,
-          randomizeTime: randomize || "0 min",
+          selectedDays: days,
+          publishingTimes: times,
+          randomizeTime: randomize,
           createdAt: new Date(),
         },
       },
@@ -1123,7 +1125,7 @@ exports.addPostSchedule = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Post schedule updated successfully.",
-      postSchedule: user.postSchedule,
+      user: user,
     });
   } catch (error) {
     console.error("Error updating post schedule:", error);
