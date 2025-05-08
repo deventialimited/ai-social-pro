@@ -1,17 +1,17 @@
 import { React, useState, useEffect } from "react";
 import { SocialConnectLoader } from "../../PopUps/SocialMediaPopup";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { updatePlatformConnection } from "../../libs/authService";
+import { useSocket } from "../../store/useSocket";
 
 export const InstagramAuth = () => {
-  const [popUp, setPopUp] = useState(true);
-  const handleClick = () => {
-    setPopUp(true);
-  };
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const uid = searchParams.get("uid");
+  const socket = useSocket();
+  const navigate = useNavigate();
+  const [popUp, setPopUp] = useState(true);
   const platform = location.pathname.split("/").pop();
   const getPlatformName = (raw) => {
     if (raw === "InstagramAuth") return "Instagram";
@@ -23,12 +23,13 @@ export const InstagramAuth = () => {
     const updatePlatform = async () => {
       if (status === "success" && uid) {
         const user = await updatePlatformConnection({
-          platform: getPlatformName(platform),
-          uid: uid,
+          platformName: getPlatformName(platform),
+          userId: uid,
           status: setStatus(status),
         });
       }
     };
+
     if (socket?.connected) {
       updatePlatform();
       setPopUp(false);
@@ -37,7 +38,7 @@ export const InstagramAuth = () => {
   }, [status, uid, platform, socket]);
   return (
     <div>
-      {/* Instagram Connected */}
+      {/* LinkedIn Connected */}
       {popUp && (
         <SocialConnectLoader
           isOpen={popUp}

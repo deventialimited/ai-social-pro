@@ -24,11 +24,15 @@ export const SocialsTab = () => {
 
     setUser(storedUser);
     setConnectedPlatforms(storedUser?.PlatformConnected || []);
+    console.log(
+      "Connected platforms from localStorage:",
+      storedUser?.PlatformConnected 
+    );
   }, []);
 
   const platforms = [
     {
-      name: "Facebook Page",
+      name: "Facebook",
       key: "facebook",
       icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/facebook.svg",
     },
@@ -38,8 +42,8 @@ export const SocialsTab = () => {
       icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/instagram.svg",
     },
     {
-      name: "X (Twitter)",
-      key: "twitter",
+      name: "X",
+      key: "x",
       icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/twitter.svg",
       url: `https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/twitterLogin?uid=${user?._id}`,
     },
