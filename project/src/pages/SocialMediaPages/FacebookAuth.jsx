@@ -27,11 +27,14 @@ export const FacebookAuth = () => {
           uid: uid,
           status: setStatus(status),
         });
-        localStorage.setItem("user", JSON.stringify(user));
       }
     };
-    updatePlatform();
-  }, [status, uid, platform]);
+    if (socket?.connected) {
+      updatePlatform();
+      setPopUp(false);
+      navigate("/");
+    }
+  }, [status, uid, platform, socket]);
   return (
     <div>
       {/* Facebook Connected */}
