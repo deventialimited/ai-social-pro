@@ -144,9 +144,10 @@ function EditorCanvas({
               <TransformComponent
                 wrapperStyle={{
                   width: "100%",
-                  height: "100%",
-                  overflow: "hidden",
-                  position: "relative"
+                  height: "70vh",
+                  overflow: "hidden",   
+                  position: "relative",
+                  marginBottom: "30px",
                 }}
                 contentStyle={{
                   width: "100%",
