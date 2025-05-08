@@ -15,11 +15,10 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import Tooltip from "../../../common/Tooltip";
 
 function CanvasToolbar() {
-  const [duration, setDuration] = useState(5);
   const fileInputRef = useRef(null);
   const { updateBackground, updateCanvasStyles, canvas } = useEditor();
   const handleDurationChange = (newDuration) => {
-    setDuration(newDuration);
+    // setDuration(newDuration);
   };
 
   const handlePaletteSelect = (palette) => {
