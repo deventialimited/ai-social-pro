@@ -17,6 +17,8 @@ function EditorCanvas({
   const { canvas, elements, isCanvasLoading } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [showZoomDropdown, setShowZoomDropdown] = useState(false);
+  const zoomLevels = [50, 75, 100, 150, 200, 300];
   const containerRef = useRef(null);
   const transformRef = useRef(null);
 
@@ -66,6 +68,18 @@ function EditorCanvas({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (!e.target.closest('.zoom-dropdown')) {
+        setShowZoomDropdown(false);
+      }
+    };
+    if (showZoomDropdown) {
+      window.addEventListener('mousedown', handleClick);
+    }
+    return () => window.removeEventListener('mousedown', handleClick);
+  }, [showZoomDropdown]);
 
   return (
     <div
@@ -122,22 +136,39 @@ function EditorCanvas({
                   onClick={() => zoomOut()}
                   className="p-2 hover:bg-gray-100 rounded-full"
                 >
-                  <ChevronDown className="h-4 w-4" />
+                  -
                 </button>
-                <span className="w-16 text-center font-medium">
-                  {zoomLevel}%
-                </span>
-                <button
-                  onClick={() => resetTransform()}
-                  className="p-2 hover:bg-gray-100 rounded-full"
-                >
-                  Reset
-                </button>
+                <div className="relative zoom-dropdown">
+                  <button
+                    className="w-16 text-center font-medium"
+                    onClick={() => setShowZoomDropdown((v) => !v)}
+                  >
+                    {zoomLevel}%
+                  </button>
+                  {showZoomDropdown && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white rounded shadow z-50 flex flex-col zoom-dropdown">
+                      {zoomLevels.map((level) => (
+                        <button
+                          key={level}
+                          className={`px-4 py-1 hover:bg-gray-100 text-left ${zoomLevel === level ? "font-bold" : ""}`}
+                          onClick={() => {
+                            if (transformRef.current) {
+                              transformRef.current.setTransform(0, 0, level / 100);
+                            }
+                            setShowZoomDropdown(false);
+                          }}
+                        >
+                          {level}%
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => zoomIn()}
                   className="p-2 hover:bg-gray-100 rounded-full"
                 >
-                  <ChevronUp className="h-4 w-4" />
+                  +
                 </button>
               </div>
 
