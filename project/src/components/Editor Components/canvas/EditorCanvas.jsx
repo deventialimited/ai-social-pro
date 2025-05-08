@@ -19,7 +19,6 @@ function EditorCanvas({
   const [zoomLevel, setZoomLevel] = useState(100);
   const containerRef = useRef(null);
   const transformRef = useRef(null);
-  const lastZoomLevel = useRef(100);
 
   const handleSelectElement = (id, type) => {
     setSelectedElementId(id);
@@ -45,127 +44,27 @@ function EditorCanvas({
     }
   };
 
-  // Prevent default text selection behavior and improve event handling
+  // Prevent default text selection behavior
   useEffect(() => {
     const handleSelectStart = (e) => {
-      // Only prevent selection if clicking on canvas or elements
       if (e.target.closest("#canvas")) {
         e.preventDefault();
       }
     };
 
     const handleKeyDown = (e) => {
-      // Prevent Ctrl+A selection
       if (e.ctrlKey && e.key === "a" && e.target.closest("#canvas")) {
         e.preventDefault();
       }
     };
 
-    const handleMouseDown = (e) => {
-      // If clicking on canvas background, clear selection
-      if (e.target.id === "#canvas") {
-        setSelectedElementId(null);
-        onElementSelect("canvas");
-      }
-    };
-
-    const handleMouseUp = (e) => {
-      // Clear any text selection that might have occurred
-      window.getSelection()?.removeAllRanges();
-    };
-
     window.addEventListener("selectstart", handleSelectStart);
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("selectstart", handleSelectStart);
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [onElementSelect]);
-
-  useEffect(() => {
-    const handleZoomChange = () => {
-      // Get the browser zoom level using multiple methods for better cross-browser support
-      const browserZoom = Math.round(
-        (window.devicePixelRatio || window.screen.deviceXDPI / window.screen.logicalXDPI) * 100
-      );
-
-      // Only update if zoom level has actually changed
-      if (browserZoom !== lastZoomLevel.current && transformRef.current) {
-        const scale = browserZoom / 100;
-        
-        // Smoothly animate to the new zoom level
-        transformRef.current.setTransform(
-          0, // x position
-          0, // y position
-          scale,
-          300 // animation duration in ms
-        );
-        
-        setZoomLevel(browserZoom);
-        lastZoomLevel.current = browserZoom;
-      }
-    };
-
-    // Handle zoom changes through various events
-    const handleResize = () => {
-      requestAnimationFrame(handleZoomChange);
-    };
-
-    // Listen for zoom changes through multiple events
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
-    // Use ResizeObserver for more reliable zoom detection
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-
-    // Initial zoom check
-    handleZoomChange();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
-    };
-  }, []);
-
-  // Handle keyboard zoom shortcuts only when canvas is focused
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Only handle zoom shortcuts if the canvas or its children are focused
-      const isCanvasFocused = document.activeElement.closest('#canvas');
-      
-      if (isCanvasFocused && (e.ctrlKey || e.metaKey)) {
-        if (e.key === '+' || e.key === '=') {
-          e.preventDefault();
-          if (transformRef.current) {
-            transformRef.current.zoomIn();
-          }
-        } else if (e.key === '-' || e.key === '_') {
-          e.preventDefault();
-          if (transformRef.current) {
-            transformRef.current.zoomOut();
-          }
-        } else if (e.key === '0') {
-          e.preventDefault();
-          if (transformRef.current) {
-            transformRef.current.resetTransform();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -197,7 +96,7 @@ function EditorCanvas({
         </button>
       </div>
 
-      {/* Canvas container with centering and extra space for scrolling */}
+      {/* Canvas container */}
       <div className="absolute inset-0">
         <TransformWrapper
           initialScale={1}
@@ -213,7 +112,6 @@ function EditorCanvas({
             if (state && state.scale) {
               const newZoom = Math.round(state.scale * 100);
               setZoomLevel(newZoom);
-              lastZoomLevel.current = newZoom;
             }
           }}
         >
@@ -223,7 +121,6 @@ function EditorCanvas({
                 <button
                   onClick={() => zoomOut()}
                   className="p-2 hover:bg-gray-100 rounded-full"
-                  title="Zoom Out (Ctrl + -)"
                 >
                   <ChevronDown className="h-4 w-4" />
                 </button>
@@ -233,14 +130,12 @@ function EditorCanvas({
                 <button
                   onClick={() => resetTransform()}
                   className="p-2 hover:bg-gray-100 rounded-full"
-                  title="Reset Zoom (Ctrl + 0)"
                 >
                   Reset
                 </button>
                 <button
                   onClick={() => zoomIn()}
                   className="p-2 hover:bg-gray-100 rounded-full"
-                  title="Zoom In (Ctrl + +)"
                 >
                   <ChevronUp className="h-4 w-4" />
                 </button>
