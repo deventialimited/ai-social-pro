@@ -162,7 +162,9 @@ const BorderStyleDropdown = ({
 
             <div className="space-y-2">
               <ColorPicker
-                color={currentBorderColor}
+                color={currentBorderColor?.startsWith('rgba') ? 
+                  `#${currentBorderColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
+                  currentBorderColor}
                 onChange={handleBorderColorChange}
                 label="Border Color"
               />
