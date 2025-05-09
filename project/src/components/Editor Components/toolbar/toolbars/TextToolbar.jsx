@@ -31,6 +31,21 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
 import Tooltip from "../../../common/Tooltip";
 
+// Utility to convert hex + opacity to rgba
+function hexToRgba(hex, opacity) {
+  let r = 0, g = 0, b = 0;
+  if (hex.length === 4) {
+    r = "0x" + hex[1] + hex[1];
+    g = "0x" + hex[2] + hex[2];
+    b = "0x" + hex[3] + hex[3];
+  } else if (hex.length === 7) {
+    r = "0x" + hex[1] + hex[2];
+    g = "0x" + hex[3] + hex[4];
+    b = "0x" + hex[5] + hex[6];
+  }
+  return `rgba(${+r},${+g},${+b},${opacity / 100})`;
+}
+
 function TextToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -57,13 +72,13 @@ function TextToolbar({
     }
   }, [elements, selectedElementId]);
 
-  const handleColorChange = (color) => {
+  const handleColorChange = (color, opacity) => {
     if (!selectedElement || selectedElement.locked) return;
-
+    const rgba = hexToRgba(color, opacity);
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
-        color: color,
+        color: rgba,
       },
     });
   };
@@ -161,10 +176,12 @@ function TextToolbar({
   const handleTransparencyChange = (value) => {
     if (!selectedElement || selectedElement.locked) return;
     setTransparency(value);
+    // Convert percentage (0-100) to 0-1
+    const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
-        opacity: value,
+        opacity: newOpacity,
       },
     });
   };
@@ -238,7 +255,9 @@ function TextToolbar({
 
         <Tooltip id="color-picker-tooltip" content="Change text color">
           <ColorPicker
-            color={selectedElement?.styles?.color}
+            color={selectedElement?.styles?.color?.startsWith('rgba') ? 
+              `#${selectedElement?.styles?.color.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
+              selectedElement?.styles?.color}
             onChange={handleColorChange}
             showPalette={false}
           />
