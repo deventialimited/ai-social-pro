@@ -14,6 +14,21 @@ import ColorPicker from "../../common/popups/ColorPicker";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import Tooltip from "../../../common/Tooltip";
 
+// Utility to convert hex + opacity to rgba
+function hexToRgba(hex, opacity) {
+  let r = 0, g = 0, b = 0;
+  if (hex.length === 4) {
+    r = "0x" + hex[1] + hex[1];
+    g = "0x" + hex[2] + hex[2];
+    b = "0x" + hex[3] + hex[3];
+  } else if (hex.length === 7) {
+    r = "0x" + hex[1] + hex[2];
+    g = "0x" + hex[3] + hex[4];
+    b = "0x" + hex[5] + hex[6];
+  }
+  return `rgba(${+r},${+g},${+b},${opacity / 100})`;
+}
+
 function CanvasToolbar() {
   const fileInputRef = useRef(null);
   const { updateBackground, updateCanvasStyles, canvas } = useEditor();
@@ -37,13 +52,14 @@ function CanvasToolbar() {
   };
 
   const handleColorChange = (color, opacity) => {
-    // Update canvas styles with hex background
+    // Update canvas styles with RGBA background
+    const rgbaColor = hexToRgba(color, opacity);
     updateCanvasStyles({
-      backgroundColor: color,
+      backgroundColor: rgbaColor,
     });
 
     // Update background state
-    updateBackground("color", color);
+    updateBackground("color", rgbaColor);
   };
 
   const handleImageUpload = (e) => {
@@ -78,12 +94,13 @@ function CanvasToolbar() {
         <PaletteSelector onSelect={handlePaletteSelect} />
       </Tooltip>
 
-      <Tooltip id="color-picker-tooltip" content="Set background color">
+      <Tooltip id="color-picker-tooltip" content="Change background color">
         <ColorPicker
-          color={canvas?.styles?.backgroundColor}
+          color={canvas?.styles?.backgroundColor?.startsWith('rgba') ? 
+            `#${canvas?.styles?.backgroundColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
+            canvas?.styles?.backgroundColor}
           onChange={handleColorChange}
-          label="Background Color"
-          showPalette={true}
+          showPalette={false}
         />
       </Tooltip>
 
