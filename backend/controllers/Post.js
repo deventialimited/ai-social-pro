@@ -22,7 +22,7 @@ exports.getAllPostsBydomainId = async (req, res) => {
     // Fetch all posts associated with the domain
     const posts = await Post.find({ domainId }).populate(
       "domainId",
-      "clientName clientWebsite siteLogo"
+      "clientName clientWebsite siteLogo colors"
     );
 
     res.status(200).json(posts);
@@ -170,7 +170,7 @@ exports.processPubSub = async (req, res) => {
     console.log("saved Post ........In the Post Controller", savedPost);
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
-      "clientName clientWebsite siteLogo"
+      "clientName clientWebsite siteLogo colors"
     );
     console.log("Post Data after save:", postData);
     const io = req.app.get("io");
@@ -209,7 +209,7 @@ exports.getFirstPost = async (req, res) => {
 
     // Find the first post for this domain (sorted by createdAt)
     const firstPost = await Post.findOne({ domainId: id })
-      .populate("domainId", "clientName clientWebsite siteLogo")
+      .populate("domainId", "clientName clientWebsite siteLogo colors")
       .sort({ createdAt: 1 }) // Get the oldest post (first created)
       .lean(); // Convert to plain JavaScript object
     console.log(firstPost);
