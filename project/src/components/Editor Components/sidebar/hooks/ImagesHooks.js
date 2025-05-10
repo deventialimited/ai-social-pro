@@ -9,6 +9,22 @@ export const createImageElement = (src) => {
       width: 200,
       height: 200,
     },
+    effects: {
+      blur: { enabled: false, value: 10 },
+      brightness: { enabled: false, value: 100 },
+      sepia: { enabled: false, value: 0 },
+      grayscale: { enabled: false, value: 0 },
+      border: { enabled: false, value: 2, color: "#000000" },
+      cornerRadius: { enabled: false, value: 150 },
+      shadow: {
+        enabled: false,
+        blur: 5,
+        offsetX: 0,
+        offsetY: 0,
+        opacity: 100,
+        color: "#000000",
+      },
+    },
     props: {
       src,
       previewUrl: src,

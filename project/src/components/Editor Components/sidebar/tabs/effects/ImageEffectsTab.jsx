@@ -17,86 +17,76 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
     }
   }, [elements, selectedElementId]);
 
-  const [effects, setEffects] = useState({
-    blur: { enabled: false, value: 10 },
-    brightness: { enabled: false, value: 100 },
-    sepia: { enabled: false, value: 0 },
-    grayscale: { enabled: false, value: 0 },
-    border: { enabled: false, value: 2, color: "#000000" },
-    cornerRadius: { enabled: false, value: 150 },
-    shadow: {
-      enabled: false,
-      blur: 5,
-      offsetX: 0,
-      offsetY: 0,
-      opacity: 100,
-      color: "#000000",
-    },
-  });
-
   const handleToggleEffect = (effect) => {
-    setEffects((prev) => {
-      const newEnabled = !prev[effect].enabled;
-      const updatedEffect = { ...prev[effect], enabled: newEnabled };
-  
-      // Apply or remove styles
-      if (selectedElement) {
-        switch (effect) {
-          case "blur":
-            updateStyle({
-              filter: newEnabled ? `blur(${updatedEffect.value}px)` : "none",
-            });
-            break;
-  
-          case "brightness":
-            updateStyle({
-              filter: newEnabled ? `brightness(${updatedEffect.value}%)` : "none",
-            });
-            break;
-  
-          case "sepia":
-            updateStyle({
-              filter: newEnabled ? `sepia(${updatedEffect.value}%)` : "none",
-            });
-            break;
-  
-          case "grayscale":
-            updateStyle({
-              filter: newEnabled ? `grayscale(${updatedEffect.value}%)` : "none",
-            });
-            break;
-  
-          case "border":
-            updateStyle({
-              border: newEnabled ? `${updatedEffect.value}px solid ${updatedEffect.color}` : "none",
-            });
-            break;
-  
-          case "cornerRadius":
-            updateStyle({
-              borderRadius: newEnabled ? `${updatedEffect.value}px` : "0px",
-            });
-            break;
-  
-          case "shadow":
-            updateStyle({
-              boxShadow: newEnabled
-                ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${updatedEffect.blur}px rgba(${hexToRgb(
-                    updatedEffect.color
-                  )}, ${updatedEffect.opacity / 100})`
-                : "none",
-            });
-            break;
-        }
+    const prev = selectedElement?.effects
+    const newEnabled = !prev[effect].enabled;
+    const updatedEffect = { ...prev[effect], enabled: newEnabled };
+
+    // Apply or remove styles
+    if (selectedElement) {
+      switch (effect) {
+        case "blur":
+          updateStyle({
+            filter: newEnabled ? `blur(${updatedEffect.value}px)` : "none",
+          });
+          break;
+
+        case "brightness":
+          updateStyle({
+            filter: newEnabled ? `brightness(${updatedEffect.value}%)` : "none",
+          });
+          break;
+
+        case "sepia":
+          updateStyle({
+            filter: newEnabled ? `sepia(${updatedEffect.value}%)` : "none",
+          });
+          break;
+
+        case "grayscale":
+          updateStyle({
+            filter: newEnabled ? `grayscale(${updatedEffect.value}%)` : "none",
+          });
+          break;
+
+        case "border":
+          updateStyle({
+            border: newEnabled ? `${updatedEffect.value}px solid ${updatedEffect.color}` : "none",
+          });
+          break;
+
+        case "cornerRadius":
+          updateStyle({
+            borderRadius: newEnabled ? `${updatedEffect.value}px` : "0px",
+          });
+          break;
+
+        case "shadow":
+          updateStyle({
+            boxShadow: newEnabled
+              ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${updatedEffect.blur}px rgba(${hexToRgb(
+                updatedEffect.color
+              )}, ${updatedEffect.opacity / 100})`
+              : "none",
+          });
+          break;
       }
-  
-      return {
-        ...prev,
-        [effect]: updatedEffect,
-      };
+    }
+
+    updateEffects({
+      ...prev,
+      [effect]: updatedEffect,
+    })
+  };
+  const updateEffects = (effectsChanges) => {
+    if (!selectedElement || selectedElement.locked) return;
+    updateElement(selectedElement.id, {
+      effects: {
+        ...selectedElement.effects,
+        ...effectsChanges,
+      },
     });
   };
-  
   const updateStyle = (styleChanges) => {
     if (!selectedElement || selectedElement.locked) return;
     updateElement(selectedElement.id, {
@@ -108,15 +98,15 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
   };
 
   const handleChangeEffectValue = (effect, value) => {
+    const prev = selectedElement?.effects
     const updated = {
-      ...effects[effect],
+      ...prev[effect],
       value,
     };
-
-    setEffects((prev) => ({
+    updateEffects({
       ...prev,
       [effect]: updated,
-    }));
+    })
 
     if (selectedElement) {
       switch (effect) {
@@ -155,17 +145,18 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
   };
 
   const handleChangeShadowValue = (property, value) => {
+
+    const prev = selectedElement?.effects
     const updated = {
-      ...effects.shadow,
+      ...prev.shadow,
       [property]: value,
     };
-
-    setEffects((prev) => ({
+    updateEffects({
       ...prev,
       shadow: updated,
-    }));
+    })
 
-    if (effects.shadow.enabled && selectedElement) {
+    if (prev.shadow.enabled && selectedElement) {
       updateStyle({
         boxShadow: `${updated.offsetX}px ${updated.offsetY}px ${updated.blur}px rgba(${hexToRgb(
           updated.color
@@ -181,16 +172,17 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
   };
 
   const handleBorderColorChange = (color) => {
+    const prev = selectedElement?.effects
     const updated = {
-      ...effects.border,
+      ...prev.border,
       color,
     };
-    setEffects((prev) => ({
+    updateEffects({
       ...prev,
       border: updated,
-    }));
-  
-    if (effects.border.enabled && selectedElement) {
+    });
+
+    if (prev.border.enabled && selectedElement) {
       updateStyle({
         border: `${updated.value}px solid ${updated.color}`,
       });
@@ -225,30 +217,28 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.blur.enabled}
+              checked={selectedElement?.effects.blur.enabled}
               onChange={() => handleToggleEffect("blur")}
             />
             <span
               onClick={() => handleToggleEffect("blur")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.blur.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.blur.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.blur.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.blur.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.blur.enabled && (
+        {selectedElement?.effects.blur.enabled && (
           <div className="flex items-center gap-2">
             <div className="w-full">
               <Slider
                 min={0}
                 max={50}
-                value={effects.blur.value}
+                value={selectedElement?.effects.blur.value}
                 onChange={(value) => handleChangeEffectValue("blur", value)}
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                 handleStyle={{
@@ -263,7 +253,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             </div>
             <input
               type="number"
-              value={effects.blur.value}
+              value={selectedElement?.effects.blur.value}
               onChange={(e) =>
                 handleChangeEffectValue("blur", Number.parseInt(e.target.value))
               }
@@ -281,30 +271,28 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.brightness.enabled}
+              checked={selectedElement?.effects.brightness.enabled}
               onChange={() => handleToggleEffect("brightness")}
             />
             <span
               onClick={() => handleToggleEffect("brightness")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.brightness.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.brightness.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.brightness.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.brightness.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.brightness.enabled && (
+        {selectedElement?.effects.brightness.enabled && (
           <div className="flex items-center gap-2">
             <div className="w-full">
               <Slider
                 min={0}
                 max={200}
-                value={effects.brightness.value}
+                value={selectedElement?.effects.brightness.value}
                 onChange={(value) => handleChangeEffectValue("brightness", value)}
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                 handleStyle={{
@@ -319,7 +307,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             </div>
             <input
               type="number"
-              value={effects.brightness.value}
+              value={selectedElement?.effects.brightness.value}
               onChange={(e) =>
                 handleChangeEffectValue(
                   "brightness",
@@ -340,30 +328,28 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.sepia.enabled}
+              checked={selectedElement?.effects.sepia.enabled}
               onChange={() => handleToggleEffect("sepia")}
             />
             <span
               onClick={() => handleToggleEffect("sepia")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.sepia.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.sepia.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.sepia.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.sepia.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.sepia.enabled && (
+        {selectedElement?.effects.sepia.enabled && (
           <div className="flex items-center gap-2">
             <div className="w-full">
               <Slider
                 min={0}
                 max={100}
-                value={effects.sepia.value}
+                value={selectedElement?.effects.sepia.value}
                 onChange={(value) => handleChangeEffectValue("sepia", value)}
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                 handleStyle={{
@@ -378,7 +364,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             </div>
             <input
               type="number"
-              value={effects.sepia.value}
+              value={selectedElement?.effects.sepia.value}
               onChange={(e) =>
                 handleChangeEffectValue("sepia", Number.parseInt(e.target.value))
               }
@@ -396,30 +382,28 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.grayscale.enabled}
+              checked={selectedElement?.effects.grayscale.enabled}
               onChange={() => handleToggleEffect("grayscale")}
             />
             <span
               onClick={() => handleToggleEffect("grayscale")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.grayscale.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.grayscale.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.grayscale.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.grayscale.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.grayscale.enabled && (
+        {selectedElement?.effects.grayscale.enabled && (
           <div className="flex items-center gap-2">
             <div className="w-full">
               <Slider
                 min={0}
                 max={100}
-                value={effects.grayscale.value}
+                value={selectedElement?.effects.grayscale.value}
                 onChange={(value) => handleChangeEffectValue("grayscale", value)}
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                 handleStyle={{
@@ -434,7 +418,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             </div>
             <input
               type="number"
-              value={effects.grayscale.value}
+              value={selectedElement?.effects.grayscale.value}
               onChange={(e) =>
                 handleChangeEffectValue("grayscale", Number.parseInt(e.target.value))
               }
@@ -452,31 +436,29 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.border.enabled}
+              checked={selectedElement?.effects.border.enabled}
               onChange={() => handleToggleEffect("border")}
             />
             <span
               onClick={() => handleToggleEffect("border")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.border.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.border.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.border.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.border.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.border.enabled && (
+        {selectedElement?.effects.border.enabled && (
           <>
             <div className="flex items-center gap-2 mb-1">
               <div className="w-full">
                 <Slider
                   min={0}
                   max={20}
-                  value={effects.border.value}
+                  value={selectedElement?.effects.border.value}
                   onChange={(value) => handleChangeEffectValue("border", value)}
                   trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                   handleStyle={{
@@ -491,7 +473,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
               </div>
               <input
                 type="number"
-                value={effects.border.value}
+                value={selectedElement?.effects.border.value}
                 onChange={(e) =>
                   handleChangeEffectValue("border", Number.parseInt(e.target.value))
                 }
@@ -501,7 +483,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={effects.border.color}
+                value={selectedElement?.effects.border.color}
                 onChange={(e) => handleBorderColorChange(e.target.value)}
                 className="w-8 h-8 p-0 border border-gray-300"
               />
@@ -518,30 +500,28 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.cornerRadius.enabled}
+              checked={selectedElement?.effects.cornerRadius.enabled}
               onChange={() => handleToggleEffect("cornerRadius")}
             />
             <span
               onClick={() => handleToggleEffect("cornerRadius")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.cornerRadius.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.cornerRadius.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.cornerRadius.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.cornerRadius.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.cornerRadius.enabled && (
+        {selectedElement?.effects.cornerRadius.enabled && (
           <div className="flex items-center gap-2">
             <div className="w-full">
               <Slider
                 min={0}
                 max={500}
-                value={effects.cornerRadius.value}
+                value={selectedElement?.effects.cornerRadius.value}
                 onChange={(value) =>
                   handleChangeEffectValue("cornerRadius", value)
                 }
@@ -558,7 +538,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             </div>
             <input
               type="number"
-              value={effects.cornerRadius.value}
+              value={selectedElement?.effects.cornerRadius.value}
               onChange={(e) =>
                 handleChangeEffectValue(
                   "cornerRadius",
@@ -579,24 +559,22 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <input
               type="checkbox"
               className="opacity-0 w-0 h-0"
-              checked={effects.shadow.enabled}
+              checked={selectedElement?.effects.shadow.enabled}
               onChange={() => handleToggleEffect("shadow")}
             />
             <span
               onClick={() => handleToggleEffect("shadow")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
-                effects.shadow.enabled ? "bg-blue-500" : "bg-gray-300"
-              }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.shadow.enabled ? "bg-blue-500" : "bg-gray-300"
+                }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
-                  effects.shadow.enabled ? "translate-x-5" : ""
-                }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.shadow.enabled ? "translate-x-5" : ""
+                  }`}
               ></span>
             </span>
           </div>
         </div>
-        {effects.shadow.enabled && (
+        {selectedElement?.effects.shadow.enabled && (
           <>
             {/* Shadow Blur */}
             <div className="ml-4 mb-2">
@@ -606,7 +584,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                   <Slider
                     min={0}
                     max={50}
-                    value={effects.shadow.blur}
+                    value={selectedElement?.effects.shadow.blur}
                     onChange={(value) => handleChangeNestedEffectValue("shadow", "blur", value)}
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
@@ -621,7 +599,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 </div>
                 <input
                   type="number"
-                  value={effects.shadow.blur}
+                  value={selectedElement?.effects.shadow.blur}
                   onChange={(e) =>
                     handleChangeNestedEffectValue("shadow", "blur", Number.parseInt(e.target.value))
                   }
@@ -638,7 +616,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                   <Slider
                     min={-50}
                     max={50}
-                    value={effects.shadow.offsetX}
+                    value={selectedElement?.effects.shadow.offsetX}
                     onChange={(value) => handleChangeShadowValue("offsetX", value)}
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
@@ -653,7 +631,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 </div>
                 <input
                   type="number"
-                  value={effects.shadow.offsetX}
+                  value={selectedElement?.effects.shadow.offsetX}
                   onChange={(e) =>
                     handleChangeShadowValue(
                       "offsetX",
@@ -673,7 +651,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                   <Slider
                     min={-50}
                     max={50}
-                    value={effects.shadow.offsetY}
+                    value={selectedElement?.effects.shadow.offsetY}
                     onChange={(value) => handleChangeShadowValue("offsetY", value)}
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
@@ -688,7 +666,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 </div>
                 <input
                   type="number"
-                  value={effects.shadow.offsetY}
+                  value={selectedElement?.effects.shadow.offsetY}
                   onChange={(e) =>
                     handleChangeShadowValue(
                       "offsetY",
@@ -708,7 +686,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                   <Slider
                     min={0}
                     max={100}
-                    value={effects.shadow.opacity}
+                    value={selectedElement?.effects.shadow.opacity}
                     onChange={(value) => handleChangeShadowValue("opacity", value)}
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
@@ -723,7 +701,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 </div>
                 <input
                   type="number"
-                  value={effects.shadow.opacity}
+                  value={selectedElement?.effects.shadow.opacity}
                   onChange={(e) =>
                     handleChangeShadowValue(
                       "opacity",
@@ -741,7 +719,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  value={effects.shadow.color}
+                  value={selectedElement?.effects.shadow.color}
                   onChange={(e) => handleChangeShadowValue("color", e.target.value)}
                   className="w-8 h-8 p-0 border border-gray-300"
                 />

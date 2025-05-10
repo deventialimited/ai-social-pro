@@ -120,9 +120,11 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
     const containerHeight = inputRef.current.clientHeight;
     const containerWidth = inputRef.current.clientWidth;
 
-    let size = initialFontSize;
-    textRef.current.style.fontSize = size + "px";
+    // Use current font size from computed style
+    const computedFontSize = parseFloat(window.getComputedStyle(textRef.current).fontSize);
+    let size = computedFontSize;
 
+    // Only decrease font size if overflow
     while (
       (textRef.current.scrollHeight > containerHeight ||
         textRef.current.scrollWidth > containerWidth) &&
@@ -135,6 +137,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
     setFontSize(size); // Update font size for textarea
   };
 
+
   useEffect(() => {
     adjustFontSizeToFit();
   }, [currentText, styles]);
@@ -143,6 +146,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
     <div
       className="text-container"
       style={{
+        // backgroundColor: styles?.backgroundColor,
         width: "100%",
         height: "100%",
         display: "flex",
@@ -161,9 +165,10 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
         onKeyDown={handleKeyDown}
         style={{
           ...styles,
-          background: "transparent",
+          // background: "transparent",
           border: "none",
           outline: "none",
+          // WebkitTextStroke: "none",
           resize: "none",
           width: "100%",
           height: "100%",
@@ -173,7 +178,6 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
           fontFamily: styles.fontFamily || "inherit",
           fontSize: fontSize + "px",
           lineHeight: styles.lineHeight || "normal",
-          padding: styles.padding || "0",
           margin: styles.margin || "0",
           position: "absolute",
           top: verticalOffset,
@@ -191,7 +195,6 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
           fontFamily: styles.fontFamily || "inherit",
           fontSize: styles.fontSize || "inherit",
           lineHeight: styles.lineHeight || "normal",
-          padding: styles.padding || "0",
           margin: styles.margin || "0",
           width: "100%",
         }}

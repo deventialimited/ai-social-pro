@@ -2,14 +2,15 @@
 
 import { useState, useRef, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks"
 
 function PaletteSelector({ onSelect }) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState("Palette")
   const selectorRef = useRef(null)
-
+  const { postOtherValues } = useEditor()
   const palettes = [
-    { name: "Palette", colors: ["#87CEEB", "#000000", "#FFFFFF"] },
+    { name: "Palette", colors: postOtherValues?.siteColors || ["#87CEEB", "#000000", "#FFFFFF"] },
     { name: "Vibrant", colors: ["#FF5733", "#33FF57", "#3357FF"] },
     { name: "Pastel", colors: ["#FFB6C1", "#B6FFB6", "#B6C1FF"] },
     { name: "Monochrome", colors: ["#000000", "#666666", "#FFFFFF"] },
