@@ -19,6 +19,7 @@ const TopHeaderBtns = ({
   postId,
   postImage,
   defaultPlatform,
+  postDetails
 }) => {
   const {
     postDesignData,
@@ -33,6 +34,7 @@ const TopHeaderBtns = ({
     setLayers,
     updateCanvasSize,
     setCanvasLoading,
+    setPostOtherValues
   } = useEditor();
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const onSave = useSaveOrUpdatePostDesign();
@@ -137,6 +139,14 @@ const TopHeaderBtns = ({
       console.log(error);
     }
   };
+  useEffect(() => {
+    if (postDetails) {
+      setPostOtherValues({
+        siteLogo: postDetails?.domainId?.siteLogo,
+        siteColors: postDetails?.domainId?.colors,
+      })
+    }
+  }, [postDetails])
   useEffect(() => {
     if (postImage) {
       handleAddImage(postImage);
