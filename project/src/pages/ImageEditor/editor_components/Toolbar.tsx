@@ -1080,9 +1080,10 @@ const BackgroundToolbar: React.FC<BackgroundToolbarProps> = ({
       <div className="flex space-x-4  mr-4">
         <span className="text-sm">Background Color</span>
         <ColorPicker
-          color={backgroundColor}
+          color={backgroundColor?.startsWith('rgba') ? 
+            `#${backgroundColor.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
+            backgroundColor}
           onChange={handleBackgroundColorChange}
-          // label="Background Color"
           className="w-full"
         />
       </div>

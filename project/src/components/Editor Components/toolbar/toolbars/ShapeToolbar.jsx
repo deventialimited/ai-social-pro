@@ -17,6 +17,23 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { v4 as uuidv4 } from "uuid";
 import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
 import Tooltip from "../../../common/Tooltip";
+
+// Utility to convert hex + opacity to rgba
+function hexToRgba(hex, opacity) {
+  console.log(hex, opacity);
+  let r = 0, g = 0, b = 0;
+  if (hex.length === 4) {
+    r = "0x" + hex[1] + hex[1];
+    g = "0x" + hex[2] + hex[2];
+    b = "0x" + hex[3] + hex[3];
+  } else if (hex.length === 7) {
+    r = "0x" + hex[1] + hex[2];
+    g = "0x" + hex[3] + hex[4];
+    b = "0x" + hex[5] + hex[6];
+  }
+  return `rgba(${+r},${+g},${+b},${opacity / 100})`;
+}
+
 function ShapeToolbar({
   specialActiveTab,
   setSpecialActiveTab,
@@ -37,27 +54,26 @@ function ShapeToolbar({
     }
   }, [elements, selectedElementId]);
 
-  const handleColorChange = (color) => {
-    if (!selectedElement || selectedElement.locked) return;
-    updateElement(selectedElement?.id, {
-      styles: {
-        ...selectedElement?.styles,
-        fill: color,
-      },
-    });
+  const handleColorChange = (color, opacity) => {
+    if (selectedElement) {
+      const rgbaColor = hexToRgba(color, opacity);
+      updateElement(selectedElement.id, {
+        styles: {
+          ...selectedElement.styles,
+          fill: rgbaColor,
+        },
+      });
+    }
   };
 
   const handleTransparencyChange = (value) => {
     if (!selectedElement || selectedElement.locked) return;
-
-    // Check if the value is between 0 (fully transparent) and 1 (fully opaque)
-    const newOpacity = Math.min(Math.max(value, 0), 1); // Ensure the value is clamped between 0 and 1
-
-    // Update the selected element's style using the updateElement function
+    // Convert percentage (0-100) to 0-1
+    const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
     updateElement(selectedElement.id, {
       styles: {
         ...selectedElement.styles,
-        opacity: newOpacity, // Update the opacity
+        opacity: newOpacity,
       },
     });
   };
@@ -179,7 +195,9 @@ function ShapeToolbar({
 
         <Tooltip id="color-picker-tooltip" content="Change shape color">
           <ColorPicker
-            color={selectedElement?.styles?.fill}
+            color={selectedElement?.styles?.fill?.startsWith('rgba') ? 
+              `#${selectedElement?.styles?.fill.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
+              selectedElement?.styles?.fill}
             onChange={handleColorChange}
             showPalette={false}
           />
