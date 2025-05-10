@@ -141,7 +141,7 @@ function EditorCanvas({
                 <div className="relative zoom-dropdown">
                   <button
                     className="w-16 text-center font-medium"
-                    // onClick={() => setShowZoomDropdown((v) => !v)}
+                    onClick={() => setShowZoomDropdown((v) => !v)}
                   >
                     {zoomLevel}%
                   </button>
