@@ -36,7 +36,7 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
   ]
 
   return (
-      <Transition appear show={isOpen } as={Fragment}>
+    <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-[99999]" onClose={() => onClose(false)}>
         <Transition.Child
           as={Fragment}
@@ -61,73 +61,67 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white dark:bg-zinc-900 p-6 text-left align-middle shadow-xl transition-all relative ">
-                <div className="absolute right-4 top-4">
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-white focus:outline-none"
-                    onClick={() => onClose(false)}
-                  >
-                    <span className="sr-only">Close</span>
-                    <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-                  </button>
-                </div>
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-xl bg-white dark:bg-zinc-900 p-6 text-center align-middle shadow-xl transition-all">
+                <button
+                  type="button"
+                  className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-white focus:outline-none"
+                  onClick={() => onClose(false)}
+                >
+                  <span className="sr-only">Close</span>
+                  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
 
-                <Dialog.Title as="h3" className="text-2xl font-semibold leading-6 text-gray-900 dark:text-white py-12">
+                <Dialog.Title as="h2" className="text-2xl font-semibold text-gray-900 dark:text-white mt-4">
                   Choose Your Plan
                 </Dialog.Title>
-                <div className="mt-1">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Select the perfect plan for your social media needs
-                  </p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Select the perfect plan for your social media needs
+                </p>
+
+                <div className="mt-6 flex justify-center">
+                  <RadioGroup
+                    value={billingCycle}
+                    onChange={setBillingCycle}
+                    className="inline-flex rounded-lg bg-gray-100 dark:bg-zinc-800 p-1"
+                  >
+                    <RadioGroup.Option value="monthly">
+                      {({ checked }) => (
+                        <div
+                          className={`cursor-pointer rounded-md py-1.5 px-6 text-sm font-medium transition-colors ${
+                            checked
+                              ? "bg-blue-500 text-white dark:bg-blue-600"
+                              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                          }`}
+                        >
+                          Monthly
+                        </div>
+                      )}
+                    </RadioGroup.Option>
+                    <RadioGroup.Option value="yearly">
+                      {({ checked }) => (
+                        <div
+                          className={`cursor-pointer rounded-md py-1.5 px-6 text-sm font-medium transition-colors ${
+                            checked
+                              ? "bg-blue-500 text-white dark:bg-blue-600"
+                              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                          }`}
+                        >
+                          Yearly <span className="dark:text-green-400">(Save 20%)</span>
+                        </div>
+                      )}
+                    </RadioGroup.Option>
+                  </RadioGroup>
                 </div>
 
-                <div className="mt-6 border-t border-gray-200 dark:border-zinc-700 pt-6">
-                  <div className="flex justify-center">
-                    <RadioGroup
-                      value={billingCycle}
-                      onChange={setBillingCycle}
-                      className="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 dark:bg-zinc-800 p-1 w-64"
-                    >
-                      <RadioGroup.Option value="monthly">
-                        {({ checked }) => (
-                          <div
-                            className={`cursor-pointer rounded-md py-1 px-3 text-sm font-medium ${
-                              checked
-                                ? "bg-blue-100 text-blue-600 dark:bg-blue-600 dark:text-white"
-                                : "text-gray-500 dark:text-gray-400"
-                            }`}
-                          >
-                            Monthly
-                          </div>
-                        )}
-                      </RadioGroup.Option>
-                      <RadioGroup.Option value="yearly">
-                        {({ checked }) => (
-                          <div
-                            className={`cursor-pointer rounded-md py-1 px-3 text-sm font-medium ${
-                              checked
-                                ? "bg-blue-100 text-blue-600 dark:bg-blue-600 dark:text-white"
-                                : "text-gray-500 dark:text-gray-400"
-                            }`}
-                          >
-                            Yearly <span className="text-green-500 dark:text-green-400">(Save 20%)</span>
-                          </div>
-                        )}
-                      </RadioGroup.Option>
-                    </RadioGroup>
-                  </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
                   {/* Starter Plan */}
-                  <div className="rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 shadow-sm">
+                  <div className="rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 text-left shadow-sm">
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">Starter</h4>
                     <p className="mt-4">
                       <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$59</span>
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / month</span>
                     </p>
-                    <ul className="mt-6 space-y-4">
+                    <ul className="mt-6 space-y-3">
                       {starterFeatures.map((feature) => (
                         <li key={feature} className="flex items-start">
                           <div className="flex-shrink-0">
@@ -140,7 +134,7 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                     <div className="mt-8">
                       <button
                         type="button"
-                        className="w-full rounded-md bg-blue-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                        className="w-full rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                       >
                         Get Started
                       </button>
@@ -148,13 +142,13 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                   </div>
 
                   {/* Professional Plan */}
-                  <div className="rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 shadow-sm">
+                  <div className="rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 text-left shadow-sm">
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">Professional</h4>
                     <p className="mt-4">
                       <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$99</span>
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / month</span>
                     </p>
-                    <ul className="mt-6 space-y-4">
+                    <ul className="mt-6 space-y-3">
                       {professionalFeatures.map((feature) => (
                         <li key={feature} className="flex items-start">
                           <div className="flex-shrink-0">
@@ -167,7 +161,7 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                     <div className="mt-8">
                       <button
                         type="button"
-                        className="w-full rounded-md bg-blue-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                        className="w-full rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                       >
                         Get Started
                       </button>
@@ -175,7 +169,7 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                   </div>
                 </div>
 
-                <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
                   All plans include a 14-day free trial. No credit card required.
                 </div>
               </Dialog.Panel>
