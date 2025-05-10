@@ -15,6 +15,7 @@ import {
   useUpdatePostById,
 } from "../libs/postService";
 import toast from "react-hot-toast";
+import PricingModal from "../PopUps/PricingModal";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
@@ -174,6 +175,7 @@ export const Dashboard = () => {
         );
       case "socials":
         return <SocialsTab />;
+     
       default:
         return <div>Dashboard Content</div>;
     }

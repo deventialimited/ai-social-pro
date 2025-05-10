@@ -14,6 +14,8 @@ import { Link } from "./Link";
 import { AddWebsiteModal } from "./AddWebsiteModal";
 import { useDomains } from "../libs/domainService";
 import { updateSelectedDomain } from "../libs/authService";
+import PricingModal from "../PopUps/PricingModal";
+
 export const LeftMenu = ({
   userId,
   selectedWebsite,
@@ -29,7 +31,13 @@ export const LeftMenu = ({
   const { data: domains, isLoading } = useDomains(userId);
   const [showAddWebsite, setShowAddWebsite] = useState(false);
   const selectedWebsiteData = domains?.find((w) => w?._id === selectedWebsite);
-
+  const [openModal, setopenModal] = useState(false);
+  const openModalhandler = () => {
+    setopenModal(true);
+  };
+  const closeModalhandler = () => {
+    setopenModal(false);
+  };
   useEffect(() => {
     if (isOpen) {
       onClose();
@@ -200,6 +208,9 @@ export const LeftMenu = ({
           >
             Socials
           </Link>
+          <Link href="#" onClick={openModalhandler}>
+            Claim 50% Off Anually
+          </Link>
         </nav>
 
         <div className="absolute bottom-4 w-full px-6">
@@ -219,6 +230,12 @@ export const LeftMenu = ({
           onGenerate={handleGeneratePosts}
         />
       )}
+     
+        <PricingModal
+          isOpen={openModal}
+          onClose={closeModalhandler}
+          onNewPost={onNewPost}
+        />
     </>
   );
 };
