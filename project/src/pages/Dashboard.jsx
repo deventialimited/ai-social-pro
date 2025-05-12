@@ -15,7 +15,6 @@ import {
   useUpdatePostById,
 } from "../libs/postService";
 import toast from "react-hot-toast";
-import PricingModal from "../PopUps/PricingModal";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();

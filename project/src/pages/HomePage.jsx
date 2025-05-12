@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AuthModal } from "../components/AuthModal";
-import { Loader2 } from "lucide-react";
 import {
+  Loader2,
   Globe,
   ArrowRight,
   Sparkles,
@@ -12,13 +12,14 @@ import {
   Shield,
   LayoutDashboard,
   Calendar,
+  Check,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import { useAddDomainMutation } from "../libs/domainService";
 import axios from "axios";
 //extra
-import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation"; // use the correct named export
+import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation";
 import { BusinessSectionDummy } from "../NewUIComponents/businessDumy";
 import { BusinessModal } from "../NewUIComponents/Modal";
 import { useSocket } from "../store/useSocket";
@@ -45,6 +46,10 @@ export const HomePage = () => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [showBusinessPopup, setShowBusinessPopup] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [clientData, setClientData] = useState({
     client_email: "",
     clientWebsite: "",
@@ -65,6 +70,39 @@ export const HomePage = () => {
       core_values: [],
     },
   });
+
+  const steps = [
+    {
+      title: "Scanning Website",
+      description: "Analyzing content and structure",
+      icon: "🔍",
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      title: "Extracting Business Data",
+      description: "Identifying key business information",
+      icon: "💼",
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      title: "Analyzing Brand",
+      description: "Detecting colors, style, and tone",
+      icon: "🎨",
+      color: "from-yellow-500 to-orange-500",
+    },
+    {
+      title: "Building Strategy",
+      description: "Creating marketing approach",
+      icon: "🎯",
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      title: "Generating Ideas",
+      description: "Crafting engaging content suggestions",
+      icon: "✨",
+      color: "from-indigo-500 to-violet-500",
+    },
+  ];
   //extra
   const [isModalOpen, setisModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -96,10 +134,19 @@ export const HomePage = () => {
           firstResponse.data.messagee
         ); // Debug log
         toast.error(`Try another website`);
-        setisModalOpen(false);
+        setIsLoading(false);
         return;
       }
+      setProgress(0);
+      setCurrentStep(0);
 
+      for (let i = 0; i < steps.length; i++) {
+        setCurrentStep(i);
+        for (let p = 0; p <= 100; p += 2) {
+          setProgress((i * 100 + p) / steps.length);
+          await new Promise((resolve) => setTimeout(resolve, 30));
+        }
+      }
       await sleep(5000);
 
       const Data = firstResponse.data;
@@ -111,6 +158,7 @@ export const HomePage = () => {
         if (!client_email) toast.error("Client email is required.");
         if (!clientWebsite) toast.error("Client website is required.");
         if (!clientDescription) toast.error("Client description is required.");
+        setIsLoading(false);
         return;
       }
 
@@ -167,9 +215,11 @@ export const HomePage = () => {
         },
       });
       toast.success("Domain successfully added!");
+      setIsLoading(false);
+      setisModalOpen(true);
     } catch (error) {
       console.error("Error in generateCompanyData:", error);
-      setisModalOpen(false);
+      setIsLoading(false);
       if (axios.isAxiosError(error)) {
         const apiError =
           error?.response?.data?.error || "Failed to generate company data.";
@@ -181,7 +231,6 @@ export const HomePage = () => {
   };
 
   const handleSubmit = async (e) => {
-    // setisModalOpen(true);
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -199,7 +248,7 @@ export const HomePage = () => {
     }
 
     if (user) {
-      setisModalOpen(true);
+      setIsLoading(true);
       await generateCompanyData(domain, user);
     } else {
       setIsSignInPopup(true);
@@ -296,9 +345,19 @@ export const HomePage = () => {
                 <button
                   type="submit"
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap"
+                  disabled={isLoading}
                 >
-                  Generate Posts
-                  <ArrowRight className="w-5 h-5" />
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      Generate Posts
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -373,10 +432,81 @@ export const HomePage = () => {
 
       {(isSignInPopup || isSignUpPopup) && <AuthModal />}
 
+      {/* Loading Animation - Fixed positioning so it appears as an overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-2xl w-full shadow-xl">
+            <div className="space-y-6">
+              <div className="relative h-6">
+                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient relative"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 transition-all duration-300 bg-white dark:bg-gray-800 rounded-full px-2 py-0.5 shadow-lg border border-gray-200 dark:border-gray-700 flex items-center gap-1"
+                  style={{
+                    left: `${Math.min(Math.max(progress, 3), 97)}%`,
+                    transform: `translate(-50%, -50%)`,
+                  }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
+                  <span className="text-xs font-medium text-gray-900 dark:text-white">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {steps.map((step, index) => (
+                  <div
+                    key={index}
+                    className={`transform transition-all duration-500 ${
+                      index === currentStep
+                        ? "scale-100 opacity-100"
+                        : index < currentStep
+                        ? "scale-95 opacity-50"
+                        : "scale-95 opacity-30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl
+                                ${
+                                  index <= currentStep
+                                    ? `bg-gradient-to-r ${step.color}`
+                                    : "bg-gray-100 dark:bg-gray-700"
+                                }`}
+                      >
+                        {index < currentStep ? (
+                          <Check className="w-5 h-5 text-white" />
+                        ) : (
+                          <span>{step.icon}</span>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                          {step.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Business Modal */}
       <BusinessModal
         isOpen={isModalOpen}
         clientData={clientData}
-        onClose={() => {}}
+        onClose={() => setisModalOpen(false)}
       />
     </div>
   );

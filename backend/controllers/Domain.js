@@ -172,7 +172,12 @@ exports.addDomain = async (req, res) => {
           Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
         },
       });
-
+const responseStatus = logoResponse.status;
+      console.log("Logo response status:", responseStatus);
+      const responseBody = await logoResponse.text();
+      if (!logoResponse.ok) {
+        console.warn("Logo.dev failed response body:", responseBody);
+      }
       const isImage =
         logoResponse.ok &&
         logoResponse.headers.get("content-type")?.includes("image");
