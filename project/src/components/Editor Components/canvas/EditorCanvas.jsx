@@ -274,14 +274,14 @@ function EditorCanvas({
   return (
     <div
       ref={containerRef}
-      className="flex flex-col flex-1 bg-gray-200 h-screen justify-center items-center"
+      className="flex-1 bg-gray-200 h-full"
       style={{
         position: "relative",
         userSelect: "none",
         WebkitUserSelect: "none",
         MozUserSelect: "none",
         msUserSelect: "none",
-        overflow: "hidden",
+        overflow: "hidden"
       }}
     >
       {/* Canvas controls */}
@@ -331,44 +331,55 @@ function EditorCanvas({
       </div>
 
       {/* Canvas container with PanZoom */}
-      <PanZoom
-        ref={panZoomRef}
-        minZoom={0.2}
-        maxZoom={5}
-        enableBoundingBox
-        autoCenter
-        style={{ width: "100%", height: "55vh" }}
-        boundaryRatioVertical={1}
-        boundaryRatioHorizontal={1}
-      >
-        <div
-          ref={canvasContainerRef}
-          id="canvas"
-          className="bg-white shadow-lg relative"
-          style={{
-            width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
-            height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
-            position: "relative",
+      <div className="absolute inset-0">
+        <PanZoom
+          ref={panZoomRef}
+          minZoom={0.2}
+          maxZoom={5}
+          enableBoundingBox
+          autoCenter
+          style={{ 
+            width: "100%", 
+            height: "70vh",
             overflow: "hidden",
-            transform: `scale(${zoomLevel})`,
-            transformOrigin: "center center",
-            ...canvas.styles,
+            position: "relative",
+            marginBottom: "30px"
           }}
-          onClick={handleCanvasClick}
+          boundaryRatioVertical={1}
+          boundaryRatioHorizontal={1}
         >
-          {isCanvasLoading && <LoadingOverlay />}
-          {elements?.map((el) => (
-            <CanvasElement
-              key={el.id}
-              element={el}
-              onSelect={handleSelectElement}
-              isSelected={el.id === selectedElementId}
-              showSelectorOverlay={showSelectorOverlay}
-              setShowSelectorOverlay={setShowSelectorOverlay}
-            />
-          ))}
-        </div>
-      </PanZoom>
+          <div
+            ref={canvasContainerRef}
+            id="canvas"
+            className="bg-white shadow-lg relative"
+            style={{
+              width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
+              height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+              position: "relative",
+              overflow: "hidden",
+              transform: `scale(${zoomLevel})`,
+              transformOrigin: "center center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              ...canvas.styles,
+            }}
+            onClick={handleCanvasClick}
+          >
+            {isCanvasLoading && <LoadingOverlay />}
+            {elements?.map((el) => (
+              <CanvasElement
+                key={el.id}
+                element={el}
+                onSelect={handleSelectElement}
+                isSelected={el.id === selectedElementId}
+                showSelectorOverlay={showSelectorOverlay}
+                setShowSelectorOverlay={setShowSelectorOverlay}
+              />
+            ))}
+          </div>
+        </PanZoom>
+      </div>
     </div>
   )
 }
