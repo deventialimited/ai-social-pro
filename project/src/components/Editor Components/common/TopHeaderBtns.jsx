@@ -10,6 +10,9 @@ import {
 import { createImageElement } from "../sidebar/hooks/ImagesHooks";
 import { presetSizes } from "../sidebar/tabs/SizeTab";
 import toast from "react-hot-toast";
+import { useSaveOrUpdateTemplateDesign } from "../../../libs/templateDesignService";
+import { v4 as uuidv4 } from "uuid";
+import Dropdown from "./Dropdown";
 
 const TopHeaderBtns = ({
   setActiveElement,
@@ -37,20 +40,25 @@ const TopHeaderBtns = ({
     setCanvasLoading,
     setPostOtherValues,
   } = useEditor();
-
+  const [isSavePostLoading, setIsSavePostLoading] = useState(false);
+  const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);
+  const [templateType, setTemplateType] = useState("private");
+  const onSavePost = useSaveOrUpdatePostDesign();
+  const onSaveTemplate = useSaveOrUpdateTemplateDesign();
+  const user = JSON.parse(localStorage?.getItem("user"));
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const onSave = useSaveOrUpdatePostDesign();
 
-  const handleSaveAndClose = async () => {
+  const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
-    setIsSaveLoading(true);
+    setIsSavePostLoading(true);
 
     try {
       const node = canvasContainerRef.current;
 
-      const scale = 5 ;
+      const scale = 5;
       const width = node.offsetWidth * scale;
       const height = node.offsetHeight * scale;
 
@@ -73,8 +81,7 @@ const TopHeaderBtns = ({
       const file = new File([blob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-
-      onSave.mutate(
+      onSavePost.mutate(
         {
           postId,
           postImage: file,
@@ -84,6 +91,8 @@ const TopHeaderBtns = ({
         {
           onSuccess: () => {
             setTimeout(() => {
+              setIsSavePostLoading(false); // Runs regardless of success or error
+              onClose(); // Close only on success
               setIsSaveLoading(false);
               onClose();
               clearEditor();
@@ -95,6 +104,8 @@ const TopHeaderBtns = ({
               error?.response?.data?.message || "Failed to save post"
             );
             setIsSaveLoading(false);
+            toast.error(error?.response?.data?.message);
+            setIsSavePostLoading(false);
             console.error("Error saving design:", error);
           },
         }
@@ -105,7 +116,55 @@ const TopHeaderBtns = ({
       console.error("Error saving design:", error);
     }
   };
+  const handleSaveTemplateAndClose = async () => {
+    setActiveElement("canvas");
+    setSpecialActiveTab(null);
+    setSelectedElementId(null);
+    setIsSaveTemplateLoading(true);
 
+    try {
+      const node = canvasContainerRef.current;
+      const dataUrl = await domtoimage.toPng(node);
+
+      // Convert base64 to File
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `canvas_${Date.now()}.png`, {
+        type: "image/png",
+      });
+
+      onSaveTemplate.mutate(
+        {
+          id: null,
+          templateId: `${user?.username}-${uuidv4()}`,
+          templateType,
+          templateImage: file,
+          templateDesignData: postDesignData,
+          allFiles,
+        },
+        {
+          onSuccess: () => {
+            setTimeout(() => {
+              setIsSaveTemplateLoading(false);
+              onClose();
+              clearEditor();
+              toast.success("Template saved successfully");
+            }, 3000);
+          },
+          onError: (error) => {
+            toast.error(
+              error?.response?.data?.message || "Failed to save template"
+            );
+            setIsSaveTemplateLoading(false);
+            console.error("Error saving template design:", error);
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error capturing canvas for template:", error);
+      setIsSaveTemplateLoading(false);
+    }
+  };
   const handleAddImage = async (src) => {
     try {
       setCanvasLoading(true);
@@ -168,7 +227,6 @@ const TopHeaderBtns = ({
       });
     }
   }, [postDetails]);
-
   useEffect(() => {
     if (postImage) {
       handleAddImage(postImage);
@@ -197,12 +255,42 @@ const TopHeaderBtns = ({
         Cancel
       </button>
 
+      {/* <div className="relative">
+       <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50">
+         <span>Change to Video</span>
+         <ChevronDown className="h-4 w-4" />
+       </button>
+     </div> */}
+      {/* <Dropdown
+        options={["private", "public"]}
+        value={templateType}
+        setValue={(value) => {
+          setTemplateType(value);
+        }}
+      />
       <button
-        onClick={handleSaveAndClose}
-        disabled={isSaveLoading}
+        onClick={handleSaveTemplateAndClose}
+        disabled={isSaveTemplateLoading}
         className="flex items-center gap-2 px-4 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
       >
-        {isSaveLoading ? (
+        {isSaveTemplateLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Saving as template...</span>
+          </>
+        ) : (
+          <>
+            <Save className="h-4 w-4" />
+            <span>Save As Template</span>
+          </>
+        )}
+      </button> */}
+      <button
+        onClick={handleSavePostAndClose}
+        disabled={isSavePostLoading}
+        className="flex items-center gap-2 px-4 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
+      >
+        {isSavePostLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
             <span>Saving...</span>
