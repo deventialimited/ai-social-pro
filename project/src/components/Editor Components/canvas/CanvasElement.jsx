@@ -210,121 +210,43 @@ const CanvasElement = ({
   };
 
   return (
-    <Rnd
-      key={id}
-      size={{ width: styles.width, height: styles.height }}
-      position={{ x: position.x, y: position.y }}
-      style={{
-        position: "absolute",
-        zIndex: styles?.zIndex,
-        display: visible ? "block" : "none",
-        touchAction: "none",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        MozUserSelect: "none",
-        msUserSelect: "none",
-        cursor: isSelected ? "move" : "default",
-      }}
-      onDragStart={handleDragStart}
-      onDragStop={handleDragStop}
-      onClick={handleClick}
-      enableResizing={false}
-      disableDragging={locked}
-      dragHandleClassName={isSelected ? "drag-handle" : ""}
-    >
-      {["text", "image", "shape"].includes(type) && (
-        <div
-          ref={elementRef}
-          className={`${
-            isSelected ? "border-2 border-blue-500" : ""
-          } drag-handle`}
+    <>
+      {type === "text" ? (
+        <Rnd
+          key={id}
+          id={id}
+          size={{ width: styles.width, height: styles.height }}
+          position={{ x: position.x, y: position.y }}
           style={{
-            position: "static",
-            height: "inherit",
-            transform:
-              styles.transform && styles.transform.startsWith("rotate")
-                ? styles.transform
-                : "rotate(0deg)",
+            backgroundColor: styles?.backgroundColor,
+            padding: styles?.padding,
+            position: "absolute",
+            zIndex: styles?.zIndex,
+            display: visible ? "block" : "none",
+            touchAction: "none",
             userSelect: "none",
             WebkitUserSelect: "none",
             MozUserSelect: "none",
             msUserSelect: "none",
+            cursor: isSelected ? "move" : "default",
           }}
+          onDragStart={handleDragStart}
+          onDragStop={handleDragStop}
+          onClick={handleClick}
+          enableResizing={false}
+          disableDragging={locked}
+          dragHandleClassName={isSelected ? "drag-handle" : ""}
+          className={`${styles?.padding > 0 && "my-box"} ${
+            isSelected ? "border-2 border-blue-500" : ""
+          }`}
         >
-          {type === "text" && (
-            <EditableTextElement
-              text={props.text}
-              styles={{
-                ...styles,
-                position: "static",
-                transform: "rotate(0deg)",
-              }}
-              onChange={(newText) => {
-                if (!element || element.locked) return;
-                updateElement(id, { props: { ...props, text: newText } });
-              }}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                const textElement = e.target;
-                if (textElement) {
-                  const range = document.createRange();
-                  range.selectNodeContents(textElement);
-                  const selection = window.getSelection();
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-                }
-              }}
-            />
-          )}
-
-          {type === "image" && (
-            <img
-              id={element.id}
-              src={props.src}
-              style={{
-                ...styles,
-                position: "static",
-                transform: "rotate(0deg)",
-              }}
-              alt="Canvas"
-              className="w-full h-full object-cover"
-              draggable={false} // ADDED: Prevent default browser dragging
-            />
-          )}
-
-          {type === "shape" && (
-            <div
-              style={{
-                ...styles,
-                position: "static",
-                transform: "rotate(0deg)",
-                overflow: "hidden",
-                color: styles.fill || styles.color || "#D3D3D3",
-                // Remove any default padding/margin that might create space
-                padding: 0,
-                margin: 0,
-                // Ensure the div fits exactly to its content
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: props.svg?.svg?.replace(
-                    /<svg([^>]*)>/,
-                    `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`
-                  ),
-                }}
-              />
-            </div>
-          )}
-
+          <style>
+            {`
+    .my-box {
+      box-sizing: ${styles?.boxSizing} !important;
+    }
+  `}
+          </style>
           {isSelected && (
             <>
               {/* Resize Handles */}
@@ -390,9 +312,210 @@ const CanvasElement = ({
               </div>
             </>
           )}
-        </div>
+          <div
+            ref={elementRef}
+            className={` drag-handle`}
+            style={{
+              position: "static",
+              height: "100%",
+              width: "100%",
+              transform:
+                styles.transform && styles.transform.startsWith("rotate")
+                  ? styles.transform
+                  : "rotate(0deg)",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+              MozUserSelect: "none",
+              msUserSelect: "none",
+            }}
+          >
+            <EditableTextElement
+              text={props.text}
+              styles={{
+                ...styles,
+                position: "static",
+                backgroundColor: "transparent",
+                padding: "0px",
+                transform: "rotate(0deg)",
+              }}
+              onChange={(newText) => {
+                if (!element || element.locked) return;
+                updateElement(id, { props: { ...props, text: newText } });
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                const textElement = e.target;
+                if (textElement) {
+                  const range = document.createRange();
+                  range.selectNodeContents(textElement);
+                  const selection = window.getSelection();
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              }}
+            />
+          </div>
+        </Rnd>
+      ) : (
+        <Rnd
+          key={id}
+          size={{ width: styles.width, height: styles.height }}
+          position={{ x: position.x, y: position.y }}
+          style={{
+            position: "absolute",
+            zIndex: styles?.zIndex,
+            display: visible ? "block" : "none",
+            touchAction: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            MozUserSelect: "none",
+            msUserSelect: "none",
+            cursor: isSelected ? "move" : "default",
+          }}
+          onDragStart={handleDragStart}
+          onDragStop={handleDragStop}
+          onClick={handleClick}
+          enableResizing={false}
+          disableDragging={locked}
+          dragHandleClassName={isSelected ? "drag-handle" : ""}
+        >
+          {["image", "shape"].includes(type) && (
+            <div
+              ref={elementRef}
+              className={`${
+                isSelected ? "border-2 border-blue-500" : ""
+              } drag-handle`}
+              style={{
+                position: "static",
+                height: "inherit",
+                transform:
+                  styles.transform && styles.transform.startsWith("rotate")
+                    ? styles.transform
+                    : "rotate(0deg)",
+                userSelect: "none",
+                WebkitUserSelect: "none",
+                MozUserSelect: "none",
+                msUserSelect: "none",
+              }}
+            >
+              {type === "image" && (
+                <img
+                  id={element.id}
+                  src={props.src}
+                  style={{
+                    ...styles,
+                    position: "static",
+                    transform: "rotate(0deg)",
+                  }}
+                  alt="Canvas"
+                  className="w-full h-full object-cover"
+                  draggable={false} // ADDED: Prevent default browser dragging
+                />
+              )}
+
+              {type === "shape" && (
+                <div
+                  style={{
+                    ...styles,
+                    position: "static",
+                    transform: "rotate(0deg)",
+                    overflow: "hidden",
+                    color: styles.fill || styles.color || "#D3D3D3",
+                    // Remove any default padding/margin that might create space
+                    padding: 0,
+                    margin: 0,
+                    // Ensure the div fits exactly to its content
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: props.svg?.svg?.replace(
+                        /<svg([^>]*)>/,
+                        `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`
+                      ),
+                    }}
+                  />
+                </div>
+              )}
+
+              {isSelected && (
+                <>
+                  {/* Resize Handles */}
+                  {/* Corners */}
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="nw"
+                    className="absolute z-10 top-0 left-0"
+                  />
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="ne"
+                    className="absolute z-10 top-0 right-0"
+                  />
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="sw"
+                    className="absolute z-10 bottom-0 left-0"
+                  />
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="se"
+                    className="absolute z-10 bottom-0 right-0"
+                  />
+                  {/* Edges */}
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="n"
+                    className="absolute z-10 top-0 left-1/2 -translate-x-1/2"
+                  />
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="s"
+                    className="absolute z-10 bottom-0 left-1/2 -translate-x-1/2"
+                  />
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="w"
+                    className="absolute z-10 left-0 top-1/2 -translate-y-1/2"
+                  />
+                  <ResizeHandle
+                    onResize={onResize}
+                    onResizeStart={onResizeStart}
+                    position="e"
+                    className="absolute z-10 right-0 top-1/2 -translate-y-1/2"
+                  />
+                  {/* Rotate Handle */}
+                  <div
+                    onMouseDown={(e) => handleRotateMouseDown(e, elementRef)}
+                    className="absolute -top-5 left-1/2 flex flex-col justify-center items-center -translate-x-1/2 -translate-y-1/2"
+                  >
+                    <div className="bg-white rounded-full shadow cursor-crosshair flex items-center justify-center border border-gray-300 h-5 w-5">
+                      <RotateCcw size={14} />
+                    </div>
+                    <span className="border-l-4 h-5 border-blue-500"></span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </Rnd>
       )}
-    </Rnd>
+    </>
   );
 };
 
