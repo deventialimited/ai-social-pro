@@ -63,12 +63,21 @@ function EditorCanvas({
       }
     }
 
+    const handleDoubleClick = (e) => {
+      if (e.target.closest("#canvas")) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+
     window.addEventListener("selectstart", handleSelectStart)
     window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("dblclick", handleDoubleClick, true)
 
     return () => {
       window.removeEventListener("selectstart", handleSelectStart)
       window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("dblclick", handleDoubleClick, true)
     }
   }, [])
 
@@ -339,6 +348,8 @@ function EditorCanvas({
           maxZoom={5}
           enableBoundingBox
           autoCenter
+          enableDoubleClickZoom={false}
+          doubleClickZoom={false}
           style={{ 
             width: "100%", 
             height: "70vh",
