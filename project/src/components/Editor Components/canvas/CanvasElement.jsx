@@ -94,51 +94,99 @@ const CanvasElement = ({
     let newHeight = height;
     let newX = position.x;
     let newY = position.y;
+
+    // Only maintain aspect ratio for images and shapes
+    const shouldMaintainAspectRatio = (type === "image" || type === "shape") && window.event.shiftKey;
+    const aspectRatio = shouldMaintainAspectRatio ? width / height : null;
+
     switch (direction) {
       case "n":
         newHeight = Math.max(height - deltaY, 20);
+        if (shouldMaintainAspectRatio) {
+          newWidth = newHeight * aspectRatio;
+          newX = position.x + (width - newWidth);
+        }
         newY = position.y + (height - newHeight);
         break;
       case "s":
         newHeight = Math.max(height + deltaY, 20);
+        if (shouldMaintainAspectRatio) {
+          newWidth = newHeight * aspectRatio;
+        }
         break;
       case "w":
         newWidth = Math.max(width - deltaX, 20);
+        if (shouldMaintainAspectRatio) {
+          newHeight = newWidth / aspectRatio;
+          newY = position.y + (height - newHeight);
+        }
         newX = position.x + (width - newWidth);
         break;
       case "e":
         newWidth = Math.max(width + deltaX, 20);
+        if (shouldMaintainAspectRatio) {
+          newHeight = newWidth / aspectRatio;
+        }
         break;
       case "nw":
-        newWidth = Math.max(width - deltaX, 20);
-        newHeight = Math.max(height - deltaY, 20);
-        newX = position.x + (width - newWidth);
-        newY = position.y + (height - newHeight);
+        if (shouldMaintainAspectRatio) {
+          // For diagonal resizing with SHIFT, use the larger delta to maintain aspect ratio
+          const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+          newWidth = Math.max(width - delta, 20);
+          newHeight = newWidth / aspectRatio;
+          newX = position.x + (width - newWidth);
+          newY = position.y + (height - newHeight);
+        } else {
+          newWidth = Math.max(width - deltaX, 20);
+          newHeight = Math.max(height - deltaY, 20);
+          newX = position.x + (width - newWidth);
+          newY = position.y + (height - newHeight);
+        }
         break;
       case "ne":
-        newWidth = Math.max(width + deltaX, 20);
-        newHeight = Math.max(height - deltaY, 20);
-        newY = position.y + (height - newHeight);
+        if (shouldMaintainAspectRatio) {
+          const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+          newWidth = Math.max(width + delta, 20);
+          newHeight = newWidth / aspectRatio;
+          newY = position.y + (height - newHeight);
+        } else {
+          newWidth = Math.max(width + deltaX, 20);
+          newHeight = Math.max(height - deltaY, 20);
+          newY = position.y + (height - newHeight);
+        }
         break;
       case "sw":
-        newWidth = Math.max(width - deltaX, 20);
-        newHeight = Math.max(height + deltaY, 20);
-        newX = position.x + (width - newWidth);
+        if (shouldMaintainAspectRatio) {
+          const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+          newWidth = Math.max(width - delta, 20);
+          newHeight = newWidth / aspectRatio;
+          newX = position.x + (width - newWidth);
+        } else {
+          newWidth = Math.max(width - deltaX, 20);
+          newHeight = Math.max(height + deltaY, 20);
+          newX = position.x + (width - newWidth);
+        }
         break;
       case "se":
-        newWidth = Math.max(width + deltaX, 20);
-        newHeight = Math.max(height + deltaY, 20);
+        if (shouldMaintainAspectRatio) {
+          const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+          newWidth = Math.max(width + delta, 20);
+          newHeight = newWidth / aspectRatio;
+        } else {
+          newWidth = Math.max(width + deltaX, 20);
+          newHeight = Math.max(height + deltaY, 20);
+        }
         break;
     }
 
-    // Only scale font size during diagonal resizing
+    // Only scale font size during diagonal resizing for text elements
     let newFontSize = fontSize;
-    if (
+    if (type === "text" && (
       direction === "nw" ||
       direction === "ne" ||
       direction === "sw" ||
       direction === "se"
-    ) {
+    )) {
       const scale = Math.max(newWidth / width, newHeight / height);
       newFontSize = Math.max(fontSize * scale, 8);
     }
