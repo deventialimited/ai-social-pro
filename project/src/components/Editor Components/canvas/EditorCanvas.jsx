@@ -165,12 +165,12 @@ function EditorCanvas({
                               // Set specific transform values based on zoom level
                               switch (level) {
                                 case 50:
-                                  translateX = 155.75;
-                                  translateY = 118.75;
+                                  translateX = 190.75;
+                                  translateY = 133.75;
                                   break;
                                 case 75:
-                                  translateX = 77.88;
-                                  translateY = 59.38;
+                                  translateX = 93.88;
+                                  translateY = 65.38;
                                   break;
                                 case 100:
                                   translateX = 0;
