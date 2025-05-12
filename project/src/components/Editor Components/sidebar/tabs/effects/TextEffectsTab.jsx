@@ -19,7 +19,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
   }, [elements, selectedElementId]);
 
   const handleToggleEffect = (effect) => {
-    const prev = selectedElement?.effects
+    const prev = selectedElement?.effects;
     const newEnabled = !prev[effect].enabled;
     const updatedEffect = { ...prev[effect], enabled: newEnabled };
 
@@ -44,26 +44,28 @@ function TextEffectsTab({ onClose, selectedElementId }) {
           updateStyle(
             newEnabled
               ? {
-                backgroundColor: updatedEffect.color,
-                // padding: `${updatedEffect.padding}px`,
-                borderRadius: `${updatedEffect.cornerRadius}px`,
-                opacity: updatedEffect.opacity / 100,
-              }
+                  backgroundColor: updatedEffect.color,
+                  // padding: `${updatedEffect.padding}px`,
+                  borderRadius: `${updatedEffect.cornerRadius}px`,
+                  opacity: updatedEffect.opacity / 100,
+                }
               : {
-                backgroundColor: "transparent",
-                // padding: "0px",
-                borderRadius: "0px",
-                opacity: 1,
-              }
+                  backgroundColor: "transparent",
+                  // padding: "0px",
+                  borderRadius: "0px",
+                  opacity: 1,
+                }
           );
           break;
 
         case "shadow":
           updateStyle({
             textShadow: newEnabled
-              ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${updatedEffect.blur
-              }px rgba(${hexToRgb(updatedEffect.color)}, ${updatedEffect.opacity / 100
-              })`
+              ? `${updatedEffect.offsetX}px ${updatedEffect.offsetY}px ${
+                  updatedEffect.blur
+                }px rgba(${hexToRgb(updatedEffect.color)}, ${
+                  updatedEffect.opacity / 100
+                })`
               : "none",
           });
           break;
@@ -72,7 +74,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     updateEffects({
       ...prev,
       [effect]: updatedEffect,
-    })
+    });
   };
 
   const updateStyle = (styleChanges) => {
@@ -96,7 +98,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
   };
 
   const handleChangeEffectValue = (effect, value) => {
-    const prev = selectedElement?.effects
+    const prev = selectedElement?.effects;
     const updated = {
       ...prev[effect],
       value,
@@ -104,8 +106,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     updateEffects({
       ...prev,
       [effect]: updated,
-    })
-
+    });
 
     if (effect === "textStroke") {
       updateStyle({
@@ -122,7 +123,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
   };
 
   const handleChangeBackgroundValue = (property, value) => {
-    const prev = selectedElement?.effects
+    const prev = selectedElement?.effects;
     const updated = {
       ...prev.background,
       [property]: value,
@@ -130,28 +131,25 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     updateEffects({
       ...prev,
       background: updated,
-    })
+    });
 
     if (selectedElement?.effects.background.enabled) {
       const baseWidth = parseFloat(selectedElement.styles?.width) || 0;
       const baseHeight = parseFloat(selectedElement.styles?.height) || 0;
-
       updateStyle({
-        backgroundColor: `rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100
-          })`,
-        // transform: `scale(${1 + updated.padding / 100})`,
-        // transformOrigin: "center",
-        // padding: updated.padding,
+        backgroundColor: `rgba(${hexToRgb(updated.color)}, ${
+          updated.opacity / 100
+        })`,
         borderRadius: `${updated.cornerRadius}px`,
         position: "relative",
-        // width: `${baseWidth + updated.padding}px`,
-        // height: `${baseHeight + updated.padding}px`,
+        padding: updated.padding,
+        boxSizing: "content-box",
       });
     }
   };
 
   const handleChangeShadowValue = (property, value) => {
-    const prev = selectedElement?.effects
+    const prev = selectedElement?.effects;
     const updated = {
       ...prev.shadow,
       [property]: value,
@@ -159,11 +157,12 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     updateEffects({
       ...prev,
       shadow: updated,
-    })
+    });
     if (selectedElement?.effects.shadow.enabled) {
       updateStyle({
-        textShadow: `${updated.offsetX}px ${updated.offsetY}px ${updated.blur
-          }px rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
+        textShadow: `${updated.offsetX}px ${updated.offsetY}px ${
+          updated.blur
+        }px rgba(${hexToRgb(updated.color)}, ${updated.opacity / 100})`,
       });
     }
   };
@@ -177,7 +176,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
   };
 
   const handleTextStrokeColorChange = (color) => {
-    const prev = selectedElement?.effects
+    const prev = selectedElement?.effects;
     const updated = {
       ...prev.textStroke,
       color,
@@ -185,7 +184,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     updateEffects({
       ...prev,
       textStroke: updated,
-    })
+    });
 
     if (selectedElement?.effects.textStroke.enabled) {
       updateStyle({
@@ -227,12 +226,16 @@ function TextEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("blur")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.blur.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.blur.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.blur.enabled ? "translate-x-4" : ""
-                  }`}
+                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.blur.enabled ? "translate-x-4" : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -272,12 +275,18 @@ function TextEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("textStroke")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.textStroke.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.textStroke.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.textStroke.enabled ? "translate-x-4" : ""
-                  }`}
+                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.textStroke.enabled
+                    ? "translate-x-4"
+                    : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -320,19 +329,24 @@ function TextEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("background")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.background.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.background.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.background.enabled ? "translate-x-4" : ""
-                  }`}
+                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.background.enabled
+                    ? "translate-x-4"
+                    : ""
+                }`}
               ></span>
             </span>
           </div>
         </div>
         {selectedElement?.effects.background.enabled && (
           <>
-
             {/* Color */}
             <div className="ml-2 mb-2">
               <div className="flex items-center gap-2">
@@ -376,7 +390,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
             </div>
 
             {/* Padding */}
-            {/* <div className="ml-2 mb-2">
+            <div className="ml-2 mb-2">
               <label className="block mb-1 text-xs">Padding</label>
               <div className="flex items-center gap-2">
                 <div className="flex-1">
@@ -401,7 +415,7 @@ function TextEffectsTab({ onClose, selectedElementId }) {
                   className="w-12 p-1 text-sm border rounded-md"
                 />
               </div>
-            </div> */}
+            </div>
 
             {/* Opacity */}
             <div className="ml-2 mb-2">
@@ -430,8 +444,6 @@ function TextEffectsTab({ onClose, selectedElementId }) {
                 />
               </div>
             </div>
-
-
           </>
         )}
       </div>
@@ -449,12 +461,16 @@ function TextEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("shadow")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.shadow.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.shadow.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.shadow.enabled ? "translate-x-4" : ""
-                  }`}
+                className={`absolute h-3 w-3 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.shadow.enabled ? "translate-x-4" : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -581,7 +597,9 @@ function TextEffectsTab({ onClose, selectedElementId }) {
                 <input
                   type="color"
                   value={selectedElement?.effects.shadow.color}
-                  onChange={(e) => handleChangeShadowValue("color", e.target.value)}
+                  onChange={(e) =>
+                    handleChangeShadowValue("color", e.target.value)
+                  }
                   className="w-6 h-6 p-0 border border-gray-300 rounded cursor-pointer"
                 />
               </div>
