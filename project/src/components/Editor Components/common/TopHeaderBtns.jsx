@@ -1,7 +1,7 @@
 import { Save, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
-import domtoimage from "dom-to-image";
+import * as htmlToImage from "html-to-image";
 import {
   getPostDesignById,
   saveOrUpdatePostDesignFrontendController,
@@ -37,6 +37,7 @@ const TopHeaderBtns = ({
     setCanvasLoading,
     setPostOtherValues,
   } = useEditor();
+
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const onSave = useSaveOrUpdatePostDesign();
 
@@ -49,27 +50,28 @@ const TopHeaderBtns = ({
     try {
       const node = canvasContainerRef.current;
 
-      // --- High resolution image export ---
-      const scale = 2;
-      const style = window.getComputedStyle(node);
-      const width = node.scrollWidth || parseInt(style.width);
-      const height = node.scrollHeight || parseInt(style.height);
+      const scale = 5 ;
+      const width = node.offsetWidth * scale;
+      const height = node.offsetHeight * scale;
 
-      const dataUrl = await domtoimage.toPng(node, {
-        width: width * scale,
-        height: height * scale,
+      const blob = await htmlToImage.toBlob(node, {
+        width,
+        height,
         style: {
           transform: `scale(${scale})`,
           transformOrigin: "top left",
-          width: `${width}px`,
-          height: `${height}px`,
+          width: `${node.offsetWidth}px`,
+          height: `${node.offsetHeight}px`,
         },
+        type: "image/webp",
       });
 
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], `canvas_${Date.now()}.png`, {
-        type: "image/png",
+      if (!blob) {
+        throw new Error("Failed to convert canvas to image.");
+      }
+
+      const file = new File([blob], `canvas_${Date.now()}.webp`, {
+        type: "image/webp",
       });
 
       onSave.mutate(
@@ -85,19 +87,22 @@ const TopHeaderBtns = ({
               setIsSaveLoading(false);
               onClose();
               clearEditor();
-              toast.success("Save Post Successfully");
+              toast.success("Post saved successfully");
             }, 3000);
           },
           onError: (error) => {
-            toast.error(error?.response?.data?.message);
+            toast.error(
+              error?.response?.data?.message || "Failed to save post"
+            );
             setIsSaveLoading(false);
             console.error("Error saving design:", error);
           },
         }
       );
     } catch (error) {
-      console.error("Error saving design:", error);
       setIsSaveLoading(false);
+      toast.error("An error occurred while saving");
+      console.error("Error saving design:", error);
     }
   };
 
@@ -112,7 +117,6 @@ const TopHeaderBtns = ({
         },
       });
       const blob = await response.blob();
-
       const objectUrl = URL.createObjectURL(blob);
       const newElement = createImageElement(objectUrl);
       addElement(newElement);
@@ -121,11 +125,7 @@ const TopHeaderBtns = ({
       addFile(file);
 
       const canvasElement = document.getElementById("#canvas");
-
-      if (!canvasElement) {
-        console.log("Canvas element not found.");
-        return;
-      }
+      if (!canvasElement) return;
 
       const canvasWidth = canvasElement.offsetWidth;
       const canvasHeight = canvasElement.offsetHeight;
@@ -175,10 +175,11 @@ const TopHeaderBtns = ({
     } else if (postId) {
       fetchPostDesign();
     }
+
     if (defaultPlatform) {
       const platform = presetSizes.find((p) => p?.id === defaultPlatform);
-      if (platform && platform?.dimensions) {
-        const [width, height] = platform?.dimensions;
+      if (platform?.dimensions) {
+        const [width, height] = platform.dimensions;
         updateCanvasSize(width, height);
       }
     }
