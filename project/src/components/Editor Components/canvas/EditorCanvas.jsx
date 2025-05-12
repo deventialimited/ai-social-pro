@@ -18,7 +18,7 @@ function EditorCanvas({
 }) {
   const { canvas, elements, isCanvasLoading } = useEditor()
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true)
-  const [zoomLevel, setZoomLevel] = useState(1)
+  const [zoomLevel, setZoomLevel] = useState(0.75)
   const [showZoomDropdown, setShowZoomDropdown] = useState(false)
   const zoomLevels = [0.2, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5]
   const containerRef = useRef(null)
