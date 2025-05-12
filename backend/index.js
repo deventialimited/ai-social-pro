@@ -7,6 +7,7 @@ const UploadedImageRoutes = require("./routes/UploadedImage");
 const DomainRoutes = require("./routes/Domain");
 const PostRoutes = require("./routes/Post");
 const PostDesignRoutes = require("./routes/PostDesign");
+const TemplateDesignRoutes = require("./routes/TemplateDesign");
 const { createServer } = require("http");
 const { SocketHandler } = require("./utils/SocketHandler");
 const socket = require("./utils/socket");
@@ -40,6 +41,7 @@ app.use("/api/v1/users", UserRoutes);
 app.use("/api/v1/domains", DomainRoutes);
 app.use("/api/v1/posts", PostRoutes);
 app.use("/api/v1/postsDesign", PostDesignRoutes);
+app.use("/api/v1/templateDesign", TemplateDesignRoutes);
 app.use("/api/v1/uploadedImage", UploadedImageRoutes);
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running!" });
