@@ -1,10 +1,15 @@
 const mongoose = require("mongoose");
 
-const postDesignSchema = new mongoose.Schema({
-  postId: {
-    type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed to handle both types
+const templateDesignSchema = new mongoose.Schema({
+  templateType: {
+    type: String, // e.g., "public", "private"
     required: true,
   },
+  templateImage: {
+    type: String, // URL to show preview of the template
+    required: true,
+  },
+
   canvas: {
     width: Number,
     height: Number,
@@ -58,4 +63,4 @@ const postDesignSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("PostDesign", postDesignSchema);
+module.exports = mongoose.model("TemplateDesign", templateDesignSchema);
