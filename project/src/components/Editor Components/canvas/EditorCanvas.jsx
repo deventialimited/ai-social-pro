@@ -63,12 +63,21 @@ function EditorCanvas({
       }
     }
 
+    const handleDoubleClick = (e) => {
+      if (e.target.closest("#canvas")) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+
     window.addEventListener("selectstart", handleSelectStart)
     window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("dblclick", handleDoubleClick, true)
 
     return () => {
       window.removeEventListener("selectstart", handleSelectStart)
       window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("dblclick", handleDoubleClick, true)
     }
   }, [])
 
@@ -157,20 +166,50 @@ function EditorCanvas({
       }
     }
 
-    // Listen for touchmove events which might indicate pinch zoom
-    const handleTouchMove = () => {
-      // Use requestAnimationFrame to limit how often we check
-      requestAnimationFrame(detectPinchZoom)
+    // Handle mouse wheel zoom
+    const handleWheel = (e) => {
+      e.preventDefault()
+      
+      if (panZoomRef.current) {
+        const delta = e.deltaY
+        const zoomFactor = 0.1 // Adjust this value to control zoom speed
+        
+        // Calculate new zoom level
+        let newZoom = zoomLevel
+        if (delta < 0) {
+          // Zoom in
+          newZoom = Math.min(zoomLevel + zoomFactor, 5) // Max zoom of 5
+        } else {
+          // Zoom out
+          newZoom = Math.max(zoomLevel - zoomFactor, 0.2) // Min zoom of 0.2
+        }
+
+        // Find the closest predefined zoom level
+        const closestZoom = zoomLevels.reduce((prev, curr) => {
+          return Math.abs(curr - newZoom) < Math.abs(prev - newZoom) ? curr : prev
+        })
+
+        // Update zoom level
+        setZoomLevel(closestZoom)
+        
+        // Apply zoom using PanZoom
+        try {
+          if (typeof panZoomRef.current.setZoom === "function") {
+            panZoomRef.current.setZoom(closestZoom)
+          }
+        } catch (error) {
+          console.error("Error setting zoom:", error)
+        }
+      }
     }
 
-    // Listen for wheel events which might indicate mouse wheel zoom
-    const handleWheel = () => {
-      // Use requestAnimationFrame to limit how often we check
+    // Listen for touchmove events which might indicate pinch zoom
+    const handleTouchMove = () => {
       requestAnimationFrame(detectPinchZoom)
     }
 
     containerRef.current.addEventListener("touchmove", handleTouchMove, { passive: true })
-    containerRef.current.addEventListener("wheel", handleWheel, { passive: true })
+    containerRef.current.addEventListener("wheel", handleWheel, { passive: false })
 
     // Also set up an interval as a fallback to periodically check the zoom level
     const intervalId = setInterval(detectPinchZoom, 200)
@@ -339,6 +378,8 @@ function EditorCanvas({
           maxZoom={5}
           enableBoundingBox
           autoCenter
+          enableDoubleClickZoom={false}
+          doubleClickZoom={false}
           style={{ 
             width: "100%", 
             height: "70vh",
