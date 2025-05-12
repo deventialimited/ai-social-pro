@@ -152,10 +152,58 @@ function EditorCanvas({
                           key={level}
                           className={`px-4 py-1 hover:bg-gray-100 text-left ${zoomLevel === level ? "font-bold" : ""}`}
                           onClick={() => {
-                            if (transformRef.current) {
-                              transformRef.current.setTransform(0, 0, level / 100);
+                            const scale = level / 100;
+                          
+                            if (
+                              transformRef.current &&
+                              containerRef.current &&
+                              canvasContainerRef.current
+                            ) {
+                              let translateX = 0;
+                              let translateY = 0;
+
+                              // Set specific transform values based on zoom level
+                              switch (level) {
+                                case 50:
+                                  translateX = 155.75;
+                                  translateY = 118.75;
+                                  break;
+                                case 75:
+                                  translateX = 77.88;
+                                  translateY = 59.38;
+                                  break;
+                                case 100:
+                                  translateX = 0;
+                                  translateY = 0;
+                                  break;
+                                case 150:
+                                  translateX = 0;
+                                  translateY = -41.5667;
+                                  break;
+                                case 200:
+                                  translateX = -623;
+                                  translateY = -475;
+                                  break;
+                                case 300:
+                                  translateX = -1246;
+                                  translateY = -950;
+                                  break;
+                                default:
+                                  // For any other zoom level, calculate dynamically
+                                  const container = containerRef.current;
+                                  const canvas = canvasContainerRef.current;
+                                  const containerRect = container.getBoundingClientRect();
+                                  const canvasRect = canvas.getBoundingClientRect();
+                                  const scaledWidth = canvasRect.width * scale;
+                                  const scaledHeight = canvasRect.height * scale;
+                                  translateX = (containerRect.width - scaledWidth) / 2;
+                                  translateY = (containerRect.height - scaledHeight) / 2;
+                              }
+                          
+                              transformRef.current.setTransform(translateX, translateY, scale);
+                              setZoomLevel(level);
+                              setShowZoomDropdown(false);
                             }
-                            setShowZoomDropdown(false);
                           }}
                         >
                           {level}%
