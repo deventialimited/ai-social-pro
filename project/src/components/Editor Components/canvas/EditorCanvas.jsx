@@ -18,9 +18,9 @@ function EditorCanvas({
 }) {
   const { canvas, elements, isCanvasLoading } = useEditor()
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true)
-  const [zoomLevel, setZoomLevel] = useState(1)
+  const [zoomLevel, setZoomLevel] = useState(0.75)
   const [showZoomDropdown, setShowZoomDropdown] = useState(false)
-  const zoomLevels = [0.2, 0.3, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5]
+  const zoomLevels = [0.15, 0.3, 0.45, 0.60, 0.75, 1.5, 2.25, 3, 3.75]
   const containerRef = useRef(null)
   const panZoomRef = useRef(null)
   const [isPanZoomMounted, setIsPanZoomMounted] = useState(false)
@@ -264,11 +264,12 @@ function EditorCanvas({
 
     // If we're very close to a predefined level, use that exact value
     if (Math.abs(closestZoomLevel - zoomLevel) < 0.05) {
-      return Math.round(closestZoomLevel * 100)
+      // Adjust the display percentage (75% actual = 100% display)
+      return Math.round((closestZoomLevel * 100) * (100/75))
     }
 
-    // Otherwise, just round the current zoom level
-    return Math.round(zoomLevel * 100)
+    // Otherwise, just round the current zoom level with the same adjustment
+    return Math.round((zoomLevel * 100) * (100/75))
   }
 
   return (
@@ -319,7 +320,7 @@ function EditorCanvas({
                   }`}
                   onClick={() => handleZoomLevelClick(level)}
                 >
-                  {Math.round(level * 100)}%
+                  {Math.round((level * 100) * (100/75))}%
                 </button>
               ))}
             </div>
