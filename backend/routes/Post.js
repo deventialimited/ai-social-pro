@@ -18,5 +18,6 @@ router.get("/getAllPostsBydomainId/:domainId", getAllPostsBydomainId);
 // Update a post using MongoDB _id
 router.put("/updatePost/:id", updatePost);
 router.post("/processPubSub", processPubSub);
+router.post("/updatePostImage", updatePostImage); // 👈 New route
 router.get("/getFirstPost/:id", getFirstPost);
 module.exports = router;
