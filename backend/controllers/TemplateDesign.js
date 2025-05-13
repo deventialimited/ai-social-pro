@@ -5,18 +5,27 @@ const {
 } = require("../libs/s3Controllers");
 const TemplateDesign = require("../models/TemplateDesign");
 
-exports.getTemplateDesignById = async (req, res) => {
+exports.getTemplateDesignsByUserId = async (req, res) => {
   try {
-    const { id } = req.params;
-    const templateDesign = await TemplateDesign.findById(id);
+    const { userId } = req.params;
 
-    if (!templateDesign) {
-      return res.status(404).json({ message: "TemplateDesign not found" });
-    }
+    const [publicTemplates, userTemplates] = await Promise.all([
+      TemplateDesign.find({ templateType: "public" }),
+      TemplateDesign.find({ userId }),
+    ]);
 
-    return res.status(200).json(templateDesign);
+    // Combine and ensure no duplicates if any template is both public and user's (optional)
+    const templatesMap = new Map();
+
+    [...publicTemplates, ...userTemplates].forEach((template) => {
+      templatesMap.set(template._id.toString(), template);
+    });
+
+    const combinedTemplates = Array.from(templatesMap.values());
+
+    return res.status(200).json(combinedTemplates);
   } catch (error) {
-    console.error("Error in getTemplateDesignById:", error);
+    console.error("Error in getTemplateDesignsByUserId:", error);
     return res.status(500).json({
       message: "Internal server error",
       error: error.message,
@@ -26,18 +35,23 @@ exports.getTemplateDesignById = async (req, res) => {
 
 exports.saveOrUpdateTemplateDesign = async (req, res) => {
   try {
-    const { templateId } = req.params; // optional — use to detect update
-    const { templateType } = req.body;
-    const { canvas, elements, layers, backgrounds } = JSON.parse(req.body.data);
+    const { id } = req.params; // optional — use to detect update
+    const {
+      templateType,
+      templateId,
+      userId,
+      canvas,
+      elements,
+      layers,
+      backgrounds,
+    } = JSON.parse(req.body.data);
     let files = req.files?.files || [];
-
     let templateImage = null;
     let existingTemplate = null;
     let oldTemplateImageKey = null;
-
     // Check if we're updating an existing template
-    if (templateId) {
-      existingTemplate = await TemplateDesign.findById(templateId);
+    if (id) {
+      existingTemplate = await TemplateDesign.findById(id);
       if (!existingTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
@@ -45,12 +59,12 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
 
     // Step 1: Handle templateImage separately
     const templateImageFileIndex = files.findIndex(
-      (file) => file.fieldname === "templateImage"
+      (file) => file.originalname === "templateImage"
     );
 
     if (templateImageFileIndex !== -1) {
       const [templateImageFile] = files.splice(templateImageFileIndex, 1);
-
+      console.log(templateImageFile);
       // Delete old template image if exists
       if (existingTemplate?.templateImage) {
         oldTemplateImageKey = existingTemplate.templateImage.split("/").pop();
@@ -58,8 +72,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       }
 
       // Upload new template image
-      const templateImageUpload = await uploadToS3(templateImageFile);
-      templateImage = templateImageUpload?.Location || null;
+      templateImage = await uploadToS3(templateImageFile);
     } else {
       // Reuse old templateImage if not updated
       templateImage = existingTemplate?.templateImage || null;
@@ -69,7 +82,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     let newFileUrls;
     if (files?.length > 0) {
       newFileUrls = await uploadToS3ForPostDesign({
-        postId: templateId,
+        postId: existingTemplate?.templateId || templateId,
         files,
         elements,
         backgrounds,
@@ -143,6 +156,8 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       templateDesign = existingTemplate;
     } else {
       const newTemplate = new TemplateDesign({
+        userId,
+        templateId,
         templateType,
         templateImage,
         canvas,

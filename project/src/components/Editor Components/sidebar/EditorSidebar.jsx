@@ -15,6 +15,7 @@ import SizeTab from "./tabs/SizeTab";
 import TextEffectsTab from "./tabs/effects/TextEffectsTab";
 import ImageEffectsTab from "./tabs/effects/ImageEffectsTab";
 import ApplyMaskTab from "./tabs/ApplyMaskTab";
+import TemplatesTab from "./tabs/TemplatesTab";
 
 const tabs = [
   { id: "text", icon: Type, label: "Text", component: TextTab },
@@ -28,6 +29,12 @@ const tabs = [
   },
   { id: "layers", icon: Layers, label: "Layers", component: LayersTab },
   { id: "size", icon: LayoutGrid, label: "Size", component: SizeTab },
+  {
+    id: "templates",
+    icon: ImageIcon,
+    label: "Templates",
+    component: TemplatesTab,
+  },
 ];
 
 // Special tabs that aren't shown in the sidebar navigation
