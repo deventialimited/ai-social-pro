@@ -1,6 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 
 export const hardCodedShapes = [
+  {
+    id: "rounded-rectangle",
+    name: "Rounded Rectangle",
+    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="10" y="20" width="80" height="60" rx="15" ry="15" fill="currentColor" stroke="currentColor" stroke-width="4" fill="none" />
+    </svg>`,
+  },
   // Basic shapes from first image
   {
     id: "square",

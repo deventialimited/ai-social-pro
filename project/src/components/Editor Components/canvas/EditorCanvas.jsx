@@ -14,13 +14,30 @@ function EditorCanvas({
   setSpecialActiveTab,
   specialActiveTab,
 }) {
-  const { canvas, elements, isCanvasLoading } = useEditor();
+  const { canvas, elements, isCanvasLoading, removeElement } = useEditor();
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showZoomDropdown, setShowZoomDropdown] = useState(false);
   const zoomLevels = [50, 75, 100, 150, 200, 300];
   const containerRef = useRef(null);
   const transformRef = useRef(null);
+
+  // Add delete handler
+  useEffect(() => {
+    const handleDelete = (e) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedElementId && !e.target.closest('input') && !e.target.closest('textarea')) {
+          e.preventDefault();
+          removeElement(selectedElementId);
+          setSelectedElementId(null);
+          setSpecialActiveTab(null);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleDelete);
+    return () => window.removeEventListener('keydown', handleDelete);
+  }, [selectedElementId, removeElement, setSelectedElementId, setSpecialActiveTab]);
 
   const handleSelectElement = (id, type) => {
     setSelectedElementId(id);
