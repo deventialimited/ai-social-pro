@@ -11,6 +11,7 @@ function ColorPicker({
   const [isOpen, setIsOpen] = useState(false);
   const [currentColor, setCurrentColor] = useState(color);
   const [opacity, setOpacity] = useState(100);
+  const [recentColors, setRecentColors] = useState([]);
   const pickerRef = useRef(null);
 
   useEffect(() => {
@@ -30,14 +31,30 @@ function ColorPicker({
     };
   }, []);
 
+  // Load recent colors on mount
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("recentColors"));
+    if (stored && Array.isArray(stored)) {
+      setRecentColors(stored);
+    }
+  }, []);
+
   const handleColorChange = (color) => {
-    const newColor = color.hex;
+    const newColor = typeof color === "string" ? color : color.hex;
     setCurrentColor(newColor);
+
+    setRecentColors((prev) => {
+      const filtered = prev.filter((c) => c !== newColor);
+      const updated = [...filtered, newColor].slice(-3); // keep only last 3
+      localStorage.setItem("recentColors", JSON.stringify(updated));
+      return updated;
+    });
+
     if (onChange) {
       onChange(newColor, opacity);
     }
   };
-
+  
   const handleOpacityChange = (newOpacity) => {
     setOpacity(newOpacity);
     if (onChange) {
@@ -46,27 +63,27 @@ function ColorPicker({
   };
 
   const paletteColors = [
-    "#87CEEB", // Sky Blue
-    "#000000", // Black
-    "#FFFFFF", // White
-    "#808080", // Gray
-    "#8A2BE2", // Blue Violet
-    "#4B0082", // Indigo
-    "#FF6B81", // Pink
-    "#0000CD", // Medium Blue
-    "#87CEFA", // Light Sky Blue
-    "#E6E6FA", // Lavender
-    "#1C1C1C", // Dark Gray
-    "#FF7F50", // Coral
-    "#191970", // Midnight Blue
-    "#E9967A", // Dark Salmon
-    "#2F4F4F", // Dark Slate Gray
-    "#40E0D0", // Turquoise
-    "#0066CC", // Blue
+    "#87CEEB",
+    "#000000",
+    "#FFFFFF",
+    "#808080",
+    "#8A2BE2",
+    "#4B0082",
+    "#FF6B81",
+    "#0000CD",
+    "#87CEFA",
+    "#E6E6FA",
+    "#1C1C1C",
+    "#FF7F50",
+    "#191970",
+    "#E9967A",
+    "#2F4F4F",
+    "#40E0D0",
+    "#0066CC",
   ];
 
   return (
-    <div className=" relative" ref={pickerRef}>
+    <div className="relative" ref={pickerRef}>
       <button
         className="flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
@@ -138,9 +155,30 @@ function ColorPicker({
             </div>
           </div>
 
-          {showPalette && (
+          {/* Recently used colors */}
+          {recentColors.length > 0 && (
             <>
               <div className="flex items-center mt-4 mb-2">
+                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+                <span className="text-sm font-medium">Recent Colors</span>
+              </div>
+              <div className="flex gap-2 flex-wrap mb-2">
+                {recentColors.map((color, index) => (
+                  <div
+                    key={index}
+                    className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: color }}
+                    onClick={() => handleColorChange({ hex: color })}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Color palette */}
+          {showPalette && (
+            <>
+              <div className="flex items-center mt-2 mb-2">
                 <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
                 <span className="text-sm font-medium">Palette</span>
               </div>
