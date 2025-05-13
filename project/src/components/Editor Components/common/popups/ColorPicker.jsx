@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { ChromePicker } from "react-color";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 function ColorPicker({
   color = "#000000",
@@ -13,6 +14,7 @@ function ColorPicker({
   const [opacity, setOpacity] = useState(100);
   const [recentColors, setRecentColors] = useState([]);
   const pickerRef = useRef(null);
+  const { postOtherValues } = useEditor();
 
   useEffect(() => {
     setCurrentColor(color);
@@ -97,6 +99,7 @@ function ColorPicker({
 
       {isOpen && (
         <div className="absolute z-50 mt-1 w-72 bg-white rounded-md shadow-lg border p-4">
+          {/* Chrome Picker */}
           <ChromePicker
             color={currentColor}
             onChange={(color) => setCurrentColor(color.hex)}
@@ -155,7 +158,7 @@ function ColorPicker({
             </div>
           </div>
 
-          {/* Recently used colors */}
+          {/* Recent Colors */}
           {recentColors.length > 0 && (
             <>
               <div className="flex items-center mt-4 mb-2">
@@ -175,10 +178,32 @@ function ColorPicker({
             </>
           )}
 
-          {/* Color palette */}
-          {showPalette && (
+          {/* Site Colors */}
+          {postOtherValues?.siteColors?.length > 0 && (
             <>
               <div className="flex items-center mt-2 mb-2">
+                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+                <span className="text-sm font-medium">Site Colors</span>
+              </div>
+              <div className="flex gap-2 flex-wrap mb-4">
+                {postOtherValues.siteColors.map((siteColor, index) => (
+                  <div
+                    key={index}
+                    className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: siteColor }}
+                    onClick={() =>
+                      handleColorChangeComplete({ hex: siteColor })
+                    }
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Color Palette */}
+          {showPalette && (
+            <>
+              <div className="flex items-center mb-2">
                 <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
                 <span className="text-sm font-medium">Palette</span>
               </div>
