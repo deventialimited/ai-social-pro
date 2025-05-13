@@ -109,6 +109,69 @@ exports.updatePost = async (req, res) => {
   }
 };
 
+exports.updatePostImage = async (req, res) => {
+  try {
+    const { postId, imageUrl } = req.body;
+
+    if (!postId || !imageUrl) {
+      return res
+        .status(400)
+        .json({ message: "postId and imageUrl are required" });
+    }
+
+    const post = await Post.findById(postId).populate("domainId");
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let uploadedImageUrl = "";
+    try {
+      const response = await axios.get(imageUrl, {
+        responseType: "arraybuffer",
+      });
+      const buffer = Buffer.from(response.data, "binary");
+      const file = {
+        originalname: `downloaded_${Date.now()}.jpg`,
+        mimetype: response.headers["content-type"],
+        buffer,
+      };
+
+      uploadedImageUrl = await uploadToS3(file);
+    } catch (err) {
+      console.error("Failed to fetch or upload image:", err);
+      return res
+        .status(500)
+        .json({ message: "Image upload failed", error: err.message });
+    }
+
+    post.image = uploadedImageUrl;
+    await post.save();
+
+    const updatedPost = await Post.findById(postId).populate(
+      "domainId",
+      "clientName clientWebsite siteLogo colors"
+    );
+
+    const io = req.app.get("io");
+    io.to(`room_${post.userId}_${post.domainId._id}`).emit("PostImageUpdated", {
+      message: "Image added to post",
+      post: updatedPost,
+    });
+
+    res.status(200).json({
+      message: "Post image updated successfully",
+      postId: post._id,
+      imageUrl: uploadedImageUrl,
+    });
+  } catch (error) {
+    console.error("Error in updatePostImage:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 exports.processPubSub = async (req, res) => {
   try {
     const jsonData = req.body;
@@ -121,40 +184,16 @@ exports.processPubSub = async (req, res) => {
 
     console.log("Generated Post:", JSON.stringify(jsonData));
 
-    const domain = await Domain.findOne({
-      client_id: jsonData?.client_id,
-      // clientWebsite: jsonData?.website,
-    });
+    const domain = await Domain.findOne({ client_id: jsonData?.client_id });
     if (!domain) {
       return res.status(404).json({ message: "client id not found" });
-    }
-
-    let uploadedImageUrl = "";
-
-    if (jsonData.image) {
-      try {
-        const response = await axios.get(jsonData.image, {
-          responseType: "arraybuffer",
-        });
-
-        const buffer = Buffer.from(response.data, "binary");
-        const file = {
-          originalname: `downloaded_${Date.now()}.jpg`, // you can extract real extension if needed
-          mimetype: response.headers["content-type"],
-          buffer: buffer,
-        };
-
-        uploadedImageUrl = await uploadToS3(file);
-      } catch (err) {
-        console.error("Failed to fetch or upload image:", err);
-      }
     }
 
     const newPost = new Post({
       postId: jsonData.post_id || "",
       domainId: domain._id,
       userId: domain.userId,
-      image: uploadedImageUrl || "", // fallback if upload fails
+      image: "", // image will be added later
       topic: jsonData.topic || "",
       content: jsonData.content || "",
       slogan: jsonData.slogan || "",
@@ -167,23 +206,21 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-    console.log("saved Post ........In the Post Controller", savedPost);
+
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
     );
-    console.log("Post Data after save:", postData);
+
     const io = req.app.get("io");
-    console.log(domain.userId.toString(), "user Id");
     io.to(`room_${domain?.userId}_${domain?._id}`).emit("PostSaved", {
-      message: "Post saved successfully",
+      message: "Post created without image",
       post: postData,
     });
+
     res.status(201).json({
-      message: "Post saved successfully",
-      postId: savedPost.postId,
-      userId: savedPost.userId,
-      domainId: savedPost.domainId,
+      message: "Post created successfully (without image)",
+      postId: savedPost._id,
     });
   } catch (error) {
     console.error("Error in processPubSub:", error);
