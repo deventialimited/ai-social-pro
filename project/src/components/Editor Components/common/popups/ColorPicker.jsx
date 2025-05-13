@@ -31,7 +31,6 @@ function ColorPicker({
     };
   }, []);
 
-  // Load recent colors on mount
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("recentColors"));
     if (stored && Array.isArray(stored)) {
@@ -39,13 +38,13 @@ function ColorPicker({
     }
   }, []);
 
-  const handleColorChange = (color) => {
-    const newColor = typeof color === "string" ? color : color.hex;
+  const handleColorChangeComplete = (color) => {
+    const newColor = color.hex;
     setCurrentColor(newColor);
 
     setRecentColors((prev) => {
       const filtered = prev.filter((c) => c !== newColor);
-      const updated = [...filtered, newColor].slice(-3); // keep only last 3
+      const updated = [...filtered, newColor].slice(-3);
       localStorage.setItem("recentColors", JSON.stringify(updated));
       return updated;
     });
@@ -54,7 +53,7 @@ function ColorPicker({
       onChange(newColor, opacity);
     }
   };
-  
+
   const handleOpacityChange = (newOpacity) => {
     setOpacity(newOpacity);
     if (onChange) {
@@ -100,7 +99,8 @@ function ColorPicker({
         <div className="absolute z-50 mt-1 w-72 bg-white rounded-md shadow-lg border p-4">
           <ChromePicker
             color={currentColor}
-            onChange={handleColorChange}
+            onChange={(color) => setCurrentColor(color.hex)}
+            onChangeComplete={handleColorChangeComplete}
             disableAlpha={true}
             styles={{
               default: {
@@ -168,7 +168,7 @@ function ColorPicker({
                     key={index}
                     className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }}
-                    onClick={() => handleColorChange({ hex: color })}
+                    onClick={() => handleColorChangeComplete({ hex: color })}
                   />
                 ))}
               </div>
@@ -188,7 +188,7 @@ function ColorPicker({
                     key={index}
                     className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }}
-                    onClick={() => handleColorChange({ hex: color })}
+                    onClick={() => handleColorChangeComplete({ hex: color })}
                   />
                 ))}
               </div>
