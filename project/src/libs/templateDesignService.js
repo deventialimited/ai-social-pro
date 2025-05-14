@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 // const API_URL = import.meta.env.VITE_API_URL || '';
-// const API_URL = "https://api.oneyearsocial.com";
-const API_URL = "http://localhost:4000";
+const API_URL = "https://api.oneyearsocial.com";
+// const API_URL = "http://localhost:4000";
 
 // Get post design by ID
 export const getTemplateDesignById = async (userId) => {
