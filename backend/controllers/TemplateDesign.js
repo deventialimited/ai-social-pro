@@ -5,50 +5,23 @@ const {
 } = require("../libs/s3Controllers");
 const TemplateDesign = require("../models/TemplateDesign");
 
-exports.getTemplateDesignsByUserId = async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    const [publicTemplates, userTemplates] = await Promise.all([
-      TemplateDesign.find({ templateType: "public" }),
-      TemplateDesign.find({ userId }),
-    ]);
-
-    // Combine and ensure no duplicates if any template is both public and user's (optional)
-    const templatesMap = new Map();
-
-    [...publicTemplates, ...userTemplates].forEach((template) => {
-      templatesMap.set(template._id.toString(), template);
-    });
-
-    const combinedTemplates = Array.from(templatesMap.values());
-
-    return res.status(200).json(combinedTemplates);
-  } catch (error) {
-    console.error("Error in getTemplateDesignsByUserId:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-
 exports.saveOrUpdateTemplateDesign = async (req, res) => {
   try {
     const { id } = req.params; // optional — use to detect update
-    const {
-      templateType,
-      templateId,
-      userId,
-      canvas,
-      elements,
-      layers,
-      backgrounds,
-    } = JSON.parse(req.body.data);
+    // Parse the JSON string from form data
+    let parsedData = req.body.data ? JSON.parse(req.body.data) : {};
+    const { templateType = "public", templateId, userId, canvas, elements, layers, backgrounds } = parsedData;
+
+    // Validate required fields
+    if (!templateId || !userId) {
+      return res.status(400).json({ message: "Missing required fields: templateId, userId" });
+    }
+
     let files = req.files?.files || [];
     let templateImage = null;
     let existingTemplate = null;
     let oldTemplateImageKey = null;
+
     // Check if we're updating an existing template
     if (id) {
       existingTemplate = await TemplateDesign.findById(id);
@@ -65,6 +38,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     if (templateImageFileIndex !== -1) {
       const [templateImageFile] = files.splice(templateImageFileIndex, 1);
       console.log(templateImageFile);
+
       // Delete old template image if exists
       if (existingTemplate?.templateImage) {
         oldTemplateImageKey = existingTemplate.templateImage.split("/").pop();
@@ -76,6 +50,11 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     } else {
       // Reuse old templateImage if not updated
       templateImage = existingTemplate?.templateImage || null;
+    }
+
+    // Validate templateImage is present
+    if (!templateImage) {
+      return res.status(400).json({ message: "Template image is required" });
     }
 
     // Step 2: Upload remaining files (elements/background assets)
@@ -102,47 +81,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       });
     }
 
-    // Step 3: Clean up old unused element/background files if updating
-    if (existingTemplate) {
-      const filesToDelete = [];
-
-      // Compare elements
-      const oldElements = existingTemplate.elements || [];
-      oldElements.forEach((oldEl) => {
-        const match = elements.find((el) => el.id === oldEl.id);
-        if (!match && oldEl.props?.src) {
-          const key = oldEl.props.src.split("/").pop();
-          filesToDelete.push(key);
-        }
-      });
-
-      // Compare background
-      if (
-        JSON.stringify(existingTemplate.backgrounds) !==
-        JSON.stringify(backgrounds)
-      ) {
-        if (existingTemplate.backgrounds?.src) {
-          const key = existingTemplate.backgrounds.src.split("/").pop();
-          filesToDelete.push(key);
-        }
-      }
-
-      if (filesToDelete.length > 0) {
-        await deleteFromS3(filesToDelete);
-      }
-    }
-
-    // Step 4: Sync background styles to canvas
-    if (!canvas.styles) canvas.styles = {};
-    if (backgrounds?.type === "color") {
-      canvas.styles.backgroundColor = backgrounds?.color;
-    } else if (backgrounds?.type === "image") {
-      canvas.styles.backgroundImage = `url(${backgrounds?.src})`;
-    } else if (backgrounds?.type === "video") {
-      canvas.styles.backgroundVideo = backgrounds?.src;
-    }
-
-    // Step 5: Save (update or create)
+    // Step 3: Ensure template data is correct and save
     let templateDesign;
     if (existingTemplate) {
       existingTemplate.templateType = templateType;
@@ -178,6 +117,30 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     return res.status(500).json({
       message: "Internal server error",
       error: error.message,
+    });
+  }
+};
+
+exports.getTemplateDesignsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const templates = await TemplateDesign.find({ userId })
+      .sort({ updatedAt: -1 }); // Sort by most recently updated
+
+    return res.status(200).json({
+      message: "Templates retrieved successfully",
+      templates
+    });
+  } catch (error) {
+    console.error("Error in getTemplateDesignsByUserId:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message
     });
   }
 };
