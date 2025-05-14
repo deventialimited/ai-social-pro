@@ -5,39 +5,26 @@ const {
 } = require("../libs/s3Controllers");
 const TemplateDesign = require("../models/TemplateDesign");
 
-exports.getTemplateDesignById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const templateDesign = await TemplateDesign.findById(id);
-
-    if (!templateDesign) {
-      return res.status(404).json({ message: "TemplateDesign not found" });
-    }
-
-    return res.status(200).json(templateDesign);
-  } catch (error) {
-    console.error("Error in getTemplateDesignById:", error);
-    return res.status(500).json({
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-
 exports.saveOrUpdateTemplateDesign = async (req, res) => {
   try {
-    const { templateId } = req.params; // optional — use to detect update
-    const { templateType } = req.body;
-    const { canvas, elements, layers, backgrounds } = JSON.parse(req.body.data);
-    let files = req.files?.files || [];
+    const { id } = req.params; // optional — use to detect update
+    // Parse the JSON string from form data
+    let parsedData = req.body.data ? JSON.parse(req.body.data) : {};
+    const { templateType = "public", templateId, userId, canvas, elements, layers, backgrounds } = parsedData;
 
+    // Validate required fields
+    if (!templateId || !userId) {
+      return res.status(400).json({ message: "Missing required fields: templateId, userId" });
+    }
+
+    let files = req.files?.files || [];
     let templateImage = null;
     let existingTemplate = null;
     let oldTemplateImageKey = null;
 
     // Check if we're updating an existing template
-    if (templateId) {
-      existingTemplate = await TemplateDesign.findById(templateId);
+    if (id) {
+      existingTemplate = await TemplateDesign.findById(id);
       if (!existingTemplate) {
         return res.status(404).json({ message: "Template not found" });
       }
@@ -45,11 +32,12 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
 
     // Step 1: Handle templateImage separately
     const templateImageFileIndex = files.findIndex(
-      (file) => file.fieldname === "templateImage"
+      (file) => file.originalname === "templateImage"
     );
 
     if (templateImageFileIndex !== -1) {
       const [templateImageFile] = files.splice(templateImageFileIndex, 1);
+      console.log(templateImageFile);
 
       // Delete old template image if exists
       if (existingTemplate?.templateImage) {
@@ -58,18 +46,22 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       }
 
       // Upload new template image
-      const templateImageUpload = await uploadToS3(templateImageFile);
-      templateImage = templateImageUpload?.Location || null;
+      templateImage = await uploadToS3(templateImageFile);
     } else {
       // Reuse old templateImage if not updated
       templateImage = existingTemplate?.templateImage || null;
+    }
+
+    // Validate templateImage is present
+    if (!templateImage) {
+      return res.status(400).json({ message: "Template image is required" });
     }
 
     // Step 2: Upload remaining files (elements/background assets)
     let newFileUrls;
     if (files?.length > 0) {
       newFileUrls = await uploadToS3ForPostDesign({
-        postId: templateId,
+        postId: existingTemplate?.templateId || templateId,
         files,
         elements,
         backgrounds,
@@ -89,47 +81,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       });
     }
 
-    // Step 3: Clean up old unused element/background files if updating
-    if (existingTemplate) {
-      const filesToDelete = [];
-
-      // Compare elements
-      const oldElements = existingTemplate.elements || [];
-      oldElements.forEach((oldEl) => {
-        const match = elements.find((el) => el.id === oldEl.id);
-        if (!match && oldEl.props?.src) {
-          const key = oldEl.props.src.split("/").pop();
-          filesToDelete.push(key);
-        }
-      });
-
-      // Compare background
-      if (
-        JSON.stringify(existingTemplate.backgrounds) !==
-        JSON.stringify(backgrounds)
-      ) {
-        if (existingTemplate.backgrounds?.src) {
-          const key = existingTemplate.backgrounds.src.split("/").pop();
-          filesToDelete.push(key);
-        }
-      }
-
-      if (filesToDelete.length > 0) {
-        await deleteFromS3(filesToDelete);
-      }
-    }
-
-    // Step 4: Sync background styles to canvas
-    if (!canvas.styles) canvas.styles = {};
-    if (backgrounds?.type === "color") {
-      canvas.styles.backgroundColor = backgrounds?.color;
-    } else if (backgrounds?.type === "image") {
-      canvas.styles.backgroundImage = `url(${backgrounds?.src})`;
-    } else if (backgrounds?.type === "video") {
-      canvas.styles.backgroundVideo = backgrounds?.src;
-    }
-
-    // Step 5: Save (update or create)
+    // Step 3: Ensure template data is correct and save
     let templateDesign;
     if (existingTemplate) {
       existingTemplate.templateType = templateType;
@@ -143,6 +95,8 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       templateDesign = existingTemplate;
     } else {
       const newTemplate = new TemplateDesign({
+        userId,
+        templateId,
         templateType,
         templateImage,
         canvas,
@@ -163,6 +117,30 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     return res.status(500).json({
       message: "Internal server error",
       error: error.message,
+    });
+  }
+};
+
+exports.getTemplateDesignsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const templates = await TemplateDesign.find({ userId })
+      .sort({ updatedAt: -1 }); // Sort by most recently updated
+
+    return res.status(200).json({
+      message: "Templates retrieved successfully",
+      templates
+    });
+  } catch (error) {
+    console.error("Error in getTemplateDesignsByUserId:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message
     });
   }
 };
