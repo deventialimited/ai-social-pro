@@ -17,6 +17,6 @@ router.post(
   ]),
   saveOrUpdateTemplateDesign
 );
-router.get("/templates/:userId", getTemplateDesignsByUserId);
+router.get("/:userId", getTemplateDesignsByUserId);
 
 module.exports = router;
