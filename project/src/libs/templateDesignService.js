@@ -9,7 +9,7 @@ const API_URL = "http://localhost:4000";
 export const getTemplateDesignById = async (userId) => {
   try {
     const response = await axios.get(
-      `${API_URL}/api/v1/templateDesign/templates/${userId}`
+      `${API_URL}/api/v1/templateDesign/${userId}`
     );
     return response.data;
   } catch (error) {
