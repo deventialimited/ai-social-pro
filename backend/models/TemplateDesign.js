@@ -4,12 +4,15 @@ const templateDesignSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   templateId: {
     type: String,
+    required: true,  // Make sure templateId is also required
   },
   templateType: {
     type: String, // e.g., "public", "private"
+    required: true,  // Marked as required
   },
   templateImage: {
     type: String, // URL to show preview of the template
+    required: true,  // Marked as required
   },
 
   canvas: {
