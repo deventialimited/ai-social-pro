@@ -6,7 +6,7 @@ const UserRoutes = require("./routes/User");
 const UploadedImageRoutes = require("./routes/UploadedImage");
 const DomainRoutes = require("./routes/Domain");
 const PostRoutes = require("./routes/Post");
-// const Payment = require("./routes/Payment");
+const Payment = require("./routes/Payment");
 const PostDesignRoutes = require("./routes/PostDesign");
 const TemplateDesignRoutes = require("./routes/TemplateDesign");
 const { createServer } = require("http");
@@ -44,7 +44,7 @@ app.use("/api/v1/posts", PostRoutes);
 app.use("/api/v1/postsDesign", PostDesignRoutes);
 app.use("/api/v1/templateDesign", TemplateDesignRoutes);
 app.use("/api/v1/uploadedImage", UploadedImageRoutes);
-// app.use("/api/v1/payment", Payment);
+app.use("/api/v1/payment", Payment);
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running!" });
 });

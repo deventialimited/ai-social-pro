@@ -1,15 +1,19 @@
-"use client"
+"use client";
 
-import React, { Fragment, useState } from "react"
-import { Dialog, Transition, RadioGroup } from "@headlessui/react"
-import { CheckIcon, XIcon as XMarkIcon } from "lucide-react"
-import { loadStripe } from "@stripe/stripe-js"
-import {createCheckoutSession} from '../libs/paymentService'
-const stripePromise = loadStripe('pk_test_51PvNOKP79eqFAJArGMBWHTlUzQdc0inBPKYGNVKVP9IAREdvdbdi40MNjmbTZV2Mrod4zRhMCcxYiriBXiC40pFL00rYTnNonu')
+import { Fragment, useState } from "react";
+import { Dialog, Transition, RadioGroup } from "@headlessui/react";
+import { CheckIcon, XIcon as XMarkIcon } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { createCheckoutSession } from "../libs/paymentService";
+
+// Replace with your actual Stripe publishable key
+const stripePromise = loadStripe(
+  "pk_test_51PvNOKP79eqFAJArGMBWHTlUzQdc0inBPKYGNVKVP9IAREdvdbdi40MNjmbTZV2Mrod4zRhMCcxYiriBXiC40pFL00rYTnNonu"
+);
 
 export default function PricingModal({ onClose, isOpen }) {
-  const [billingCycle, setBillingCycle] = useState("monthly")
-  const [loading, setLoading] = useState(false)
+  const [billingCycle, setBillingCycle] = useState("monthly");
+  const [loading, setLoading] = useState(false);
 
   const starterFeatures = [
     "Unlimited businesses",
@@ -19,7 +23,7 @@ export default function PricingModal({ onClose, isOpen }) {
     "4 connected socials",
     "No watermark",
     "24/7 chat support",
-  ]
+  ];
 
   const professionalFeatures = [
     "Unlimited businesses",
@@ -29,13 +33,31 @@ export default function PricingModal({ onClose, isOpen }) {
     "4 connected socials",
     "No watermark",
     "24/7 chat support",
-  ]
+  ];
 
-  
+  const handleCheckout = async (planType) => {
+    try {
+      setLoading(true);
+
+      // Call the backend to create a Stripe checkout session
+      const { url } = await createCheckoutSession(planType, billingCycle);
+
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setLoading(false);
+      // You might want to show an error message to the user
+    }
+  };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-[99999]" onClose={() => onClose(false)}>
+      <Dialog
+        as="div"
+        className="relative z-[99999]"
+        onClose={() => onClose(false)}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -69,7 +91,10 @@ export default function PricingModal({ onClose, isOpen }) {
                   <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
 
-                <Dialog.Title as="h2" className="text-2xl font-semibold text-gray-900 dark:text-white mt-4">
+                <Dialog.Title
+                  as="h2"
+                  className="text-2xl font-semibold text-gray-900 dark:text-white mt-4"
+                >
                   Choose Your Plan
                 </Dialog.Title>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -104,7 +129,10 @@ export default function PricingModal({ onClose, isOpen }) {
                               : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                           }`}
                         >
-                          Yearly <span className="dark:text-green-400">(Save 20%)</span>
+                          Yearly{" "}
+                          <span className="dark:text-green-400">
+                            (Save 20%)
+                          </span>
                         </div>
                       )}
                     </RadioGroup.Option>
@@ -114,18 +142,30 @@ export default function PricingModal({ onClose, isOpen }) {
                 <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
                   {/* Starter Plan */}
                   <div className="rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 text-left shadow-sm">
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">Starter</h4>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                      Starter
+                    </h4>
                     <p className="mt-4">
-                      <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$59</span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / {billingCycle}</span>
+                      <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        $59
+                      </span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        {" "}
+                        / {billingCycle}
+                      </span>
                     </p>
                     <ul className="mt-6 space-y-3">
                       {starterFeatures.map((feature) => (
                         <li key={feature} className="flex items-start">
                           <div className="flex-shrink-0">
-                            <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+                            <CheckIcon
+                              className="h-5 w-5 text-green-500"
+                              aria-hidden="true"
+                            />
                           </div>
-                          <p className="ml-3 text-sm text-gray-500 dark:text-gray-300">{feature}</p>
+                          <p className="ml-3 text-sm text-gray-500 dark:text-gray-300">
+                            {feature}
+                          </p>
                         </li>
                       ))}
                     </ul>
@@ -133,7 +173,7 @@ export default function PricingModal({ onClose, isOpen }) {
                       <button
                         disabled={loading}
                         type="button"
-                        onClick={() => ({})}
+                        onClick={() => handleCheckout("starter")}
                         className="w-full rounded-md bg-gradient-to-r from-blue-600 to-purple-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                       >
                         {loading ? "Redirecting..." : "Get Started"}
@@ -143,18 +183,30 @@ export default function PricingModal({ onClose, isOpen }) {
 
                   {/* Professional Plan */}
                   <div className="rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-6 text-left shadow-sm">
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">Professional</h4>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                      Professional
+                    </h4>
                     <p className="mt-4">
-                      <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$99</span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / {billingCycle}</span>
+                      <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+                        $99
+                      </span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        {" "}
+                        / {billingCycle}
+                      </span>
                     </p>
                     <ul className="mt-6 space-y-3">
                       {professionalFeatures.map((feature) => (
                         <li key={feature} className="flex items-start">
                           <div className="flex-shrink-0">
-                            <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+                            <CheckIcon
+                              className="h-5 w-5 text-green-500"
+                              aria-hidden="true"
+                            />
                           </div>
-                          <p className="ml-3 text-sm text-gray-500 dark:text-gray-300">{feature}</p>
+                          <p className="ml-3 text-sm text-gray-500 dark:text-gray-300">
+                            {feature}
+                          </p>
                         </li>
                       ))}
                     </ul>
@@ -172,7 +224,8 @@ export default function PricingModal({ onClose, isOpen }) {
                 </div>
 
                 <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                  All plans include a 14-day free trial. No credit card required.
+                  All plans include a 14-day free trial. No credit card
+                  required.
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -180,5 +233,5 @@ export default function PricingModal({ onClose, isOpen }) {
         </div>
       </Dialog>
     </Transition>
-  )
+  );
 }

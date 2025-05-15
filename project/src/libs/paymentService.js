@@ -1,15 +1,19 @@
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
-const API_URL = `${baseURL}/api/v1/payment`;
+const baseURL = "http://localhost:4000/api/v1/payment";
 import axios from "axios";
-export const createCheckoutSession = async (priceId) => { 
-    try {
-        const response = await axios.post(`${API_URL}/createCheckoutSession`, {
-        priceId,
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error creating checkout session:", error);
-        throw error;
-    }
-}
+export const createCheckoutSession = async (planType, billingCycle) => {
+  try {
+    console.log("baseURL", baseURL);
+    const response = await axios.post(`${baseURL}/createCheckoutSession`, {
+      planType,
+      billingCycle,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error creating checkout session:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
