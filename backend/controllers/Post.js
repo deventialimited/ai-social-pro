@@ -303,63 +303,65 @@ exports.getFirstPost = async (req, res) => {
 };
 
 exports.updatePostImage = async (req, res) => {
-  const { id } = req.params;
-  const file = req.file;
-
-  if (!id) {
-    return res.status(400).json({
-      success: false,
-      message: "Post ID is required",
-    });
-  }
-
-  if (!file) {
-    return res.status(400).json({
-      success: false,
-      message: "Image file is required",
-    });
-  }
-
   try {
-    const post = await Post.findById(id);
+    const { postId, imageUrl } = req.body;
+
+    if (!postId || !imageUrl) {
+      return res
+        .status(400)
+        .json({ message: "postId and imageUrl are required" });
+    }
+
+    const post = await Post.findById(postId).populate("domainId");
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found",
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let uploadedImageUrl = "";
+    try {
+      const response = await axios.get(imageUrl, {
+        responseType: "arraybuffer",
       });
+      const buffer = Buffer.from(response.data, "binary");
+      const file = {
+        originalname: `downloaded_${Date.now()}.jpg`,
+        mimetype: response.headers["content-type"],
+        buffer,
+      };
+
+      uploadedImageUrl = await uploadToS3(file);
+    } catch (err) {
+      console.error("Failed to fetch or upload image:", err);
+      return res
+        .status(500)
+        .json({ message: "Image upload failed", error: err.message });
     }
 
-    // If old image exists, delete it from S3
-    if (post.image) {
-      const oldImageKey = getS3KeyFromUrl(post.image);
-      if (oldImageKey) {
-        await deleteFromS3([oldImageKey]);
-      }
-    }
-
-    // Upload new image
-    const fileForS3 = {
-      originalname: `post_image_${Date.now()}_${file.originalname}`,
-      mimetype: file.mimetype,
-      buffer: file.buffer,
-    };
-
-    const uploadedImageUrl = await uploadToS3(fileForS3);
-
-    // Update DB
     post.image = uploadedImageUrl;
     await post.save();
 
+    const updatedPost = await Post.findById(postId).populate(
+      "domainId",
+      "clientName clientWebsite siteLogo colors"
+    );
+
+    socket
+      .getIO()
+      .to(`room_${post.userId}_${post.domainId._id}`)
+      .emit("PostImageUpdated", {
+        message: "Image added to post",
+        post: updatedPost,
+      });
+
     res.status(200).json({
-      success: true,
       message: "Post image updated successfully",
-      post,
+      postId: post._id,
+      imageUrl: uploadedImageUrl,
     });
   } catch (error) {
-    console.error("Error updating post image:", error);
+    console.error("Error in updatePostImage:", error);
     res.status(500).json({
-      success: false,
-      message: "Error uploading image or updating post",
+      message: "Internal server error",
       error: error.message,
     });
   }
