@@ -23,6 +23,7 @@ export const SocketProvider = ({ children }) => {
     socket.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
     });
+
     socket.on("reconnect_attempt", (attempt) => {
       console.log(`Reconnection attempt ${attempt}...`);
     });
