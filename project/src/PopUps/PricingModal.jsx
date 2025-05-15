@@ -1,20 +1,16 @@
 "use client"
 
-import { Fragment, useState } from "react"
+import React, { Fragment, useState } from "react"
 import { Dialog, Transition, RadioGroup } from "@headlessui/react"
 import { CheckIcon, XIcon as XMarkIcon } from "lucide-react"
-import React from "react"
+import { loadStripe } from "@stripe/stripe-js"
+import {createCheckoutSession} from '../libs/paymentService'
+const stripePromise = loadStripe('pk_test_51PvNOKP79eqFAJArGMBWHTlUzQdc0inBPKYGNVKVP9IAREdvdbdi40MNjmbTZV2Mrod4zRhMCcxYiriBXiC40pFL00rYTnNonu')
 
-type BillingCycle = "monthly" | "yearly"
+export default function PricingModal({ onClose, isOpen }) {
+  const [billingCycle, setBillingCycle] = useState("monthly")
+  const [loading, setLoading] = useState(false)
 
-interface PricingModalProps {
-  onClose: (value: boolean) => void;
-  isOpen: boolean;
-}
-
-export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly")
-        
   const starterFeatures = [
     "Unlimited businesses",
     "6 weekly unique posts",
@@ -34,6 +30,8 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
     "No watermark",
     "24/7 chat support",
   ]
+
+  
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -119,7 +117,7 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">Starter</h4>
                     <p className="mt-4">
                       <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$59</span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / month</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / {billingCycle}</span>
                     </p>
                     <ul className="mt-6 space-y-3">
                       {starterFeatures.map((feature) => (
@@ -133,10 +131,12 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                     </ul>
                     <div className="mt-8">
                       <button
+                        disabled={loading}
                         type="button"
+                        onClick={() => ({})}
                         className="w-full rounded-md bg-gradient-to-r from-blue-600 to-purple-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                       >
-                        Get Started
+                        {loading ? "Redirecting..." : "Get Started"}
                       </button>
                     </div>
                   </div>
@@ -146,7 +146,7 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">Professional</h4>
                     <p className="mt-4">
                       <span className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">$99</span>
-                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / month</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400"> / {billingCycle}</span>
                     </p>
                     <ul className="mt-6 space-y-3">
                       {professionalFeatures.map((feature) => (
@@ -160,10 +160,12 @@ export default function PricingModal({ onClose, isOpen }: PricingModalProps) {
                     </ul>
                     <div className="mt-8">
                       <button
+                        disabled={loading}
                         type="button"
+                        onClick={() => handleCheckout("professional")}
                         className="w-full rounded-md bg-gradient-to-r from-blue-600 to-purple-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                       >
-                        Get Started
+                        {loading ? "Redirecting..." : "Get Started"}
                       </button>
                     </div>
                   </div>

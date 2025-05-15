@@ -4,6 +4,7 @@ const getRawBody = require("raw-body");
 const axios = require("axios");
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const mongoose = require("mongoose");
+const socket = require("../utils/socket");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -174,6 +175,7 @@ exports.updatePostImage = async (req, res) => {
 
 exports.processPubSub = async (req, res) => {
   try {
+    console.log("into pubsub");
     const jsonData = req.body;
 
     if (!jsonData || Object.keys(jsonData).length === 0) {
@@ -185,6 +187,7 @@ exports.processPubSub = async (req, res) => {
     console.log("Generated Post:", JSON.stringify(jsonData));
 
     const domain = await Domain.findOne({ client_id: jsonData?.client_id });
+    console.log("Domain:", domain);
     if (!domain) {
       return res.status(404).json({ message: "client id not found" });
     }
@@ -212,11 +215,13 @@ exports.processPubSub = async (req, res) => {
       "clientName clientWebsite siteLogo colors"
     );
 
-    const io = req.app.get("io");
-    io.to(`room_${domain?.userId}_${domain?._id}`).emit("PostSaved", {
-      message: "Post created without image",
-      post: postData,
-    });
+    socket
+      .getIO()
+      .to(`room_${domain?.userId}_${domain?._id}`)
+      .emit("PostSaved", {
+        message: "Post created without image",
+        post: postData,
+      });
 
     res.status(201).json({
       message: "Post created successfully (without image)",
