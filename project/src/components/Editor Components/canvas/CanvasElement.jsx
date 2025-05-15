@@ -132,7 +132,9 @@ const CanvasElement = ({
         if (shouldMaintainAspectRatio) {
           // For diagonal resizing with SHIFT, use the larger delta to maintain aspect ratio
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-          newWidth = Math.max(width - delta, 20);
+          const signX = Math.sign(deltaX);
+          const signY = Math.sign(deltaY);
+          newWidth = Math.max(width - (delta * signX), 20);
           newHeight = newWidth / aspectRatio;
           newX = position.x + (width - newWidth);
           newY = position.y + (height - newHeight);
@@ -146,7 +148,9 @@ const CanvasElement = ({
       case "ne":
         if (shouldMaintainAspectRatio) {
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-          newWidth = Math.max(width + delta, 20);
+          const signX = Math.sign(deltaX);
+          const signY = Math.sign(deltaY);
+          newWidth = Math.max(width + (delta * signX), 20);
           newHeight = newWidth / aspectRatio;
           newY = position.y + (height - newHeight);
         } else {
@@ -158,7 +162,9 @@ const CanvasElement = ({
       case "sw":
         if (shouldMaintainAspectRatio) {
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-          newWidth = Math.max(width - delta, 20);
+          const signX = Math.sign(deltaX);
+          const signY = Math.sign(deltaY);
+          newWidth = Math.max(width - (delta * signX), 20);
           newHeight = newWidth / aspectRatio;
           newX = position.x + (width - newWidth);
         } else {
@@ -170,7 +176,9 @@ const CanvasElement = ({
       case "se":
         if (shouldMaintainAspectRatio) {
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-          newWidth = Math.max(width + delta, 20);
+          const signX = Math.sign(deltaX);
+          const signY = Math.sign(deltaY);
+          newWidth = Math.max(width + (delta * signX), 20);
           newHeight = newWidth / aspectRatio;
         } else {
           newWidth = Math.max(width + deltaX, 20);

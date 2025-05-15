@@ -46,15 +46,12 @@ const TopHeaderBtns = ({
   const onSavePost = useSaveOrUpdatePostDesign();
   const onSaveTemplate = useSaveOrUpdateTemplateDesign();
   const user = JSON.parse(localStorage?.getItem("user"));
-  const [isSaveLoading, setIsSaveLoading] = useState(false);
-  const onSave = useSaveOrUpdatePostDesign();
 
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
-
     try {
       const node = canvasContainerRef.current;
 
@@ -63,6 +60,7 @@ const TopHeaderBtns = ({
       const height = node.offsetHeight * scale;
 
       const blob = await htmlToImage.toBlob(node, {
+        skipFonts: true,
         width,
         height,
         style: {
@@ -93,7 +91,7 @@ const TopHeaderBtns = ({
             setTimeout(() => {
               setIsSavePostLoading(false); // Runs regardless of success or error
               onClose(); // Close only on success
-              setIsSaveLoading(false);
+              setIsSavePostLoading(false);
               onClose();
               clearEditor();
               toast.success("Post saved successfully");
@@ -103,7 +101,7 @@ const TopHeaderBtns = ({
             toast.error(
               error?.response?.data?.message || "Failed to save post"
             );
-            setIsSaveLoading(false);
+            setIsSavePostLoading(false);
             toast.error(error?.response?.data?.message);
             setIsSavePostLoading(false);
             console.error("Error saving design:", error);
@@ -111,7 +109,7 @@ const TopHeaderBtns = ({
         }
       );
     } catch (error) {
-      setIsSaveLoading(false);
+      setIsSavePostLoading(false);
       toast.error("An error occurred while saving");
       console.error("Error saving design:", error);
     }
@@ -121,22 +119,40 @@ const TopHeaderBtns = ({
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSaveTemplateLoading(true);
-
     try {
       const node = canvasContainerRef.current;
-      const dataUrl = await domtoimage.toPng(node);
 
-      // Convert base64 to File
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], `canvas_${Date.now()}.png`, {
-        type: "image/png",
+      const scale = 5;
+      const width = node.offsetWidth * scale;
+      const height = node.offsetHeight * scale;
+
+      const blob = await htmlToImage.toBlob(node, {
+        skipFonts: true,
+        width,
+        height,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          width: `${node.offsetWidth}px`,
+          height: `${node.offsetHeight}px`,
+        },
+        type: "image/webp",
       });
 
+      if (!blob) {
+        throw new Error("Failed to convert canvas to image.");
+      }
+
+      const file = new File([blob], `canvas_${Date.now()}.webp`, {
+        type: "image/webp",
+      });
       onSaveTemplate.mutate(
         {
-          id: null,
-          templateId: `${user?.username}-${uuidv4()}`,
+          id: postDesignData?._id,
+          userId: user?._id,
+          templateId: postDesignData?._id
+            ? null
+            : `${user?.username}-${uuidv4()}`,
           templateType,
           templateImage: file,
           templateDesignData: postDesignData,
@@ -161,8 +177,9 @@ const TopHeaderBtns = ({
         }
       );
     } catch (error) {
-      console.error("Error capturing canvas for template:", error);
       setIsSaveTemplateLoading(false);
+      toast.error("An error occurred while saving");
+      console.error("Error saving design:", error);
     }
   };
   const handleAddImage = async (src) => {
@@ -267,7 +284,7 @@ const TopHeaderBtns = ({
         setValue={(value) => {
           setTemplateType(value);
         }}
-      />
+      /> */}
       <button
         onClick={handleSaveTemplateAndClose}
         disabled={isSaveTemplateLoading}
@@ -284,7 +301,7 @@ const TopHeaderBtns = ({
             <span>Save As Template</span>
           </>
         )}
-      </button> */}
+      </button>
       <button
         onClick={handleSavePostAndClose}
         disabled={isSavePostLoading}
