@@ -54,6 +54,25 @@ const TopHeaderBtns = ({
     setIsSavePostLoading(true);
     try {
       const node = canvasContainerRef.current;
+      if (!node) {
+        throw new Error("Canvas container not found");
+      }
+
+      // Wait for all images to load
+      const images = node.getElementsByTagName('img');
+      await Promise.all(
+        Array.from(images).map(
+          (img) =>
+            new Promise((resolve, reject) => {
+              if (img.complete) {
+                resolve();
+              } else {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error(`Failed to load image: ${img.src}`));
+              }
+            })
+        )
+      );
 
       const scale = 5;
       const width = node.offsetWidth * scale;
@@ -70,6 +89,7 @@ const TopHeaderBtns = ({
           height: `${node.offsetHeight}px`,
         },
         type: "image/webp",
+        imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
       });
 
       if (!blob) {
@@ -79,18 +99,32 @@ const TopHeaderBtns = ({
       const file = new File([blob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
+
+      // Preserve existing image IDs in postDesignData
+      const updatedPostDesignData = {
+        ...postDesignData,
+        elements: postDesignData.elements.map(element => {
+          if (element.type === 'image') {
+            // Keep the existing ID for images
+            return {
+              ...element,
+              id: element.id // Preserve the original ID
+            };
+          }
+          return element;
+        })
+      };
+
       onSavePost.mutate(
         {
           postId,
           postImage: file,
-          postDesignData,
+          postDesignData: updatedPostDesignData,
           allFiles,
         },
         {
           onSuccess: () => {
             setTimeout(() => {
-              setIsSavePostLoading(false); // Runs regardless of success or error
-              onClose(); // Close only on success
               setIsSavePostLoading(false);
               onClose();
               clearEditor();
@@ -102,15 +136,13 @@ const TopHeaderBtns = ({
               error?.response?.data?.message || "Failed to save post"
             );
             setIsSavePostLoading(false);
-            toast.error(error?.response?.data?.message);
-            setIsSavePostLoading(false);
             console.error("Error saving design:", error);
           },
         }
       );
     } catch (error) {
       setIsSavePostLoading(false);
-      toast.error("An error occurred while saving");
+      toast.error(error.message || "An error occurred while saving");
       console.error("Error saving design:", error);
     }
   };
@@ -121,6 +153,25 @@ const TopHeaderBtns = ({
     setIsSaveTemplateLoading(true);
     try {
       const node = canvasContainerRef.current;
+      if (!node) {
+        throw new Error("Canvas container not found");
+      }
+
+      // Wait for all images to load
+      const images = node.getElementsByTagName('img');
+      await Promise.all(
+        Array.from(images).map(
+          (img) =>
+            new Promise((resolve, reject) => {
+              if (img.complete) {
+                resolve();
+              } else {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error(`Failed to load image: ${img.src}`));
+              }
+            })
+        )
+      );
 
       const scale = 5;
       const width = node.offsetWidth * scale;
@@ -137,6 +188,7 @@ const TopHeaderBtns = ({
           height: `${node.offsetHeight}px`,
         },
         type: "image/webp",
+        imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
       });
 
       if (!blob) {
@@ -146,6 +198,21 @@ const TopHeaderBtns = ({
       const file = new File([blob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
+
+      // Preserve existing image IDs in templateDesignData
+      const updatedTemplateDesignData = {
+        ...postDesignData,
+        elements: postDesignData.elements.map(element => {
+          if (element.type === 'image') {
+            return {
+              ...element,
+              id: element.id
+            };
+          }
+          return element;
+        })
+      };
+
       onSaveTemplate.mutate(
         {
           id: postDesignData?._id,
@@ -155,7 +222,7 @@ const TopHeaderBtns = ({
             : `${user?.username}-${uuidv4()}`,
           templateType,
           templateImage: file,
-          templateDesignData: postDesignData,
+          templateDesignData: updatedTemplateDesignData,
           allFiles,
         },
         {
@@ -164,7 +231,7 @@ const TopHeaderBtns = ({
               setIsSaveTemplateLoading(false);
               onClose();
               clearEditor();
-              toast.success("Template saved successfully");
+              toast.success(`Template saved successfully as ${templateType}`);
             }, 3000);
           },
           onError: (error) => {
@@ -178,7 +245,7 @@ const TopHeaderBtns = ({
       );
     } catch (error) {
       setIsSaveTemplateLoading(false);
-      toast.error("An error occurred while saving");
+      toast.error(error.message || "An error occurred while saving");
       console.error("Error saving design:", error);
     }
   };
@@ -272,19 +339,13 @@ const TopHeaderBtns = ({
         Cancel
       </button>
 
-      {/* <div className="relative">
-       <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50">
-         <span>Change to Video</span>
-         <ChevronDown className="h-4 w-4" />
-       </button>
-     </div> */}
-      {/* <Dropdown
+      <Dropdown
         options={["private", "public"]}
         value={templateType}
         setValue={(value) => {
           setTemplateType(value);
         }}
-      /> */}
+      />
       <button
         onClick={handleSaveTemplateAndClose}
         disabled={isSaveTemplateLoading}
