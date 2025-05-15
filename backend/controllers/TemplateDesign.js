@@ -10,11 +10,20 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     const { id } = req.params; // optional — use to detect update
     // Parse the JSON string from form data
     let parsedData = req.body.data ? JSON.parse(req.body.data) : {};
-    const { templateType = "public", templateId, userId, canvas, elements, layers, backgrounds } = parsedData;
+    const { templateType, templateId, userId, canvas, elements, layers, backgrounds } = parsedData;
 
     // Validate required fields
-    if (!templateId || !userId) {
-      return res.status(400).json({ message: "Missing required fields: templateId, userId" });
+    if (!templateId || !userId || !templateType) {
+      return res.status(400).json({ 
+        message: "Missing required fields: templateId, userId, or templateType" 
+      });
+    }
+
+    // Validate templateType
+    if (!["private", "public"].includes(templateType)) {
+      return res.status(400).json({ 
+        message: "Invalid template type. Must be either 'private' or 'public'" 
+      });
     }
 
     let files = req.files?.files || [];
