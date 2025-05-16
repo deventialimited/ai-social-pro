@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const PostSchema = new Schema({
   domainId: { type: mongoose.Schema.Types.ObjectId, ref: "Domain" },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-
+  postId: { type: String, default: "" },
   image: { type: String, default: "" },
   topic: { type: String, default: "" },
   content: { type: String, default: "" },
