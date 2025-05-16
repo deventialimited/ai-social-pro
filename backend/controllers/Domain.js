@@ -3,105 +3,7 @@ const User = require("../models/User");
 const axios = require("axios");
 
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
-// Add a new domain
-// exports.addDomain = async (req, res) => {
-//   // Create new domain object
-//   const {
-//     client_email,
-//     clientWebsite,
-//     clientName,
-//     clientDescription,
-//     industry,
-//     niche,
-//     colors,
-//     userId,
-//     core_values,
-//     audience,
-//     audiencePains,
-//     language,
-//     country,
-//     state,
-//   } = req.body;
-
-//   console.log("Received data:", req.body); // Log the received data
-//   try {
-//     // Helper function to split numbered lists correctly
-//     const splitNumberedList = (value) => {
-//       if (typeof value !== "string") return value; // Return original if not a string
-//       return value
-//         .split(/(?=\d+\.\s)/) // Split before numbers like "1. ", "2. "
-//         .map((v) => v.trim()); // Trim spaces
-//     };
-//     const marketingStrategy = {
-//       core_values: splitNumberedList(core_values),
-//       audiencePains: splitNumberedList(audiencePains),
-//       audience: splitNumberedList(audience),
-//     };
-
-//     // Create new domain object
-//     const domainData = {
-//       client_email,
-//       clientWebsite,
-//       clientName,
-//       clientDescription,
-//       industry,
-//       niche,
-//       colors,
-//       userId,
-//       language,
-//       country,
-//       state,
-//       marketingStrategy,
-//     };
-
-//     const logoUrl = `https://img.logo.dev/${clientWebsite}`;
-//     // Check if Logo.dev returned a valid image
-//     const logoResponse = await fetch(logoUrl, {
-//        headers: {
-//     Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
-//   },
-//     });
-//     let siteLogo;
-//     let uploadedImageUrl = "";
-
-//     if (logoResponse.ok && logoResponse.headers.get('content-type')?.includes('image')) {
-//       siteLogo = logoUrl;
-//     }
-
-//  try {
-//         const response = await axios.get(siteLogo, {
-//           responseType: "arraybuffer",
-//         });
-
-//         const buffer = Buffer.from(response.data, "binary");
-//         const file = {
-//           originalname: `downloaded_${Date.now()}.jpg`, // you can extract real extension if needed
-//           mimetype: response.headers["content-type"],
-//           buffer: buffer,
-//         };
-
-//    uploadedImageUrl = await uploadToS3(file);
-
-//       } catch (err) {
-//         console.error("Failed to fetch or upload image:", err);
-//     }
-
-//     const newDomain = new Domain({ ...domainData, siteLogo:uploadedImageUrl });
-
-//     const savedDomain = await newDomain.save();
-//     console.log("Saved domain:", savedDomain); // Log the saved domain
-//     res.status(201).json({
-//       success: true,
-//       message: "Domain created successfully",
-//       data: savedDomain,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       error: error.message,
-//     });
-//   }
-// };
+const { Token } = require("aws-sdk");
 
 function normalizeDomain(url) {
   return url
@@ -109,6 +11,7 @@ function normalizeDomain(url) {
     .replace(/^www\./, "")
     .split("/")[0];
 }
+
 exports.addDomain = async (req, res) => {
   const {
     client_email,
@@ -157,66 +60,70 @@ exports.addDomain = async (req, res) => {
       client_id,
     };
 
-    // Start logo generation logic
-    let siteLogo;
+    // Logo processing logic
     let uploadedImageUrl = "";
-    let clientWebisteForLogo = normalizeDomain(clientWebsite);
-    console.log("Normalized client website for logo:", clientWebisteForLogo);
-    try {
-      const logoUrl = `https://img.logo.dev/${clientWebisteForLogo}`;
-      console.log("Attempting to fetch logo of:", clientWebsite);
-      console.log("Attempting to fetch logo from:", logoUrl);
+    const clientWebsiteForLogo = normalizeDomain(clientWebsite);
+    console.log("Normalized client website for logo:", clientWebsiteForLogo);
 
+    try {
+      // Option 1: Using token in URL (if API requires it)
+      const logoUrl = `https://img.logo.dev/${clientWebsiteForLogo}?token=${process.env.LOGO_SECRET_KEY}`;
+
+      // Option 2: Using Authorization header (recommended if API supports it)
+      // const logoUrl = `https://img.logo.dev/${clientWebsiteForLogo}`;
+
+      console.log("Fetching logo from:", logoUrl);
+
+      // Fetch the logo
       const logoResponse = await fetch(logoUrl, {
-        headers: {
-          Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`,
-        },
+        // Uncomment if using Authorization header
+        // headers: {
+        //   Authorization: `Bearer ${process.env.LOGO_SECRET_KEY}`
+        // }
       });
-const responseStatus = logoResponse.status;
-      console.log("Logo response status:", responseStatus);
-      const responseBody = await logoResponse.text();
+
       if (!logoResponse.ok) {
-        console.warn("Logo.dev failed response body:", responseBody);
+        const errorBody = await logoResponse.text();
+        console.warn("Logo.dev API error:", errorBody);
+        throw new Error(`Logo fetch failed with status ${logoResponse.status}`);
       }
-      const isImage =
-        logoResponse.ok &&
-        logoResponse.headers.get("content-type")?.includes("image");
+
+      const contentType = logoResponse.headers.get("content-type");
+      const isImage = contentType?.includes("image");
 
       if (isImage) {
-        siteLogo = logoUrl;
+        // Get the image buffer directly from the response
+        const imageBuffer = await logoResponse.arrayBuffer();
+        const buffer = Buffer.from(imageBuffer);
 
-        // Download the image
-        const response = await axios.get(siteLogo, {
-          responseType: "arraybuffer",
-        });
-
-        const buffer = Buffer.from(response.data, "binary");
-
+        // Prepare file for S3 upload
         const file = {
-          originalname: `downloaded_${Date.now()}.jpg`,
-          mimetype: response.headers["content-type"],
+          originalname: `logo_${Date.now()}.${
+            contentType.split("/")[1] || "png"
+          }`,
+          mimetype: contentType,
           buffer: buffer,
         };
 
         // Upload to S3
         uploadedImageUrl = await uploadToS3(file);
-        console.log("Image uploaded to S3:", uploadedImageUrl);
+        console.log("Logo uploaded to S3:", uploadedImageUrl);
       } else {
         console.warn("No valid image found at Logo.dev for:", clientWebsite);
       }
     } catch (err) {
-      console.error("Failed to fetch or upload image:", err);
+      console.error("Logo processing error:", err);
+      // Continue without failing the entire request if logo is optional
     }
 
-    console.log("before saving data", domainData);
-    // Save domain
+    // Save domain with or without logo
     const newDomain = new Domain({
       ...domainData,
-      siteLogo: uploadedImageUrl, // could be empty string if upload failed
+      siteLogo: uploadedImageUrl || "", // Empty string if upload failed
     });
 
     const savedDomain = await newDomain.save();
-    console.log("Saved domain:", savedDomain);
+    console.log("Domain saved successfully:", savedDomain);
 
     res.status(201).json({
       success: true,
@@ -227,11 +134,10 @@ const responseStatus = logoResponse.status;
     console.error("addDomain error:", error);
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: error.message || "Internal server error",
     });
   }
 };
-
 // Get all domains
 exports.getAllDomains = async (req, res) => {
   try {
