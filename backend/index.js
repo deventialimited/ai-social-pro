@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 const UserRoutes = require("./routes/User");
 const UploadedImageRoutes = require("./routes/UploadedImage");
 const DomainRoutes = require("./routes/Domain");
@@ -19,6 +19,7 @@ const app = express();
 const corsOptions = {
   origin: [
     "https://dev.oneyearsocial.com",
+    "https://dev.oneyearsocial.com/",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5176/",

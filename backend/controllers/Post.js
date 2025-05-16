@@ -120,7 +120,7 @@ exports.updatePostImage = async (req, res) => {
         .json({ message: "postId and imageUrl are required" });
     }
 
-    const post = await Post.findById(postId).populate("domainId");
+    const post = await Post.findById({ postId }).populate("domainId");
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -148,7 +148,7 @@ exports.updatePostImage = async (req, res) => {
     post.image = uploadedImageUrl;
     await post.save();
 
-    const updatedPost = await Post.findById(postId).populate(
+    const updatedPost = await Post.findById({ postId }).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
     );
