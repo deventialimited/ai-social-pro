@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 // const API_URL = import.meta.env.VITE_API_URL || '';
-const API_URL = "https://api.oneyearsocial.com";
-// const API_URL = "http://localhost:4000";
+// const API_URL = "https://api.oneyearsocial.com";
+const API_URL = "http://localhost:5000";
 
 // Get post design by ID
 export const getTemplateDesignById = async (userId) => {
@@ -29,6 +29,7 @@ export const useGetAllTemplatesByUserId = (userId) => {
     },
   });
 };
+
 export const useSaveOrUpdateTemplateDesign = () => {
   const queryClient = useQueryClient();
 
@@ -52,8 +53,24 @@ export const useSaveOrUpdateTemplateDesign = () => {
         allFiles
       );
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries(["templates", data?.userId]);
+    onSuccess: async (data) => {
+      // Invalidate the templates query for this user
+      await queryClient.invalidateQueries(["templates", data?.userId]);
+      
+      // Immediately refetch the templates
+      await queryClient.refetchQueries(["templates", data?.userId]);
+      
+      // Update the cache with the new template data
+      queryClient.setQueryData(["templates", data?.userId], (oldData) => {
+        if (!oldData) return { templates: [data.templateDesign] };
+        
+        const templates = Array.isArray(oldData) ? oldData : oldData.templates || [];
+        const updatedTemplates = templates.map(template => 
+          template._id === data.templateDesign._id ? data.templateDesign : template
+        );
+        
+        return Array.isArray(oldData) ? updatedTemplates : { ...oldData, templates: updatedTemplates };
+      });
     },
     onError: (error) => {
       console.error("Failed to save/update template design:", error);
