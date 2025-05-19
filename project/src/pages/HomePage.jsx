@@ -168,6 +168,8 @@ export const HomePage = () => {
       });
 
       console.log("result:", result); // Debug log
+      console.log(user?._id, "userId"); // Debug log
+      console.log(result?._id, "domainId"); // Debug log
       socket.emit(
         "JoinRoom",
         {
