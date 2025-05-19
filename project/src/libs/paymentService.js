@@ -1,4 +1,4 @@
-const baseURL = "http://localhost:4000/api/v1/payment";
+const baseURL = "http://localhost:5000/api/v1/payment";
 import axios from "axios";
 export const createCheckoutSession = async (planType, billingCycle) => {
   try {
@@ -16,4 +16,20 @@ export const createCheckoutSession = async (planType, billingCycle) => {
     );
     throw error;
   }
+};
+
+export const verifyPayment = async (sessionId) => {
+  const response = await fetch(`${baseURL}/verify-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({ sessionId }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Verification failed");
+  }
+  return response.json();
 };

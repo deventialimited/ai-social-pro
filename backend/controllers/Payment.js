@@ -44,3 +44,35 @@ exports.createCheckoutSession = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.verifySession = async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["subscription"],
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    // Save to database
+    await User.updateOne(
+      { _id: req.user.id },
+      {
+        subscriptionStatus: "active",
+        stripeCustomerId: session.customer,
+        subscriptionId: session.subscription.id,
+      }
+    );
+
+    res.json({
+      status: session.status,
+      subscriptionId: session.subscription.id,
+    });
+  } catch (error) {
+    console.error("Error verifying session", error);
+    res.status(500).json({ error: error.message });
+  }
+};
