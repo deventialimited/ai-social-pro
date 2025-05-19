@@ -120,9 +120,9 @@ exports.updatePostImage = async (req, res) => {
         .json({ message: "postId and imageUrl are required" });
     }
 
-    const post = await Post.findById({ postId }).populate("domainId");
+    const post = await Post.findOne({ postId }).populate("domainId");
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(501).json({ message: "Post not found" });
     }
 
     let uploadedImageUrl = "";
@@ -148,16 +148,18 @@ exports.updatePostImage = async (req, res) => {
     post.image = uploadedImageUrl;
     await post.save();
 
-    const updatedPost = await Post.findById({ postId }).populate(
+    const updatedPost = await Post.findOne({ postId }).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
     );
 
-    const io = req.app.get("io");
-    io.to(`room_${post.userId}_${post.domainId._id}`).emit("PostImageUpdated", {
-      message: "Image added to post",
-      post: updatedPost,
-    });
+    socket
+      .getIO()
+      .to(`room_${post.userId}_${post.domainId._id}`)
+      .emit("PostImageUpdated", {
+        message: "Image added to post",
+        post: updatedPost,
+      });
 
     res.status(200).json({
       message: "Post image updated successfully",
@@ -297,71 +299,6 @@ exports.getFirstPost = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while fetching first post",
-      error: error.message,
-    });
-  }
-};
-
-exports.updatePostImage = async (req, res) => {
-  try {
-    const { postId, imageUrl } = req.body;
-
-    if (!postId || !imageUrl) {
-      return res
-        .status(400)
-        .json({ message: "postId and imageUrl are required" });
-    }
-
-    const post = await Post.findById(postId).populate("domainId");
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    let uploadedImageUrl = "";
-    try {
-      const response = await axios.get(imageUrl, {
-        responseType: "arraybuffer",
-      });
-      const buffer = Buffer.from(response.data, "binary");
-      const file = {
-        originalname: `downloaded_${Date.now()}.jpg`,
-        mimetype: response.headers["content-type"],
-        buffer,
-      };
-
-      uploadedImageUrl = await uploadToS3(file);
-    } catch (err) {
-      console.error("Failed to fetch or upload image:", err);
-      return res
-        .status(500)
-        .json({ message: "Image upload failed", error: err.message });
-    }
-
-    post.image = uploadedImageUrl;
-    await post.save();
-
-    const updatedPost = await Post.findById(postId).populate(
-      "domainId",
-      "clientName clientWebsite siteLogo colors"
-    );
-
-    socket
-      .getIO()
-      .to(`room_${post.userId}_${post.domainId._id}`)
-      .emit("PostImageUpdated", {
-        message: "Image added to post",
-        post: updatedPost,
-      });
-
-    res.status(200).json({
-      message: "Post image updated successfully",
-      postId: post._id,
-      imageUrl: uploadedImageUrl,
-    });
-  } catch (error) {
-    console.error("Error in updatePostImage:", error);
-    res.status(500).json({
-      message: "Internal server error",
       error: error.message,
     });
   }
