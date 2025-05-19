@@ -61,11 +61,6 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       templateImage = existingTemplate?.templateImage || null;
     }
 
-    // Validate templateImage is present
-    if (!templateImage) {
-      return res.status(400).json({ message: "Template image is required" });
-    }
-
     // Step 2: Upload remaining files (elements/background assets)
     let newFileUrls;
     if (files?.length > 0) {
