@@ -227,7 +227,7 @@ exports.processPubSub = async (req, res) => {
 
     res.status(201).json({
       message: "Post created successfully (without image)",
-      postId: savedPost._id,
+      postId: savedPost.postId,
     });
   } catch (error) {
     console.error("Error in processPubSub:", error);
