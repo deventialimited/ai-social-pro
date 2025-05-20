@@ -86,6 +86,33 @@
         ref: "Domain",
         default: null,
       },
+      stripeCustomerId: {
+        type: String,
+      },
+      subscriptionId: {
+        type: String,
+      },
+      subscriptionStatus: {
+        type: String,
+        enum: [
+          "active",
+          "past_due",
+          "canceled",
+          "incomplete",
+          "incomplete_expired",
+          "trialing",
+          "unpaid",
+        ],
+      },
+      plan: {
+        type: String,
+        enum: ["starter", "professional"],
+      },
+      billingCycle: {
+        type: String,
+        enum: ["monthly", "yearly"],
+      },
+
       PlatformConnected: [
         {
           platformName: {

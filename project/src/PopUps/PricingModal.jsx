@@ -38,9 +38,9 @@ export default function PricingModal({ onClose, isOpen }) {
   const handleCheckout = async (planType) => {
     try {
       setLoading(true);
-
+const user=await JSON.parse(localStorage.getItem("user"));
       // Call the backend to create a Stripe checkout session
-      const { url } = await createCheckoutSession(planType, billingCycle);
+      const { url } = await createCheckoutSession(planType, billingCycle, user);
 
       // Redirect to Stripe Checkout
       window.location.href = url;

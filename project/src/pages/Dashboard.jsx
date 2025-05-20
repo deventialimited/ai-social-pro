@@ -10,6 +10,8 @@ import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
 import { useSearchParams } from "react-router-dom";
+import { SuccessPopup } from "./SuccessPopup";
+import { CancelPopup } from "./CancelPopup";
 import {
   useGetAllPostsByDomainId,
   useUpdatePostById,
@@ -46,6 +48,19 @@ export const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const checkoutStatus = searchParams.get("checkout");
+  const [showPopup, setShowPopup] = useState(false);
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    // Remove the query params from URL without reload
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
+  useEffect(() => {
+    // Show popup if checkout status is present
+    if (checkoutStatus) {
+      setShowPopup(true);
+    }
+  }, [checkoutStatus]);
   const {
     data: posts,
     isPostsLoading,
@@ -174,7 +189,7 @@ export const Dashboard = () => {
         );
       case "socials":
         return <SocialsTab />;
-     
+
       default:
         return <div>Dashboard Content</div>;
     }
@@ -207,7 +222,13 @@ export const Dashboard = () => {
         >
           {renderContent()}
         </div>
+        {showPopup && checkoutStatus === "success" && (
+          <SuccessPopup onClose={handleClosePopup} />
+        )}
 
+        {showPopup && checkoutStatus === "cancel" && (
+          <CancelPopup onClose={handleClosePopup} />
+        )}
         {isGeneratingPosts && <PostsLoader />}
       </div>
     </div>

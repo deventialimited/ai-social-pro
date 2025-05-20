@@ -13,8 +13,7 @@ import { LinkedIn } from "./pages/SocialMediaPages/LinkedIn";
 import { XAuth } from "./pages/SocialMediaPages/XAuth";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
-import StripeSuccess from "./pages/StripeSuccess";
-import StripeCancel from "./pages/StripeCancel";
+
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
@@ -47,8 +46,6 @@ function App() {
             <Route path="/dashboard/LinkedinAuth" element={<LinkedIn />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-condition" element={<TermsAndConditions />} />
-            <Route path="/success" element={<StripeSuccess />} />
-            <Route path="/cancel" element={<StripeCancel />} />
           </Routes>
           <Toaster toastOptions={{ style: { zIndex: 999999999999 } }} />
         </BrowserRouter>
