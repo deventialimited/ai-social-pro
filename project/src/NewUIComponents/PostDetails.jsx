@@ -79,17 +79,19 @@ export default function PostDetails({ postData }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-auto">
       {/* Header Title */}
-      <h1
-        className="text-center font-bold text-2xl sm:text-xl px-4 pt-6 pb-2 text-transparent bg-clip-text"
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        Congratulations! Your First Post Is Ready
-      </h1>
+      <div className="bg-gray-100 dark:bg-gray-700 px-4 py-3 text-center rounded-t-lg">
+        <h1
+          className="font-bold text-2xl sm:text-xl text-transparent bg-clip-text"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(49, 67, 204, 1) 0%, rgba(175, 87, 199, 1) 53%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Congratulations! Your First Post Is Ready
+        </h1>
+      </div>
 
       {/* Card Header */}
       <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
