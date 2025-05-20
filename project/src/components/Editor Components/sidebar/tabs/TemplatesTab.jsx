@@ -10,6 +10,7 @@ function TemplatesTab() {
     setBackgrounds,
     setCanvasLoading,
     canvasLoading,
+    setPostDesignData,
   } = useEditor();
   const [query, setQuery] = useState("");
   const [userId, setUserId] = useState(null);
@@ -29,6 +30,7 @@ function TemplatesTab() {
     isLoading,
     isError,
     error,
+    refetch
   } = useGetAllTemplatesByUserId(userId);
 
   // Normalize templates
@@ -39,7 +41,17 @@ function TemplatesTab() {
     try {
       setCanvasLoading(true);
 
-      // Load the complete template data
+      // Store the complete template data including ID
+      setPostDesignData({
+        _id: template._id,
+        templateId: template.templateId,
+        canvas: template.canvas,
+        elements: template.elements,
+        layers: template.layers,
+        backgrounds: template.backgrounds,
+      });
+
+      // Load the template data into the editor
       if (template.canvas) {
         setCanvas(template.canvas);
       }
@@ -59,6 +71,13 @@ function TemplatesTab() {
       console.error("Failed to load template:", error);
     }
   };
+
+  // Add a refetch effect when the component mounts
+  useEffect(() => {
+    if (userId) {
+      refetch();
+    }
+  }, [userId, refetch]);
 
   return (
     <div className="p-4 h-full flex flex-col">

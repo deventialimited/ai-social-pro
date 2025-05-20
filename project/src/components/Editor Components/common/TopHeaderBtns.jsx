@@ -24,6 +24,7 @@ const TopHeaderBtns = ({
   postImage,
   defaultPlatform,
   postDetails,
+  isEditingTemplate = false,
 }) => {
   const {
     postDesignData,
@@ -177,6 +178,7 @@ const TopHeaderBtns = ({
       const width = node.offsetWidth * scale;
       const height = node.offsetHeight * scale;
 
+      // Configure htmlToImage with CORS settings
       const blob = await htmlToImage.toBlob(node, {
         skipFonts: true,
         width,
@@ -189,6 +191,28 @@ const TopHeaderBtns = ({
         },
         type: "image/webp",
         imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        // Add CORS configuration
+        cacheBust: true,
+        filter: (node) => {
+          // Skip problematic nodes if needed
+          return true;
+        },
+        // Add fetch options for CORS
+        fetchOptions: {
+          mode: 'cors',
+          credentials: 'include',
+          headers: {
+            'Access-Control-Allow-Origin': '*'
+          }
+        },
+        // Add proxy configuration if needed
+        proxy: null,
+        // Add image loading options
+        imageTimeout: 15000,
+        // Add quality settings
+        quality: 1,
+        // Add pixel ratio
+        pixelRatio: 2,
       });
 
       if (!blob) {
@@ -215,11 +239,9 @@ const TopHeaderBtns = ({
 
       onSaveTemplate.mutate(
         {
-          id: postDesignData?._id,
+          id: isEditingTemplate ? postDesignData?._id : null,
           userId: user?._id,
-          templateId: postDesignData?._id
-            ? null
-            : `${user?.username}-${uuidv4()}`,
+          templateId: isEditingTemplate ? postDesignData?.templateId : `${user?.username}-${uuidv4()}`,
           templateType,
           templateImage: file,
           templateDesignData: updatedTemplateDesignData,
@@ -231,12 +253,12 @@ const TopHeaderBtns = ({
               setIsSaveTemplateLoading(false);
               onClose();
               clearEditor();
-              toast.success(`Template saved successfully as ${templateType}`);
+              toast.success(isEditingTemplate ? "Template updated successfully" : `Template saved successfully as ${templateType}`);
             }, 3000);
           },
           onError: (error) => {
             toast.error(
-              error?.response?.data?.message || "Failed to save template"
+              error?.response?.data?.message || (isEditingTemplate ? "Failed to update template" : "Failed to save template")
             );
             setIsSaveTemplateLoading(false);
             console.error("Error saving template design:", error);
@@ -354,12 +376,12 @@ const TopHeaderBtns = ({
         {isSaveTemplateLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Saving as template...</span>
+            <span>{isEditingTemplate ? "Updating template..." : "Saving as template..."}</span>
           </>
         ) : (
           <>
             <Save className="h-4 w-4" />
-            <span>Save As Template</span>
+            <span>{isEditingTemplate ? "Update Template" : "Save As Template"}</span>
           </>
         )}
       </button>

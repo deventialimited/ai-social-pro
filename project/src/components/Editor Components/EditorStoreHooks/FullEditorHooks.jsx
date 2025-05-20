@@ -6,7 +6,8 @@ const EditorContext = createContext(null);
 export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
   const [isCanvasLoading, setCanvasLoading] = useState(false);
-  const [postOtherValues, setPostOtherValues] = useState(null)
+  const [postOtherValues, setPostOtherValues] = useState(null);
+  const [postDesignData, setPostDesignData] = useState(null);
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
@@ -25,15 +26,6 @@ export const EditorProvider = ({ children }) => {
 
   // ===================== 📦 All Asset Files =====================
   const [allFiles, setAllFiles] = useState([]); // [File, File, ...]
-
-  // ===================== 🚀 Combined Post Data =====================
-  const postDesignData = {
-    canvas,
-    backgrounds,
-    elements,
-    layers,
-    // You can add postId separately if needed
-  };
 
   // ===================== 🔧 Updaters =====================
 
@@ -149,6 +141,7 @@ export const EditorProvider = ({ children }) => {
   const removeFileByName = useCallback((fileName) => {
     setAllFiles((prev) => prev.filter((file) => file.name !== fileName));
   }, []);
+
   const updateFile = useCallback((fileName, updatedFile) => {
     setAllFiles((prev) => {
       // Find the index of the file to be updated
@@ -253,6 +246,7 @@ export const EditorProvider = ({ children }) => {
     setElements([]);
     setLayers([]);
     setAllFiles([]);
+    setPostDesignData(null);
   }, []);
 
   const store = {
@@ -269,6 +263,8 @@ export const EditorProvider = ({ children }) => {
     setCanvasLoading,
     postOtherValues,
     setPostOtherValues,
+    postDesignData,
+    setPostDesignData,
     // Files
     allFiles,
     setAllFiles,
