@@ -459,7 +459,6 @@ export const BusinessSectionDummy = ({
             </div>
           )}
         </div>
-        
       </div>
 
       {PopUp && (
@@ -471,6 +470,7 @@ export const BusinessSectionDummy = ({
             }}
             title="Time to Create Compelling Content!"
             description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
+            website={`${formData.clientWebsite}`}
           />
         </div>
       )}

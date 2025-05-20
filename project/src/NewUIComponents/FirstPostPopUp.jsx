@@ -3,7 +3,13 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Sparkles } from "lucide-react";
 import clsx from "clsx";
 
-export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
+export const FirstPostPopUp = ({
+  title,
+  description,
+  website,
+  isOpen,
+  onClose,
+}) => {
   return (
     <Transition appear show={isOpen} onClose={() => {}} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={() => {}}>
@@ -43,7 +49,7 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
                     )}
                   />
                   <Sparkles
-                    className="absolute inset-0 m-auto w-12 h-12 text-white animate-bounce"
+                    className="absolute inset-0 m-auto w-8 h-8 text-white animate-bounce"
                     strokeWidth={2}
                   />
                 </div>
@@ -55,7 +61,16 @@ export const FirstPostPopUp = ({ title, description, isOpen, onClose }) => {
                 >
                   {title}
                 </Dialog.Title>
-
+                <div className="space-y-6">
+                  <div className="flex flex-col items-end">
+                    <p>{website}</p>
+                    <div className="flex space-x-1 mt-1">
+                      <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce" />
+                    </div>
+                  </div>
+                </div>
                 {/* Description */}
                 <p className="text-lg text-gray-600 dark:text-gray-400 max-w-lg">
                   {description}
