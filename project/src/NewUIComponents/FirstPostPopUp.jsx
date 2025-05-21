@@ -12,7 +12,7 @@ export const FirstPostPopUp = ({
 }) => {
   return (
     <Transition appear show={isOpen} onClose={() => {}} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => {}}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
         {/* Backdrop */}
         <Transition.Child
           as={Fragment}

@@ -244,7 +244,7 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
               <div className="max-w-2xl mx-auto space-y-4">
                 <div className="flex flex-col items-end">
                   <p>{url}</p>
-                  <div className="flex space-x-1 mt-1">
+                  <div className="flex space-x-1 mt-3">
                     <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
                     <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
                     <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce" />
