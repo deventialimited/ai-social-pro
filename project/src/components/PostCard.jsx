@@ -23,25 +23,11 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const contentRef = useRef(null);
   const primaryPlatform = post?.platforms?.[0];
 
-  // Reschedule modal
-  const [showSchedulePopup, setShowSchedulePopup] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [error, setError] = useState("");
-
-  const times = Array.from({ length: 24 * 4 }, (_, i) => {
-    const hour = Math.floor(i / 4);
-    const minutes = (i % 4) * 15;
-    const suffix = hour >= 12 ? "PM" : "AM";
-    const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-    return {
-      label: `${formattedHour.toString().padStart(2, "0")}:${minutes
-        .toString()
-        .padStart(2, "0")} ${suffix}`,
-      value: { hour, minutes },
-    };
-  });
+  const baseStyles =
+    "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
+  const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
+  const unselectedStyles =
+    "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
 
   useEffect(() => {
     if (contentRef.current) {
@@ -53,41 +39,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   }, [post.content]);
 
-  const handleSave = (updatedPost) => {
-    onEdit(updatedPost, "generated");
-    setShowEditModal(false);
-  };
-
-  const handleUpdateSchedule = () => {
-    const now = new Date();
-    if (selectedDate <= now) {
-      setError("Scheduled date cannot be less than current");
-      return;
-    }
-    setError("");
-    onReschedule(post._id, selectedDate);
-    setShowSchedulePopup(false);
-  };
-
-  const handleTimeClick = (timeObj) => {
-    const updated = new Date(selectedDate);
-    updated.setHours(timeObj.hour);
-    updated.setMinutes(timeObj.minutes);
-    updated.setSeconds(0);
-    setSelectedDate(updated);
-    setShowTimePicker(false);
-  };
-
-  const handleDateClick = (e) => {
-    const newDate = new Date(e.target.value);
-    const updated = new Date(selectedDate);
-    updated.setFullYear(newDate.getFullYear());
-    updated.setMonth(newDate.getMonth());
-    updated.setDate(newDate.getDate());
-    setSelectedDate(updated);
-    setShowDatePicker(false);
-  };
-
   const getImageAspectRatio = (platform) => {
     switch (platform?.toLowerCase()) {
       case "facebook":
@@ -97,9 +48,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       case "linkedin":
         return 1200 / 627;
       case "instagram":
-        return 1;
+        return 1; // Square
       default:
-        return 16 / 9;
+        return 16 / 9; // Fallback
     }
   };
 
@@ -138,6 +89,11 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
+  const handleSave = (updatedPost) => {
+    onEdit(updatedPost, "generated");
+    setShowEditModal(false);
+  };
+
   return (
     <>
       <div
@@ -170,27 +126,64 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
 
           {/* Visual Toggle Buttons */}
           <div className="flex items-center space-x-2 p-2">
-            {["image", "branding", "slogan"].map((key) => {
-              const icons = {
-                image: <Image className="w-4 h-4" />,
-                branding: <Palette className="w-4 h-4" />,
-                slogan: <Type className="w-4 h-4" />,
-              };
-              return (
-                <button
-                  key={key}
-                  onClick={() => setSelectedButton(key)}
-                  className={`text-[12px] px-2 py-1 rounded-3xl transition-colors ${
-                    selectedButton === key
-                      ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
+              Visual
+            </h2>
+            <div>
+              <button
+                onClick={() => setSelectedButton("image")}
+                className={`${baseStyles} ${
+                  selectedButton === "image" ? selectedStyles : unselectedStyles
+                }`}
+              >
+                <span className="text-[12px]">Image</span>
+                <Image
+                  className={`w-4 h-4 fill-none ${
+                    selectedButton === "image"
+                      ? "stroke-blue-700"
+                      : "stroke-gray-500 dark:stroke-gray-400"
                   }`}
-                >
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                  {icons[key]}
-                </button>
-              );
-            })}
+                />
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={() => setSelectedButton("branding")}
+                className={`${baseStyles} ${
+                  selectedButton === "branding"
+                    ? selectedStyles
+                    : unselectedStyles
+                }`}
+              >
+                <span className="text-[12px]">Branding</span>
+                <Palette
+                  className={`w-4 h-4 fill-none ${
+                    selectedButton === "branding"
+                      ? "stroke-blue-700"
+                      : "stroke-gray-500 dark:stroke-gray-400"
+                  }`}
+                />
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={() => setSelectedButton("slogan")}
+                className={`${baseStyles} ${
+                  selectedButton === "slogan"
+                    ? selectedStyles
+                    : unselectedStyles
+                }`}
+              >
+                <span className="text-[12px] truncate">Slogan</span>
+                <Type
+                  className={`w-4 h-4 fill-none ${
+                    selectedButton === "slogan"
+                      ? "stroke-blue-700"
+                      : "stroke-gray-500 dark:stroke-gray-400"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -199,7 +192,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
             <p
               ref={contentRef}
-              className={`${!showFullText ? "line-clamp-2" : ""}`}
+              className={!showFullText ? "line-clamp-2" : ""}
             >
               {post.content}
             </p>
@@ -228,11 +221,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               Approve
               <Check className="text-white" />
             </button>
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => setShowSchedulePopup(true)}
-            >
-              <Calendar className="h-4 w-4" />
+            <div className="flex items-center">
+              <Calendar className="h-3 w-3" />
               <span className="text-xs ml-1">
                 {format(new Date(post.date), "MMM d, yyyy")}
               </span>
@@ -245,15 +235,17 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowEditModal(true)}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Edit post"
             >
               <Edit className="w-4 h-4" />
             </button>
             {post.status !== "drafted" && (
               <button
-                onClick={() => onEdit(post, "drafted")}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                onClick={() => {
+                  onEdit(post, "drafted");
+                }}
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                 title="Save to drafts"
               >
                 <Save className="w-4 h-4" />
@@ -261,7 +253,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
             <button
               onClick={() => console.log("Download clicked")}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Download"
             >
               <Download className="w-4 h-4" />
@@ -276,7 +268,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
             <button
               onClick={() => onDelete(post._id)}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               title="Delete post"
             >
               <Trash2 className="w-4 h-4" />
@@ -284,66 +276,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           </div>
         </div>
       </div>
-
-      {/* Reschedule Modal */}
-      {showSchedulePopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg w-[320px] space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Reschedule Post
-            </h3>
-            <div className="flex justify-between gap-2">
-              <div
-                className="cursor-pointer border px-3 py-2 rounded text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700"
-                onClick={() => setShowDatePicker(!showDatePicker)}
-              >
-                {format(selectedDate, "MMM d, yyyy")}
-              </div>
-              <div
-                className="cursor-pointer border px-3 py-2 rounded text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700"
-                onClick={() => setShowTimePicker(!showTimePicker)}
-              >
-                {format(selectedDate, "hh:mm a")}
-              </div>
-            </div>
-            {showDatePicker && (
-              <input
-                type="date"
-                className="w-full p-2 mt-2 rounded border"
-                onChange={handleDateClick}
-              />
-            )}
-            {showTimePicker && (
-              <div className="h-48 overflow-y-auto border p-2 rounded bg-white dark:bg-gray-800 text-sm">
-                {times.map((t, i) => (
-                  <div
-                    key={i}
-                    className="cursor-pointer hover:bg-blue-100 px-2 py-1 rounded"
-                    onClick={() => handleTimeClick(t.value)}
-                  >
-                    {t.label}
-                  </div>
-                ))}
-              </div>
-            )}
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <div className="flex justify-end gap-2 mt-2">
-              <button
-                onClick={() => setShowSchedulePopup(false)}
-                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateSchedule}
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Update Schedule
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showEditModal && (
         <PostEditModal
