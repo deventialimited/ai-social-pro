@@ -23,6 +23,7 @@ export const BusinessSectionDummy = ({
   setComponentType,
   clientData,
   setPostData,
+  postData,
 }) => {
   const [editing, setEditing] = useState(false);
   const [PopUp, setPopup] = useState(false);
@@ -112,15 +113,23 @@ export const BusinessSectionDummy = ({
       setPostData({
         ...data?.post,
       });
-
-      setComponentType("postDetails");
-      setPopup(false);
     });
 
     return () => {
       socket.off("PostSaved");
     };
   }, []);
+
+  useEffect(() => {
+    console.log("Post Data in Business Dummy ", postData);
+    console.log("Popup in the business dummy", PopUp);
+    if (postData && PopUp) {
+      setTimeout(() => {
+        setComponentType("postDetails");
+        setPopup(false);
+      }, 20000);
+    }
+  }, [postData, PopUp]);
 
   const handleCancel = () => {
     if (clientData) {

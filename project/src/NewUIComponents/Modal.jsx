@@ -26,14 +26,6 @@ export const BusinessModal = ({ isOpen, onClose, clientData }) => {
     }
   }, [clientData]);
 
-  //check post data
-  useEffect(() => {
-    if (postData !== undefined && postData !== null) {
-      console.log("post data....", postData);
-      setComponentType("postDetails");
-    }
-  }, [postData]);
-
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -68,6 +60,7 @@ export const BusinessModal = ({ isOpen, onClose, clientData }) => {
                   clientData={clientData}
                   setComponentType={setComponentType}
                   setPostData={setPostData}
+                  postData={postData}
                 />
               )}
               {componentType == "postTopics" && (
