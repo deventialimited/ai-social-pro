@@ -242,7 +242,9 @@ export const updatePlatformConnection = async ({
       status,
     });
 
-    console.log(response, "updatedPlatformRep");
+    console.log("updatePlatform COnnection Log", response);
+    console.log("updatePlatform data", response.data);
+
     return response.data;
   } catch (error) {
     console.error(`[updatePlatformConnection] Error:`, error.message);
