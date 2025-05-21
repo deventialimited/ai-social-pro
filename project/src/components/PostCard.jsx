@@ -116,9 +116,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 {post.domainId.clientName}
               </h3>
               <div className="flex items-center gap-2 flex-wrap text-xs text-gray-500 dark:text-gray-400">
-                <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                  ID: {post._id}
-                </span>
                 {getStatusBadge()}
               </div>
             </div>
@@ -190,10 +187,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         {/* Content */}
         <div className={`p-4 space-y-4 ${view === "grid" ? "flex-1" : ""}`}>
           <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
-            <p
-              ref={contentRef}
-              className={!showFullText ? "line-clamp-2" : ""}
-            >
+            <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
               {post.content}
             </p>
             {isClamped && (
@@ -274,6 +268,11 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
+        </div>
+        <div  className="flex items-center gap-10 ml-7 mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            ID: {post._id}
+          </span>
         </div>
       </div>
 
