@@ -63,13 +63,13 @@ export const SocialsTab = () => {
       name: "X",
       key: "x",
       icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/twitter.svg",
-      url: `https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/twitterLogin?uid=${user?._id}`,
+      url: ` https://oneyearsocial.com/twitterLogin?uid=${user?._id}`,
     },
     {
       name: "LinkedIn Personal Profile",
       key: "linkedin",
       icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/linkedin.svg",
-      url: `https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/linkedInLogin?uid=${user?._id}`,
+      url: ` https://oneyearsocial.com/linkedInLogin?uid=${user?._id}`,
     },
   ];
 

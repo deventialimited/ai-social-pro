@@ -3,31 +3,32 @@ import {
   Calendar,
   Edit,
   Trash2,
-  Share2,
-  Clock,
-  Save,
   Check,
   Image,
   Palette,
   Type,
   Download,
+  Save,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { PostEditModal } from "./PostEditModal";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-hot-toast";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("image");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date(post.date));
+  const [postDate, setPostDate] = useState(new Date(post.date));
+  const [loadingMessage, setLoadingMessage] = useState(null);
+
   const contentRef = useRef(null);
   const primaryPlatform = post?.platforms?.[0];
-
-  const baseStyles =
-    "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
-  const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
-  const unselectedStyles =
-    "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
 
   useEffect(() => {
     if (contentRef.current) {
@@ -48,39 +49,34 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       case "linkedin":
         return 1200 / 627;
       case "instagram":
-        return 1; // Square
+        return 1;
       default:
-        return 16 / 9; // Fallback
+        return 16 / 9;
     }
   };
 
-  const getImageStyle = (platform) => {
-    const aspectRatio = getImageAspectRatio(platform);
-    return {
-      aspectRatio,
-      width: "100%",
-      objectFit: "cover",
-      borderRadius: "0.5rem",
-    };
-  };
+  const getImageStyle = (platform) => ({
+    aspectRatio: getImageAspectRatio(platform),
+    width: "100%",
+    objectFit: "cover",
+    borderRadius: "0.5rem",
+  });
 
   const getStatusBadge = () => {
     switch (post.status) {
       case "drafted":
         return (
-          <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-            Draft
-          </span>
+          <span className="badge bg-gray-100 dark:bg-gray-700">Draft</span>
         );
       case "scheduled":
         return (
-          <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded">
+          <span className="badge bg-yellow-100 dark:bg-yellow-900/30">
             Scheduled
           </span>
         );
       case "published":
         return (
-          <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-0.5 rounded">
+          <span className="badge bg-green-100 dark:bg-green-900/30">
             Published
           </span>
         );
@@ -94,14 +90,116 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     setShowEditModal(false);
   };
 
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    if (onReschedule) {
+      onReschedule(post._id, date);
+    }
+  };
+
+  const handleApprove = async () => {
+    const now = new Date();
+    if (postDate < now) {
+      toast.error("Cannot schedule post in the past.");
+      return;
+    }
+
+    const schedulePayload = {
+      time: new Date(postDate).getTime(),
+      uid: post.userId || "",
+      postId: post.postId,
+      content: post.content,
+      image: post.image,
+      platforms: (post.platforms || [])
+        .map((p) => p.toLowerCase())
+        .filter((p) =>
+          ["twitter", "linkedin", "facebook", "instagram"].includes(p)
+        ),
+    };
+
+    try {
+      setLoadingMessage("Scheduling post...");
+
+      const scheduleResponse = await fetch(
+        "https://oneyearsocial.com/scheduleMulti",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(schedulePayload),
+        }
+      );
+
+      if (!scheduleResponse.ok)
+        throw new Error("Failed to schedule post externally");
+
+      const updateResponse = await fetch(
+        `http://localhost:5000/api/v1/posts/updatePost/${post._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "scheduled" }),
+        }
+      );
+
+      if (!updateResponse.ok)
+        throw new Error("Failed to update post status locally");
+
+      toast.success("Post approved and scheduled!");
+      onEdit({ ...post, status: "scheduled" }, "scheduled");
+    } catch (err) {
+      console.error("Approval error:", err);
+      toast.error("Failed to approve and schedule the post.");
+    } finally {
+      setLoadingMessage(null);
+    }
+  };
+
+  const reschedulePost = async (newDate) => {
+    const now = new Date();
+    if (newDate < now) {
+      toast.error("You cannot select a past time.");
+      return;
+    }
+
+    const payload = {
+      postId: post._id,
+      newTime: newDate.getTime(),
+    };
+
+    try {
+      setLoadingMessage("Updating schedule time...");
+      const response = await fetch(
+        "http://localhost:5000/api/v1/posts/updatePostTime",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update post time");
+
+      toast.success("Post schedule updated!");
+      setPostDate(newDate);
+      handleDateChange(newDate);
+      setShowDatePicker(false);
+    } catch (error) {
+      console.error("Error updating post time:", error);
+      toast.error("Failed to update the post time.");
+    } finally {
+      setLoadingMessage(null);
+    }
+  };
+
+  const baseStyles =
+    "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
+  const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
+  const unselectedStyles =
+    "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700";
+
   return (
     <>
-      <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${
-          view === "grid" ? "h-full flex flex-col" : ""
-        }`}
-      >
-        {/* Header */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -121,71 +219,30 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             </div>
           </div>
 
-          {/* Visual Toggle Buttons */}
           <div className="flex items-center space-x-2 p-2">
             <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
               Visual
             </h2>
-            <div>
-              <button
-                onClick={() => setSelectedButton("image")}
-                className={`${baseStyles} ${
-                  selectedButton === "image" ? selectedStyles : unselectedStyles
-                }`}
-              >
-                <span className="text-[12px]">Image</span>
-                <Image
-                  className={`w-4 h-4 fill-none ${
-                    selectedButton === "image"
-                      ? "stroke-blue-700"
-                      : "stroke-gray-500 dark:stroke-gray-400"
+            {["image", "branding", "slogan"].map((type) => {
+              const Icon =
+                type === "image" ? Image : type === "branding" ? Palette : Type;
+              return (
+                <button
+                  key={type}
+                  onClick={() => setSelectedButton(type)}
+                  className={`${baseStyles} ${
+                    selectedButton === type ? selectedStyles : unselectedStyles
                   }`}
-                />
-              </button>
-            </div>
-            <div>
-              <button
-                onClick={() => setSelectedButton("branding")}
-                className={`${baseStyles} ${
-                  selectedButton === "branding"
-                    ? selectedStyles
-                    : unselectedStyles
-                }`}
-              >
-                <span className="text-[12px]">Branding</span>
-                <Palette
-                  className={`w-4 h-4 fill-none ${
-                    selectedButton === "branding"
-                      ? "stroke-blue-700"
-                      : "stroke-gray-500 dark:stroke-gray-400"
-                  }`}
-                />
-              </button>
-            </div>
-            <div>
-              <button
-                onClick={() => setSelectedButton("slogan")}
-                className={`${baseStyles} ${
-                  selectedButton === "slogan"
-                    ? selectedStyles
-                    : unselectedStyles
-                }`}
-              >
-                <span className="text-[12px] truncate">Slogan</span>
-                <Type
-                  className={`w-4 h-4 fill-none ${
-                    selectedButton === "slogan"
-                      ? "stroke-blue-700"
-                      : "stroke-gray-500 dark:stroke-gray-400"
-                  }`}
-                />
-              </button>
-            </div>
+                >
+                  <span className="text-[12px] capitalize">{type}</span>
+                  <Icon className="w-4 h-4" />
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Content */}
-        <div className={`p-4 space-y-4 ${view === "grid" ? "flex-1" : ""}`}>
+        <div className="p-4 space-y-4">
           <div className="text-gray-900 dark:text-white whitespace-pre-wrap">
             <p ref={contentRef} className={!showFullText ? "line-clamp-2" : ""}>
               {post.content}
@@ -201,24 +258,37 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           </div>
           <img
             src={post.image}
-            className=" cursor-pointer"
+            className="cursor-pointer"
             onClick={() => setShowEditModal(true)}
             alt="Post content"
             style={getImageStyle(primaryPlatform)}
           />
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
-            <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
-              Approve
-              <Check className="text-white" />
+            <button
+              onClick={handleApprove}
+              disabled={!!loadingMessage}
+              className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2 disabled:opacity-50"
+            >
+              {loadingMessage === "Scheduling post..." ? (
+                <>
+                  <Loader2 className="animate-spin h-4 w-4" />
+                  Scheduling...
+                </>
+              ) : (
+                <>
+                  Approve <Check className="text-white" />
+                </>
+              )}
             </button>
             <div className="flex items-center">
-              <Calendar className="h-3 w-3" />
+              <button onClick={() => setShowDatePicker(!showDatePicker)}>
+                <Calendar className="h-3 w-3" />
+              </button>
               <span className="text-xs ml-1">
-                {format(new Date(post.date), "MMM d, yyyy")}
+                {format(postDate, "MMM d, yyyy, h:mm a")}
               </span>
             </div>
             <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
@@ -229,17 +299,15 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowEditModal(true)}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="icon-btn"
               title="Edit post"
             >
               <Edit className="w-4 h-4" />
             </button>
             {post.status !== "drafted" && (
               <button
-                onClick={() => {
-                  onEdit(post, "drafted");
-                }}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                onClick={() => onEdit(post, "drafted")}
+                className="icon-btn"
                 title="Save to drafts"
               >
                 <Save className="w-4 h-4" />
@@ -247,7 +315,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
             <button
               onClick={() => console.log("Download clicked")}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="icon-btn"
               title="Download"
             >
               <Download className="w-4 h-4" />
@@ -262,15 +330,16 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
             <button
               onClick={() => onDelete(post._id)}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="icon-btn"
               title="Delete post"
             >
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
-        <div  className="flex items-center gap-10 ml-7 mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
-          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+
+        <div className="flex items-center gap-10 ml-7 mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
             ID: {post._id}
           </span>
         </div>
@@ -283,6 +352,68 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           onClose={() => setShowEditModal(false)}
           onSave={handleSave}
         />
+      )}
+
+      {showDatePicker && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Reschedule Post
+              </h2>
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date and Time
+              </label>
+              <div className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 w-full">
+                {format(new Date(selectedDate), "MMM d, yyyy, h:mm a")}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                showTimeSelect
+                timeFormat="h:mm aa"
+                timeIntervals={15}
+                dateFormat="MMMM d, yyyy h:mm aa"
+                inline
+                className="w-full"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => reschedulePost(selectedDate)}
+                disabled={!!loadingMessage}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded disabled:opacity-50"
+              >
+                {loadingMessage === "Updating schedule time..." ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" /> Updating...
+                  </span>
+                ) : (
+                  "Update Schedule Time"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -304,6 +304,33 @@ exports.getFirstPost = async (req, res) => {
   }
 };
 
+exports.updatePostTime = async (req, res) => {
+  const { postId, newTime } = req.body;
+
+  if (!postId || !newTime) {
+    return res.status(400).json({ error: "postId and newTime are required" });
+  }
+
+  try {
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { date: new Date(newTime) },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Post time updated successfully", post: updatedPost });
+  } catch (error) {
+    console.error("Error updating post time:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 function getS3KeyFromUrl(url) {
   try {
     const urlObj = new URL(url);

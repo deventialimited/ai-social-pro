@@ -6,6 +6,7 @@ const {
   updatePost,
   getFirstPost,
   updatePostImage,
+  updatePostTime,
 } = require("../controllers/Post.js");
 // routes/postRoutes.js or similar
 const multer = require("multer");
@@ -20,4 +21,6 @@ router.put("/updatePost/:id", updatePost);
 router.post("/processPubSub", processPubSub);
 router.post("/updatePostImage", updatePostImage); // 👈 New route
 router.get("/getFirstPost/:id", getFirstPost);
+router.post("/updatePostTime", updatePostTime); // 👈 New route
+
 module.exports = router;
