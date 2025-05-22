@@ -4,14 +4,15 @@ const templateDesignSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   templateId: {
     type: String,
-    required: true,  // Make sure templateId is also required
+    required: true, // Make sure templateId is also required
   },
   templateType: {
     type: String, // e.g., "public", "private"
-    required: true,  // Marked as required
+    required: true, // Marked as required
   },
   templateImage: {
     type: String, // URL to show preview of the template
+    required: true, // Marked as required
   },
 
   canvas: {
@@ -23,7 +24,7 @@ const templateDesignSchema = new mongoose.Schema({
 
   elements: [
     {
-      id: { type: String, unique: true }, // unique frontend ID
+      id: { type: String }, // unique frontend ID
       type: { type: String },
       category: { type: String }, // e.g., header, subheader, body (for text), or shape type
       position: {
