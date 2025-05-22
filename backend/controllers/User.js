@@ -985,6 +985,7 @@ exports.updatePlatformConnection = async (req, res) => {
   try {
     const { userId, platformName, status } = req.body;
     if (!userId || !platformName || !status) {
+      console.log("missing data", req.body);
       return res
         .status(400)
         .json({ error: "userId, platformName and status are required." });

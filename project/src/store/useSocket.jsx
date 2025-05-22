@@ -45,7 +45,7 @@ export const SocketProvider = ({ children }) => {
       console.log("Received userUpdated event:", updatedUser);
 
       const currentUser = JSON.parse(localStorage.getItem("user"));
-
+      console.log(updatedUser, "this is updated user");
       // Check if the current user exists and has the same _id
       if (currentUser && currentUser?._id === updatedUser?._id) {
         localStorage.setItem("user", JSON.stringify(updatedUser));
