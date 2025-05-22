@@ -35,7 +35,6 @@ export const useSaveOrUpdateTemplateDesign = () => {
 
   return useMutation({
     mutationFn: async ({
-      id,
       userId,
       templateId,
       templateType,
@@ -44,7 +43,6 @@ export const useSaveOrUpdateTemplateDesign = () => {
       allFiles,
     }) => {
       return await saveOrUpdateTemplateDesignFrontendController(
-        id,
         userId,
         templateId,
         templateType,
@@ -56,21 +54,9 @@ export const useSaveOrUpdateTemplateDesign = () => {
     onSuccess: async (data) => {
       // Invalidate the templates query for this user
       await queryClient.invalidateQueries(["templates", data?.userId]);
-      
+
       // Immediately refetch the templates
       await queryClient.refetchQueries(["templates", data?.userId]);
-      
-      // Update the cache with the new template data
-      queryClient.setQueryData(["templates", data?.userId], (oldData) => {
-        if (!oldData) return { templates: [data.templateDesign] };
-        
-        const templates = Array.isArray(oldData) ? oldData : oldData.templates || [];
-        const updatedTemplates = templates.map(template => 
-          template._id === data.templateDesign._id ? data.templateDesign : template
-        );
-        
-        return Array.isArray(oldData) ? updatedTemplates : { ...oldData, templates: updatedTemplates };
-      });
     },
     onError: (error) => {
       console.error("Failed to save/update template design:", error);
@@ -79,7 +65,6 @@ export const useSaveOrUpdateTemplateDesign = () => {
 };
 
 export const saveOrUpdateTemplateDesignFrontendController = async (
-  id,
   userId,
   templateId,
   templateType,
@@ -88,6 +73,14 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
   allFiles
 ) => {
   try {
+    console.log(
+      userId,
+      templateId,
+      templateType,
+      templateImage,
+      templateDesignData,
+      allFiles
+    );
     const formData = new FormData();
     const { elements, backgrounds } = templateDesignData;
 
@@ -119,13 +112,14 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
       if (isElementFile || isBackgroundFile) {
         formData.append("files", file, file.name);
       }
-      if (templateImage) {
-        formData.append("files", templateImage, "templateImage"); // send with correct field name
-      }
     });
+    if (templateImage) {
+      formData.append("files", templateImage, "templateImage"); // send with correct field name
+    }
+    console.log(formData);
 
     const response = await axios.post(
-      `${API_URL}/api/v1/templateDesign/saveOrUpdateTemplateDesign/${id || ""}`,
+      `${API_URL}/api/v1/templateDesign/saveOrUpdateTemplateDesign`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },

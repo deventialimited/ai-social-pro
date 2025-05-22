@@ -7,7 +7,6 @@ export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
   const [isCanvasLoading, setCanvasLoading] = useState(false);
   const [postOtherValues, setPostOtherValues] = useState(null);
-  const [postDesignData, setPostDesignData] = useState(null);
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
@@ -27,6 +26,14 @@ export const EditorProvider = ({ children }) => {
   // ===================== 📦 All Asset Files =====================
   const [allFiles, setAllFiles] = useState([]); // [File, File, ...]
 
+  // ===================== 🚀 Combined Post Data =====================
+  const postDesignData = {
+    canvas,
+    backgrounds,
+    elements,
+    layers,
+    // You can add postId separately if needed
+  };
   // ===================== 🔧 Updaters =====================
 
   const updateCanvasSize = useCallback((width, height) => {
@@ -166,9 +173,9 @@ export const EditorProvider = ({ children }) => {
       prev.map((layer) =>
         layer.id === id
           ? {
-            ...layer,
-            ...newProps,
-          }
+              ...layer,
+              ...newProps,
+            }
           : layer
       )
     );
@@ -246,7 +253,6 @@ export const EditorProvider = ({ children }) => {
     setElements([]);
     setLayers([]);
     setAllFiles([]);
-    setPostDesignData(null);
   }, []);
 
   const store = {
@@ -263,8 +269,6 @@ export const EditorProvider = ({ children }) => {
     setCanvasLoading,
     postOtherValues,
     setPostOtherValues,
-    postDesignData,
-    setPostDesignData,
     // Files
     allFiles,
     setAllFiles,
