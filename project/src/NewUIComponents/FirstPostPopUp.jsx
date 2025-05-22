@@ -12,7 +12,7 @@ export const FirstPostPopUp = ({
 }) => {
   return (
     <Transition appear show={isOpen} onClose={() => {}} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => {}}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
         {/* Backdrop */}
         <Transition.Child
           as={Fragment}
@@ -62,12 +62,14 @@ export const FirstPostPopUp = ({
                   {title}
                 </Dialog.Title>
                 <div className="space-y-6">
-                  <div className="flex flex-col items-end">
-                    <p>{website}</p>
-                    <div className="flex space-x-1 mt-1">
-                      <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                      <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                      <span className="w-1.5 h-1.5 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce" />
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm text-gray-800 dark:text-gray-200">
+                      {website}
+                    </p>
+                    <div className="flex space-x-1 mt-2">
+                      <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce" />
                     </div>
                   </div>
                 </div>

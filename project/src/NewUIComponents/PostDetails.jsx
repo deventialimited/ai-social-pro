@@ -117,13 +117,6 @@ export default function PostDetails({ postData }) {
                 {postData?.domainId?.clientName || "Your Brand"}
               </h3>
             </Tooltip>
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <Tooltip title="Post Id">
-                <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                  ID: #{postData?.domainId._id}
-                </span>
-              </Tooltip>
-            </div>
           </div>
         </div>
 
@@ -242,7 +235,13 @@ export default function PostDetails({ postData }) {
           </button>
         </div>
       </div>
-
+      <div className="flex items-center gap-10 ml-7 mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
+        <Tooltip title="Post Id">
+          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            POST ID: #{postData?.postId}
+          </span>
+        </Tooltip>
+      </div>
       {/* Sticky Bottom Button */}
       <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">
         <button
