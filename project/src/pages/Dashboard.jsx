@@ -15,6 +15,7 @@ import { CancelPopup } from "./CancelPopup";
 import {
   useGetAllPostsByDomainId,
   useUpdatePostById,
+  DeletePostById,
 } from "../libs/postService";
 import toast from "react-hot-toast";
 
@@ -117,7 +118,17 @@ export const Dashboard = () => {
   };
 
   const handleDelete = (id) => {
-    console.log("Delete post:", id);
+    try {
+      const response = DeletePostById(id);
+      if (response) {
+        toast.success("Post deleted successfully!")
+      } else {
+        toast.error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post");
+    }
   };
 
   const handleReschedule = (id) => {

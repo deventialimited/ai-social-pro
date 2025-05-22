@@ -3,7 +3,7 @@ import axios from "axios";
 // Custom hook for fetching posts
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:4000";
+// const baseURL = "http://localhost:5000";
 const API_URL = `${baseURL}/api/v1/posts`;
 
 // Fetch all posts for a domain
@@ -79,6 +79,20 @@ export const getFirstPost = async (id) => {
   } catch (err) {
     console.error(
       "Error getting first post",
+      err.response?.data?.message || err.message
+    );
+    throw err.response?.data?.message || err.message;
+  }
+};
+
+export const DeletePostById = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/deletePost/${id}`);
+    console.log("Post deleted successfully:", response);
+    return response.data;
+  } catch (err) {
+    console.error(
+      "Error deleting post",
       err.response?.data?.message || err.message
     );
     throw err.response?.data?.message || err.message;
