@@ -10,7 +10,7 @@ const {
 
 // Accept both data and files in a single multipart/form-data request
 router.post(
-  "/saveOrUpdateTemplateDesign/:id?",
+  "/saveOrUpdateTemplateDesign",
   upload.fields([
     { name: "files" }, // Multiple image/background files
     { name: "templateImage", maxCount: 1 },

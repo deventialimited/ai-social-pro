@@ -10,7 +10,6 @@ function TemplatesTab() {
     setBackgrounds,
     setCanvasLoading,
     canvasLoading,
-    setPostDesignData,
   } = useEditor();
   const [query, setQuery] = useState("");
   const [userId, setUserId] = useState(null);
@@ -25,13 +24,8 @@ function TemplatesTab() {
   }, []);
 
   // Fetch templates by userId
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch
-  } = useGetAllTemplatesByUserId(userId);
+  const { data, isLoading, isError, error, refetch } =
+    useGetAllTemplatesByUserId(userId);
 
   // Normalize templates
   const templates = Array.isArray(data) ? data : data?.templates ?? [];
@@ -40,16 +34,6 @@ function TemplatesTab() {
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
-
-      // Store the complete template data including ID
-      setPostDesignData({
-        _id: template._id,
-        templateId: template.templateId,
-        canvas: template.canvas,
-        elements: template.elements,
-        layers: template.layers,
-        backgrounds: template.backgrounds,
-      });
 
       // Load the template data into the editor
       if (template.canvas) {
@@ -98,7 +82,11 @@ function TemplatesTab() {
 
       {/* Loading/Error Messages */}
       {isLoading && <div>Loading templates...</div>}
-      {isError && <div className="text-red-500">Error: {error?.message || "Could not load templates."}</div>}
+      {isError && (
+        <div className="text-red-500">
+          Error: {error?.message || "Could not load templates."}
+        </div>
+      )}
 
       {/* Template Loading Indicator */}
       {canvasLoading && (
@@ -107,7 +95,10 @@ function TemplatesTab() {
 
       {/* Gallery */}
       {!isLoading && !isError && (
-        <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 2px)" }}>
+        <div
+          className="overflow-y-auto"
+          style={{ maxHeight: "calc(100vh - 2px)" }}
+        >
           <div className="grid grid-cols-2 gap-2">
             {templates.length > 0 ? (
               templates.map((template) => (

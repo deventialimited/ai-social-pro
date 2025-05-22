@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useSaveOrUpdateTemplateDesign } from "../../../libs/templateDesignService";
 import { v4 as uuidv4 } from "uuid";
 import Dropdown from "./Dropdown";
+import SaveDropdown from "./SaveDropdown";
 
 const TopHeaderBtns = ({
   setActiveElement,
@@ -24,7 +25,6 @@ const TopHeaderBtns = ({
   postImage,
   defaultPlatform,
   postDetails,
-  isEditingTemplate = false,
 }) => {
   const {
     postDesignData,
@@ -43,7 +43,6 @@ const TopHeaderBtns = ({
   } = useEditor();
   const [isSavePostLoading, setIsSavePostLoading] = useState(false);
   const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);
-  const [templateType, setTemplateType] = useState("private");
   const onSavePost = useSaveOrUpdatePostDesign();
   const onSaveTemplate = useSaveOrUpdateTemplateDesign();
   const user = JSON.parse(localStorage?.getItem("user"));
@@ -55,25 +54,6 @@ const TopHeaderBtns = ({
     setIsSavePostLoading(true);
     try {
       const node = canvasContainerRef.current;
-      if (!node) {
-        throw new Error("Canvas container not found");
-      }
-
-      // Wait for all images to load
-      const images = node.getElementsByTagName('img');
-      await Promise.all(
-        Array.from(images).map(
-          (img) =>
-            new Promise((resolve, reject) => {
-              if (img.complete) {
-                resolve();
-              } else {
-                img.onload = resolve;
-                img.onerror = () => reject(new Error(`Failed to load image: ${img.src}`));
-              }
-            })
-        )
-      );
 
       const scale = 5;
       const width = node.offsetWidth * scale;
@@ -90,7 +70,6 @@ const TopHeaderBtns = ({
           height: `${node.offsetHeight}px`,
         },
         type: "image/webp",
-        imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
       });
 
       if (!blob) {
@@ -100,32 +79,18 @@ const TopHeaderBtns = ({
       const file = new File([blob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-
-      // Preserve existing image IDs in postDesignData
-      const updatedPostDesignData = {
-        ...postDesignData,
-        elements: postDesignData.elements.map(element => {
-          if (element.type === 'image') {
-            // Keep the existing ID for images
-            return {
-              ...element,
-              id: element.id // Preserve the original ID
-            };
-          }
-          return element;
-        })
-      };
-
       onSavePost.mutate(
         {
           postId,
           postImage: file,
-          postDesignData: updatedPostDesignData,
+          postDesignData,
           allFiles,
         },
         {
           onSuccess: () => {
             setTimeout(() => {
+              setIsSavePostLoading(false); // Runs regardless of success or error
+              onClose(); // Close only on success
               setIsSavePostLoading(false);
               onClose();
               clearEditor();
@@ -137,48 +102,30 @@ const TopHeaderBtns = ({
               error?.response?.data?.message || "Failed to save post"
             );
             setIsSavePostLoading(false);
+            toast.error(error?.response?.data?.message);
+            setIsSavePostLoading(false);
             console.error("Error saving design:", error);
           },
         }
       );
     } catch (error) {
       setIsSavePostLoading(false);
-      toast.error(error.message || "An error occurred while saving");
+      toast.error("An error occurred while saving");
       console.error("Error saving design:", error);
     }
   };
-  const handleSaveTemplateAndClose = async () => {
+  const handleSaveTemplateAndClose = async (templateType = "private") => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSaveTemplateLoading(true);
     try {
       const node = canvasContainerRef.current;
-      if (!node) {
-        throw new Error("Canvas container not found");
-      }
-
-      // Wait for all images to load
-      const images = node.getElementsByTagName('img');
-      await Promise.all(
-        Array.from(images).map(
-          (img) =>
-            new Promise((resolve, reject) => {
-              if (img.complete) {
-                resolve();
-              } else {
-                img.onload = resolve;
-                img.onerror = () => reject(new Error(`Failed to load image: ${img.src}`));
-              }
-            })
-        )
-      );
 
       const scale = 5;
       const width = node.offsetWidth * scale;
       const height = node.offsetHeight * scale;
 
-      // Configure htmlToImage with CORS settings
       const blob = await htmlToImage.toBlob(node, {
         skipFonts: true,
         width,
@@ -190,29 +137,6 @@ const TopHeaderBtns = ({
           height: `${node.offsetHeight}px`,
         },
         type: "image/webp",
-        imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-        // Add CORS configuration
-        cacheBust: true,
-        filter: (node) => {
-          // Skip problematic nodes if needed
-          return true;
-        },
-        // Add fetch options for CORS
-        fetchOptions: {
-          mode: 'cors',
-          credentials: 'include',
-          headers: {
-            'Access-Control-Allow-Origin': '*'
-          }
-        },
-        // Add proxy configuration if needed
-        proxy: null,
-        // Add image loading options
-        imageTimeout: 15000,
-        // Add quality settings
-        quality: 1,
-        // Add pixel ratio
-        pixelRatio: 2,
       });
 
       if (!blob) {
@@ -222,29 +146,14 @@ const TopHeaderBtns = ({
       const file = new File([blob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-
-      // Preserve existing image IDs in templateDesignData
-      const updatedTemplateDesignData = {
-        ...postDesignData,
-        elements: postDesignData.elements.map(element => {
-          if (element.type === 'image') {
-            return {
-              ...element,
-              id: element.id
-            };
-          }
-          return element;
-        })
-      };
-
+      console.log(file);
       onSaveTemplate.mutate(
         {
-          id: isEditingTemplate ? postDesignData?._id : null,
           userId: user?._id,
-          templateId: isEditingTemplate ? postDesignData?.templateId : `${user?.username}-${uuidv4()}`,
+          templateId: `${user?.username}-${uuidv4()}`,
           templateType,
           templateImage: file,
-          templateDesignData: updatedTemplateDesignData,
+          templateDesignData: postDesignData,
           allFiles,
         },
         {
@@ -253,12 +162,12 @@ const TopHeaderBtns = ({
               setIsSaveTemplateLoading(false);
               onClose();
               clearEditor();
-              toast.success(isEditingTemplate ? "Template updated successfully" : `Template saved successfully as ${templateType}`);
+              toast.success("Template saved successfully");
             }, 3000);
           },
           onError: (error) => {
             toast.error(
-              error?.response?.data?.message || (isEditingTemplate ? "Failed to update template" : "Failed to save template")
+              error?.response?.data?.message || "Failed to save template"
             );
             setIsSaveTemplateLoading(false);
             console.error("Error saving template design:", error);
@@ -267,7 +176,7 @@ const TopHeaderBtns = ({
       );
     } catch (error) {
       setIsSaveTemplateLoading(false);
-      toast.error(error.message || "An error occurred while saving");
+      toast.error("An error occurred while saving");
       console.error("Error saving design:", error);
     }
   };
@@ -361,30 +270,17 @@ const TopHeaderBtns = ({
         Cancel
       </button>
 
-      <Dropdown
-        options={["private", "public"]}
-        value={templateType}
-        setValue={(value) => {
-          setTemplateType(value);
-        }}
+      {/* <div className="relative">
+       <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50">
+         <span>Change to Video</span>
+         <ChevronDown className="h-4 w-4" />
+       </button>
+     </div> */}
+      <SaveDropdown
+        onSave={(option) => handleSaveTemplateAndClose(option)}
+        isLoading={isSaveTemplateLoading}
       />
-      <button
-        onClick={handleSaveTemplateAndClose}
-        disabled={isSaveTemplateLoading}
-        className="flex items-center gap-2 px-4 py-1.5 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
-      >
-        {isSaveTemplateLoading ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>{isEditingTemplate ? "Updating template..." : "Saving as template..."}</span>
-          </>
-        ) : (
-          <>
-            <Save className="h-4 w-4" />
-            <span>{isEditingTemplate ? "Update Template" : "Save As Template"}</span>
-          </>
-        )}
-      </button>
+
       <button
         onClick={handleSavePostAndClose}
         disabled={isSavePostLoading}
