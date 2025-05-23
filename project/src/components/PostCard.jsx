@@ -16,7 +16,8 @@ import { PostEditModal } from "./PostEditModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
-
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("image");
@@ -30,7 +31,17 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const contentRef = useRef(null);
   const primaryPlatform = post?.platforms?.[0];
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageBlurred, setImageBlurred] = useState(true);
+  useEffect(() => {
+    if (imageLoaded) {
+      const timer = setTimeout(() => {
+        setImageBlurred(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [imageLoaded]);
+    
   useEffect(() => {
     if (contentRef.current) {
       const lineHeight = parseFloat(
@@ -257,13 +268,41 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
             )}
           </div>
-          <img
-            src={post.image}
-            className="cursor-pointer"
-            onClick={() => setShowEditModal(true)}
-            alt="Post content"
-            style={getImageStyle(primaryPlatform)}
-          />
+          {post.image ? (
+            <>
+              {!imageLoaded && (
+                <Skeleton
+                  height={300}
+                  style={{
+                    ...getImageStyle(primaryPlatform),
+                    borderRadius: "0.5rem",
+                  }}
+                />
+              )}
+              <img
+                src={post.image}
+                alt="Post content"
+                onLoad={() => setImageLoaded(true)}
+                style={{
+                  ...getImageStyle(primaryPlatform),
+                  borderRadius: "0.5rem",
+                  filter: imageBlurred ? "blur(20px)" : "none",
+                  transition: "filter 0.3s ease",
+                  display: imageLoaded ? "block" : "none", // Hide image until loaded
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowEditModal(true)}
+              />
+            </>
+          ) : (
+            <Skeleton
+              height={300}
+              style={{
+                ...getImageStyle(primaryPlatform),
+                borderRadius: "0.5rem",
+              }}
+            />
+          )}
         </div>
 
         <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">

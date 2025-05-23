@@ -12,7 +12,7 @@ import {
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { updateSelectedDomain } from "../libs/authService";
-import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
+import Tooltip from "@mui/material/Tooltip";
 
 const getImageStyle = (platform) => {
   const style = {
@@ -38,10 +38,13 @@ export default function PostDetails({ postData }) {
   const [selectedButton, setSelectedButton] = useState("image");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [showBlur, setShowBlur] = useState(true);
+
   const contentRef = useRef(null);
   const navigate = useNavigate();
-  console.log("post data.... iin the Post Detail section", postData);
-  const primaryPlatform = postData?.platforms?.[0] || "linkedin"; // Default to linkedin if no platform
+
+  const primaryPlatform = postData?.platforms?.[0] || "linkedin";
 
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
@@ -60,7 +63,6 @@ export default function PostDetails({ postData }) {
   }, [postData?.content]);
 
   const handleSeeAllPosts = async () => {
-    console.log("curent domainId", postData?.domainId?._id);
     try {
       const result = await updateSelectedDomain(
         postData.userId,
@@ -179,14 +181,27 @@ export default function PostDetails({ postData }) {
               src={postData.image}
               alt="Post"
               className="cursor-pointer"
-              style={getImageStyle(primaryPlatform)}
+              style={{
+                ...getImageStyle(primaryPlatform),
+                filter: showBlur ? "blur(8px)" : "none",
+                transition: "filter 0.5s ease-out",
+              }}
+              onLoad={() => {
+                setImageLoaded(true);
+                setTimeout(() => {
+                  setShowBlur(false);
+                }, 1500);
+              }}
             />
           ) : (
             <div
-              className="w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
-              style={getImageStyle(primaryPlatform)}
+              className="w-full flex items-center justify-center animate-pulse rounded"
+              style={{
+                ...getImageStyle(primaryPlatform),
+                backgroundColor: "rgba(184, 188, 194, 0.87)",
+              }}
             >
-              <Image className="w-12 h-12 text-gray-400" />
+              <Image className="w-12 h-12 text-gray-500" />
             </div>
           )}
         </Tooltip>
@@ -242,6 +257,7 @@ export default function PostDetails({ postData }) {
           </span>
         </Tooltip>
       </div>
+
       {/* Sticky Bottom Button */}
       <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">
         <button
