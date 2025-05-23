@@ -26,9 +26,10 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [selectedDate, setSelectedDate] = useState(new Date(post.date));
   const [postDate, setPostDate] = useState(new Date(post.date));
   const [loadingMessage, setLoadingMessage] = useState(null);
-
+  const [deletePost, setDeletePost] = useState(false);
   const contentRef = useRef(null);
   const primaryPlatform = post?.platforms?.[0];
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -328,8 +329,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 <Check className="w-4 h-4" />
               </div>
             )}
+            {/* onDelete(post) */}
             <button
-              onClick={() => onDelete(post._id)}
+              onClick={() => setDeletePost(true)}
               className="icon-btn"
               title="Delete post"
             >
@@ -409,6 +411,63 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                   </span>
                 ) : (
                   "Update Schedule Time"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deletePost && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Are you sure you want to delete this post?
+            </h2>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setDeletePost(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                disabled={isDeleting} // Disable during deletion
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setIsDeleting(true); // Start loading
+                  await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds
+                  onDelete(post);
+                  setIsDeleting(false); // Stop loading
+                  setDeletePost(false);
+                }}
+                className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded flex items-center justify-center min-w-20"
+                disabled={isDeleting} // Disable during deletion
+              >
+                {isDeleting ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
                 )}
               </button>
             </div>

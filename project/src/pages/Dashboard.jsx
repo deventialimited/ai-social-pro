@@ -15,9 +15,10 @@ import { CancelPopup } from "./CancelPopup";
 import {
   useGetAllPostsByDomainId,
   useUpdatePostById,
-  DeletePostById,
+  useDeletePostById,
 } from "../libs/postService";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
@@ -116,20 +117,43 @@ export const Dashboard = () => {
       }
     );
   };
+  const deletePostMutation = useDeletePostById();
 
-  const handleDelete = (id) => {
+  const handleDelete = async (post) => {
+    console.log("post from postCard", post);
+
     try {
-      const response = DeletePostById(id);
-      if (response) {
-        toast.success("Post deleted successfully!")
-      } else {
-        toast.error("Failed to delete post");
+      if (post.status === "scheduled") {
+        console.log("post status:", post.status);
+        const response = await axios.delete(
+          "https://oneyearsocial.com/deleteMulti",
+          {
+            data: {
+              uid: userId,
+              postId: post.postId,
+            },
+          }
+        );
+        if (response.status !== 200) {
+          toast.error("Failed to delete post from remote service");
+          return;
+        }
       }
+
+      deletePostMutation.mutate(post._id, {
+        onSuccess: () => {
+          toast.success("Post deleted successfully!");
+        },
+        onError: (error) => {
+          toast.error(`Failed to delete post: ${error}`);
+        },
+      });
     } catch (error) {
       console.error("Error deleting post:", error);
       toast.error("Failed to delete post");
     }
   };
+  
 
   const handleReschedule = (id) => {
     console.log("Reschedule post:", id);
