@@ -26,16 +26,14 @@ import { useSocket } from "../store/useSocket";
 
 export function extractDomain(fullUrl) {
   try {
-    // Trim whitespace and normalize input
     const trimmedUrl = fullUrl.trim();
     const normalized = trimmedUrl.startsWith("http")
       ? trimmedUrl
       : `https://${trimmedUrl}`;
     const urlObj = new URL(normalized);
-    console.log("Extracted domain:", urlObj.hostname); // Debug log
     return urlObj.hostname;
   } catch (err) {
-    console.error("Error extracting domain:", err.message); // Debug log
+    console.error("Error extracting domain:", err.message);
     return null;
   }
 }
@@ -103,12 +101,11 @@ export const HomePage = () => {
       color: "from-indigo-500 to-violet-500",
     },
   ];
-  //extra
+
   const [isModalOpen, setisModalOpen] = useState(false);
   const navigate = useNavigate();
   const addDomain = useAddDomainMutation();
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const socket = useSocket();
 
   const generateCompanyData = async (domain, user) => {
@@ -117,8 +114,12 @@ export const HomePage = () => {
         throw new Error("Invalid domain extracted from URL.");
       }
 
-      console.log("Generating data for domain:", domain); // Debug log
-      const firstResponse = await axios.post(
+      // Start animation immediately
+      setProgress(0);
+      setCurrentStep(0);
+
+      // Start API request but don't await yet
+      const apiPromise = axios.post(
         "https://social-api-107470285539.us-central1.run.app/create-client",
         {
           user_email: user?.email,
@@ -126,50 +127,83 @@ export const HomePage = () => {
         }
       );
 
-      const responseData = firstResponse.data;
-      console.log("first res message:", firstResponse.data.message); // Debug log
-      if (responseData.code === "DUPLICATE_CLIENT") {
-        console.error(
-          "Error in first API response:",
-          firstResponse.data.messagee
-        ); // Debug log
-        toast.error(`Try another website`);
-        setIsLoading(false);
-        return;
-      }
-      setProgress(0);
-      setCurrentStep(0);
+      // Track API response status
+      let dataReceived = false;
+      let apiResponse = null;
 
+      // Check for API response in background
+      const checkApiResponse = async () => {
+        try {
+          apiResponse = await apiPromise;
+          dataReceived = true;
+        } catch (error) {
+          console.error("API error:", error);
+          throw error;
+        }
+      };
+
+      const responseChecker = checkApiResponse();
+
+      // Smooth animation with dynamic pacing
       for (let i = 0; i < steps.length; i++) {
         setCurrentStep(i);
+
+        const pausePoints = [30, 60, 80]; // Percentage points to pause
+        const shouldPauseHere = pausePoints.includes(i * 20);
+
         for (let p = 0; p <= 100; p += 2) {
-          setProgress((i * 100 + p) / steps.length);
-          await new Promise((resolve) => setTimeout(resolve, 30));
+          const currentProgress = (i * 100 + p) / steps.length;
+          setProgress(currentProgress);
+
+          // Speed up if data received after 70%
+          if (dataReceived && currentProgress > 70) {
+            p += 10; // Faster increment
+          }
+
+          // Pause logic if no data yet
+          if (
+            shouldPauseHere &&
+            !dataReceived &&
+            currentProgress > i * 20 + 15
+          ) {
+            await sleep(3000); // 3 second pause
+          }
+
+          await sleep(30); // Base animation speed
         }
       }
-      await sleep(5000);
 
-      const Data = firstResponse.data;
+      // Ensure we reach 100% if data was received
+      if (dataReceived && progress < 100) {
+        for (let p = progress; p <= 100; p += 5) {
+          setProgress(p);
+          await sleep(10);
+        }
+      }
 
-      console.log("first API response  data:", Data); // Debug log
-      const { client_email, clientWebsite, clientDescription } = Data;
+      // Wait for API if not ready yet
+      if (!dataReceived) {
+        apiResponse = await apiPromise;
+        dataReceived = true;
+        // Quickly finish animation
+        for (let p = progress; p <= 100; p += 5) {
+          setProgress(p);
+          await sleep(10);
+        }
+      }
 
-      if (!client_email || !clientWebsite || !clientDescription) {
-        if (!client_email) toast.error("Client email is required.");
-        if (!clientWebsite) toast.error("Client website is required.");
-        if (!clientDescription) toast.error("Client description is required.");
+      const responseData = apiResponse.data;
+      if (responseData.code === "DUPLICATE_CLIENT") {
+        toast.error(`Try another website`);
         setIsLoading(false);
         return;
       }
 
       const result = await addDomain.mutateAsync({
-        ...Data,
+        ...responseData,
         userId: user?._id,
       });
 
-      console.log("result:", result); // Debug log
-      console.log(user?._id, "userId"); // Debug log
-      console.log(result?._id, "domainId"); // Debug log
       socket.emit(
         "JoinRoom",
         {
@@ -178,44 +212,38 @@ export const HomePage = () => {
         },
         (response) => {
           if (response.success) {
-            console.log("Joined room successfully:", response); // Debug log
-          } else {
-            console.error("Error joining room:", response); // Debug log
+            console.log("Joined room successfully");
           }
         }
       );
+
       setClientData({
         id: result?._id,
-        client_email: result?.client_email || "dummy data",
-        clientWebsite: result?.clientWebsite || "dummy site",
-        clientName: result?.clientName || "dummy ",
-        clientDescription: result?.clientDescription || "dummy",
-        industry: result?.industry || "dumy",
-        niche: result?.niche || "dummy",
+        client_email: result?.client_email || "",
+        clientWebsite: result?.clientWebsite || "",
+        clientName: result?.clientName || "",
+        clientDescription: result?.clientDescription || "",
+        industry: result?.industry || "",
+        niche: result?.niche || "",
         colors: result.colors,
-        language: result?.language || "Dummy",
-        country: result?.country || "dummy",
-        state: result?.state || "dummy",
-        userId: result?.userId || "dummy set",
+        language: result?.language || "",
+        country: result?.country || "",
+        state: result?.state || "",
+        userId: result?.userId || "",
         siteLogo: result?.siteLogo || "",
         marketingStrategy: {
           audience: Array.isArray(result?.marketingStrategy?.audience)
             ? result.marketingStrategy.audience
-            : Array.isArray(Data?.marketingStrategy?.audience)
-            ? Data.marketingStrategy.audience
             : [],
           audiencePains: Array.isArray(result?.marketingStrategy?.audiencePains)
             ? result.marketingStrategy.audiencePains
-            : Array.isArray(Data?.marketingStrategy?.audiencePains)
-            ? Data.marketingStrategy.audiencePains
             : [],
           core_values: Array.isArray(result?.marketingStrategy?.core_values)
             ? result.marketingStrategy.core_values
-            : Array.isArray(Data?.marketingStrategy?.core_values)
-            ? Data.marketingStrategy.core_values
             : [],
         },
       });
+
       toast.success("Domain successfully added!");
       setIsLoading(false);
       setisModalOpen(true);
@@ -242,7 +270,6 @@ export const HomePage = () => {
     }
 
     const domain = extractDomain(url);
-    console.log("Domain after extraction:", domain); // Debug log
 
     if (!domain) {
       toast.error("Please enter a valid URL (e.g., binance.com).");
@@ -434,7 +461,7 @@ export const HomePage = () => {
 
       {(isSignInPopup || isSignUpPopup) && <AuthModal />}
 
-      {/* Loading Animation - Fixed positioning so it appears as an overlay */}
+      {/* Loading Animation */}
       {isLoading && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-2xl w-full shadow-xl">
@@ -449,7 +476,7 @@ export const HomePage = () => {
               </div>
 
               <div className="relative h-6">
-                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden ">
+                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="h-full transition-all duration-300 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient relative"
                     style={{ width: `${progress}%` }}

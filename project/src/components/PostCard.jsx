@@ -122,7 +122,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       setLoadingMessage("Scheduling post...");
 
       const scheduleResponse = await fetch(
-        "https://oneyearsocial.com/scheduleMulti",
+        "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/shceduleMulti",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
