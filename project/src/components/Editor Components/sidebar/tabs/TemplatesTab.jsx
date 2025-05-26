@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useGetAllTemplatesByUserId } from "../../../../libs/templateDesignService";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
+import { ChevronDown, ChevronRight } from "lucide-react";
+
+const CATEGORIES = ["branding", "slogan"];
 
 function TemplatesTab() {
   const {
@@ -11,11 +14,12 @@ function TemplatesTab() {
     setCanvasLoading,
     canvasLoading,
   } = useEditor();
-  const [query, setQuery] = useState("");
-  const [userId, setUserId] = useState(null);
-  const fileInputRef = useRef(null);
 
-  // Set userId from localStorage
+  const [userId, setUserId] = useState(null);
+  const [category, setCategory] = useState("branding");
+  const [showPrivate, setShowPrivate] = useState(true);
+  const [showPublic, setShowPublic] = useState(true);
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?._id) {
@@ -23,32 +27,25 @@ function TemplatesTab() {
     }
   }, []);
 
-  // Fetch templates by userId
   const { data, isLoading, isError, error, refetch } =
     useGetAllTemplatesByUserId(userId);
 
-  // Normalize templates
   const templates = Array.isArray(data) ? data : data?.templates ?? [];
 
-  // Template handling
+  const privateTemplates = templates.filter(
+    (t) => t.templateCategory === category && t.templateType === "private"
+  );
+  const publicTemplates = templates.filter(
+    (t) => t.templateCategory === category && t.templateType === "public"
+  );
+
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
-
-      // Load the template data into the editor
-      if (template.canvas) {
-        setCanvas(template.canvas);
-      }
-      if (template.elements) {
-        setElements(template.elements);
-      }
-      if (template.layers) {
-        setLayers(template.layers);
-      }
-      if (template.backgrounds) {
-        setBackgrounds(template.backgrounds);
-      }
-
+      if (template.canvas) setCanvas(template.canvas);
+      if (template.elements) setElements(template.elements);
+      if (template.layers) setLayers(template.layers);
+      if (template.backgrounds) setBackgrounds(template.backgrounds);
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
@@ -56,52 +53,57 @@ function TemplatesTab() {
     }
   };
 
-  // Add a refetch effect when the component mounts
   useEffect(() => {
-    if (userId) {
-      refetch();
-    }
+    if (userId) refetch();
   }, [userId, refetch]);
 
   return (
-    <div className="p-4 h-full flex flex-col">
-      {/* Optional Search Field (disabled) */}
-      {/* 
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search Templates"
-            className="w-full pl-9 pr-3 py-2 border rounded-md text-sm"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-      </div>
-      */}
+    <div className="p-4 h-full flex flex-col overflow-y-auto">
+      {/* Category Tabs */}
+    {/* Category Tabs */}
+<div className="flex border-b mb-4">
+  {CATEGORIES.map((tab) => (
+    <button
+      key={tab}
+      onClick={() => setCategory(tab)}
+      className={`flex-1 text-center py-2 text-sm font-medium transition-colors ${
+        category === tab
+          ? "border-b-2 border-black text-black"
+          : "text-gray-500 hover:text-black"
+      }`}
+    >
+      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+    </button>
+  ))}
+</div>
 
-      {/* Loading/Error Messages */}
+
+      {/* Status */}
       {isLoading && <div>Loading templates...</div>}
       {isError && (
         <div className="text-red-500">
           Error: {error?.message || "Could not load templates."}
         </div>
       )}
-
-      {/* Template Loading Indicator */}
       {canvasLoading && (
         <div className="text-sm text-gray-600 mb-2">Loading template...</div>
       )}
 
-      {/* Gallery */}
-      {!isLoading && !isError && (
+      {/* Private Templates */}
+      <div className="mb-4">
         <div
-          className="overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 2px)" }}
+          className="flex items-center justify-between cursor-pointer select-none mb-2"
+          onClick={() => setShowPrivate(!showPrivate)}
         >
-          <div className="grid grid-cols-2 gap-2">
-            {templates.length > 0 ? (
-              templates.map((template) => (
+          <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
+            {showPrivate ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            Private Templates
+          </div>
+        </div>
+        {showPrivate && (
+          privateTemplates.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {privateTemplates.map((template) => (
                 <div
                   key={template._id}
                   className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
@@ -109,19 +111,51 @@ function TemplatesTab() {
                 >
                   <img
                     src={template.templateImage}
-                    alt="Template"
+                    alt="Private Template"
                     className="w-full h-full object-cover"
                   />
                 </div>
-              ))
-            ) : (
-              <div className="col-span-2 text-center text-gray-500">
-                No templates found.
-              </div>
-            )}
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm">No private templates found.</div>
+          )
+        )}
+      </div>
+
+      {/* Public Templates */}
+      <div>
+        <div
+          className="flex items-center justify-between cursor-pointer select-none mb-2"
+          onClick={() => setShowPublic(!showPublic)}
+        >
+          <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
+            {showPublic ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            Public Templates
           </div>
         </div>
-      )}
+        {showPublic && (
+          publicTemplates.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {publicTemplates.map((template) => (
+                <div
+                  key={template._id}
+                  className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+                  onClick={() => handleLoadTemplate(template)}
+                >
+                  <img
+                    src={template.templateImage}
+                    alt="Public Template"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm">No public templates available.</div>
+          )
+        )}
+      </div>
     </div>
   );
 }
