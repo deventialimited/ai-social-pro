@@ -10,6 +10,10 @@ const templateDesignSchema = new mongoose.Schema({
     type: String, // e.g., "public", "private"
     required: true, // Marked as required
   },
+  templateCategory: {
+    type: String, // e.g., "public", "private"
+    required: true, // Marked as required
+  },
   templateImage: {
     type: String, // URL to show preview of the template
     required: true, // Marked as required
