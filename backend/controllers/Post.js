@@ -1,10 +1,16 @@
+const { v4: uuidv4 } = require("uuid");
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
+const User = require("../models/User");
 const getRawBody = require("raw-body");
 const axios = require("axios");
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const mongoose = require("mongoose");
 const socket = require("../utils/socket");
+const TemplateDesign = require("../models/TemplateDesign");
+const puppeteer = require("puppeteer");
+const fs = require("fs");
+const path = require("path");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -235,7 +241,274 @@ exports.updatePostImage = async (req, res) => {
     });
   }
 };
+const platformDimensions = [
+  { width: 1200, height: 675, ratio: "1.91:1" }, // Facebook, LinkedIn, Twitter
+  { width: 1080, height: 1080, ratio: "1:1" }, // Instagram
+  // Add more if needed
+];
+const automateCreateTemplates = async (
+  userId,
+  sloganText,
+  domainId,
+  postId
+) => {
+  // Get primary brand color
+  const domain = await Domain.findById(domainId);
+  const user = await User.findById(userId);
+  const bgColor = domain?.colors?.[0] || "rgba(255,255,255,1)";
 
+  const dimensions = platformDimensions[0]; // pick first for now
+
+  // --- SLOGAN TEMPLATE ---
+  const sloganElementId = `text-${uuidv4()}`;
+
+  const sloganTemplate = await TemplateDesign.create({
+    userId,
+    templateId: `${user?.username}-${uuidv4()}`,
+    templateType: "private",
+    templateCategory: "slogan",
+    canvas: {
+      width: dimensions.width,
+      height: dimensions.height,
+      ratio: dimensions.ratio,
+      styles: {
+        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+        backgroundColor: bgColor,
+      },
+    },
+    elements: [
+      {
+        id: sloganElementId,
+        type: "text",
+        category: "header",
+        position: { x: 102, y: 74 },
+        effects: {
+          blur: { enabled: false, value: 3 },
+          textStroke: { enabled: false, value: 2, color: "#808080" },
+          background: {
+            enabled: true,
+            cornerRadius: 0,
+            padding: 0,
+            opacity: 100,
+            color: "#FFFFFF",
+          },
+          shadow: {
+            enabled: false,
+            blur: 0,
+            offsetX: 0,
+            offsetY: 0,
+            opacity: 100,
+            color: "#000000",
+          },
+        },
+        styles: {
+          color: "#000000",
+          fontSize: "36px",
+          fontWeight: "bold",
+          width: 210,
+          height: 69,
+          zIndex: 1,
+          position: "static",
+          textAlign: "center",
+          verticalAlign: "middle",
+          backgroundColor: "#FFFFFF",
+          borderRadius: "0px",
+          opacity: 1,
+        },
+        props: { text: sloganText || "Slogan Here" },
+        visible: true,
+        locked: false,
+      },
+    ],
+    layers: [
+      {
+        id: `layer-${uuidv4()}`,
+        elementId: sloganElementId,
+        visible: true,
+        locked: false,
+      },
+    ],
+    backgrounds: {
+      type: "color",
+      color: bgColor,
+    },
+    version: 1,
+  });
+
+  // --- BRANDING TEMPLATE ---
+  const brandingTemplate = await Template.create({
+    userId,
+    templateId: `${user?.username}-${uuidv4()}`,
+    templateType: "private",
+    templateCategory: "branding",
+    canvas: {
+      width: dimensions.width,
+      height: dimensions.height,
+      ratio: dimensions.ratio,
+      styles: {
+        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+        backgroundColor: bgColor,
+      },
+    },
+    elements: [
+      {
+        id: `image-${uuidv4()}`,
+        type: "image",
+        position: { x: 12, y: 148 },
+        effects: {
+          blur: { enabled: false, value: 10 },
+          brightness: { enabled: false, value: 100 },
+          sepia: { enabled: false, value: 0 },
+          grayscale: { enabled: false, value: 0 },
+          border: { enabled: false, value: 2, color: "#000000" },
+          cornerRadius: { enabled: false, value: 150 },
+          shadow: {
+            enabled: false,
+            blur: 5,
+            offsetX: 0,
+            offsetY: 0,
+            opacity: 100,
+            color: "#000000",
+          },
+        },
+        styles: {
+          width: 64,
+          height: 64,
+          zIndex: 1,
+          position: "static",
+          fontSize: "16px",
+        },
+        props: {
+          src: domain?.siteLogo, // dynamic or placeholder
+          previewUrl: domain?.siteLogo,
+          mask: "circle",
+          originalSrc: domain?.siteLogo,
+        },
+        visible: true,
+        locked: false,
+      },
+      {
+        id: `text-${uuidv4()}`,
+        type: "text",
+        category: "header",
+        position: { x: 86, y: 156 },
+        effects: {
+          blur: { enabled: false, value: 3 },
+          textStroke: { enabled: false, value: 2, color: "#808080" },
+          background: {
+            enabled: true,
+            cornerRadius: 0,
+            padding: 0,
+            opacity: 100,
+            color: "#FFFFFF",
+          },
+          shadow: {
+            enabled: false,
+            blur: 0,
+            offsetX: 0,
+            offsetY: 0,
+            opacity: 100,
+            color: "#000000",
+          },
+        },
+        styles: {
+          color: "#000000",
+          fontSize: "36px",
+          fontWeight: "bold",
+          width: 210,
+          height: 54,
+          zIndex: 2,
+          position: "static",
+          backgroundColor: "#FFFFFF",
+          borderRadius: "0px",
+          opacity: 1,
+          textAlign: "center",
+          verticalAlign: "middle",
+        },
+        props: { text: domain?.clientWebsite || "Business Name" },
+        visible: true,
+        locked: false,
+      },
+    ],
+    layers: [
+      {
+        id: `layer-${uuidv4()}`,
+        elementId: `image-${uuidv4()}`,
+        visible: true,
+        locked: false,
+      },
+      {
+        id: `layer-${uuidv4()}`,
+        elementId: `text-${uuidv4()}`,
+        visible: true,
+        locked: false,
+      },
+    ],
+    backgrounds: {
+      type: "color",
+      color: bgColor,
+    },
+    version: 1,
+  });
+
+  return {
+    sloganTemplate,
+    brandingTemplate,
+  };
+};
+const generateHTMLFromTemplateData = (templateData) => {
+  const { canvas, elements } = templateData;
+
+  return `
+    <html>
+    <body style="margin:0; padding:0; background:${
+      canvas.styles.backgroundColor
+    }; width:${canvas.width}px; height:${canvas.height}px; position:relative;">
+      ${elements
+        .map((el) => {
+          if (el.type === "text") {
+            return `<div style="
+            position:absolute;
+            top:${el.position.y}px;
+            left:${el.position.x}px;
+            font-size:${el.styles.fontSize};
+            font-weight:${el.styles.fontWeight};
+            color:${el.styles.color};
+            width:${el.styles.width}px;
+            height:${el.styles.height}px;
+            text-align:${el.styles.textAlign};
+            background:${el.styles.backgroundColor};
+          ">${el.props.text}</div>`;
+          }
+
+          if (el.type === "image") {
+            return `<img src="${el.props.src}" style="
+            position:absolute;
+            top:${el.position.y}px;
+            left:${el.position.x}px;
+            width:${el.styles.width}px;
+            height:${el.styles.height}px;
+            border-radius:${el.styles.borderRadius || 0}px;
+          "/>`;
+          }
+
+          return "";
+        })
+        .join("\n")}
+    </body>
+    </html>
+  `;
+};
+
+const renderImageFromHTML = async (htmlString, outputPath) => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.setContent(htmlString, { waitUntil: "networkidle0" });
+  await page.setViewport({ width: 1080, height: 1080 }); // Or dynamic
+  await page.screenshot({ path: outputPath, type: "png" });
+  await browser.close();
+  return outputPath;
+};
 exports.processPubSub = async (req, res) => {
   try {
     console.log("into pubsub");
@@ -272,6 +545,28 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
+
+    const { sloganTemplate, brandingTemplate } = await automateCreateTemplates(
+      domain.userId,
+      jsonData.slogan,
+      domain._id,
+      savedPost._id
+    );
+    // === GENERATE HTML FROM TEMPLATE DATA ===
+    const sloganHTML = generateHTMLFromTemplateData(sloganTemplate);
+    const brandingHTML = generateHTMLFromTemplateData(brandingTemplate);
+    // === RENDER TO IMAGE ===
+    const sloganImagePath = path.join(
+      __dirname,
+      `./public/generated/slogan-${uuidv4()}.png`
+    );
+    const brandingImagePath = path.join(
+      __dirname,
+      `./public/generated/branding-${uuidv4()}.png`
+    );
+
+    await renderImageFromHTML(sloganHTML, sloganImagePath);
+    await renderImageFromHTML(brandingHTML, brandingImagePath);
 
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
