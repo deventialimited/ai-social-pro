@@ -7,6 +7,8 @@ import {
   Lock,
   Copy,
   Trash,
+  Undo,
+  Redo,
 } from "lucide-react";
 import DurationSelector from "../../common/popups/DurationSelector";
 import PaletteSelector from "../../common/popups/PaletteSelector";
@@ -31,7 +33,7 @@ function hexToRgba(hex, opacity) {
 
 function CanvasToolbar() {
   const fileInputRef = useRef(null);
-  const { updateBackground, updateCanvasStyles, canvas } = useEditor();
+  const { updateBackground, updateCanvasStyles, canvas, undo, redo } = useEditor();
   const handleDurationChange = (newDuration) => {
     // setDuration(newDuration);
   };
@@ -80,13 +82,21 @@ function CanvasToolbar() {
 
   return (
     <div className="flex items-center flex-wrap gap-2">
-      {/* <button className="p-2 rounded-md hover:bg-gray-100">
-        <RotateCcw className="h-5 w-5 text-gray-600" />
+      <Tooltip id="undo-tooltip" content="Undo last action">
+      <button 
+      onClick={undo}
+       className="p-2 rounded-md hover:bg-gray-100">
+      <RotateCcw className="h-5 w-5 text-gray-600" />
       </button>
+      </Tooltip>
+      <Tooltip id="redo-tooltip" content="Redo last action">
+      <button 
+      onClick={redo}
+      className="p-2 rounded-md hover:bg-gray-100">
+      <RotateCw className="h-5 w-5 text-gray-600" />
 
-      <button className="p-2 rounded-md hover:bg-gray-100">
-        <RotateCw className="h-5 w-5 text-gray-600" />
-      </button> */}
+      </button>
+      </Tooltip>
 
       {/* <DurationSelector duration={duration} onChange={handleDurationChange} /> */}
 

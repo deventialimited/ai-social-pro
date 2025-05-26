@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 const EditorContext = createContext(null);
@@ -26,6 +26,69 @@ export const EditorProvider = ({ children }) => {
   // ===================== 📦 All Asset Files =====================
   const [allFiles, setAllFiles] = useState([]); // [File, File, ...]
 
+  // ===================== 🔄 Undo/Redo History =====================
+  const historyRef = useRef({
+    past: [],
+    present: {
+      canvas,
+      backgrounds,
+      elements,
+      layers,
+      allFiles,
+    },
+    future: [],
+  });
+
+  const pushToHistory = useCallback((newState) => {
+    historyRef.current = {
+      past: [...historyRef.current.past, historyRef.current.present],
+      present: newState,
+      future: [],
+    };
+  }, []);
+
+  const undo = useCallback(() => {
+    const { past, present, future } = historyRef.current;
+    if (past.length === 0) return;
+
+    const previous = past[past.length - 1];
+    const newPast = past.slice(0, past.length - 1);
+
+    historyRef.current = {
+      past: newPast,
+      present: previous,
+      future: [present, ...future],
+    };
+
+    // Update all states
+    setCanvas(previous.canvas);
+    setBackgrounds(previous.backgrounds);
+    setElements(previous.elements);
+    setLayers(previous.layers);
+    setAllFiles(previous.allFiles);
+  }, []);
+
+  const redo = useCallback(() => {
+    const { past, present, future } = historyRef.current;
+    if (future.length === 0) return;
+
+    const next = future[0];
+    const newFuture = future.slice(1);
+
+    historyRef.current = {
+      past: [...past, present],
+      present: next,
+      future: newFuture,
+    };
+
+    // Update all states
+    setCanvas(next.canvas);
+    setBackgrounds(next.backgrounds);
+    setElements(next.elements);
+    setLayers(next.layers);
+    setAllFiles(next.allFiles);
+  }, []);
+
   // ===================== 🚀 Combined Post Data =====================
   const postDesignData = {
     canvas,
@@ -39,12 +102,19 @@ export const EditorProvider = ({ children }) => {
   const updateCanvasSize = useCallback((width, height) => {
     console.log(width);
     console.log(height);
-    setCanvas((prev) => ({
-      ...prev,
-      width,
-      height,
-    }));
-  }, []);
+    setCanvas((prev) => {
+      const newState = {
+        ...prev,
+        width,
+        height,
+      };
+      pushToHistory({
+        ...historyRef.current.present,
+        canvas: newState,
+      });
+      return newState;
+    });
+  }, [pushToHistory]);
 
   const updateCanvasStyles = useCallback((styles) => {
     console.log(styles);
@@ -70,15 +140,20 @@ export const EditorProvider = ({ children }) => {
         delete updatedStyles.backgroundPosition;
       }
 
-      return {
+      const newState = {
         ...prev,
         styles: {
           ...updatedStyles,
           ...styles,
         },
       };
+      pushToHistory({
+        ...historyRef.current.present,
+        canvas: newState,
+      });
+      return newState;
     });
-  }, []);
+  }, [pushToHistory]);
 
   const updateBackground = useCallback((type, value) => {
     console.log(type, value);
@@ -100,7 +175,11 @@ export const EditorProvider = ({ children }) => {
     }
 
     setBackgrounds(bg);
-  }, []);
+    pushToHistory({
+      ...historyRef.current.present,
+      backgrounds: bg,
+    });
+  }, [pushToHistory]);
 
   const addElement = useCallback((element) => {
     setElements((prev) => {
@@ -124,22 +203,39 @@ export const EditorProvider = ({ children }) => {
           locked: false,
         },
       ]);
-      return [...prev, newElement];
+      const newElements = [...prev, newElement];
+      pushToHistory({
+        ...historyRef.current.present,
+        elements: newElements,
+      });
+      return newElements;
     });
-  }, []);
+  }, [pushToHistory]);
 
   const updateElement = useCallback((id, newProps) => {
-    setElements((prev) =>
-      prev.map((el) => (el.id === id ? { ...el, ...newProps } : el))
-    );
-  }, []);
+    setElements((prev) => {
+      const newElements = prev.map((el) => (el.id === id ? { ...el, ...newProps } : el));
+      pushToHistory({
+        ...historyRef.current.present,
+        elements: newElements,
+      });
+      return newElements;
+    });
+  }, [pushToHistory]);
 
   const removeElement = useCallback((id) => {
-    setElements((prev) => prev.filter((el) => el.id !== id));
-    setLayers((prevLayers) =>
-      prevLayers.filter((layer) => layer.elementId !== id)
-    );
-  }, []);
+    setElements((prev) => {
+      const newElements = prev.filter((el) => el.id !== id);
+      setLayers((prevLayers) =>
+        prevLayers.filter((layer) => layer.elementId !== id)
+      );
+      pushToHistory({
+        ...historyRef.current.present,
+        elements: newElements,
+      });
+      return newElements;
+    });
+  }, [pushToHistory]);
 
   const addFile = useCallback((file) => {
     setAllFiles((prev) => [...prev, file]);
@@ -290,6 +386,9 @@ export const EditorProvider = ({ children }) => {
     handleLock,
     handleVisible,
     clearEditor,
+    // Undo/Redo
+    undo,
+    redo,
   };
 
   return (
