@@ -40,33 +40,12 @@ const TopHeaderBtns = ({
     updateCanvasSize,
     setCanvasLoading,
     setPostOtherValues,
-    setMode,
-    setVideoClips,
-    duration,
-    mode,
   } = useEditor();
   const [isSavePostLoading, setIsSavePostLoading] = useState(false);
   const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);
   const onSavePost = useSaveOrUpdatePostDesign();
   const onSaveTemplate = useSaveOrUpdateTemplateDesign();
   const user = JSON.parse(localStorage?.getItem("user"));
-
-  const handleVideoChange = () => {
-    const newClip = {
-      id: `clip-${Date.now()}`,
-      duration: duration,
-      canvas: JSON.parse(JSON.stringify(postDesignData.canvas)),
-      elements: JSON.parse(JSON.stringify(postDesignData.elements)),
-      animations: [],
-    };
-  
-    setVideoClips([newClip]);
-    setMode("video");
-  };
-const handleimageChange = () => {
-  setMode("image");
-}
-  console.log(mode)
 
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
@@ -291,29 +270,12 @@ const handleimageChange = () => {
         Cancel
       </button>
 
-      <div className="relative">
-        {mode=="image"?
-
-<button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50"
-onClick={handleVideoChange}
-
-
->
-  <span>Change to Video</span>
-  {/* <ChevronDown className="h-4 w-4" /> */}
-</button>:
-        
-        <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50"
-        onClick={handleimageChange}
-        
-        >
-          <span>Change to image</span>
-          {/* <ChevronDown className="h-4 w-4" /> */}
-        </button>
-        
-      }
-       
-     </div>
+      {/* <div className="relative">
+       <button className="flex items-center gap-2 px-4 py-1.5 border rounded-md hover:bg-gray-50">
+         <span>Change to Video</span>
+         <ChevronDown className="h-4 w-4" />
+       </button>
+     </div> */}
       <SaveDropdown
         onSave={(option) => handleSaveTemplateAndClose(option)}
         isLoading={isSaveTemplateLoading}

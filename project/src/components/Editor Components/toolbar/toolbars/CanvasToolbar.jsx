@@ -13,7 +13,6 @@ import PaletteSelector from "../../common/popups/PaletteSelector";
 import ColorPicker from "../../common/popups/ColorPicker";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import Tooltip from "../../../common/Tooltip";
-import VideoDurationSelecter from "../../common/popups/VideoDurationSelecter";
 
 // Utility to convert hex + opacity to rgba
 function hexToRgba(hex, opacity) {
@@ -32,7 +31,7 @@ function hexToRgba(hex, opacity) {
 
 function CanvasToolbar() {
   const fileInputRef = useRef(null);
-  const { updateBackground, updateCanvasStyles, canvas,mode } = useEditor();
+  const { updateBackground, updateCanvasStyles, canvas } = useEditor();
   const handleDurationChange = (newDuration) => {
     // setDuration(newDuration);
   };
@@ -94,12 +93,7 @@ function CanvasToolbar() {
       <Tooltip id="palette-tooltip" content="Select color palette">
         <PaletteSelector onSelect={handlePaletteSelect} />
       </Tooltip>
-       {mode === "video" &&
-        <Tooltip id="duration-tooltip" content="Select video duration">
-        <VideoDurationSelecter></VideoDurationSelecter>
-         </Tooltip>
-      }
-      
+
       <Tooltip id="color-picker-tooltip" content="Change background color">
         <ColorPicker
           color={canvas?.styles?.backgroundColor?.startsWith('rgba') ? 

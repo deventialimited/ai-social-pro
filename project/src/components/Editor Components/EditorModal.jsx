@@ -6,7 +6,6 @@ import EditorCanvas from "./canvas/EditorCanvas";
 import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider, useEditor } from "./EditorStoreHooks/FullEditorHooks";
 import TopHeaderBtns from "./common/TopHeaderBtns";
-import VideoCanva from "./canvas/VideoCanvas";
 
 function EditorModalContent({ post, onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
@@ -14,7 +13,7 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [activeElement, setActiveElement] = useState("canvas"); // Default to canvas toolbar
   const canvasContainerRef = useRef(null);
-  const { postDesignData,mode } = useEditor();
+  const { postDesignData } = useEditor();
   const [canvasContent, setCanvasContent] = useState({
     backgroundColor: "#87CEEB",
     elements: [
@@ -128,11 +127,7 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
                       setSelectedElementId={setSelectedElementId}
                       setActiveElement={setActiveElement}
                     />
-{mode=="video"? 
-                    <VideoCanva></VideoCanva>
-
-:
-<EditorCanvas
+                    <EditorCanvas
                       content={canvasContent}
                       canvasContainerRef={canvasContainerRef}
                       selectedElementId={selectedElementId}
@@ -141,8 +136,6 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
                       setSpecialActiveTab={setSpecialActiveTab}
                       specialActiveTab={specialActiveTab}
                     />
-                    }
-                   
                   </div>
                 </div>
               </Dialog.Panel>
