@@ -46,7 +46,8 @@ const TopHeaderBtns = ({
   const onSavePost = useSaveOrUpdatePostDesign();
   const onSaveTemplate = useSaveOrUpdateTemplateDesign();
   const user = JSON.parse(localStorage?.getItem("user"));
-
+  const [templateType, setTemplateType] = useState("private");
+  const [templateCategory, setTemplateCategory] = useState("branding");
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
@@ -114,7 +115,7 @@ const TopHeaderBtns = ({
       console.error("Error saving design:", error);
     }
   };
-  const handleSaveTemplateAndClose = async (templateType = "private") => {
+  const handleSaveTemplateAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
@@ -152,6 +153,7 @@ const TopHeaderBtns = ({
           userId: user?._id,
           templateId: `${user?.username}-${uuidv4()}`,
           templateType,
+          templateCategory,
           templateImage: file,
           templateDesignData: postDesignData,
           allFiles,
@@ -277,9 +279,15 @@ const TopHeaderBtns = ({
        </button>
      </div> */}
       <SaveDropdown
-        onSave={(option) => handleSaveTemplateAndClose(option)}
+        onSave={handleSaveTemplateAndClose}
         isLoading={isSaveTemplateLoading}
+        templateType={templateType}
+        setTemplateType={setTemplateType}
+        templateCategory={templateCategory}
+        setTemplateCategory={setTemplateCategory}
       />
+
+
 
       <button
         onClick={handleSavePostAndClose}

@@ -38,6 +38,7 @@ export const useSaveOrUpdateTemplateDesign = () => {
       userId,
       templateId,
       templateType,
+      templateCategory,
       templateImage,
       templateDesignData,
       allFiles,
@@ -46,6 +47,7 @@ export const useSaveOrUpdateTemplateDesign = () => {
         userId,
         templateId,
         templateType,
+        templateCategory,
         templateImage,
         templateDesignData,
         allFiles
@@ -68,6 +70,7 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
   userId,
   templateId,
   templateType,
+  templateCategory,
   templateImage,
   templateDesignData,
   allFiles
@@ -77,6 +80,7 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
       userId,
       templateId,
       templateType,
+      templateCategory,
       templateImage,
       templateDesignData,
       allFiles
@@ -90,6 +94,7 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
         ...templateDesignData,
         templateId,
         templateType,
+        templateCategory,
         userId,
       })
     );
