@@ -40,6 +40,8 @@ function ImageToolbar({
     allFiles,
     canvas,
     handleLock,
+    undo,
+    redo,
   } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const handleFlip = (direction) => {
@@ -260,6 +262,23 @@ function ImageToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
+
+      <Tooltip id="undo-tooltip" content="Undo last action">
+      <button 
+      onClick={undo}
+       className="p-2 rounded-md hover:bg-gray-100">
+      <RotateCcw className="h-5 w-5 text-gray-600" />
+      </button>
+      </Tooltip>
+      <Tooltip id="redo-tooltip" content="Redo last action">
+      <button 
+      onClick={redo}
+      className="p-2 rounded-md hover:bg-gray-100">
+      <RotateCw className="h-5 w-5 text-gray-600" />
+
+      </button>
+      </Tooltip>
+
         <Tooltip id="flip-tooltip" content="Flip image">
           <FlipPopup onFlip={handleFlip} />
         </Tooltip>
