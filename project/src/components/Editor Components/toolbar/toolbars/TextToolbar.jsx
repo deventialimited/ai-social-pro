@@ -61,6 +61,8 @@ function TextToolbar({
     removeElement,
     elements,
     canvas,
+    undo,
+    redo,
   } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   useEffect(() => {
@@ -245,13 +247,21 @@ function TextToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        {/* <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCcw className="h-5 w-5 text-gray-600" />
-        </button>
+      <Tooltip id="undo-tooltip" content="Undo last action">
+      <button 
+      onClick={undo}
+       className="p-2 rounded-md hover:bg-gray-100">
+      <RotateCcw className="h-5 w-5 text-gray-600" />
+      </button>
+      </Tooltip>
+      <Tooltip id="redo-tooltip" content="Redo last action">
+      <button 
+      onClick={redo}
+      className="p-2 rounded-md hover:bg-gray-100">
+      <RotateCw className="h-5 w-5 text-gray-600" />
 
-        <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCw className="h-5 w-5 text-gray-600" />
-        </button> */}
+      </button>
+      </Tooltip>
 
         <Tooltip id="color-picker-tooltip" content="Change text color">
           <ColorPicker
