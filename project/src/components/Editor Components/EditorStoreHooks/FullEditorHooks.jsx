@@ -4,6 +4,10 @@ import { v4 as uuidv4 } from "uuid";
 const EditorContext = createContext(null);
 
 export const EditorProvider = ({ children }) => {
+  // adding mode for the switching between video and image canva
+  const [mode, setMode] = useState("image");
+  const [videoClips, setVideoClips] = useState([]);
+  const [duration,setduration] = useState(5);
   // ===================== 🌟 Design Data States =====================
   const [isCanvasLoading, setCanvasLoading] = useState(false);
   const [postOtherValues, setPostOtherValues] = useState(null);
@@ -256,6 +260,14 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const store = {
+     // ✅ Video
+  videoClips,
+  setVideoClips,
+    // mode 
+    mode,
+    setMode,
+    duration,
+    setduration,
     // Design Data
     canvas,
     setCanvas,
