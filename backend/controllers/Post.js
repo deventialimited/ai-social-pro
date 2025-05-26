@@ -392,6 +392,33 @@ exports.updatePostTime = async (req, res) => {
   }
 };
 
+exports.deletePost = async (req, res) => {
+  const id = req.params.id;
+  console.log("Deleting post   ID:", id);
+  if (!id) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+  try {
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.image) {
+      const imageKey = getS3KeyFromUrl(post.image);
+      if (imageKey) {
+        await deleteFromS3([imageKey]);
+      }
+    }
+
+    await Post.findByIdAndDelete(id);
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 function getS3KeyFromUrl(url) {
   try {
     const urlObj = new URL(url);

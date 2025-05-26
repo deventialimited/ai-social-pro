@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { PostCard } from "../components/PostCard";
 import { BusinessSection } from "../components/BusinessSection";
 import { LeftMenu } from "../components/LeftMenu";
@@ -9,65 +9,57 @@ import { useThemeStore } from "../store/useThemeStore";
 import { SocialsTab } from "../components/SocialsTab";
 import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
-import { useSearchParams } from "react-router-dom";
 import { SuccessPopup } from "./SuccessPopup";
 import { CancelPopup } from "./CancelPopup";
 import {
   useGetAllPostsByDomainId,
   useUpdatePostById,
+  useDeletePostById,
 } from "../libs/postService";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
   const [userId, setUserId] = useState(null);
-  const [user, setUser] = useState({
-    username: "",
-  });
+  const [user, setUser] = useState({ username: "" });
+  const [selectedWebsite, setSelectedWebsite] = useState(null);
+  const [currentTab, setCurrentTab] = useState("posts");
+  const [view, setView] = useState("list");
+  const [filter, setFilter] = useState("all");
+  const [postsTab, setPostsTab] = useState("generated");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationError, setGenerationError] = useState("");
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const checkoutStatus = searchParams.get("checkout");
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?._id) {
       setUserId(storedUser._id);
-      setUser({
-        username: storedUser.username,
-      });
+      setUser({ username: storedUser.username });
     }
   }, []);
+
   const {
     data: domains,
     isDomainsLoading,
     isDomainsError,
     domainsError,
   } = useDomains(userId);
-  const [selectedWebsite, setSelectedWebsite] = useState(null);
-  const [currentTab, setCurrentTab] = useState("posts");
-  const [view, setView] = useState("list");
-  const [filter, setFilter] = useState("all");
-  const [postsTab, setPostsTab] = useState("generated");
-  const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const checkoutStatus = searchParams.get("checkout");
-  const [showPopup, setShowPopup] = useState(false);
-  const handleClosePopup = () => {
-    setShowPopup(false);
-    // Remove the query params from URL without reload
-    window.history.replaceState({}, document.title, window.location.pathname);
-  };
-  useEffect(() => {
-    // Show popup if checkout status is present
-    if (checkoutStatus) {
-      setShowPopup(true);
-    }
-  }, [checkoutStatus]);
+
   const {
     data: posts,
     isPostsLoading,
     isPostsError,
     postsError,
   } = useGetAllPostsByDomainId(selectedWebsite);
-  console.log(posts);
+
   useEffect(() => {
     const selectedWebsiteId = JSON.parse(
       localStorage.getItem("user")
@@ -83,41 +75,88 @@ export const Dashboard = () => {
       }
     }
   }, [domains, searchParams]);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
-  const handleGeneratePosts = async (url) => {
+  useEffect(() => {
+    if (checkoutStatus) {
+      setShowPopup(true);
+    }
+  }, [checkoutStatus]);
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
+
+  const handleGeneratePosts = async () => {
     setIsGeneratingPosts(true);
-    await new Promise((resolve) => setTimeout(resolve, 4000));
-    // setPosts((prevPosts) => [...prevPosts]);
-    setIsGeneratingPosts(false);
+    setGenerationError("");
+    setGenerationProgress(0);
+
+    const interval = setInterval(() => {
+      setGenerationProgress((prev) => {
+        if (prev < 95) return prev + 1;
+        return prev;
+      });
+    }, 100);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      clearInterval(interval);
+      setGenerationProgress(100);
+      setTimeout(() => {
+        setIsGeneratingPosts(false);
+        setCurrentTab("posts");
+        setPostsTab("generated");
+      }, 500);
+    } catch (error) {
+      clearInterval(interval);
+      setGenerationError("Failed to generate posts.");
+      setTimeout(() => setIsGeneratingPosts(false), 2000);
+    }
+  };
+
+  const handleNewPost = (post) => {
     setCurrentTab("posts");
     setPostsTab("generated");
   };
 
-  const handleNewPost = (post) => {
-    // setPosts((prevPosts) => [post, ...prevPosts]);
-    setCurrentTab("posts");
-    setPostsTab("generated");
-  };
   const updatePostMutation = useUpdatePostById();
+  const deletePostMutation = useDeletePostById();
+
   const handleEdit = (updatedPost, status) => {
     updatePostMutation.mutate(
       { id: updatedPost._id, postData: { ...updatedPost, status } },
       {
-        onSuccess: () => {
-          toast.success("Post updated successfully!");
-        },
-        onError: (error) => {
-          toast.error(`Failed to update post: ${error}`);
-        },
+        onSuccess: () => toast.success("Post updated successfully!"),
+        onError: (error) => toast.error(`Failed to update post: ${error}`),
       }
     );
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete post:", id);
+  const handleDelete = async (post) => {
+    try {
+      if (post.status === "scheduled") {
+        const response = await axios.delete(
+          "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/deleteMulti",
+          { data: { uid: userId, postId: post.postId } }
+        );
+        if (response.status !== 200) {
+          toast.error("Failed to delete post from remote service");
+          return;
+        }
+      }
+
+      deletePostMutation.mutate(post._id, {
+        onSuccess: () => toast.success("Post deleted successfully!"),
+        onError: (error) => toast.error(`Failed to delete post: ${error}`),
+      });
+    } catch (error) {
+      toast.error("Failed to delete post");
+    }
   };
 
   const handleReschedule = (id) => {
@@ -189,7 +228,6 @@ export const Dashboard = () => {
         );
       case "socials":
         return <SocialsTab />;
-
       default:
         return <div>Dashboard Content</div>;
     }
@@ -211,10 +249,9 @@ export const Dashboard = () => {
           navigate={navigate}
         />
         <Header
-          userName={user.username || "guest"} // Pass the username from state
+          userName={user.username || "guest"}
           onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
-
         <div
           className={`transition-all duration-300 lg:ml-64 pt-20 pb-8 ${
             isMobileMenuOpen ? "ml-64" : "ml-0"
@@ -225,11 +262,12 @@ export const Dashboard = () => {
         {showPopup && checkoutStatus === "success" && (
           <SuccessPopup onClose={handleClosePopup} />
         )}
-
         {showPopup && checkoutStatus === "cancel" && (
           <CancelPopup onClose={handleClosePopup} />
         )}
-        {isGeneratingPosts && <PostsLoader />}
+        {isGeneratingPosts && (
+          <PostsLoader progress={generationProgress} error={generationError} />
+        )}
       </div>
     </div>
   );
