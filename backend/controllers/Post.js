@@ -282,7 +282,7 @@ const automateCreateTemplates = async (
         id: sloganElementId,
         type: "text",
         category: "header",
-        position: { x: 102, y: 74 },
+        position: { x: dimensions.width / 2, y: dimensions.height / 2 },
         effects: {
           blur: { enabled: false, value: 3 },
           textStroke: { enabled: false, value: 2, color: "#808080" },
@@ -306,10 +306,11 @@ const automateCreateTemplates = async (
           color: "#000000",
           fontSize: "36px",
           fontWeight: "bold",
-          width: 210,
-          height: 69,
+          width: "max-content",
+          height: "max-centent",
           zIndex: 1,
-          position: "static",
+          transform: "translate(-50%, -50%)", // Add this
+          position: "absolute",
           textAlign: "center",
           verticalAlign: "middle",
           backgroundColor: "#FFFFFF",
@@ -502,11 +503,11 @@ const generateHTMLFromTemplateData = (templateData) => {
   `;
 };
 
-const renderImageFromHTML = async (htmlString, outputPath) => {
+const renderImageFromHTML = async (canvas, htmlString, outputPath) => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.setContent(htmlString, { waitUntil: "networkidle0" });
-  await page.setViewport({ width: 1080, height: 1080 }); // Or dynamic
+  await page.setViewport({ width: canvas.width, height: canvas.height });
   await page.screenshot({ path: outputPath, type: "png" });
   await browser.close();
   return outputPath;
@@ -567,8 +568,16 @@ exports.processPubSub = async (req, res) => {
       `../public/generated/branding-${uuidv4()}.png`
     );
 
-    await renderImageFromHTML(sloganHTML, sloganImagePath);
-    await renderImageFromHTML(brandingHTML, brandingImagePath);
+    await renderImageFromHTML(
+      sloganTemplate?.canvas,
+      sloganHTML,
+      sloganImagePath
+    );
+    await renderImageFromHTML(
+      brandingTemplate?.canvas,
+      brandingHTML,
+      brandingImagePath
+    );
 
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
