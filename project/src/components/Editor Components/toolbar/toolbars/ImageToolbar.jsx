@@ -42,6 +42,8 @@ function ImageToolbar({
     handleLock,
     undo,
     redo,
+    canUndo,
+    canRedo,
   } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const handleFlip = (direction) => {
@@ -262,22 +264,25 @@ function ImageToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
+        <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
+          <button 
+            onClick={undo}
+            disabled={!canUndo}
+            className={`p-2 rounded-md hover:bg-gray-100 ${!canUndo ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RotateCcw className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-      <Tooltip id="undo-tooltip" content="Undo last action">
-      <button 
-      onClick={undo}
-       className="p-2 rounded-md hover:bg-gray-100">
-      <RotateCcw className="h-5 w-5 text-gray-600" />
-      </button>
-      </Tooltip>
-      <Tooltip id="redo-tooltip" content="Redo last action">
-      <button 
-      onClick={redo}
-      className="p-2 rounded-md hover:bg-gray-100">
-      <RotateCw className="h-5 w-5 text-gray-600" />
-
-      </button>
-      </Tooltip>
+        <Tooltip id="redo-tooltip" content={canRedo ? "Redo last action" : "Nothing to redo"}>
+          <button 
+            onClick={redo}
+            disabled={!canRedo}
+            className={`p-2 rounded-md hover:bg-gray-100 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RotateCw className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
         <Tooltip id="flip-tooltip" content="Flip image">
           <FlipPopup onFlip={handleFlip} />

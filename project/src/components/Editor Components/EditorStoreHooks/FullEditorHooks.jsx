@@ -27,6 +27,8 @@ export const EditorProvider = ({ children }) => {
   const [allFiles, setAllFiles] = useState([]); // [File, File, ...]
 
   // ===================== 🔄 Undo/Redo History =====================
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const historyRef = useRef({
     past: [],
     present: {
@@ -45,6 +47,8 @@ export const EditorProvider = ({ children }) => {
       present: newState,
       future: [],
     };
+    setCanUndo(true);
+    setCanRedo(false);
   }, []);
 
   const undo = useCallback(() => {
@@ -66,6 +70,10 @@ export const EditorProvider = ({ children }) => {
     setElements(previous.elements);
     setLayers(previous.layers);
     setAllFiles(previous.allFiles);
+
+    // Update undo/redo state
+    setCanUndo(newPast.length > 0);
+    setCanRedo(true);
   }, []);
 
   const redo = useCallback(() => {
@@ -87,6 +95,10 @@ export const EditorProvider = ({ children }) => {
     setElements(next.elements);
     setLayers(next.layers);
     setAllFiles(next.allFiles);
+
+    // Update undo/redo state
+    setCanUndo(true);
+    setCanRedo(newFuture.length > 0);
   }, []);
 
   // ===================== 🚀 Combined Post Data =====================
@@ -389,6 +401,8 @@ export const EditorProvider = ({ children }) => {
     // Undo/Redo
     undo,
     redo,
+    canUndo,
+    canRedo,
   };
 
   return (

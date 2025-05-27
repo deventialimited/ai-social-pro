@@ -13,7 +13,7 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [activeElement, setActiveElement] = useState("canvas"); // Default to canvas toolbar
   const canvasContainerRef = useRef(null);
-  const { postDesignData, undo, redo } = useEditor();
+  const { postDesignData, undo, redo, canUndo, canRedo } = useEditor();
   const [canvasContent, setCanvasContent] = useState({
     backgroundColor: "#87CEEB",
     elements: [
@@ -53,12 +53,12 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z') {
           e.preventDefault();
-          if (e.shiftKey) {
+          if (e.shiftKey && canRedo) {
             redo();
-          } else {
+          } else if (canUndo) {
             undo();
           }
-        } else if (e.key === 'y') {
+        } else if (e.key === 'y' && canRedo) {
           e.preventDefault();
           redo();
         }
@@ -67,7 +67,7 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, canUndo, canRedo]);
 
   // Function to handle element selection in the canvas
   const handleElementSelect = (elementType) => {
