@@ -265,6 +265,7 @@ const automateCreateTemplates = async (
   const sloganTemplate = await TemplateDesign.create({
     userId,
     templateId: `${user?.username}-${uuidv4()}`,
+    templateImage: "Some",
     templateType: "private",
     templateCategory: "slogan",
     canvas: {
@@ -336,9 +337,10 @@ const automateCreateTemplates = async (
   });
 
   // --- BRANDING TEMPLATE ---
-  const brandingTemplate = await Template.create({
+  const brandingTemplate = await TemplateDesign.create({
     userId,
     templateId: `${user?.username}-${uuidv4()}`,
+    templateImage: "Some",
     templateType: "private",
     templateCategory: "branding",
     canvas: {
@@ -558,11 +560,11 @@ exports.processPubSub = async (req, res) => {
     // === RENDER TO IMAGE ===
     const sloganImagePath = path.join(
       __dirname,
-      `./public/generated/slogan-${uuidv4()}.png`
+      `../public/generated/slogan-${uuidv4()}.png`
     );
     const brandingImagePath = path.join(
       __dirname,
-      `./public/generated/branding-${uuidv4()}.png`
+      `../public/generated/branding-${uuidv4()}.png`
     );
 
     await renderImageFromHTML(sloganHTML, sloganImagePath);
