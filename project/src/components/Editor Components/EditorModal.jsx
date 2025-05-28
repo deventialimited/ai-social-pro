@@ -1,4 +1,4 @@
-import { Fragment, useState, useRef } from "react";
+import { Fragment, useState, useRef, useEffect } from "react";
 import { ImageIcon, ChevronDown, Save } from "lucide-react";
 import EditorSidebar from "./sidebar/EditorSidebar";
 import EditorToolbar from "./toolbar/EditorToolbar";
@@ -13,7 +13,7 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [activeElement, setActiveElement] = useState("canvas"); // Default to canvas toolbar
   const canvasContainerRef = useRef(null);
-  const { postDesignData } = useEditor();
+  const { postDesignData, undo, redo, canUndo, canRedo } = useEditor();
   const [canvasContent, setCanvasContent] = useState({
     backgroundColor: "#87CEEB",
     elements: [
@@ -46,6 +46,28 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
       },
     ],
   });
+
+  // Add keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey && canRedo) {
+            redo();
+          } else if (canUndo) {
+            undo();
+          }
+        } else if (e.key === 'y' && canRedo) {
+          e.preventDefault();
+          redo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo, canUndo, canRedo]);
 
   // Function to handle element selection in the canvas
   const handleElementSelect = (elementType) => {

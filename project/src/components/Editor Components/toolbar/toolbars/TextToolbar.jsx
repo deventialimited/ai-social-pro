@@ -53,16 +53,10 @@ function TextToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const [transparency, setTransparency] = useState(100);
-  const {
-    updateElement,
-    addElement,
-    handleLock,
-    removeElement,
-    elements,
-    canvas,
-  } = useEditor();
+  const { updateElement, handleLock, elements, addElement, removeElement, canvas, undo, redo, canUndo, canRedo } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
+  const [transparency, setTransparency] = useState(100);
+
   useEffect(() => {
     if (selectedElementId) {
       const selectedElement = elements.find(
@@ -245,13 +239,25 @@ function TextToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        {/* <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCcw className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
+          <button 
+            onClick={undo}
+            disabled={!canUndo}
+            className={`p-2 rounded-md hover:bg-gray-100 ${!canUndo ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RotateCcw className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-        <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCw className="h-5 w-5 text-gray-600" />
-        </button> */}
+        <Tooltip id="redo-tooltip" content={canRedo ? "Redo last action" : "Nothing to redo"}>
+          <button 
+            onClick={redo}
+            disabled={!canRedo}
+            className={`p-2 rounded-md hover:bg-gray-100 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RotateCw className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
         <Tooltip id="color-picker-tooltip" content="Change text color">
           <ColorPicker
@@ -282,7 +288,7 @@ function TextToolbar({
         </Tooltip>
 
         <Tooltip id="text-align-tooltip" content="Text alignment">
-          <div className="flex flex-row gap-2  rounded-md">
+          <div className="flex flex-row gap-2 rounded-md">
             <div className="flex border rounded-md">
               <button
                 className={`p-2 hover:bg-gray-100 ${
@@ -421,9 +427,7 @@ function TextToolbar({
 
             <button
               className={`p-2 hover:bg-gray-100 ${
-                selectedElement?.styles?.textDecoration?.includes(
-                  "line-through"
-                )
+                selectedElement?.styles?.textDecoration?.includes("line-through")
                   ? "bg-gray-200"
                   : ""
               }`}
@@ -472,16 +476,13 @@ function TextToolbar({
           </button>
         </Tooltip>
 
-        {/* <button className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border">
-            <Wand2 className="h-5 w-5 text-gray-600" />
-            <span>AI write</span>
-          </button> */}
         <Tooltip id="position-tooltip" content="Adjust element position">
           <PositionPopup
-            onLayerPositionChange={handleLayerPositionChange} // For element positioning
-            onPositionChange={handlePositionChange} // For text alignment
+            onLayerPositionChange={handleLayerPositionChange}
+            onPositionChange={handlePositionChange}
           />
         </Tooltip>
+
         <Tooltip id="transparency-tooltip" content="Adjust transparency">
           <TransparencyPopup
             transparency={transparency}
@@ -489,10 +490,7 @@ function TextToolbar({
           />
         </Tooltip>
 
-        <Tooltip
-          id="lock-tooltip"
-          content={selectedElement?.locked ? "Unlock element" : "Lock element"}
-        >
+        <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
           <button
             onClick={() => handleLock(selectedElement?.id)}
             className={`p-2 rounded-md hover:bg-gray-100 ${
@@ -500,9 +498,9 @@ function TextToolbar({
             }`}
           >
             {selectedElement?.locked ? (
-              <Lock className="h-4 w-4 text-gray-600" /> // Red lock icon for locked state
+              <Lock className="h-4 w-4 text-gray-600" />
             ) : (
-              <Unlock className="h-4 w-4 text-gray-600" /> // Green unlock icon for unlocked state
+              <Unlock className="h-4 w-4 text-gray-600" />
             )}
           </button>
         </Tooltip>

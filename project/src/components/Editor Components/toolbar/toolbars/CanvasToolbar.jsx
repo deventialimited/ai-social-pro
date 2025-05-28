@@ -7,6 +7,8 @@ import {
   Lock,
   Copy,
   Trash,
+  Undo,
+  Redo,
 } from "lucide-react";
 import DurationSelector from "../../common/popups/DurationSelector";
 import PaletteSelector from "../../common/popups/PaletteSelector";
@@ -31,7 +33,7 @@ function hexToRgba(hex, opacity) {
 
 function CanvasToolbar() {
   const fileInputRef = useRef(null);
-  const { updateBackground, updateCanvasStyles, canvas } = useEditor();
+  const { updateBackground, updateCanvasStyles, canvas, undo, redo, canUndo, canRedo } = useEditor();
   const handleDurationChange = (newDuration) => {
     // setDuration(newDuration);
   };
@@ -80,13 +82,25 @@ function CanvasToolbar() {
 
   return (
     <div className="flex items-center flex-wrap gap-2">
-      {/* <button className="p-2 rounded-md hover:bg-gray-100">
-        <RotateCcw className="h-5 w-5 text-gray-600" />
-      </button>
+      <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
+        <button
+          onClick={undo}
+          disabled={!canUndo}
+          className={`p-2 rounded-md hover:bg-gray-100 ${!canUndo ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <RotateCcw className="h-5 w-5 text-gray-600" />
+        </button>
+      </Tooltip>
 
-      <button className="p-2 rounded-md hover:bg-gray-100">
-        <RotateCw className="h-5 w-5 text-gray-600" />
-      </button> */}
+      <Tooltip id="redo-tooltip" content={canRedo ? "Redo last action" : "Nothing to redo"}>
+        <button 
+          onClick={redo}
+          disabled={!canRedo}
+          className={`p-2 rounded-md hover:bg-gray-100 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <RotateCw className="h-5 w-5 text-gray-600" />
+        </button>
+      </Tooltip>
 
       {/* <DurationSelector duration={duration} onChange={handleDurationChange} /> */}
 

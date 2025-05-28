@@ -41,7 +41,7 @@ function ShapeToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const { updateElement, handleLock, elements, addElement, removeElement, canvas } =
+  const { updateElement, handleLock, elements, addElement, removeElement, canvas, undo, redo, canUndo, canRedo } =
     useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   useEffect(() => {
@@ -185,13 +185,25 @@ function ShapeToolbar({
   return (
     <>
       <div className="flex items-center flex-wrap gap-2">
-        {/* <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCcw className="h-5 w-5 text-gray-600" />
-        </button>
+        <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
+          <button 
+            onClick={undo}
+            disabled={!canUndo}
+            className={`p-2 rounded-md hover:bg-gray-100 ${!canUndo ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RotateCcw className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
-        <button className="p-2 rounded-md hover:bg-gray-100">
-          <RotateCw className="h-5 w-5 text-gray-600" />
-        </button> */}
+        <Tooltip id="redo-tooltip" content={canRedo ? "Redo last action" : "Nothing to redo"}>
+          <button 
+            onClick={redo}
+            disabled={!canRedo}
+            className={`p-2 rounded-md hover:bg-gray-100 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RotateCw className="h-5 w-5 text-gray-600" />
+          </button>
+        </Tooltip>
 
         <Tooltip id="color-picker-tooltip" content="Change shape color">
           <ColorPicker
@@ -232,7 +244,7 @@ function ShapeToolbar({
           <TransparencyPopup
             transparency={selectedElement?.styles?.opacity}
             onChange={handleTransparencyChange}
-        />
+          />
         </Tooltip>
 
         <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
