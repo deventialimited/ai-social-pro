@@ -6,6 +6,8 @@ const PostSchema = new Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   postId: { type: String, default: "" },
   image: { type: String, default: "" },
+  brandingImage: { type: String },
+  sloganImage: { type: String },
   topic: { type: String, default: "" },
   content: { type: String, default: "" },
   slogan: { type: String, default: "" },
