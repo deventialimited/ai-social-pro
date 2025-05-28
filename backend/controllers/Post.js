@@ -10,7 +10,9 @@ const socket = require("../utils/socket");
 const TemplateDesign = require("../models/TemplateDesign");
 const puppeteer = require("puppeteer");
 const fs = require("fs");
+const fsp = require("fs").promises;
 const path = require("path");
+const mime = require("mime-types");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -246,6 +248,15 @@ const platformDimensions = [
   { width: 1080, height: 1080, ratio: "1:1" }, // Instagram
   // Add more if needed
 ];
+// Helper to prepare file object from path
+const prepareFileObject = async (filePath) => {
+  const buffer = await fsp.readFile(filePath); // <-- THIS will work only with fs.promises
+  return {
+    originalname: path.basename(filePath),
+    mimetype: mime.lookup(filePath) || "application/octet-stream",
+    buffer,
+  };
+};
 const automateCreateTemplates = async (
   userId,
   sloganText,
@@ -254,13 +265,37 @@ const automateCreateTemplates = async (
 ) => {
   // Get primary brand color
   const domain = await Domain.findById(domainId);
+
+  let logoUrl = domain?.siteLogo;
+
+  // If siteLogo is an empty string, generate a letter-based logo
+  if (!logoUrl || logoUrl.trim() === "") {
+    const name = encodeURIComponent(domain?.clientName || "Logo");
+    logoUrl = `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&format=png&size=128`;
+  }
+
   const user = await User.findById(userId);
   const bgColor = domain?.colors?.[0] || "rgba(255,255,255,1)";
 
   const dimensions = platformDimensions[0]; // pick first for now
+  const canvasWidth = dimensions.width;
+  const canvasHeight = dimensions.height;
+
+  const paddingBottom = canvasHeight * 0.1;
+  const paddingLeft = canvasWidth * 0.1;
+
+  const imageWidth = canvasWidth * 0.1;
+  const imageHeight = imageWidth;
+
+  const imageX = paddingLeft;
+  const imageY = canvasHeight - imageHeight - paddingBottom;
+
+  const textX = imageX + imageWidth + 30; // 10px gap from image
+  const textY = imageY;
 
   // --- SLOGAN TEMPLATE ---
   const sloganElementId = `text-${uuidv4()}`;
+  const imageId = `text-${uuidv4()}`;
 
   const sloganTemplate = await TemplateDesign.create({
     userId,
@@ -289,7 +324,7 @@ const automateCreateTemplates = async (
           background: {
             enabled: true,
             cornerRadius: 0,
-            padding: 0,
+            padding: "20px",
             opacity: 100,
             color: "#FFFFFF",
           },
@@ -306,11 +341,15 @@ const automateCreateTemplates = async (
           color: "#000000",
           fontSize: "36px",
           fontWeight: "bold",
+          maxWidth: "90%",
           width: "max-content",
-          height: "max-centent",
+          height: "auto",
           zIndex: 1,
           transform: "translate(-50%, -50%)", // Add this
           position: "absolute",
+          padding: "20px",
+          left: "50%",
+          top: "50%",
           textAlign: "center",
           verticalAlign: "middle",
           backgroundColor: "#FFFFFF",
@@ -355,16 +394,16 @@ const automateCreateTemplates = async (
     },
     elements: [
       {
-        id: `image-${uuidv4()}`,
+        id: imageId,
         type: "image",
-        position: { x: 12, y: 148 },
+        position: { x: imageX, y: imageY },
         effects: {
           blur: { enabled: false, value: 10 },
           brightness: { enabled: false, value: 100 },
           sepia: { enabled: false, value: 0 },
           grayscale: { enabled: false, value: 0 },
           border: { enabled: false, value: 2, color: "#000000" },
-          cornerRadius: { enabled: false, value: 150 },
+          cornerRadius: { enabled: true, value: imageWidth / 2 },
           shadow: {
             enabled: false,
             blur: 5,
@@ -375,33 +414,34 @@ const automateCreateTemplates = async (
           },
         },
         styles: {
-          width: 64,
-          height: 64,
+          width: imageWidth,
+          height: imageHeight,
           zIndex: 1,
-          position: "static",
-          fontSize: "16px",
+          position: "absolute",
+          borderRadius: `${imageWidth / 2}px`,
+          objectFit: "cover",
         },
         props: {
-          src: domain?.siteLogo, // dynamic or placeholder
-          previewUrl: domain?.siteLogo,
+          src: logoUrl,
+          previewUrl: logoUrl,
           mask: "circle",
-          originalSrc: domain?.siteLogo,
+          originalSrc: logoUrl,
         },
         visible: true,
         locked: false,
       },
       {
-        id: `text-${uuidv4()}`,
+        id: sloganElementId,
         type: "text",
-        category: "header",
-        position: { x: 86, y: 156 },
+        category: "slogan",
+        position: { x: textX, y: textY },
         effects: {
           blur: { enabled: false, value: 3 },
           textStroke: { enabled: false, value: 2, color: "#808080" },
           background: {
             enabled: true,
             cornerRadius: 0,
-            padding: 0,
+            padding: 10,
             opacity: 100,
             color: "#FFFFFF",
           },
@@ -416,33 +456,37 @@ const automateCreateTemplates = async (
         },
         styles: {
           color: "#000000",
-          fontSize: "36px",
+          fontSize: "68px",
           fontWeight: "bold",
-          width: 210,
-          height: 54,
+          maxWidth: "70%",
+          width: "max-content",
+          height: "auto",
           zIndex: 2,
-          position: "static",
+          position: "absolute",
           backgroundColor: "#FFFFFF",
-          borderRadius: "0px",
+          borderRadius: "5px",
           opacity: 1,
-          textAlign: "center",
-          verticalAlign: "middle",
+          textAlign: "left",
+          padding: "20px",
         },
-        props: { text: domain?.clientWebsite || "Business Name" },
+        props: {
+          text: domain?.clientName || "Your Slogan Here",
+        },
         visible: true,
         locked: false,
       },
     ],
+
     layers: [
       {
         id: `layer-${uuidv4()}`,
-        elementId: `image-${uuidv4()}`,
+        elementId: imageId,
         visible: true,
         locked: false,
       },
       {
         id: `layer-${uuidv4()}`,
-        elementId: `text-${uuidv4()}`,
+        elementId: sloganElementId,
         visible: true,
         locked: false,
       },
@@ -459,6 +503,15 @@ const automateCreateTemplates = async (
     brandingTemplate,
   };
 };
+function camelToKebab(str) {
+  return str.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
+}
+function convertStylesToString(styles = {}) {
+  return Object.entries(styles)
+    .map(([key, value]) => `${camelToKebab(key)}: ${value};`)
+    .join(" ");
+}
+
 const generateHTMLFromTemplateData = (templateData) => {
   const { canvas, elements } = templateData;
 
@@ -470,29 +523,29 @@ const generateHTMLFromTemplateData = (templateData) => {
       ${elements
         .map((el) => {
           if (el.type === "text") {
+            const styleString = Object.entries(el.styles || {})
+              .map(([key, value]) => `${camelToKebab(key)}:${value}`)
+              .join(";");
+
             return `<div style="
-            position:absolute;
-            top:${el.position.y}px;
-            left:${el.position.x}px;
-            font-size:${el.styles.fontSize};
-            font-weight:${el.styles.fontWeight};
-            color:${el.styles.color};
-            width:${el.styles.width}px;
-            height:${el.styles.height}px;
-            text-align:${el.styles.textAlign};
-            background:${el.styles.backgroundColor};
-          ">${el.props.text}</div>`;
+              position:absolute;
+              top:${el.position.y}px;
+              left:${el.position.x}px;
+              ${styleString}
+            ">${el.props.text}</div>`;
           }
 
           if (el.type === "image") {
-            return `<img src="${el.props.src}" style="
-            position:absolute;
-            top:${el.position.y}px;
-            left:${el.position.x}px;
-            width:${el.styles.width}px;
-            height:${el.styles.height}px;
-            border-radius:${el.styles.borderRadius || 0}px;
-          "/>`;
+            const styleString = `
+              position: absolute;
+              top: ${el.position.y}px;
+              left: ${el.position.x}px;
+              ${convertStylesToString(el.styles)}
+            `
+              .trim()
+              .replace(/\s+/g, " ");
+
+            return `<img src="${el.props?.src}" style="${styleString}" />`;
           }
 
           return "";
@@ -578,7 +631,25 @@ exports.processPubSub = async (req, res) => {
       brandingHTML,
       brandingImagePath
     );
+    // Process and upload
+    const sloganFile = await prepareFileObject(sloganImagePath);
+    const brandingFile = await prepareFileObject(brandingImagePath);
 
+    const sloganImageUrl = await uploadToS3(sloganFile);
+    const brandingImageUrl = await uploadToS3(brandingFile);
+
+    // Delete the local files after upload
+    await Promise.all([
+      fsp.unlink(sloganImagePath),
+      fsp.unlink(brandingImagePath),
+    ]);
+    savedPost.sloganImage = sloganImageUrl;
+    savedPost.brandingImage = brandingImageUrl;
+    sloganTemplate.templateImage = sloganImageUrl;
+    brandingTemplate.templateImage = brandingImageUrl;
+    await sloganTemplate.save();
+    await brandingTemplate.save();
+    await savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
@@ -595,6 +666,7 @@ exports.processPubSub = async (req, res) => {
     res.status(201).json({
       message: "Post created successfully (without image)",
       postId: savedPost.postId,
+      savedPost,
     });
   } catch (error) {
     console.error("Error in processPubSub:", error);
