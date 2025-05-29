@@ -35,7 +35,7 @@ const getImageStyle = (platform) => {
 };
 
 export default function PostDetails({ postData }) {
-  const [selectedButton, setSelectedButton] = useState("image");
+  const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -137,18 +137,22 @@ export default function PostDetails({ postData }) {
             <Image className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setSelectedButton("branding")}
+            onClick={() => setSelectedButton("brandingImage")}
             className={`${baseStyles} ${
-              selectedButton === "branding" ? selectedStyles : unselectedStyles
+              selectedButton === "brandingImage"
+                ? selectedStyles
+                : unselectedStyles
             }`}
           >
             <span className="text-[12px]">Branding</span>
             <Palette className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setSelectedButton("slogan")}
+            onClick={() => setSelectedButton("sloganImage")}
             className={`${baseStyles} ${
-              selectedButton === "slogan" ? selectedStyles : unselectedStyles
+              selectedButton === "sloganImage"
+                ? selectedStyles
+                : unselectedStyles
             }`}
           >
             <span className="text-[12px]">Slogan</span>
@@ -176,9 +180,9 @@ export default function PostDetails({ postData }) {
         </div>
 
         <Tooltip title="Post Image" arrow>
-          {postData?.image ? (
+          {postData[selectedButton] ? (
             <img
-              src={postData.image}
+              src={postData[selectedButton]}
               alt="Post"
               className="cursor-pointer"
               style={{
