@@ -615,13 +615,13 @@ exports.processPubSub = async (req, res) => {
     const sloganHTML = generateHTMLFromTemplateData(sloganTemplate);
     const brandingHTML = generateHTMLFromTemplateData(brandingTemplate);
     // === RENDER TO IMAGE ===
-    const sloganImagePath = path.join(
-      __dirname,
-      `../public/generated/slogan-${uuidv4()}.png`
-    );
+    const generatedDir = path.join(__dirname, "../public/generated");
+    await fsp.mkdir(generatedDir, { recursive: true });
+
+    const sloganImagePath = path.join(generatedDir, `slogan-${uuidv4()}.png`);
     const brandingImagePath = path.join(
-      __dirname,
-      `../public/generated/branding-${uuidv4()}.png`
+      generatedDir,
+      `branding-${uuidv4()}.png`
     );
 
     await renderImageFromHTML(
@@ -653,6 +653,7 @@ exports.processPubSub = async (req, res) => {
     await sloganTemplate.save();
     await brandingTemplate.save();
     await savedPost.save();
+    console.log(savedPost);
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
