@@ -36,3 +36,49 @@ export const verifyPayment = async (sessionId) => {
   }
   return response.json();
 };
+
+
+export const cancelSubscription = async (userId) => {
+  console.log("user id in cancel subs",userId)
+  const response = await axios.post(
+    `${baseURL}/cancel-subscription`,
+    { userId:userId },
+  );
+  return response.data;
+};
+
+export const updateSubscription = async (userId, newPlanType, billingCycle) => {
+  console.log('updateSubscription')
+  const response = await axios.post(
+    `${baseURL}/update-subscription`,
+    { userId, newPlanType, billingCycle },
+  );
+  return response.data;
+};
+
+export const createCustomerPortalSession = async (userId) => {
+  const response = await axios.post(
+    `${baseURL}/create-portal-session`,
+    { userId },
+  );
+  return response.data;
+}
+
+
+
+
+export const reactivateSubscription = async (userId, planType, billingCycle) => {
+  const response = await axios.post(
+    `${baseURL}/reactivate-subscription`,
+    { userId, planType, billingCycle },
+  );
+  return response.data;
+};
+
+export const previewSubscriptionChange = async (userId, newPlanType, billingCycle) => {
+  const response = await axios.post(
+    `${baseURL}/preview-subscription-change`,
+    { userId, newPlanType, billingCycle },
+  );
+  return response.data;
+};
