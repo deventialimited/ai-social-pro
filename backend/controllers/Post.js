@@ -653,6 +653,7 @@ exports.processPubSub = async (req, res) => {
     await sloganTemplate.save();
     await brandingTemplate.save();
     await savedPost.save();
+    console.log(savedPost);
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
