@@ -11,7 +11,6 @@ const PRICES = {
   starter: { monthly: 59, yearly: 500 },
   professional: { monthly: 99, yearly: 2000 },
 };
-
 export default function PricingModal({ onClose, isOpen }) {
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [loadingPlan, setLoadingPlan] = useState(null); // Track specific plan loading

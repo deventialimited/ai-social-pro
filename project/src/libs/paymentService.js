@@ -39,7 +39,7 @@ export const verifyPayment = async (sessionId) => {
 
 
 export const cancelSubscription = async (userId) => {
-  console.log("user id in cancel subs",userId)
+  console.log("user id in cancel cance",userId)
   const response = await axios.post(
     `${baseURL}/cancel-subscription`,
     { userId:userId },
