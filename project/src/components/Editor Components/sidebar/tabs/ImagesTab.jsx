@@ -16,7 +16,7 @@ function ImagesTab() {
   const { addElement, addFile, setCanvasLoading } = useEditor();
   const { mutate: uploadImage } = useUploadUserImageMutation(); // For image upload
   const [userId, setUserId] = useState(null);
-  const { postOtherValues } = useEditor()
+  const { postOtherValues } = useEditor();
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?._id) {
@@ -67,7 +67,7 @@ function ImagesTab() {
     if (bottom) setPage((prev) => prev + 1);
   };
 
-  const handleAddImage = async (src) => {
+  const handleAddImage = async (src, category = "other") => {
     try {
       setCanvasLoading(true);
 
@@ -81,7 +81,7 @@ function ImagesTab() {
       const blob = await response.blob();
 
       const objectUrl = URL.createObjectURL(blob);
-      const newElement = createImageElement(objectUrl); // includes a unique `id`
+      const newElement = createImageElement(objectUrl, category); // includes a unique `id`
       addElement(newElement);
 
       const file = new File([blob], newElement.id, { type: blob.type });
@@ -146,16 +146,20 @@ function ImagesTab() {
       >
         <div className="grid grid-cols-2 gap-2">
           {/* Display uploaded images */}
-          {postOtherValues?.siteLogo && (<div
-            onClick={() => handleAddImage(postOtherValues?.siteLogo)}
-            className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
-          >
-            <img
-              src={postOtherValues?.siteLogo}
-              alt="Uploaded"
-              className="w-full h-full object-cover"
-            />
-          </div>)}
+          {postOtherValues?.siteLogo && (
+            <div
+              onClick={() =>
+                handleAddImage(postOtherValues?.siteLogo, "brandLogo")
+              }
+              className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+            >
+              <img
+                src={postOtherValues?.siteLogo}
+                alt="Uploaded"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           {uploadedImages?.map((img) => (
             <div
               key={img._id}

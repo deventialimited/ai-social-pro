@@ -12,6 +12,7 @@ const TemplateDesignRoutes = require("./routes/TemplateDesign");
 const { createServer } = require("http");
 const { SocketHandler } = require("./utils/SocketHandler");
 const socket = require("./utils/socket");
+const generateDomainVisualAssets = require("./helpers/generatePostImages");
 require("dotenv").config();
 
 // ch

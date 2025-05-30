@@ -23,6 +23,16 @@ export const createTextElement = (category = "body") => {
     defaultStyles.fontWeight = "normal";
     defaultStyles.width = 95;
     defaultStyles.height = 40;
+  } else if (category === "slogan") {
+    defaultStyles.fontSize = "20px";
+    defaultStyles.fontWeight = "normal";
+    defaultStyles.width = 200;
+    defaultStyles.height = 40;
+  } else if (category === "brandName") {
+    defaultStyles.fontSize = "20px";
+    defaultStyles.fontWeight = "normal";
+    defaultStyles.width = 200;
+    defaultStyles.height = 40;
   }
 
   return {
@@ -55,17 +65,20 @@ export const createTextElement = (category = "body") => {
         category === "header"
           ? "Header Text"
           : category === "sub-header"
-            ? "Sub Header Text"
-            : "Body Text",
+          ? "Sub Header Text"
+          : category === "slogan"
+          ? "Your Slogan Here"
+          : category === "brandName"
+          ? "Your Business Name Here"
+          : "Body Text",
     },
   };
 };
 
-
-
 export function parseTextShadow(textShadow) {
-  if (!textShadow) return null
-  const regex = /(-?\d+\.?\d*)px\s+(-?\d+\.?\d*)px\s+(-?\d+\.?\d*)px\s+rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d*\.?\d+)\s*\)/;
+  if (!textShadow) return null;
+  const regex =
+    /(-?\d+\.?\d*)px\s+(-?\d+\.?\d*)px\s+(-?\d+\.?\d*)px\s+rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d*\.?\d+)\s*\)/;
 
   const match = textShadow?.match(regex);
 
