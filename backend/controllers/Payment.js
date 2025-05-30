@@ -422,3 +422,36 @@ exports.handleWebhook = async (req, res) => {
   }
   res.json({ received: true });
 };
+
+exports.startTrial = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId in request body' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.hasUsedTrial) {
+      return res.status(400).json({ error: 'Trial already used' });
+    }
+
+    const now = new Date();
+    const trialEndsAt = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    user.trialStartedAt = now;
+    user.trialEndsAt = trialEndsAt;
+    user.hasUsedTrial = true;
+    user.plan = 'trial';
+    user.billingCycle = 'month';
+
+    await user.save();
+
+    res.status(200).json({ message: 'Trial started', user });
+  } catch (error) {
+    console.error('Start trial error:', error);
+    res.status(500).json({ error: 'Server error while starting trial' });
+  }
+};

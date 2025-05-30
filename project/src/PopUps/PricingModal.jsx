@@ -3,7 +3,7 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition, RadioGroup } from "@headlessui/react";
 import { CheckIcon, XIcon as XMarkIcon } from "lucide-react";
-import { createCheckoutSession } from "../libs/paymentService";
+import { createCheckoutSession ,StartTrial} from "../libs/paymentService";
 import toast, { Toaster } from "react-hot-toast";
 
 // Prices matching Payment.js PRICE_IDS.prices
@@ -34,6 +34,30 @@ export default function PricingModal({ onClose, isOpen }) {
     "No watermark",
     "24/7 chat support",
   ];
+const handleStartTrial = async () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  try {
+    console.log("user id in the pricing modal", user._id);
+    onClose(true);
+
+    const res = await StartTrial(user._id); // ✅ await it
+
+    console.log("Trial start response", res);
+
+    toast.success("Trial started! Ends on " + new Date(res.user.trialEndsAt).toLocaleDateString());
+  } catch (err) {
+    console.error("Trial start error:", err);
+
+    const errorMsg =
+      err?.response?.data?.error ||
+      err?.message ||
+      "Something went wrong while starting the trial.";
+
+    toast.error(errorMsg);
+  }
+};
+
 
   const handleCheckout = async (planType) => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -263,9 +287,13 @@ export default function PricingModal({ onClose, isOpen }) {
                     </div>
                   </div>
 
-                  <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                    All plans include a 14-day free trial. No credit card required.
-                  </div>
+                 <button
+  className="underline text-blue-500 mt-4"
+  onClick={handleStartTrial}
+>
+  Try 14-day free trial. No credit card required.
+</button>
+
                 </Dialog.Panel>
               </Transition.Child>
             </div>

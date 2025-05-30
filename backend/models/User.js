@@ -106,26 +106,17 @@ const userSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      enum: ["starter", "professional"],
+      enum: ["starter", "professional","trial"],
+      default:""
     },
+    trialStartedAt: { type: Date, default: null },
+  trialEndsAt: { type: Date, default: null },
+  hasUsedTrial: { type: Boolean, default: false },
     billingCycle: {
       type: String,
       enum: ["month", "yearly"],
     },
-nextBillingDate: { type: Date, default: null },
-  subscribedDate: { type: Date, default: null },
-  pendingPlan: {
-      // For scheduled downgrades
-      type: String,
-      enum: ["starter", "professional", null],
-      default: null,
-    },
-    pendingBillingCycle: {
-      // For scheduled downgrades
-      type: String,
-      enum: ["monthly", "yearly", null],
-      default: null,
-    },
+  
     PlatformConnected: [
       {
         platformName: {

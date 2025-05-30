@@ -82,3 +82,10 @@ export const previewSubscriptionChange = async (userId, newPlanType, billingCycl
   );
   return response.data;
 };
+
+export const StartTrial=async(userId)=>{
+  const response=await axios.post(`${baseURL}/startTrial`,{
+    userId
+  });
+  return response.data
+}

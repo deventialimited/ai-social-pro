@@ -8,7 +8,8 @@ const {
   createCustomerPortalSession,
   handleWebhook,
   reactivateSubscription,
-  previewSubscriptionChange
+  previewSubscriptionChange,
+  startTrial
 } = require("../controllers/Payment");
 router.post("/createCheckoutSession", createCheckoutSession);
 router.post("/verify-session", verifySession);
@@ -17,5 +18,7 @@ router.post("/update-subscription",  updateSubscription);
 router.post("/create-portal-session",  createCustomerPortalSession);
 router.post("/reactivate-subscription",  reactivateSubscription);
 router.post("/preview-subscription-change", previewSubscriptionChange);
+router.post("/startTrial", startTrial);
+
 // router.post('/webhook',handleWebhook  )
 module.exports = router;
