@@ -42,9 +42,8 @@ const handleStartTrial = async () => {
     onClose(true);
 
     const res = await StartTrial(user._id); // ✅ await it
-
-    console.log("Trial start response", res);
-
+const userObject=res.user;
+        localStorage.setItem("user", JSON.stringify(userObject));
     toast.success("Trial started! Ends on " + new Date(res.user.trialEndsAt).toLocaleDateString());
   } catch (err) {
     console.error("Trial start error:", err);
