@@ -605,54 +605,55 @@ exports.processPubSub = async (req, res) => {
 
     const savedPost = await newPost.save();
 
-    const { sloganTemplate, brandingTemplate } = await automateCreateTemplates(
-      domain.userId,
-      jsonData.slogan,
-      domain._id,
-      savedPost._id
-    );
-    // === GENERATE HTML FROM TEMPLATE DATA ===
-    const sloganHTML = generateHTMLFromTemplateData(sloganTemplate);
-    const brandingHTML = generateHTMLFromTemplateData(brandingTemplate);
-    // === RENDER TO IMAGE ===
-    const sloganImagePath = path.join(
-      __dirname,
-      `../public/generated/slogan-${uuidv4()}.png`
-    );
-    const brandingImagePath = path.join(
-      __dirname,
-      `../public/generated/branding-${uuidv4()}.png`
-    );
+    // const { sloganTemplate, brandingTemplate } = await automateCreateTemplates(
+    //   domain.userId,
+    //   jsonData.slogan,
+    //   domain._id,
+    //   savedPost._id
+    // );
+    // // === GENERATE HTML FROM TEMPLATE DATA ===
+    // const sloganHTML = generateHTMLFromTemplateData(sloganTemplate);
+    // const brandingHTML = generateHTMLFromTemplateData(brandingTemplate);
+    // // === RENDER TO IMAGE ===
+    // const generatedDir = path.join(__dirname, "../public/generated");
+    // await fsp.mkdir(generatedDir, { recursive: true });
 
-    await renderImageFromHTML(
-      sloganTemplate?.canvas,
-      sloganHTML,
-      sloganImagePath
-    );
-    await renderImageFromHTML(
-      brandingTemplate?.canvas,
-      brandingHTML,
-      brandingImagePath
-    );
-    // Process and upload
-    const sloganFile = await prepareFileObject(sloganImagePath);
-    const brandingFile = await prepareFileObject(brandingImagePath);
+    // const sloganImagePath = path.join(generatedDir, `slogan-${uuidv4()}.png`);
+    // const brandingImagePath = path.join(
+    //   generatedDir,
+    //   `branding-${uuidv4()}.png`
+    // );
 
-    const sloganImageUrl = await uploadToS3(sloganFile);
-    const brandingImageUrl = await uploadToS3(brandingFile);
+    // await renderImageFromHTML(
+    //   sloganTemplate?.canvas,
+    //   sloganHTML,
+    //   sloganImagePath
+    // );
+    // await renderImageFromHTML(
+    //   brandingTemplate?.canvas,
+    //   brandingHTML,
+    //   brandingImagePath
+    // );
+    // // Process and upload
+    // const sloganFile = await prepareFileObject(sloganImagePath);
+    // const brandingFile = await prepareFileObject(brandingImagePath);
 
-    // Delete the local files after upload
-    await Promise.all([
-      fsp.unlink(sloganImagePath),
-      fsp.unlink(brandingImagePath),
-    ]);
-    savedPost.sloganImage = sloganImageUrl;
-    savedPost.brandingImage = brandingImageUrl;
-    sloganTemplate.templateImage = sloganImageUrl;
-    brandingTemplate.templateImage = brandingImageUrl;
-    await sloganTemplate.save();
-    await brandingTemplate.save();
-    await savedPost.save();
+    // const sloganImageUrl = await uploadToS3(sloganFile);
+    // const brandingImageUrl = await uploadToS3(brandingFile);
+
+    // // Delete the local files after upload
+    // await Promise.all([
+    //   fsp.unlink(sloganImagePath),
+    //   fsp.unlink(brandingImagePath),
+    // ]);
+    // savedPost.sloganImage = sloganImageUrl;
+    // savedPost.brandingImage = brandingImageUrl;
+    // sloganTemplate.templateImage = sloganImageUrl;
+    // brandingTemplate.templateImage = brandingImageUrl;
+    // await sloganTemplate.save();
+    // await brandingTemplate.save();
+    // await savedPost.save();
+    // console.log(savedPost);
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
