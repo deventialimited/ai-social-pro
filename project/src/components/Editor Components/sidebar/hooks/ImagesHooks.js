@@ -1,9 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 
-export const createImageElement = (src) => {
+export const createImageElement = (src, category) => {
   return {
     id: `image-${uuidv4()}`,
     type: "image",
+    category,
     position: { x: 100, y: 100 },
     styles: {
       width: 200,

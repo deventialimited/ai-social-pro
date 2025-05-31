@@ -38,7 +38,7 @@ function TemplatesTab() {
   const publicTemplates = templates.filter(
     (t) => t.templateCategory === category && t.templateType === "public"
   );
-
+  console.log(publicTemplates);
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
