@@ -18,6 +18,7 @@ import {
 } from "../libs/postService";
 import toast from "react-hot-toast";
 import axios from "axios";
+import SubscriptionManagement from "./SubscriptionManagement";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
@@ -226,10 +227,14 @@ export const Dashboard = () => {
             onEdit={handleBusinessEdit}
           />
         );
+      case "subscription":
+        return <SubscriptionManagement/>
       case "socials":
-        return <SocialsTab />;
+        return <SocialsTab />
+        
+     
       default:
-        return <div>Dashboard Content</div>;
+        return <div>Dashboard Contentsss</div>;
     }
   };
 

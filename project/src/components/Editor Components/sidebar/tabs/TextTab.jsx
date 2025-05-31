@@ -28,6 +28,18 @@ function TextTab() {
       >
         Create body text
       </p>
+      <p
+        onClick={() => handleAddText("slogan")}
+        className="text-sm mb-4 cursor-pointer"
+      >
+        Add a slogan text
+      </p>
+      <p
+        onClick={() => handleAddText("brandName")}
+        className="text-sm mb-4 cursor-pointer"
+      >
+        Add a business Name
+      </p>
 
       {/* Text formatting options would go here */}
       <div className="mt-6">

@@ -1,18 +1,9 @@
-const { v4: uuidv4 } = require("uuid");
 const Domain = require("../models/Domain");
 const Post = require("../models/Post");
-const User = require("../models/User");
-const getRawBody = require("raw-body");
 const axios = require("axios");
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
-const mongoose = require("mongoose");
 const socket = require("../utils/socket");
-const TemplateDesign = require("../models/TemplateDesign");
-const puppeteer = require("puppeteer");
-const fs = require("fs");
-const fsp = require("fs").promises;
-const path = require("path");
-const mime = require("mime-types");
+const generateDomainVisualAssets = require("../helpers/generatePostImages");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -243,328 +234,6 @@ exports.updatePostImage = async (req, res) => {
     });
   }
 };
-const platformDimensions = [
-  { width: 1200, height: 675, ratio: "1.91:1" }, // Facebook, LinkedIn, Twitter
-  { width: 1080, height: 1080, ratio: "1:1" }, // Instagram
-  // Add more if needed
-];
-// Helper to prepare file object from path
-const prepareFileObject = async (filePath) => {
-  const buffer = await fsp.readFile(filePath); // <-- THIS will work only with fs.promises
-  return {
-    originalname: path.basename(filePath),
-    mimetype: mime.lookup(filePath) || "application/octet-stream",
-    buffer,
-  };
-};
-const automateCreateTemplates = async (
-  userId,
-  sloganText,
-  domainId,
-  postId
-) => {
-  // Get primary brand color
-  const domain = await Domain.findById(domainId);
-
-  let logoUrl = domain?.siteLogo;
-
-  // If siteLogo is an empty string, generate a letter-based logo
-  if (!logoUrl || logoUrl.trim() === "") {
-    const name = encodeURIComponent(domain?.clientName || "Logo");
-    logoUrl = `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&format=png&size=128`;
-  }
-
-  const user = await User.findById(userId);
-  const bgColor = domain?.colors?.[0] || "rgba(255,255,255,1)";
-
-  const dimensions = platformDimensions[0]; // pick first for now
-  const canvasWidth = dimensions.width;
-  const canvasHeight = dimensions.height;
-
-  const paddingBottom = canvasHeight * 0.1;
-  const paddingLeft = canvasWidth * 0.1;
-
-  const imageWidth = canvasWidth * 0.1;
-  const imageHeight = imageWidth;
-
-  const imageX = paddingLeft;
-  const imageY = canvasHeight - imageHeight - paddingBottom;
-
-  const textX = imageX + imageWidth + 30; // 10px gap from image
-  const textY = imageY;
-
-  // --- SLOGAN TEMPLATE ---
-  const sloganElementId = `text-${uuidv4()}`;
-  const imageId = `text-${uuidv4()}`;
-
-  const sloganTemplate = await TemplateDesign.create({
-    userId,
-    templateId: `${user?.username}-${uuidv4()}`,
-    templateImage: "Some",
-    templateType: "private",
-    templateCategory: "slogan",
-    canvas: {
-      width: dimensions.width,
-      height: dimensions.height,
-      ratio: dimensions.ratio,
-      styles: {
-        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-        backgroundColor: bgColor,
-      },
-    },
-    elements: [
-      {
-        id: sloganElementId,
-        type: "text",
-        category: "header",
-        position: { x: dimensions.width / 2, y: dimensions.height / 2 },
-        effects: {
-          blur: { enabled: false, value: 3 },
-          textStroke: { enabled: false, value: 2, color: "#808080" },
-          background: {
-            enabled: true,
-            cornerRadius: 0,
-            padding: "20px",
-            opacity: 100,
-            color: "#FFFFFF",
-          },
-          shadow: {
-            enabled: false,
-            blur: 0,
-            offsetX: 0,
-            offsetY: 0,
-            opacity: 100,
-            color: "#000000",
-          },
-        },
-        styles: {
-          color: "#000000",
-          fontSize: "36px",
-          fontWeight: "bold",
-          maxWidth: "90%",
-          width: "max-content",
-          height: "auto",
-          zIndex: 1,
-          transform: "translate(-50%, -50%)", // Add this
-          position: "absolute",
-          padding: "20px",
-          left: "50%",
-          top: "50%",
-          textAlign: "center",
-          verticalAlign: "middle",
-          backgroundColor: "#FFFFFF",
-          borderRadius: "0px",
-          opacity: 1,
-        },
-        props: { text: sloganText || "Slogan Here" },
-        visible: true,
-        locked: false,
-      },
-    ],
-    layers: [
-      {
-        id: `layer-${uuidv4()}`,
-        elementId: sloganElementId,
-        visible: true,
-        locked: false,
-      },
-    ],
-    backgrounds: {
-      type: "color",
-      color: bgColor,
-    },
-    version: 1,
-  });
-
-  // --- BRANDING TEMPLATE ---
-  const brandingTemplate = await TemplateDesign.create({
-    userId,
-    templateId: `${user?.username}-${uuidv4()}`,
-    templateImage: "Some",
-    templateType: "private",
-    templateCategory: "branding",
-    canvas: {
-      width: dimensions.width,
-      height: dimensions.height,
-      ratio: dimensions.ratio,
-      styles: {
-        boxShadow: "0 0 10px rgba(0,0,0,0.2)",
-        backgroundColor: bgColor,
-      },
-    },
-    elements: [
-      {
-        id: imageId,
-        type: "image",
-        position: { x: imageX, y: imageY },
-        effects: {
-          blur: { enabled: false, value: 10 },
-          brightness: { enabled: false, value: 100 },
-          sepia: { enabled: false, value: 0 },
-          grayscale: { enabled: false, value: 0 },
-          border: { enabled: false, value: 2, color: "#000000" },
-          cornerRadius: { enabled: true, value: imageWidth / 2 },
-          shadow: {
-            enabled: false,
-            blur: 5,
-            offsetX: 0,
-            offsetY: 0,
-            opacity: 100,
-            color: "#000000",
-          },
-        },
-        styles: {
-          width: imageWidth,
-          height: imageHeight,
-          zIndex: 1,
-          position: "absolute",
-          borderRadius: `${imageWidth / 2}px`,
-          objectFit: "cover",
-        },
-        props: {
-          src: logoUrl,
-          previewUrl: logoUrl,
-          mask: "circle",
-          originalSrc: logoUrl,
-        },
-        visible: true,
-        locked: false,
-      },
-      {
-        id: sloganElementId,
-        type: "text",
-        category: "slogan",
-        position: { x: textX, y: textY },
-        effects: {
-          blur: { enabled: false, value: 3 },
-          textStroke: { enabled: false, value: 2, color: "#808080" },
-          background: {
-            enabled: true,
-            cornerRadius: 0,
-            padding: 10,
-            opacity: 100,
-            color: "#FFFFFF",
-          },
-          shadow: {
-            enabled: false,
-            blur: 0,
-            offsetX: 0,
-            offsetY: 0,
-            opacity: 100,
-            color: "#000000",
-          },
-        },
-        styles: {
-          color: "#000000",
-          fontSize: "68px",
-          fontWeight: "bold",
-          maxWidth: "70%",
-          width: "max-content",
-          height: "auto",
-          zIndex: 2,
-          position: "absolute",
-          backgroundColor: "#FFFFFF",
-          borderRadius: "5px",
-          opacity: 1,
-          textAlign: "left",
-          padding: "20px",
-        },
-        props: {
-          text: domain?.clientName || "Your Slogan Here",
-        },
-        visible: true,
-        locked: false,
-      },
-    ],
-
-    layers: [
-      {
-        id: `layer-${uuidv4()}`,
-        elementId: imageId,
-        visible: true,
-        locked: false,
-      },
-      {
-        id: `layer-${uuidv4()}`,
-        elementId: sloganElementId,
-        visible: true,
-        locked: false,
-      },
-    ],
-    backgrounds: {
-      type: "color",
-      color: bgColor,
-    },
-    version: 1,
-  });
-
-  return {
-    sloganTemplate,
-    brandingTemplate,
-  };
-};
-function camelToKebab(str) {
-  return str.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
-}
-function convertStylesToString(styles = {}) {
-  return Object.entries(styles)
-    .map(([key, value]) => `${camelToKebab(key)}: ${value};`)
-    .join(" ");
-}
-
-const generateHTMLFromTemplateData = (templateData) => {
-  const { canvas, elements } = templateData;
-
-  return `
-    <html>
-    <body style="margin:0; padding:0; background:${
-      canvas.styles.backgroundColor
-    }; width:${canvas.width}px; height:${canvas.height}px; position:relative;">
-      ${elements
-        .map((el) => {
-          if (el.type === "text") {
-            const styleString = Object.entries(el.styles || {})
-              .map(([key, value]) => `${camelToKebab(key)}:${value}`)
-              .join(";");
-
-            return `<div style="
-              position:absolute;
-              top:${el.position.y}px;
-              left:${el.position.x}px;
-              ${styleString}
-            ">${el.props.text}</div>`;
-          }
-
-          if (el.type === "image") {
-            const styleString = `
-              position: absolute;
-              top: ${el.position.y}px;
-              left: ${el.position.x}px;
-              ${convertStylesToString(el.styles)}
-            `
-              .trim()
-              .replace(/\s+/g, " ");
-
-            return `<img src="${el.props?.src}" style="${styleString}" />`;
-          }
-
-          return "";
-        })
-        .join("\n")}
-    </body>
-    </html>
-  `;
-};
-
-const renderImageFromHTML = async (canvas, htmlString, outputPath) => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.setContent(htmlString, { waitUntil: "networkidle0" });
-  await page.setViewport({ width: canvas.width, height: canvas.height });
-  await page.screenshot({ path: outputPath, type: "png" });
-  await browser.close();
-  return outputPath;
-};
 exports.processPubSub = async (req, res) => {
   try {
     console.log("into pubsub");
@@ -579,7 +248,6 @@ exports.processPubSub = async (req, res) => {
     console.log("Generated Post:", JSON.stringify(jsonData));
 
     const domain = await Domain.findOne({ client_id: jsonData?.client_id });
-    console.log("Domain:", domain);
     if (!domain) {
       return res.status(404).json({ message: "client id not found" });
     }
@@ -601,54 +269,23 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
+    let logoUrl = domain?.siteLogo;
 
-    const { sloganTemplate, brandingTemplate } = await automateCreateTemplates(
-      domain.userId,
-      jsonData.slogan,
-      domain._id,
-      savedPost._id
-    );
-    // === GENERATE HTML FROM TEMPLATE DATA ===
-    const sloganHTML = generateHTMLFromTemplateData(sloganTemplate);
-    const brandingHTML = generateHTMLFromTemplateData(brandingTemplate);
-    // === RENDER TO IMAGE ===
-    const sloganImagePath = path.join(
-      __dirname,
-      `../public/generated/slogan-${uuidv4()}.png`
-    );
-    const brandingImagePath = path.join(
-      __dirname,
-      `../public/generated/branding-${uuidv4()}.png`
-    );
-
-    await renderImageFromHTML(
-      sloganTemplate?.canvas,
-      sloganHTML,
-      sloganImagePath
-    );
-    await renderImageFromHTML(
-      brandingTemplate?.canvas,
-      brandingHTML,
-      brandingImagePath
-    );
-    // Process and upload
-    const sloganFile = await prepareFileObject(sloganImagePath);
-    const brandingFile = await prepareFileObject(brandingImagePath);
-
-    const sloganImageUrl = await uploadToS3(sloganFile);
-    const brandingImageUrl = await uploadToS3(brandingFile);
-
-    // Delete the local files after upload
-    await Promise.all([
-      fsp.unlink(sloganImagePath),
-      fsp.unlink(brandingImagePath),
-    ]);
-    savedPost.sloganImage = sloganImageUrl;
-    savedPost.brandingImage = brandingImageUrl;
-    sloganTemplate.templateImage = sloganImageUrl;
-    brandingTemplate.templateImage = brandingImageUrl;
-    await sloganTemplate.save();
-    await brandingTemplate.save();
+    // If siteLogo is an empty string, generate a letter-based logo
+    if (!logoUrl || logoUrl.trim() === "") {
+      const name = encodeURIComponent(domain?.clientName || "Logo");
+      logoUrl = `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&format=png&size=128`;
+    }
+    const generatedImages = await generateDomainVisualAssets({
+      sloganText: savedPost?.slogan,
+      brandName: domain?.clientName,
+      primaryColor: domain?.colors[0],
+      brandLogoUrl: logoUrl,
+      keywords: [domain?.niche],
+    });
+    savedPost.sloganImage = generatedImages.sloganImage;
+    savedPost.brandingImage = generatedImages.brandingImage;
+    console.log(savedPost);
     await savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",

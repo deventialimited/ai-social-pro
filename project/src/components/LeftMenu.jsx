@@ -211,6 +211,12 @@ export const LeftMenu = ({
           <Link href="#" onClick={openModalhandler}>
             Claim 50% Off Anually
           </Link>
+          <Link href="#"
+          active={currentTab==="subscription"}
+          onClick={()=>onTabChange("subscription")}
+          >
+            Subscription Management
+          </Link>
         </nav>
 
         <div className="absolute bottom-4 w-full px-6">

@@ -19,8 +19,9 @@ import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
+  // console.log(post);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedButton, setSelectedButton] = useState("image");
+  const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -41,7 +42,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       return () => clearTimeout(timer);
     }
   }, [imageLoaded]);
-    
+
   useEffect(() => {
     if (contentRef.current) {
       const lineHeight = parseFloat(
@@ -235,9 +236,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
               Visual
             </h2>
-            {["image", "branding", "slogan"].map((type) => {
+            {["image", "brandingImage", "sloganImage"].map((type) => {
               const Icon =
-                type === "image" ? Image : type === "branding" ? Palette : Type;
+                type === "image"
+                  ? Image
+                  : type === "brandingImage"
+                  ? Palette
+                  : Type;
               return (
                 <button
                   key={type}
@@ -246,7 +251,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                     selectedButton === type ? selectedStyles : unselectedStyles
                   }`}
                 >
-                  <span className="text-[12px] capitalize">{type}</span>
+                  <span className="text-[12px] capitalize">
+                    {type === "brandingImage"
+                      ? "branding"
+                      : type === "sloganImage"
+                      ? "slogan"
+                      : type}
+                  </span>
                   <Icon className="w-4 h-4" />
                 </button>
               );
@@ -268,7 +279,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
             )}
           </div>
-          {post.image ? (
+          {post[selectedButton] ? (
             <>
               {!imageLoaded && (
                 <Skeleton
@@ -280,7 +291,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 />
               )}
               <img
-                src={post.image}
+                src={post[selectedButton]}
                 alt="Post content"
                 onLoad={() => setImageLoaded(true)}
                 style={{

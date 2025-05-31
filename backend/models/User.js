@@ -106,13 +106,17 @@ const userSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      enum: ["starter", "professional"],
+      enum: ["starter", "professional","trial"],
+      default:"trial"
     },
+    trialStartedAt: { type: Date, default: null },
+  trialEndsAt: { type: Date, default: null },
+  hasUsedTrial: { type: Boolean, default: false },
     billingCycle: {
       type: String,
       enum: ["month", "yearly"],
     },
-
+  
     PlatformConnected: [
       {
         platformName: {

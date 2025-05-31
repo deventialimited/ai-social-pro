@@ -12,6 +12,7 @@ const TemplateDesignRoutes = require("./routes/TemplateDesign");
 const { createServer } = require("http");
 const { SocketHandler } = require("./utils/SocketHandler");
 const socket = require("./utils/socket");
+const generateDomainVisualAssets = require("./helpers/generatePostImages");
 require("dotenv").config();
 
 // ch
@@ -32,7 +33,11 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.set("trust proxy", true);
-
+app.post(
+  "/api/v1/payment/webhook",
+  express.raw({ type: "application/json" }),
+  require("./controllers/Payment").handleWebhook
+);
 // Increase the body size limit to 50MB (adjust as needed)
 app.use(express.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));

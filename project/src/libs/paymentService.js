@@ -19,7 +19,7 @@ export const createCheckoutSession = async (planType, billingCycle, user) => {
   }
 };
 
-export const verifyPayment = async (sessionId) => {
+export const verifyPayment = async (sessionId,userId) => {
   console.log("Verifying payment for sessionId:", sessionId);
   const user = await JSON.parse(localStorage.getItem("user"));
   const response = await fetch(`${baseURL}/verify-session`, {
@@ -28,7 +28,7 @@ export const verifyPayment = async (sessionId) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
-    body: JSON.stringify({ sessionId, userId: user._id }),
+    body: JSON.stringify({ sessionId, userId: userId }),
   });
 
   if (!response.ok) {
@@ -36,3 +36,56 @@ export const verifyPayment = async (sessionId) => {
   }
   return response.json();
 };
+
+
+export const cancelSubscription = async (userId) => {
+  console.log("user id in cancel cance",userId)
+  const response = await axios.post(
+    `${baseURL}/cancel-subscription`,
+    { userId:userId },
+  );
+  return response.data;
+};
+
+export const updateSubscription = async (userId, newPlanType, billingCycle) => {
+  console.log('updateSubscription')
+  const response = await axios.post(
+    `${baseURL}/update-subscription`,
+    { userId, newPlanType, billingCycle },
+  );
+  return response.data;
+};
+
+export const createCustomerPortalSession = async (userId) => {
+  const response = await axios.post(
+    `${baseURL}/create-portal-session`,
+    { userId },
+  );
+  return response.data;
+}
+
+
+
+
+export const reactivateSubscription = async (userId, planType, billingCycle) => {
+  const response = await axios.post(
+    `${baseURL}/reactivate-subscription`,
+    { userId, planType, billingCycle },
+  );
+  return response.data;
+};
+
+export const previewSubscriptionChange = async (userId, newPlanType, billingCycle) => {
+  const response = await axios.post(
+    `${baseURL}/preview-subscription-change`,
+    { userId, newPlanType, billingCycle },
+  );
+  return response.data;
+};
+
+export const StartTrial=async(userId)=>{
+  const response=await axios.post(`${baseURL}/startTrial`,{
+    userId
+  });
+  return response.data
+}

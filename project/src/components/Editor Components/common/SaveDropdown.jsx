@@ -38,7 +38,11 @@ const SaveDropdown = ({
         )}
       </button>
 
-      <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-[2147483647]">
+      <Dialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        className="relative z-[2147483647]"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
         <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -68,7 +72,7 @@ const SaveDropdown = ({
             <div className="mb-4">
               <p className="font-medium mb-2">Select Template Category</p>
               <div className="space-y-1">
-                {["branding", "slogan"].map((category) => (
+                {["branding", "slogan", "general"].map((category) => (
                   <label key={category} className="flex items-center gap-2">
                     <input
                       type="radio"

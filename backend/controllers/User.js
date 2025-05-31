@@ -183,7 +183,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         success: false,
-        error: "Looks like you're new here! Let's get you signed up.",
+        error: "Looks like you're le new here! Let's get you signed up.",
       });
     }
     // Check if the user has a Facebook or Google account or doesn't have a password set
