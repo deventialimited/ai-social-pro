@@ -3,6 +3,7 @@ const Post = require("../models/Post");
 const axios = require("axios");
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const socket = require("../utils/socket");
+const generateDomainVisualAssets = require("../helpers/generatePostImages");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -269,7 +270,23 @@ exports.processPubSub = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
+    let logoUrl = domain?.siteLogo;
 
+    // If siteLogo is an empty string, generate a letter-based logo
+    if (!logoUrl || logoUrl.trim() === "") {
+      const name = encodeURIComponent(domain?.clientName || "Logo");
+      logoUrl = `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&format=png&size=128`;
+    }
+    const generatedImages = await generateDomainVisualAssets({
+      sloganText: savedPost?.slogan,
+      brandName: domain?.clientName,
+      primaryColor: domain?.colors[0],
+      brandLogoUrl: logoUrl,
+      keywords: [domain?.niche],
+    });
+    savedPost.sloganImage = generatedImages.sloganImage;
+    savedPost.brandingImage = generatedImages.brandingImage;
+    savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
