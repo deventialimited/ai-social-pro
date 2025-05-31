@@ -188,7 +188,6 @@ const generateDomainVisualAssets = async ({
   const sloganImagePath = path.join(generatedDir, `slogan-${uuidv4()}.png`);
   const brandingImagePath = path.join(generatedDir, `branding-${uuidv4()}.png`);
   // 5. Render images
-  console.log(brandingHTML);
   await renderImageFromHTML(
     modifiedSlogan?.canvas,
     sloganHTML,
