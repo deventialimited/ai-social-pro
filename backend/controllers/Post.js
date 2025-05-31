@@ -248,7 +248,6 @@ exports.processPubSub = async (req, res) => {
     console.log("Generated Post:", JSON.stringify(jsonData));
 
     const domain = await Domain.findOne({ client_id: jsonData?.client_id });
-    console.log("Domain:", domain);
     if (!domain) {
       return res.status(404).json({ message: "client id not found" });
     }
@@ -286,7 +285,8 @@ exports.processPubSub = async (req, res) => {
     });
     savedPost.sloganImage = generatedImages.sloganImage;
     savedPost.brandingImage = generatedImages.brandingImage;
-    savedPost.save();
+    console.log(savedPost);
+    await savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
       "clientName clientWebsite siteLogo colors"
