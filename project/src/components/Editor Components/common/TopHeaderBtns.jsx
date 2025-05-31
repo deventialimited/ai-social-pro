@@ -2,6 +2,9 @@ import { Save, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import * as htmlToImage from "html-to-image";
+import { toPng } from "html-to-image";
+import download from 'downloadjs';
+
 import {
   getPostDesignById,
   saveOrUpdatePostDesignFrontendController,
@@ -48,38 +51,57 @@ const TopHeaderBtns = ({
   const user = JSON.parse(localStorage?.getItem("user"));
   const [templateType, setTemplateType] = useState("private");
   const [templateCategory, setTemplateCategory] = useState("branding");
+
+  // const handleDownloadImage = async () => {
+  //   const node = document.getElementById('#canvas');
+  //   console.log(node);
+  //   if (!node) return;
+
+  //   try {
+  //     const dataUrl = await toPng(node, {
+  //       cacheBust: true, // avoid stale image on re-renders
+  //       style: {
+  //         transform: 'scale(1)', // keep layout scale intact
+  //         transformOrigin: 'top left',
+  //       },
+  //       pixelRatio: 2, // for higher resolution
+  //     });
+  //     console.log(dataUrl);
+
+  //     download(dataUrl, 'canvas-export.png');
+  //   } catch (error) {
+  //     console.error('Error converting canvas to image:', error);
+  //   }
+  // };
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
+  
     try {
-      const node = canvasContainerRef.current;
-
-      const scale = 5;
-      const width = node.offsetWidth * scale;
-      const height = node.offsetHeight * scale;
-
-      const blob = await htmlToImage.toBlob(node, {
-        skipFonts: true,
-        width,
-        height,
+      // Replacing handleDownloadImage logic directly here
+      const node = document.getElementById('#canvas'); // Remove '#' when using getElementById
+      console.log(node);
+      if (!node) throw new Error("Canvas element not found");
+  
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
         style: {
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          width: `${node.offsetWidth}px`,
-          height: `${node.offsetHeight}px`,
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
         },
-        type: "image/webp",
+        pixelRatio: 2,
       });
-
-      if (!blob) {
-        throw new Error("Failed to convert canvas to image.");
-      }
-
-      const file = new File([blob], `canvas_${Date.now()}.webp`, {
-        type: "image/webp",
+  
+      // Convert Data URL to Blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+  
+      const file = new File([blob], `canvas_${Date.now()}.png`, {
+        type: "image/png",
       });
+  
       onSavePost.mutate(
         {
           postId,
@@ -90,8 +112,6 @@ const TopHeaderBtns = ({
         {
           onSuccess: () => {
             setTimeout(() => {
-              setIsSavePostLoading(false); // Runs regardless of success or error
-              onClose(); // Close only on success
               setIsSavePostLoading(false);
               onClose();
               clearEditor();
@@ -99,11 +119,7 @@ const TopHeaderBtns = ({
             }, 3000);
           },
           onError: (error) => {
-            toast.error(
-              error?.response?.data?.message || "Failed to save post"
-            );
-            setIsSavePostLoading(false);
-            toast.error(error?.response?.data?.message);
+            toast.error(error?.response?.data?.message || "Failed to save post");
             setIsSavePostLoading(false);
             console.error("Error saving design:", error);
           },
@@ -115,6 +131,7 @@ const TopHeaderBtns = ({
       console.error("Error saving design:", error);
     }
   };
+  
   const handleSaveTemplateAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
@@ -198,6 +215,7 @@ const TopHeaderBtns = ({
       addElement(newElement);
 
       const file = new File([blob], newElement.id, { type: blob.type });
+
       addFile(file);
 
       const canvasElement = document.getElementById("#canvas");
