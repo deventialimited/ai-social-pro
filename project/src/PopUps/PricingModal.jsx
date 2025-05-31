@@ -60,6 +60,7 @@ const userObject=res.user;
 
   const handleCheckout = async (planType) => {
     const user = JSON.parse(localStorage.getItem("user"));
+    const userId=user._id
     if (!user) {
       onClose(false); // Close modal
       setTimeout(() => {
@@ -69,7 +70,7 @@ const userObject=res.user;
     }
     setLoadingPlan(`${planType}-${billingCycle}`);
     try {
-      const { url } = await createCheckoutSession(planType, billingCycle, user);
+      const { url } = await createCheckoutSession(planType, billingCycle, userId);
       window.location.href = url;
     } catch (error) {
       console.error("Checkout error:", error);
