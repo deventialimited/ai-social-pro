@@ -19,7 +19,7 @@ export const createCheckoutSession = async (planType, billingCycle, user) => {
   }
 };
 
-export const verifyPayment = async (sessionId) => {
+export const verifyPayment = async (sessionId,userId) => {
   console.log("Verifying payment for sessionId:", sessionId);
   const user = await JSON.parse(localStorage.getItem("user"));
   const response = await fetch(`${baseURL}/verify-session`, {
@@ -28,7 +28,7 @@ export const verifyPayment = async (sessionId) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
-    body: JSON.stringify({ sessionId, userId: user._id }),
+    body: JSON.stringify({ sessionId, userId: userId }),
   });
 
   if (!response.ok) {
