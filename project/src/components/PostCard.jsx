@@ -19,6 +19,7 @@ import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
+  // console.log(post);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
@@ -250,7 +251,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                     selectedButton === type ? selectedStyles : unselectedStyles
                   }`}
                 >
-                  <span className="text-[12px] capitalize">{type}</span>
+                  <span className="text-[12px] capitalize">
+                    {type === "brandingImage"
+                      ? "branding"
+                      : type === "sloganImage"
+                      ? "slogan"
+                      : type}
+                  </span>
                   <Icon className="w-4 h-4" />
                 </button>
               );
