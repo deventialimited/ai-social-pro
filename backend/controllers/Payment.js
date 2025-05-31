@@ -356,11 +356,7 @@ exports.handleWebhook = async (req, res) => {
           subscriptionId: subscription.id,
           plan: planType,
           billingCycle,
-          trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
-          nextBillingDate: subscription.current_period_end
-            ? new Date(subscription.current_period_end * 1000)
-            : null,
-          subscribedDate: user.subscribedDate || new Date(subscription.created * 1000),
+
         };
         // Apply pending downgrade if billing cycle ended
         if (
