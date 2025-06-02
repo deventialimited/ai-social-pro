@@ -7,7 +7,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider, useEditor } from "./EditorStoreHooks/FullEditorHooks";
 import TopHeaderBtns from "./common/TopHeaderBtns";
 
-function EditorModalContent({ post, onClose, isEditorOpen }) {
+function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
@@ -51,22 +51,22 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z') {
+        if (e.key === "z") {
           e.preventDefault();
           if (e.shiftKey && canRedo) {
             redo();
           } else if (canUndo) {
             undo();
           }
-        } else if (e.key === 'y' && canRedo) {
+        } else if (e.key === "y" && canRedo) {
           e.preventDefault();
           redo();
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [undo, redo, canUndo, canRedo]);
 
   // Function to handle element selection in the canvas
@@ -120,7 +120,9 @@ function EditorModalContent({ post, onClose, isEditorOpen }) {
                     onClose={onClose}
                     postId={post?._id}
                     postImage={
-                      post?.editorStatus === "not_edited" ? post?.image : null
+                      post?.editorStatus === "not_edited"
+                        ? post[selectedType]
+                        : null
                     }
                     defaultPlatform={post?.platforms?.[0]}
                     postDetails={post}

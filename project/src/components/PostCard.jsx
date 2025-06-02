@@ -400,6 +400,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       {showEditModal && (
         <PostEditModal
           post={post}
+          selectedType={selectedButton}
           showEditModal={showEditModal}
           onClose={() => setShowEditModal(false)}
           onSave={handleSave}
