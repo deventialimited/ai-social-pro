@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import * as htmlToImage from "html-to-image";
 import { toPng } from "html-to-image";
-import download from 'downloadjs';
+import download from "downloadjs";
 
 import {
   getPostDesignById,
@@ -52,20 +52,19 @@ const TopHeaderBtns = ({
   const [templateType, setTemplateType] = useState("private");
   const [templateCategory, setTemplateCategory] = useState("branding");
 
-  
   // Helper: Converts image URL to a base64 data URL
   const convertImageToBase64 = (img) => {
     return new Promise((resolve, reject) => {
       const originalSrc = img.src;
       const image = new Image();
-      image.crossOrigin = 'anonymous';
+      image.crossOrigin = "anonymous";
       image.src = originalSrc;
-  
+
       image.onload = () => {
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = image.width;
         canvas.height = image.height;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         ctx.drawImage(image, 0, 0);
         try {
           const dataURL = canvas.toDataURL();
@@ -74,58 +73,58 @@ const TopHeaderBtns = ({
           reject(e);
         }
       };
-  
+
       image.onerror = () => reject(`Failed to load image: ${originalSrc}`);
     });
   };
-  
+
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
-  
+
     try {
-      const node = document.getElementById('#canvas');
+      const node = document.getElementById("#canvas");
       if (!node) throw new Error("Canvas element not found");
-  
+
       // Step 1: Convert all <img> in canvas to base64
-      const imageTags = [...node.querySelectorAll('img')];
+      const imageTags = [...node.querySelectorAll("img")];
       const base64Conversions = await Promise.allSettled(
         imageTags.map(convertImageToBase64)
       );
-  
+
       base64Conversions.forEach((res) => {
-        if (res.status === 'fulfilled') {
+        if (res.status === "fulfilled") {
           const { img, dataURL } = res.value;
-          img.setAttribute('data-original-src', img.src);
+          img.setAttribute("data-original-src", img.src);
           img.src = dataURL;
         }
       });
-  
+
       // Step 2: Convert canvas to PNG
       const dataUrl = await toPng(node, {
         cacheBust: true,
         style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left',
+          transform: "scale(1)",
+          transformOrigin: "top left",
         },
         pixelRatio: 2,
       });
-  
+
       // Step 3: Restore original image srcs
       imageTags.forEach((img) => {
-        const originalSrc = img.getAttribute('data-original-src');
+        const originalSrc = img.getAttribute("data-original-src");
         if (originalSrc) img.src = originalSrc;
       });
-  
+
       // Step 4: Convert to Blob/File for backend upload
       const response = await fetch(dataUrl);
       const blob = await response.blob();
       const file = new File([blob], `canvas_${Date.now()}.png`, {
         type: "image/png",
       });
-  
+
       // Step 5: Send to API
       onSavePost.mutate(
         {
@@ -144,7 +143,9 @@ const TopHeaderBtns = ({
             }, 3000);
           },
           onError: (error) => {
-            toast.error(error?.response?.data?.message || "Failed to save post");
+            toast.error(
+              error?.response?.data?.message || "Failed to save post"
+            );
             setIsSavePostLoading(false);
             console.error("Error saving design:", error);
           },
@@ -156,7 +157,7 @@ const TopHeaderBtns = ({
       console.error("Error saving design:", error);
     }
   };
-  
+
   const handleSaveTemplateAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
@@ -272,6 +273,33 @@ const TopHeaderBtns = ({
       setCanvas(res?.canvas);
       setElements(res?.elements);
       setLayers(res?.layers);
+      // Handle image elements
+      const imageElements = (res?.elements || []).filter(
+        (el) => el.type === "image"
+      );
+
+      for (const element of imageElements) {
+        const src = element?.props?.src;
+        if (!src) continue;
+
+        try {
+          const response = await fetch(src, {
+            method: "GET",
+            headers: {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+          });
+
+          const blob = await response.blob();
+          const file = new File([blob], element.id, { type: blob.type });
+
+          addFile(file);
+        } catch (error) {
+          console.error("Failed to fetch or process image:", element.id, error);
+        }
+      }
+
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
@@ -329,8 +357,6 @@ const TopHeaderBtns = ({
         templateCategory={templateCategory}
         setTemplateCategory={setTemplateCategory}
       />
-
-
 
       <button
         onClick={handleSavePostAndClose}
