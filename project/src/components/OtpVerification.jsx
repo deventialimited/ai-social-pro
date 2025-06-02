@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { verifyOtp, sendEmailVerificationOtp } from "../libs/authService"; // Import from authService
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "../store/useAuthStore";
 
 export const OTPVerification = ({ email, tempUserData, onClose }) => {
   const [otp, setOtp] = useState("");
@@ -12,6 +13,7 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
   const [timeLeft, setTimeLeft] = useState(0); // Timer state
   const [resendEnabled, setResendEnabled] = useState(false); // Resend button state
   const [currentToken, setCurrentToken] = useState(tempUserData?.token); // Track current token
+  const { setUser } = useAuthStore();
   const navigate = useNavigate();
 
   // Set up the timer based on the token expiration
@@ -21,7 +23,9 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
         const decoded = jwtDecode(currentToken);
         const expirationTime = decoded.exp * 1000; // Convert to milliseconds
         const currentTime = Date.now();
-        const timeDifference = Math.floor((expirationTime - currentTime) / 1000);
+        const timeDifference = Math.floor(
+          (expirationTime - currentTime) / 1000
+        );
         setTimeLeft(timeDifference > 0 ? timeDifference : 0);
       } catch (error) {
         console.error("Error decoding token:", error);
@@ -60,7 +64,7 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
       const response = await verifyOtp(currentToken, otp, "email");
       const { token, user } = response; // Adjust based on your backend response
       localStorage.setItem("token", JSON.stringify(token));
-      localStorage.setItem("user", JSON.stringify(user));
+      setUser(user);
       toast.success("OTP verified successfully!");
       onClose(); // Close the modal
       navigate("/"); // Redirect to home page
@@ -83,7 +87,9 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
         const decoded = jwtDecode(newToken);
         const expirationTime = decoded.exp * 1000;
         const currentTime = Date.now();
-        const timeDifference = Math.floor((expirationTime - currentTime) / 1000);
+        const timeDifference = Math.floor(
+          (expirationTime - currentTime) / 1000
+        );
         setTimeLeft(timeDifference > 0 ? timeDifference : 0);
         setResendEnabled(false); // Disable resend until timer expires again
         setOtp(""); // Clear the OTP input
@@ -108,7 +114,6 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
                 Enter the OTP sent to {email}
               </p>
             </div>
-            
           </div>
         </div>
 
@@ -138,7 +143,9 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
                 onClick={handleResendOTP}
                 disabled={!resendEnabled || loading}
                 className={`text-blue-600 dark:text-blue-400 hover:underline font-medium ${
-                  !resendEnabled || loading ? "opacity-50 cursor-not-allowed" : ""
+                  !resendEnabled || loading
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 Resend OTP
@@ -149,7 +156,11 @@ export const OTPVerification = ({ email, tempUserData, onClose }) => {
               className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity font-medium flex items-center justify-center"
               disabled={loading}
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify OTP"}
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                "Verify OTP"
+              )}
             </button>
           </form>
         </div>

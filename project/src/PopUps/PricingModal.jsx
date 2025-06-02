@@ -3,8 +3,9 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition, RadioGroup } from "@headlessui/react";
 import { CheckIcon, XIcon as XMarkIcon } from "lucide-react";
-import { createCheckoutSession ,StartTrial} from "../libs/paymentService";
+import { createCheckoutSession, StartTrial } from "../libs/paymentService";
 import toast, { Toaster } from "react-hot-toast";
+import { useAuthStore } from "../store/useAuthStore";
 
 // Prices matching Payment.js PRICE_IDS.prices
 const PRICES = {
@@ -14,7 +15,7 @@ const PRICES = {
 export default function PricingModal({ onClose, isOpen }) {
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [loadingPlan, setLoadingPlan] = useState(null); // Track specific plan loading
-
+  const { setUser } = useAuthStore();
   const starterFeatures = [
     "Unlimited businesses",
     "6 weekly unique posts",
@@ -34,29 +35,31 @@ export default function PricingModal({ onClose, isOpen }) {
     "No watermark",
     "24/7 chat support",
   ];
-const handleStartTrial = async () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const handleStartTrial = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
 
-  try {
-    console.log("user id in the pricing modal", user._id);
-    onClose(true);
+    try {
+      console.log("user id in the pricing modal", user._id);
+      onClose(true);
 
-    const res = await StartTrial(user._id); // ✅ await it
-const userObject=res.user;
-        localStorage.setItem("user", JSON.stringify(userObject));
-    toast.success("Trial started! Ends on " + new Date(res.user.trialEndsAt).toLocaleDateString());
-  } catch (err) {
-    console.error("Trial start error:", err);
+      const res = await StartTrial(user._id); // ✅ await it
+      const userObject = res.user;
+      setUser(userObject);
+      toast.success(
+        "Trial started! Ends on " +
+          new Date(res.user.trialEndsAt).toLocaleDateString()
+      );
+    } catch (err) {
+      console.error("Trial start error:", err);
 
-    const errorMsg =
-      err?.response?.data?.error ||
-      err?.message ||
-      "Something went wrong while starting the trial.";
+      const errorMsg =
+        err?.response?.data?.error ||
+        err?.message ||
+        "Something went wrong while starting the trial.";
 
-    toast.error(errorMsg);
-  }
-};
-
+      toast.error(errorMsg);
+    }
+  };
 
   const handleCheckout = async (planType) => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -75,10 +78,17 @@ const userObject=res.user;
       console.error("Checkout error:", error);
       onClose(false); // Close modal before showing toast
       setTimeout(() => {
-        if (error.response?.status === 400 && error.response?.data?.error === "User already has an active subscription") {
-          toast.error("You already have an active subscription. Visit subscription management to upgrade or cancel.", {
-            duration: 5000,
-          });
+        if (
+          error.response?.status === 400 &&
+          error.response?.data?.error ===
+            "User already has an active subscription"
+        ) {
+          toast.error(
+            "You already have an active subscription. Visit subscription management to upgrade or cancel.",
+            {
+              duration: 5000,
+            }
+          );
         } else if (error.response?.status === 404) {
           toast.error("User not found. Please log in again.");
         } else if (error.response?.status === 500) {
@@ -96,7 +106,9 @@ const userObject=res.user;
   const getSavings = (planType) => {
     const monthlyTotal = PRICES[planType].monthly * 12;
     const yearly = PRICES[planType].yearly;
-    const savingsPercent = Math.round(((monthlyTotal - yearly) / monthlyTotal) * 100);
+    const savingsPercent = Math.round(
+      ((monthlyTotal - yearly) / monthlyTotal) * 100
+    );
     return savingsPercent;
   };
 
@@ -239,7 +251,9 @@ const userObject=res.user;
                           onClick={() => handleCheckout("starter")}
                           className="w-full rounded-md bg-gradient-to-r from-blue-600 to-purple-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                         >
-                          {loadingPlan === `starter-${billingCycle}` ? "Redirecting..." : "Get Started"}
+                          {loadingPlan === `starter-${billingCycle}`
+                            ? "Redirecting..."
+                            : "Get Started"}
                         </button>
                       </div>
                     </div>
@@ -275,24 +289,27 @@ const userObject=res.user;
                       </ul>
                       <div className="mt-8">
                         <button
-                          disabled={loadingPlan === `professional-${billingCycle}`}
+                          disabled={
+                            loadingPlan === `professional-${billingCycle}`
+                          }
                           type="button"
                           onClick={() => handleCheckout("professional")}
                           className="w-full rounded-md bg-gradient-to-r from-blue-600 to-purple-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200"
                         >
-                          {loadingPlan === `professional-${billingCycle}` ? "Redirecting..." : "Get Started"}
+                          {loadingPlan === `professional-${billingCycle}`
+                            ? "Redirecting..."
+                            : "Get Started"}
                         </button>
                       </div>
                     </div>
                   </div>
 
-                 <button
-  className="underline text-blue-500 mt-4"
-  onClick={handleStartTrial}
->
-  Try 14-day free trial. No credit card required.
-</button>
-
+                  <button
+                    className="underline text-blue-500 mt-4"
+                    onClick={handleStartTrial}
+                  >
+                    Try 14-day free trial. No credit card required.
+                  </button>
                 </Dialog.Panel>
               </Transition.Child>
             </div>
