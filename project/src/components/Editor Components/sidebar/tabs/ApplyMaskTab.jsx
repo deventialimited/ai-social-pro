@@ -1,129 +1,144 @@
-"use client"
+"use client";
 
-import { X, Search } from "lucide-react"
-import { useState, useEffect } from "react"
-import { useEditor } from "../../EditorStoreHooks/FullEditorHooks"
-import MaskPreview from "./MaskPreview"
-import { hardCodedShapes } from "../hooks/ShapesHooks"
+import { X, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
+import MaskPreview from "./MaskPreview";
+import { hardCodedShapes } from "../hooks/ShapesHooks";
+import { v4 as uuidv4 } from "uuid";
 
 function ApplyMaskTab({ onClose, selectedElementId }) {
-  const [selectedElement, setSelectedElement] = useState(null)
-  const [originalImage, setOriginalImage] = useState(null)
-  const { updateElement, elements } = useEditor()
-  const [searchQuery, setSearchQuery] = useState("")
-
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
+  const { updateElement, elements, addFile } = useEditor();
+  const [searchQuery, setSearchQuery] = useState("");
   useEffect(() => {
     if (selectedElementId) {
-      const element = elements.find((el) => el.id === selectedElementId)
-      setSelectedElement(element)
+      const element = elements.find((el) => el.id === selectedElementId);
+      setSelectedElement(element);
 
       // Store the original image when first selecting an element
       if (element && !originalImage) {
-        const img = new Image()
-        img.src = element.props.src
-        img.crossOrigin = "anonymous" // Add this to avoid CORS issues
+        const img = new Image();
+        img.src = element.props.originalSrc;
+        img.crossOrigin = "anonymous"; // Add this to avoid CORS issues
         img.onload = () => {
-          setOriginalImage(img)
-        }
+          setOriginalImage(img);
+        };
       }
     }
-  }, [elements, selectedElementId])
+  }, [elements, selectedElementId]);
 
   // Filter shapes based on search query
   const filteredShapes = searchQuery
-    ? hardCodedShapes.filter((shape) => shape.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : hardCodedShapes
+    ? hardCodedShapes.filter((shape) =>
+        shape.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : hardCodedShapes;
 
   // Function to apply mask to the selected element
   const applyMask = (shapeId) => {
     if (!selectedElement || selectedElement.locked) return;
 
-    // Find the selected shape
-    const selectedShape = hardCodedShapes.find((shape) => shape.id === shapeId)
-    if (!selectedShape) return
+    const selectedShape = hardCodedShapes.find((shape) => shape.id === shapeId);
+    if (!selectedShape) return;
 
-    // Create a canvas to apply the mask
-    const canvas = document.createElement("canvas")
-    const ctx = canvas.getContext("2d")
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = selectedElement.styles.width || 300;
+    canvas.height = selectedElement.styles.height || 300;
 
-    // Set canvas dimensions to match the element
-    canvas.width = selectedElement.styles.width || 300
-    canvas.height = selectedElement.styles.height || 300
+    ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
 
-    // Draw the original image
-    ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height)
+    const maskCanvas = document.createElement("canvas");
+    const maskCtx = maskCanvas.getContext("2d");
+    maskCanvas.width = canvas.width;
+    maskCanvas.height = canvas.height;
 
-    // Create a temporary canvas for the mask
-    const maskCanvas = document.createElement("canvas")
-    const maskCtx = maskCanvas.getContext("2d")
-    maskCanvas.width = canvas.width
-    maskCanvas.height = canvas.height
+    maskCtx.fillStyle = "#ffffff";
 
-    // Draw the mask shape using the SVG from hardCodedShapes
-    maskCtx.fillStyle = "#ffffff" // Use white for the mask
-
-    // Create a temporary SVG element to draw the mask
-    const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-    svgElement.setAttribute("width", canvas.width.toString())
-    svgElement.setAttribute("height", canvas.height.toString())
-    svgElement.setAttribute("viewBox", "0 0 100 100")
+    const svgElement = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "svg"
+    );
+    svgElement.setAttribute("width", canvas.width.toString());
+    svgElement.setAttribute("height", canvas.height.toString());
+    svgElement.setAttribute("viewBox", "0 0 100 100");
     svgElement.innerHTML = selectedShape.svg
       .replace(/<svg[^>]*>/, "")
       .replace("</svg>", "")
-      .replace(/fill="currentColor"/g, 'fill="white"')
+      .replace(/fill="currentColor"/g, 'fill="white"');
 
-    // Convert SVG to a data URL
-    const svgData = new XMLSerializer().serializeToString(svgElement)
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" })
-    const svgUrl = URL.createObjectURL(svgBlob)
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const svgUrl = URL.createObjectURL(svgBlob);
 
-    // Create an image from the SVG
-    const maskImage = new Image()
-    maskImage.crossOrigin = "anonymous" // Add this to avoid CORS issues
+    const maskImage = new Image();
+    maskImage.crossOrigin = "anonymous";
+    // Ensure the element ID is set correctly
+    maskImage.onload = () => {
+      try {
+        maskCtx.drawImage(maskImage, 0, 0, canvas.width, canvas.height);
+        ctx.globalCompositeOperation = "destination-in";
+        ctx.drawImage(maskCanvas, 0, 0);
 
-    // Use a promise to ensure the mask is loaded before applying
-    const maskPromise = new Promise((resolve) => {
-      maskImage.onload = () => {
-        // Draw the mask image
-        maskCtx.drawImage(maskImage, 0, 0, canvas.width, canvas.height)
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], selectedElementId, {
+              type: blob.type,
+            });
+            const objectUrl = URL.createObjectURL(blob);
 
-        // Apply the mask using composite operation
-        ctx.globalCompositeOperation = "destination-in"
-        ctx.drawImage(maskCanvas, 0, 0)
+            addFile(file); // Ensure this goes into the central store
+            console.log("Masked image file added:", file);
+            console.log("Masked image selectedElementId:", selectedElementId);
 
-        // Convert the canvas to a data URL
-        const maskedImageUrl = canvas.toDataURL("image/png")
+            updateElement(selectedElementId, {
+              props: {
+                ...selectedElement.props,
+                src: objectUrl,
+                fileId: selectedElementId, // Crucial to match loading logic
+                mask: shapeId,
+              },
+            });
 
-        // Update the element with the masked image
-        updateElement(selectedElementId, {
-          props: {
-            ...selectedElement.props,
-            src: maskedImageUrl,
-            mask: shapeId,
-            originalSrc: originalImage.src, // Store the original image source
-          },
-        })
-
-        // Clean up
-        URL.revokeObjectURL(svgUrl)
-        resolve()
+            URL.revokeObjectURL(svgUrl);
+          } else {
+            const dataUrl = canvas.toDataURL("image/png");
+            updateElement(selectedElementId, {
+              props: {
+                ...selectedElement.props,
+                src: dataUrl,
+                mask: shapeId,
+              },
+            });
+            URL.revokeObjectURL(svgUrl);
+          }
+        }, "image/png");
+      } catch (err) {
+        console.error("Masking failed:", err);
+        URL.revokeObjectURL(svgUrl);
       }
+    };
 
-      maskImage.src = svgUrl
-    })
+    maskImage.onerror = (err) => {
+      console.error("Failed to load mask image:", err);
+      URL.revokeObjectURL(svgUrl);
+    };
 
-    // Handle any errors
-    maskPromise.catch((error) => {
-      console.error("Error applying mask:", error)
-      URL.revokeObjectURL(svgUrl)
-    })
-  }
+    maskImage.src = svgUrl;
+  };
 
   return (
     <div className="p-4 h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Mask image</h2>
-        <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
+        <button
+          onClick={onClose}
+          className="p-1 hover:bg-gray-100 rounded-full"
+        >
           <X className="h-5 w-5" />
         </button>
       </div>
@@ -151,7 +166,7 @@ function ApplyMaskTab({ onClose, selectedElementId }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default ApplyMaskTab
+export default ApplyMaskTab;

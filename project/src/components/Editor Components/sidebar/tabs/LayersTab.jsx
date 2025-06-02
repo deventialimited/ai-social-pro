@@ -52,7 +52,7 @@ function LayersTab() {
         Elements on your active page:
       </h3>
 
-      <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md bg-white hide-scrollbar" style={{ minHeight: 100 }}>
+      <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md bg-white hide-scrollbar" style={{ minHeight: 0 }}>
         <style>{`
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
@@ -106,45 +106,45 @@ function SortableItem({ layer, index, removeElement, handleLock, handleVisible }
       <div
         className="flex items-center gap-1 w-max"
       >
-        <span className="text-gray-500 text-lg">≡</span>
-      </div>
+              <span className="text-gray-500 text-lg">≡</span>
+            </div>
 
-      <div className="w-max capitalize text-xs text-gray-500">
-        {layer.type}
-      </div>
+            <div className="w-max capitalize text-xs text-gray-500">
+              {layer.type}
+            </div>
 
-      <div className="flex-1 truncate text-sm">{layer.elementId}</div>
+            <div className="flex-1 truncate text-sm">{layer.elementId}</div>
 
-      <button
-        onClick={() => handleVisible(layer.elementId)}
-        className="text-gray-500 hover:text-gray-700"
-      >
-        {layer.visible ? (
+            <button
+              onClick={() => handleVisible(layer.elementId)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              {layer.visible ? (
           <Eye className="h-4 w-4" />
-        ) : (
+              ) : (
           <EyeOff className="h-4 w-4" />
-        )}
-      </button>
+              )}
+            </button>
 
-      <button
-        onClick={() => handleLock(layer.elementId)}
-        className={`p-2 rounded-md hover:bg-gray-100 ${
-          layer?.locked ? "bg-gray-300" : ""
-        }`}
-      >
-        {layer?.locked ? (
+            <button
+              onClick={() => handleLock(layer.elementId)}
+              className={`p-2 rounded-md hover:bg-gray-100 ${
+                layer?.locked ? "bg-gray-300" : ""
+              }`}
+            >
+              {layer?.locked ? (
           <Lock className="h-4 w-4 text-gray-600" />
-        ) : (
+              ) : (
           <Unlock className="h-4 w-4 text-gray-600" />
-        )}
-      </button>
+              )}
+            </button>
 
-      <button
-        onClick={() => removeElement(layer.elementId)}
-        className="text-gray-500 hover:text-gray-700"
-      >
-        <Trash className="h-4 w-4" />
-      </button>
+            <button
+              onClick={() => removeElement(layer.elementId)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <Trash className="h-4 w-4" />
+            </button>
     </div>
   );
 }
