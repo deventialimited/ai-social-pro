@@ -52,38 +52,57 @@ const TopHeaderBtns = ({
   const [templateType, setTemplateType] = useState("private");
   const [templateCategory, setTemplateCategory] = useState("branding");
 
-  // const handleDownloadImage = async () => {
-  //   const node = document.getElementById('#canvas');
-  //   console.log(node);
-  //   if (!node) return;
+  const handleDownloadImage = async () => {
+    const node = document.getElementById('#canvas');
+    console.log(node);
+    if (!node) return;
 
-  //   try {
-  //     const dataUrl = await toPng(node, {
-  //       cacheBust: true, // avoid stale image on re-renders
-  //       style: {
-  //         transform: 'scale(1)', // keep layout scale intact
-  //         transformOrigin: 'top left',
-  //       },
-  //       pixelRatio: 2, // for higher resolution
-  //     });
-  //     console.log(dataUrl);
+    try {
+      const dataUrl = await toPng(node, {
+        cacheBust: true, // avoid stale image on re-renders
+        style: {
+          transform: 'scale(1)', // keep layout scale intact
+          transformOrigin: 'top left',
+        },
+        pixelRatio: 2, // for higher resolution
+      });
+      console.log(dataUrl);
 
-  //     download(dataUrl, 'canvas-export.png');
-  //   } catch (error) {
-  //     console.error('Error converting canvas to image:', error);
-  //   }
-  // };
+      download(dataUrl, 'canvas-export.png');
+    } catch (error) {
+      console.error('Error converting canvas to image:', error);
+    }
+  };
+  
+  const waitForImagesToLoad = async (container) => {
+    const images = Array.from(container.getElementsByTagName('img'));
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete && img.naturalHeight !== 0) return;
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      })
+    );
+  };
+  
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
+    await handleDownloadImage();
+    return;
   
     try {
       // Replacing handleDownloadImage logic directly here
       const node = document.getElementById('#canvas'); // Remove '#' when using getElementById
       console.log(node);
       if (!node) throw new Error("Canvas element not found");
+  
+      // Wait for all images inside canvas to load
+      await waitForImagesToLoad(node);
   
       const dataUrl = await toPng(node, {
         cacheBust: true,
