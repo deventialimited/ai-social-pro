@@ -92,8 +92,8 @@ const TopHeaderBtns = ({
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
-    await handleDownloadImage();
-    return;
+    // await handleDownloadImage();
+    // return;
   
     try {
       // Replacing handleDownloadImage logic directly here
