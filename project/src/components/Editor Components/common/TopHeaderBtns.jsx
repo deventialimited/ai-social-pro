@@ -52,39 +52,31 @@ const TopHeaderBtns = ({
   const [templateType, setTemplateType] = useState("private");
   const [templateCategory, setTemplateCategory] = useState("branding");
 
-  const handleDownloadImage = async () => {
-    const node = document.getElementById('#canvas');
-    console.log(node);
-    if (!node) return;
-
-    try {
-      const dataUrl = await toPng(node, {
-        cacheBust: true, // avoid stale image on re-renders
-        style: {
-          transform: 'scale(1)', // keep layout scale intact
-          transformOrigin: 'top left',
-        },
-        pixelRatio: 2, // for higher resolution
-      });
-      console.log(dataUrl);
-
-      download(dataUrl, 'canvas-export.png');
-    } catch (error) {
-      console.error('Error converting canvas to image:', error);
-    }
-  };
   
-  const waitForImagesToLoad = async (container) => {
-    const images = Array.from(container.getElementsByTagName('img'));
-    await Promise.all(
-      images.map((img) => {
-        if (img.complete && img.naturalHeight !== 0) return;
-        return new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-        });
-      })
-    );
+  // Helper: Converts image URL to a base64 data URL
+  const convertImageToBase64 = (img) => {
+    return new Promise((resolve, reject) => {
+      const originalSrc = img.src;
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.src = originalSrc;
+  
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0);
+        try {
+          const dataURL = canvas.toDataURL();
+          resolve({ img, dataURL });
+        } catch (e) {
+          reject(e);
+        }
+      };
+  
+      image.onerror = () => reject(`Failed to load image: ${originalSrc}`);
+    });
   };
   
   const handleSavePostAndClose = async () => {
@@ -92,18 +84,26 @@ const TopHeaderBtns = ({
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
-    // await handleDownloadImage();
-    // return;
   
     try {
-      // Replacing handleDownloadImage logic directly here
-      const node = document.getElementById('#canvas'); // Remove '#' when using getElementById
-      console.log(node);
+      const node = document.getElementById('#canvas');
       if (!node) throw new Error("Canvas element not found");
   
-      // Wait for all images inside canvas to load
-      await waitForImagesToLoad(node);
+      // Step 1: Convert all <img> in canvas to base64
+      const imageTags = [...node.querySelectorAll('img')];
+      const base64Conversions = await Promise.allSettled(
+        imageTags.map(convertImageToBase64)
+      );
   
+      base64Conversions.forEach((res) => {
+        if (res.status === 'fulfilled') {
+          const { img, dataURL } = res.value;
+          img.setAttribute('data-original-src', img.src);
+          img.src = dataURL;
+        }
+      });
+  
+      // Step 2: Convert canvas to PNG
       const dataUrl = await toPng(node, {
         cacheBust: true,
         style: {
@@ -113,14 +113,20 @@ const TopHeaderBtns = ({
         pixelRatio: 2,
       });
   
-      // Convert Data URL to Blob
+      // Step 3: Restore original image srcs
+      imageTags.forEach((img) => {
+        const originalSrc = img.getAttribute('data-original-src');
+        if (originalSrc) img.src = originalSrc;
+      });
+  
+      // Step 4: Convert to Blob/File for backend upload
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-  
       const file = new File([blob], `canvas_${Date.now()}.png`, {
         type: "image/png",
       });
   
+      // Step 5: Send to API
       onSavePost.mutate(
         {
           postId,
