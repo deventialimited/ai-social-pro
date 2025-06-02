@@ -411,7 +411,8 @@ exports.createCustomerPortalSession = async (req, res) => {
     }
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.Base_User_Url}/dashboard`,
+      return_url: `${process.env.Base_User_Url}/dashboard?returnFromPortal=true
+`,
     });
     res.json({ url: session.url });
   } catch (error) {
@@ -419,6 +420,7 @@ exports.createCustomerPortalSession = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 exports.handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];

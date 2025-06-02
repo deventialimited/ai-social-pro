@@ -1136,3 +1136,17 @@ exports.addPostSchedule = async (req, res) => {
     });
   }
 };
+
+exports.getUser = async (req, res) => {
+  const { userId } = req.query; // ✅ use query instead of body
+
+  try {
+    const checkUser = await User.findById(userId);
+    if (!checkUser) {
+      return res.status(404).json({ message: "User Not found" });
+    }
+    return res.json({ user: checkUser }); // Optional: rename for clarity
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};

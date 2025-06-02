@@ -21,7 +21,8 @@ const {
   updatePlatformConnection,
   getSocialAccountsStatus,
   disconnectPlatform,
-  addPostSchedule
+  addPostSchedule,
+  getUser
 } = require("../controllers/User");
 
 const router = express.Router();
@@ -73,5 +74,5 @@ router.post("/updatePlatformConnection", updatePlatformConnection);
 router.get("/getSocialAccountData", getSocialAccountsStatus);
 router.post("/disconnectPlatform", disconnectPlatform);
 router.post("/post-schedule", addPostSchedule);
-
+router.get('/getUserInformation',getUser)
 module.exports = router;

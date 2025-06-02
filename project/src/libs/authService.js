@@ -294,3 +294,21 @@ export const updatePostSchedule = async (userId, postScheduleData) => {
     throw error;
   }
 };
+
+
+export const getUserInformation=async(userId)=>{
+  try{
+    console.log(userId,"in the getUSerInformation lib");
+    const response=await axios.get(`${API_URL}/getUserInformation`,{
+      params:{userId}
+    })
+    console.log(response.data)
+        console.log(response.data.user)
+
+return res.data.user
+  }
+  catch(err){
+     console.error("Error updating post schedule:", error);
+    throw err;
+  }
+}
