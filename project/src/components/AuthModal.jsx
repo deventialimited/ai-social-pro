@@ -11,7 +11,13 @@ import { OTPVerification } from "./OtpVerification"; // Import the new component
 import { useNavigate } from "react-router-dom";
 
 export const AuthModal = () => {
-  const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } = useAuthStore();
+  const {
+    setIsSignInPopup,
+    isSignUpPopup,
+    setUser,
+    isSignInPopup,
+    setIsSignUpPopup,
+  } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [isGLoading, setIsGLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +32,8 @@ export const AuthModal = () => {
 
   const validateForm = (email, password) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
     if (!email) {
       toast.error("Email is required.");
@@ -56,7 +63,11 @@ export const AuthModal = () => {
     if (isSignUpPopup) {
       setLoading(true);
       try {
-        const userData = await registerUser(formData.username, formData.email, formData.password);
+        const userData = await registerUser(
+          formData.username,
+          formData.email,
+          formData.password
+        );
         setTempUserData(userData); // Store temp data from backend
         setShowOTP(true); // Show OTP verification component
         toast.success("OTP sent to your email!");
@@ -71,7 +82,7 @@ export const AuthModal = () => {
       try {
         const userData = await loginUser(formData.email, formData.password);
         localStorage.setItem("token", JSON.stringify(userData?.token));
-        localStorage.setItem("user", JSON.stringify(userData?.user));
+        setUser(userData?.user);
         toast.success("Signin successful!");
         setIsSignInPopup(false);
         navigate("/"); // Redirect to home after login
@@ -87,12 +98,15 @@ export const AuthModal = () => {
   const handleGoogleLoginSuccess = async (tokenResponse) => {
     try {
       setIsGLoading(true);
-      const response = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
-        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-      });
+      const response = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        }
+      );
       const { sub: googleId, name, email, picture } = response.data;
       const data = await googleAuth(googleId, name, email, picture);
-      localStorage.setItem("user", JSON.stringify(data?.user));
+      setUser(data?.user);
       toast.success("Google login successful!");
       setIsSignUpPopup(false);
       setIsSignInPopup(false);
@@ -133,7 +147,9 @@ export const AuthModal = () => {
                     {isSignUpPopup ? "Create Account" : "Welcome Back"}
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {isSignUpPopup ? "Get started with OneYear Social" : "Sign in to your account"}
+                    {isSignUpPopup
+                      ? "Get started with OneYear Social"
+                      : "Sign in to your account"}
                   </p>
                 </div>
                 <button
@@ -155,7 +171,12 @@ export const AuthModal = () => {
                   className="flex items-center justify-center gap-4 my-4 w-full text-[15px] border py-[7.5px] border-[#d1d0d0ce] rounded-lg px-4 hover:bg-[#74a2df13]"
                 >
                   <div className="flex">
-                    <img src="/icon-google.svg" alt="Google" className="mr-2" width={22} />
+                    <img
+                      src="/icon-google.svg"
+                      alt="Google"
+                      className="mr-2"
+                      width={22}
+                    />
                     Sign in with Google
                   </div>
                   {isGLoading && (
@@ -184,7 +205,9 @@ export const AuthModal = () => {
                     <input
                       type="text"
                       value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, username: e.target.value })
+                      }
                       className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -197,7 +220,9 @@ export const AuthModal = () => {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -210,7 +235,9 @@ export const AuthModal = () => {
                     <input
                       type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
                       className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 pr-10"
                       required
                     />
@@ -219,7 +246,11 @@ export const AuthModal = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     >
-                      {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                      {showPassword ? (
+                        <Eye className="w-5 h-5" />
+                      ) : (
+                        <EyeOff className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -239,7 +270,9 @@ export const AuthModal = () => {
               </form>
 
               <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                {isSignUpPopup ? "Already have an account?" : "Don't have an account?"}{" "}
+                {isSignUpPopup
+                  ? "Already have an account?"
+                  : "Don't have an account?"}{" "}
                 <button
                   onClick={() => {
                     if (isSignUpPopup) {

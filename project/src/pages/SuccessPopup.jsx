@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { verifyPayment } from "../libs/paymentService";
+import { useAuthStore } from "../store/useAuthStore";
 
 export const SuccessPopup = ({ onClose }) => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setuser] = useState(null);
+  const { setUser } = useAuthStore();
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export const SuccessPopup = ({ onClose }) => {
           console.log("Payment verified:", data);
           toast.success("Payment verified successfully!");
           const updatedUserData = data.user;
-          localStorage.setItem("user", JSON.stringify(updatedUserData));
+          setuser(updatedUserData);
           setUser(updatedUserData);
           setLoading(false);
         })

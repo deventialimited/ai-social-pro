@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { SocialConnectModal } from "./SocialConnectModal";
 import { disconnectPlatform, updatePostSchedule } from "../libs/authService";
+import { useAuthStore } from "../store/useAuthStore";
 
 // Disconnect Icon Component
 const DisconnectIcon = ({ className = "w-5 h-5" }) => (
@@ -34,13 +35,14 @@ export const SocialsTab = () => {
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [platformToDisconnect, setPlatformToDisconnect] = useState(null);
   const [connectedPlatforms, setConnectedPlatforms] = useState([]);
-  const [user, setUser] = useState(null);
+  const [user, setuser] = useState(null);
   const [selectedDays, setSelectedDays] = useState(["Mon", "Wed", "Fri"]);
   const [publishingTimes, setPublishingTimes] = useState("03:00 PM");
   const [randomizeTime, setRandomizeTime] = useState("0 min (disabled)");
   const [isEditingSchedule, setIsEditingSchedule] = useState(false);
   const [loading, setLoading] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const { setUser } = useAuthStore();
 
   useEffect(() => {
     const getUserFromStorage = () => {
@@ -60,7 +62,7 @@ export const SocialsTab = () => {
       storedUser?.postSchedule?.randomizeTime || "0 min (dummy)"
     );
     setSelectedDays(storedUser?.postSchedule?.selectedDays || ["Mon", "Wed"]);
-    setUser(storedUser);
+    setuser(storedUser);
     setConnectedPlatforms(storedUser?.PlatformConnected || []);
     console.log(
       "Connected platforms from localStorage:",
@@ -143,7 +145,7 @@ export const SocialsTab = () => {
         )
       );
       console.log("user:", result);
-      localStorage.setItem("user", JSON.stringify(result.user));
+      setUser(result?.user);
     } catch (error) {
       console.error("Failed to disconnect platform:", error);
     } finally {
@@ -203,7 +205,7 @@ export const SocialsTab = () => {
       setLoading(true);
       const response = await updatePostSchedule(user._id, postScheduleData);
       console.log("Schedule saved to backend:", response);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      setUser(response?.user);
       setLoading(false);
       setIsEditingSchedule(false);
     } catch (error) {
@@ -217,7 +219,6 @@ export const SocialsTab = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-8 space-y-8">
-      
       {/* Connect Your Socials */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">

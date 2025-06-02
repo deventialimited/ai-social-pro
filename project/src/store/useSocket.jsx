@@ -1,91 +1,95 @@
 // src/context/SocketContext.js
-import { createContext, useContext, useState, useEffect } from "react";
-import { io } from "socket.io-client";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { getSocket } from "./socket";
+import { useAuthStore } from "./useAuthStore";
 
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
+  const { user, setUser } = useAuthStore();
+
+  const heartbeatRef = useRef(null);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user?._id) return;
+    if (!user || !user._id) return;
 
-    const socket = getSocket(user); // Retrieve the singleton instance
-    socket.connect();
+    const socketInstance = getSocket(user);
+    socketInstance.connect();
 
-    socket.on("connect", () => {
-      console.log("Connected to socket server:", socket.id);
-      setSocket(socket);
-    });
+    const handleConnect = () => {
+      console.log("Connected to socket server:", socketInstance.id);
+      setSocket(socketInstance);
+    };
 
-    socket.on("connect_error", (error) => {
+    const handleConnectError = (error) => {
       console.error("Socket connection error:", error);
-    });
+    };
 
-    socket.on("reconnect_attempt", (attempt) => {
+    const handleReconnectAttempt = (attempt) => {
       console.log(`Reconnection attempt ${attempt}...`);
-    });
+    };
 
-    socket.on("reconnect_failed", () => {
-      console.error(
-        "All reconnection attempts failed. Please check your network."
-      );
-      // Optionally, show a user-facing error message
-    });
+    const handleReconnectFailed = () => {
+      console.error("All reconnection attempts failed.");
+    };
 
-    socket.on("disconnect", (reason) => {
+    const handleDisconnect = (reason) => {
       console.log("Socket disconnected:", reason);
-      socket.connect(); // Reconnect if server disconnected the client
-    });
+      if (reason === "io server disconnect") {
+        socketInstance.connect(); // reconnect only if disconnected by server
+      }
+    };
 
-    // Listen for the userUpdated event
-    socket.on("userUpdated", (updatedUser) => {
-      console.log("Received userUpdated event:", updatedUser);
-
+    const handleUserUpdated = (updatedUser) => {
       const currentUser = JSON.parse(localStorage.getItem("user"));
-      console.log(updatedUser, "this is updated user");
-      // Check if the current user exists and has the same _id
-      if (currentUser && currentUser?._id === updatedUser?._id) {
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (currentUser && currentUser._id === updatedUser._id) {
+        setUser(updatedUser);
         console.log("User updated in localStorage");
       } else {
         console.log("userUpdated event ignored: ID mismatch");
       }
-    });
+    };
 
-    // Start heartbeat
-    let heartbeatInterval = null;
-    const HEARTBEAT_INTERVAL = 10000; // 10 seconds
     const startHeartbeat = () => {
-      console.log("Starting heartbeat...");
-      heartbeatInterval = setInterval(() => {
-        if (socket.connected) {
+      if (heartbeatRef.current) return;
+      heartbeatRef.current = setInterval(() => {
+        if (socketInstance.connected) {
           console.log("Sending ping...");
-          socket.emit("ping");
-        } else {
-          console.warn("Socket not connected, skipping ping.");
+          socketInstance.emit("ping");
         }
-      }, HEARTBEAT_INTERVAL);
+      }, 10000);
     };
 
     const stopHeartbeat = () => {
-      console.log("Stopping heartbeat...");
-      clearInterval(heartbeatInterval);
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+        console.log("Stopping heartbeat...");
+      }
     };
 
+    // Attach socket event listeners
+    socketInstance.on("connect", handleConnect);
+    socketInstance.on("connect_error", handleConnectError);
+    socketInstance.on("reconnect_attempt", handleReconnectAttempt);
+    socketInstance.on("reconnect_failed", handleReconnectFailed);
+    socketInstance.on("disconnect", handleDisconnect);
+    socketInstance.on("userUpdated", handleUserUpdated);
+
     startHeartbeat();
+
     return () => {
-      console.log("Disconnecting socket...");
-      socket.off("connect_error");
-      socket.off("userUpdated");
-      socket.off("disconnect");
+      socketInstance.off("connect", handleConnect);
+      socketInstance.off("connect_error", handleConnectError);
+      socketInstance.off("reconnect_attempt", handleReconnectAttempt);
+      socketInstance.off("reconnect_failed", handleReconnectFailed);
+      socketInstance.off("disconnect", handleDisconnect);
+      socketInstance.off("userUpdated", handleUserUpdated);
       stopHeartbeat();
-      socket.off("pong");
-      socket.disconnect(); // Proper cleanup
+      socketInstance.disconnect();
     };
-  }, []);
+  }, [user]); // key change: user is in dependency array
 
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
