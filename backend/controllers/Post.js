@@ -278,6 +278,7 @@ exports.processPubSub = async (req, res) => {
     }
     const generatedImages = await generateDomainVisualAssets({
       postId: savedPost?._id,
+      platform: savedPost?.platforms[0],
       sloganText: savedPost?.slogan,
       brandName: domain?.clientName,
       primaryColor: domain?.colors[0],
