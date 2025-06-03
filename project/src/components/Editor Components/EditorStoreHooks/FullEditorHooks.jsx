@@ -403,6 +403,8 @@ export const EditorProvider = ({ children }) => {
     redo,
     canUndo,
     canRedo,
+    pushToHistory,
+    historyRef
   };
 
   return (
