@@ -110,62 +110,63 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
-  const handleApprove = async () => {
-    const now = new Date();
-    if (postDate < now) {
-      toast.error("Cannot schedule post in the past.");
-      return;
-    }
+ const handleApprove = async () => {
+  const now = new Date();
+  if (postDate < now) {
+    toast.error("Cannot schedule post in the past.");
+    return;
+  }
 
-    const schedulePayload = {
-      time: new Date(postDate).getTime(),
-      uid: post.userId || "",
-      postId: post.postId,
-      content: post.content,
-      image: post.image,
-      platforms: (post.platforms || [])
-        .map((p) => p.toLowerCase())
-        .filter((p) =>
-          ["twitter", "linkedin", "facebook", "instagram"].includes(p)
-        ),
-    };
-
-    try {
-      setLoadingMessage("Scheduling post...");
-
-      const scheduleResponse = await fetch(
-        "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/scheduleMulti",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(schedulePayload),
-        }
-      );
-
-      if (!scheduleResponse.ok)
-        throw new Error("Failed to schedule post externally");
-
-      const updateResponse = await fetch(
-        `http://localhost:5000/api/v1/posts/updatePost/${post._id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "scheduled" }),
-        }
-      );
-
-      if (!updateResponse.ok)
-        throw new Error("Failed to update post status locally");
-
-      toast.success("Post approved and scheduled!");
-      onEdit({ ...post, status: "scheduled" }, "scheduled");
-    } catch (err) {
-      console.error("Approval error:", err);
-      toast.error("Failed to approve and schedule the post.");
-    } finally {
-      setLoadingMessage(null);
-    }
+  const schedulePayload = {
+    time: new Date(postDate).getTime(),
+    uid: post.userId || "",
+    postId: post.postId,
+    content: post.content,
+    image: post.image,
+    platforms: (post.platforms || [])
+      .map((p) => p.toLowerCase())
+      .map((p) => (p === "x" ? "twitter" : p)) // Map "x" to "twitter"
+      .filter((p) =>
+        ["twitter", "linkedin", "facebook", "instagram"].includes(p)
+      ),
   };
+
+  try {
+    setLoadingMessage("Scheduling post...");
+    console.log("schedulePayload", schedulePayload);
+    const scheduleResponse = await fetch(
+      "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/scheduleMulti",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(schedulePayload),
+      }
+    );
+
+    if (!scheduleResponse.ok)
+      throw new Error("Failed to schedule post externally");
+
+    const updateResponse = await fetch(
+      `http://localhost:5000/api/v1/posts/updatePost/${post._id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "scheduled" }),
+      }
+    );
+
+    if (!updateResponse.ok)
+      throw new Error("Failed to update post status locally");
+
+    toast.success("Post approved and scheduled!");
+    onEdit({ ...post, status: "scheduled" }, "scheduled");
+  } catch (err) {
+    console.error("Approval error:", err);
+    toast.error("Failed to approve and schedule the post.");
+  } finally {
+    setLoadingMessage(null);
+  }
+};;
 
   const reschedulePost = async (newDate) => {
     const now = new Date();
