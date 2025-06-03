@@ -124,10 +124,8 @@ export const BusinessSectionDummy = ({
     console.log("Post Data in Business Dummy ", postData);
     console.log("Popup in the business dummy", PopUp);
     if (postData && PopUp) {
-      setTimeout(() => {
         setComponentType("postDetails");
         setPopup(false);
-      }, 20000);
     }
   }, [postData, PopUp]);
 
