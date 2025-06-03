@@ -271,7 +271,7 @@ const TopHeaderBtns = ({
   const fetchPostDesign = async () => {
     try {
       setCanvasLoading(true);
-      const res = await getPostDesignById(postId);
+      const res = await getPostDesignById(postId, type);
       setCanvas(res?.canvas);
       setElements(res?.elements);
       setLayers(res?.layers);

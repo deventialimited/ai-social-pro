@@ -8,7 +8,8 @@ const path = require("path");
 exports.getPostDesignById = async (req, res) => {
   try {
     const { id } = req.params;
-    const postDesign = await PostDesign.findOne({ postId: id });
+    const { type = "image" } = req.query;
+    const postDesign = await PostDesign.findOne({ postId: id, type });
 
     if (!postDesign) {
       return res.status(404).json({ message: "PostDesign not found" });
