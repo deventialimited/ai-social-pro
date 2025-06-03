@@ -57,8 +57,8 @@ const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
-    template.canvas.width = `${Math.max(Math.min(canvasWidth / 3, 600))}px`;
-    template.canvas.height = `${Math.max(Math.min(canvasHeight / 3, 600))}px`;
+    template.canvas.width = canvasWidth;
+    template.canvas.height = canvasHeight;
   }
 
   return template;
@@ -96,8 +96,8 @@ const modifyBrandingTemplate = async (
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
-    template.canvas.width = `${Math.max(Math.min(canvasWidth / 3, 600))}px`;
-    template.canvas.height = `${Math.max(Math.min(canvasHeight / 3, 600))}px`;
+    template.canvas.width = canvasWidth;
+    template.canvas.height = canvasHeight;
   }
 
   // 3. Upload and replace brand logo
