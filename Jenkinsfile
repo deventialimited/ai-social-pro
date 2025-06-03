@@ -136,7 +136,7 @@ pipeline {
 
                         // Start the backend process with PM2
                         echo "Starting backend with PM2 from ${DEPLOY_PATH}/backend..."
-                        sh 'pm2 start index.js --name backend --watch -f'
+                        sh 'pm2 start ecosystem.config.js'
                         
                         // Save PM2 process list to ensure persistence
                         sh 'pm2 save'

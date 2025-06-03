@@ -1,52 +1,38 @@
+"use client"
+
 // @ts-nocheck
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ThemeToggle } from "../components/ThemeToggle";
-import { AuthModal } from "../components/AuthModal";
-import {
-  Loader2,
-  Globe,
-  ArrowRight,
-  Sparkles,
-  Zap,
-  Shield,
-  LayoutDashboard,
-  Calendar,
-  Check,
-} from "lucide-react";
-import { useAuthStore } from "../store/useAuthStore";
-import toast from "react-hot-toast";
-import { useAddDomainMutation } from "../libs/domainService";
-import axios from "axios";
-//extra
-import { AnalyzeLoader } from "../NewUIComponents/LoaderAnimation";
-import { BusinessSectionDummy } from "../NewUIComponents/businessDumy";
-import { BusinessModal } from "../NewUIComponents/Modal";
-import { useSocket } from "../store/useSocket";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { ThemeToggle } from "../components/ThemeToggle"
+import { AuthModal } from "../components/AuthModal"
+import { Loader2, Globe, ArrowRight, Sparkles, Zap, Shield, LayoutDashboard, Calendar, Check } from "lucide-react"
+import { useAuthStore } from "../store/useAuthStore"
+import toast from "react-hot-toast"
+import { useAddDomainMutation } from "../libs/domainService"
+import axios from "axios"
+import { BusinessModal } from "../NewUIComponents/Modal"
+import { useSocket } from "../store/useSocket"
 
 export function extractDomain(fullUrl) {
   try {
-    const trimmedUrl = fullUrl.trim();
-    const normalized = trimmedUrl.startsWith("http")
-      ? trimmedUrl
-      : `https://${trimmedUrl}`;
-    const urlObj = new URL(normalized);
-    return urlObj.hostname;
+    const trimmedUrl = fullUrl.trim()
+    const normalized = trimmedUrl.startsWith("http") ? trimmedUrl : `https://${trimmedUrl}`
+    const urlObj = new URL(normalized)
+    return urlObj.hostname
   } catch (err) {
-    console.error("Error extracting domain:", err.message);
-    return null;
+    console.error("Error extracting domain:", err.message)
+    return null
   }
 }
 
 export const HomePage = () => {
-  const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } =
-    useAuthStore();
-  const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showBusinessPopup, setShowBusinessPopup] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const { setIsSignInPopup, isSignUpPopup, isSignInPopup, setIsSignUpPopup } = useAuthStore()
+  const [url, setUrl] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [showBusinessPopup, setShowBusinessPopup] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
 
   const [clientData, setClientData] = useState({
     client_email: "",
@@ -67,7 +53,7 @@ export const HomePage = () => {
       audiencePains: [],
       core_values: [],
     },
-  });
+  })
 
   const steps = [
     {
@@ -100,109 +86,111 @@ export const HomePage = () => {
       icon: "✨",
       color: "from-indigo-500 to-violet-500",
     },
-  ];
+  ]
 
-  const [isModalOpen, setisModalOpen] = useState(false);
-  const navigate = useNavigate();
-  const addDomain = useAddDomainMutation();
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  const socket = useSocket();
+  const [isModalOpen, setisModalOpen] = useState(false)
+  const navigate = useNavigate()
+  const addDomain = useAddDomainMutation()
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+  const socket = useSocket()
 
   const generateCompanyData = async (domain, user) => {
     try {
       if (!domain) {
-        throw new Error("Invalid domain extracted from URL.");
+        throw new Error("Invalid domain extracted from URL.")
       }
 
       // Start animation immediately
-      setProgress(0);
-      setCurrentStep(0);
+      setProgress(0)
+      setCurrentStep(0)
 
-      // Start API request but don't await yet
-      const apiPromise = axios.post(
-        "https://social-api-107470285539.us-central1.run.app/create-client",
-        {
-          user_email: user?.email,
-          client_Website: domain,
-        }
-      );
+      // Start API request
+      const apiPromise = axios.post("https://social-api-107470285539.us-central1.run.app/create-client", {
+        user_email: user?.email,
+        client_Website: domain,
+      })
 
       // Track API response status
-      let dataReceived = false;
-      let apiResponse = null;
+      let dataReceived = false
+      let apiResponse = null
+      let apiError = null
 
-      // Check for API response in background
-      const checkApiResponse = async () => {
+      // Handle API response
+      const handleApiResponse = async () => {
         try {
-          apiResponse = await apiPromise;
-          dataReceived = true;
+          apiResponse = await apiPromise
+          dataReceived = true
         } catch (error) {
-          console.error("API error:", error);
-          throw error;
+          console.error("API error:", error)
+          apiError = error
+          dataReceived = true // Set to true to stop animation
         }
-      };
+      }
 
-      const responseChecker = checkApiResponse();
+      // Start API call in background
+      const responsePromise = handleApiResponse()
 
-      // Smooth animation with dynamic pacing
-      for (let i = 0; i < steps.length; i++) {
-        setCurrentStep(i);
+      // Animation loop with immediate completion on API response
+      let animationRunning = true
+      const animateProgress = async () => {
+        for (let i = 0; i < steps.length && animationRunning; i++) {
+          setCurrentStep(i)
 
-        const pausePoints = [30, 60, 80]; // Percentage points to pause
-        const shouldPauseHere = pausePoints.includes(i * 20);
+          for (let p = 0; p <= 100 && animationRunning; p += 3) {
+            const currentProgress = (i * 100 + p) / steps.length
+            setProgress(currentProgress)
 
-        for (let p = 0; p <= 100; p += 2) {
-          const currentProgress = (i * 100 + p) / steps.length;
-          setProgress(currentProgress);
+            // If API response received, immediately jump to 100%
+            if (dataReceived) {
+              animationRunning = false
+              setProgress(100)
+              setCurrentStep(steps.length - 1)
+              break
+            }
 
-          // Speed up if data received after 70%
-          if (dataReceived && currentProgress > 70) {
-            p += 10; // Faster increment
+            await sleep(50)
           }
-
-          // Pause logic if no data yet
-          if (
-            shouldPauseHere &&
-            !dataReceived &&
-            currentProgress > i * 20 + 15
-          ) {
-            await sleep(3000); // 3 second pause
-          }
-
-          await sleep(30); // Base animation speed
         }
       }
 
-      // Ensure we reach 100% if data was received
-      if (dataReceived && progress < 100) {
-        for (let p = progress; p <= 100; p += 5) {
-          setProgress(p);
-          await sleep(10);
+      // Start animation
+      const animationPromise = animateProgress()
+
+      // Wait for API response
+      await responsePromise
+
+      // Stop animation and set to 100%
+      animationRunning = false
+      setProgress(100)
+      setCurrentStep(steps.length - 1)
+
+      // Small delay to show 100% completion
+      await sleep(300)
+
+      // Handle API error
+      if (apiError) {
+        setIsLoading(false)
+        if (axios.isAxiosError(apiError)) {
+          const errorMessage = apiError?.response?.data?.error || "Failed to generate company data."
+          toast.error(errorMessage)
+        } else {
+          toast.error(apiError?.message || "Failed to generate company data.")
         }
+        return
       }
 
-      // Wait for API if not ready yet
-      if (!dataReceived) {
-        apiResponse = await apiPromise;
-        dataReceived = true;
-        // Quickly finish animation
-        for (let p = progress; p <= 100; p += 5) {
-          setProgress(p);
-          await sleep(10);
-        }
-      }
-
-      const responseData = apiResponse.data;
+      // Handle successful response
+      const responseData = apiResponse.data
       if (responseData.code === "DUPLICATE_CLIENT") {
-        toast.error(`Try another website`);
-        setIsLoading(false);
-        return;
+        toast.error(`Try another website`)
+        setIsLoading(false)
+        return
       }
 
       const result = await addDomain.mutateAsync({
         ...responseData,
         userId: user?._id,
-      });
+      })
 
       socket.emit(
         "JoinRoom",
@@ -212,10 +200,10 @@ export const HomePage = () => {
         },
         (response) => {
           if (response.success) {
-            console.log("Joined room successfully");
+            console.log("Joined room successfully")
           }
-        }
-      );
+        },
+      )
 
       setClientData({
         id: result?._id,
@@ -232,9 +220,7 @@ export const HomePage = () => {
         userId: result?.userId || "",
         siteLogo: result?.siteLogo || "",
         marketingStrategy: {
-          audience: Array.isArray(result?.marketingStrategy?.audience)
-            ? result.marketingStrategy.audience
-            : [],
+          audience: Array.isArray(result?.marketingStrategy?.audience) ? result.marketingStrategy.audience : [],
           audiencePains: Array.isArray(result?.marketingStrategy?.audiencePains)
             ? result.marketingStrategy.audiencePains
             : [],
@@ -242,47 +228,46 @@ export const HomePage = () => {
             ? result.marketingStrategy.core_values
             : [],
         },
-      });
+      })
 
-      toast.success("Domain successfully added!");
-      setIsLoading(false);
-      setisModalOpen(true);
+      toast.success("Domain successfully added!")
+      setIsLoading(false)
+      setisModalOpen(true)
     } catch (error) {
-      console.error("Error in generateCompanyData:", error);
-      setIsLoading(false);
+      console.error("Error in generateCompanyData:", error)
+      setIsLoading(false)
       if (axios.isAxiosError(error)) {
-        const apiError =
-          error?.response?.data?.error || "Failed to generate company data.";
-        toast.error(apiError);
+        const apiError = error?.response?.data?.error || "Failed to generate company data."
+        toast.error(apiError)
       } else {
-        toast.error(error?.message || "Failed to generate company data.");
+        toast.error(error?.message || "Failed to generate company data.")
       }
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user"));
+    e.preventDefault()
+    const user = JSON.parse(localStorage.getItem("user"))
 
     if (!url) {
-      toast.error("Please enter a URL.");
-      return;
+      toast.error("Please enter a URL.")
+      return
     }
 
-    const domain = extractDomain(url);
+    const domain = extractDomain(url)
 
     if (!domain) {
-      toast.error("Please enter a valid URL (e.g., binance.com).");
-      return;
+      toast.error("Please enter a valid URL (e.g., binance.com).")
+      return
     }
 
     if (user) {
-      setIsLoading(true);
-      await generateCompanyData(domain, user);
+      setIsLoading(true)
+      await generateCompanyData(domain, user)
     } else {
-      setIsSignInPopup(true);
+      setIsSignInPopup(true)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -291,14 +276,8 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img
-                src="/oneyear-logo.svg"
-                alt="OneYear Social"
-                className="w-8 h-8"
-              />
-              <span className="font-semibold text-gray-900 dark:text-white">
-                OneYear Social
-              </span>
+              <img src="/oneyear-logo.svg" alt="OneYear Social" className="w-8 h-8" />
+              <span className="font-semibold text-gray-900 dark:text-white">OneYear Social</span>
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -350,8 +329,8 @@ export const HomePage = () => {
               of Social Posts
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400">
-              Enter your website URL and let AI create a year's worth of
-              engaging social media content, perfectly tailored to your brand
+              Enter your website URL and let AI create a year's worth of engaging social media content, perfectly
+              tailored to your brand
             </p>
           </div>
 
@@ -424,20 +403,17 @@ export const HomePage = () => {
               {
                 icon: <Sparkles className="w-6 h-6" />,
                 title: "Smart Content Creation",
-                description:
-                  "Our AI analyzes your website and creates engaging posts that match your brand voice",
+                description: "Our AI analyzes your website and creates engaging posts that match your brand voice",
               },
               {
                 icon: <Zap className="w-6 h-6" />,
                 title: "Year-Round Coverage",
-                description:
-                  "Get 365 days of social media content generated in just minutes",
+                description: "Get 365 days of social media content generated in just minutes",
               },
               {
                 icon: <Shield className="w-6 h-6" />,
                 title: "Multi-Platform Ready",
-                description:
-                  "Posts are automatically optimized for each social media platform",
+                description: "Posts are automatically optimized for each social media platform",
               },
             ].map((feature, index) => (
               <div
@@ -447,12 +423,8 @@ export const HomePage = () => {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white mb-6">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {feature.description}
-                </p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -490,9 +462,7 @@ export const HomePage = () => {
                   }}
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
-                  <span className="text-xs font-medium text-gray-900 dark:text-white">
-                    {Math.round(progress)}%
-                  </span>
+                  <span className="text-xs font-medium text-gray-900 dark:text-white">{Math.round(progress)}%</span>
                 </div>
               </div>
 
@@ -504,8 +474,8 @@ export const HomePage = () => {
                       index === currentStep
                         ? "scale-100 opacity-100"
                         : index < currentStep
-                        ? "scale-95 opacity-50"
-                        : "scale-95 opacity-30"
+                          ? "scale-95 opacity-50"
+                          : "scale-95 opacity-30"
                     }`}
                   >
                     <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
@@ -517,19 +487,11 @@ export const HomePage = () => {
                                     : "bg-gray-100 dark:bg-gray-700"
                                 }`}
                       >
-                        {index < currentStep ? (
-                          <Check className="w-5 h-5 text-white" />
-                        ) : (
-                          <span>{step.icon}</span>
-                        )}
+                        {index < currentStep ? <Check className="w-5 h-5 text-white" /> : <span>{step.icon}</span>}
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                          {step.title}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {step.description}
-                        </p>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">{step.title}</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{step.description}</p>
                       </div>
                     </div>
                   </div>
@@ -541,11 +503,7 @@ export const HomePage = () => {
       )}
 
       {/* Business Modal */}
-      <BusinessModal
-        isOpen={isModalOpen}
-        clientData={clientData}
-        onClose={() => setisModalOpen(false)}
-      />
+      <BusinessModal isOpen={isModalOpen} clientData={clientData} onClose={() => setisModalOpen(false)} />
     </div>
-  );
-};
+  )
+}

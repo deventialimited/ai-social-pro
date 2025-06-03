@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { Dashboard } from "./pages/Dashboard";
@@ -12,11 +12,24 @@ import { LinkedIn } from "./pages/SocialMediaPages/LinkedIn";
 import { XAuth } from "./pages/SocialMediaPages/XAuth";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import { useAuthStore } from "./store/useAuthStore";
 
 const queryClient = new QueryClient();
 function App() {
   const { isDark } = useThemeStore();
+  const { setUser } = useAuthStore();
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userObj = JSON.parse(storedUser);
+        if (userObj?._id) setUser(userObj);
+      } catch (err) {
+        console.error("Failed to parse user from localStorage");
+      }
+    }
+  }, []);
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);

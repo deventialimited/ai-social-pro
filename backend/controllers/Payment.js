@@ -5,7 +5,7 @@
   const User = require("../models/User");
 
 
- const PRICE_IDS = {
+const PRICE_IDS = {
   starter: {
     tier: 1,
     monthly: "price_1ROclBP79eqFAJArwEPJdwz3",
@@ -20,132 +20,189 @@
   },
 };
 
+// Create Checkout Session
 exports.createCheckoutSession = async (req, res) => {
-  const { planType, billingCycle, user } = req.body;
+  const { planType, billingCycle, userId } = req.body;
 
-  if (!["starter", "professional"].includes(planType) || !["monthly", "yearly"].includes(billingCycle)) {
-    return res.status(400).json({ error: "Invalid plan type or billing cycle" });
+  // Validate inputs
+  if (!["starter", "professional"].includes(planType)) {
+    return res.status(400).json({ error: "Invalid plan type" });
   }
-  if (!user || !user._id) {
-    return res.status(400).json({ error: "User data is required" });
+  if (!["monthly", "yearly"].includes(billingCycle)) {
+    return res.status(400).json({ error: "Invalid billing cycle" });
   }
-
-  try {
-    const foundUser = await User.findById(user._id);
-    if (!foundUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    if (foundUser.subscriptionId && foundUser.subscriptionStatus !== "canceled") {
-      return res.status(400).json({ error: "User already has an active subscription" });
-    }
-
-    let customerId = foundUser.stripeCustomerId;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: foundUser.email,
-        name: foundUser.username,
-      });
-      customerId = customer.id;
-      await User.updateOne({ _id: foundUser._id }, { stripeCustomerId: customerId });
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "subscription",
-      customer: customerId,
-      line_items: [
-        {
-          price: PRICE_IDS[planType][billingCycle],
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.Base_User_Url}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.Base_User_Url}/dashboard?checkout=cancel`,
-      metadata: {
-        userId: foundUser._id.toString(),
-        planType,
-        billingCycle,
-      },
-    });
-
-    res.json({ url: session.url });
-  } catch (error) {
-    console.error("Stripe session error:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
-exports.verifySession = async (req, res) => {
-  const { sessionId, userId } = req.body;
-
-  if (!sessionId || !userId) {
-    return res.status(400).json({ error: "Missing sessionId or userId" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
   try {
+    // Find user in database
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Retrieve the checkout session with expanded subscription details
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["subscription"],
+    // Check for existing active subscription
+    if (user.subscriptionId && user.subscriptionStatus === "active") {
+      return res.status(400).json({ 
+        error: "User already has an active subscription",
+        code: "ACTIVE_SUBSCRIPTION_EXISTS"
+      });
+    }
+
+    // Create or retrieve Stripe customer
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: user.username,
+        metadata: { userId: user._id.toString() }
+      });
+      customerId = customer.id;
+      // Only update stripeCustomerId (no subscription data)
+      await User.findByIdAndUpdate(userId, { stripeCustomerId: customerId });
+    }
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "subscription",
+      customer: customerId,
+      line_items: [{
+        price: PRICE_IDS[planType][billingCycle],
+        quantity: 1,
+      }],
+      subscription_data: {
+        metadata: {
+          planType,
+          billingCycle,
+          userId: user._id.toString()
+        }
+      },
+      success_url: `${process.env.Base_User_Url}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.Base_User_Url}/dashboard?checkout=cancel`,
+      metadata: {
+        userId: user._id.toString(),
+        planType,
+        billingCycle,
+      },
     });
 
+    res.json({ 
+      url: session.url,
+      sessionId: session.id
+    });
+
+  } catch (error) {
+    console.error("Checkout session error:", error);
+    res.status(500).json({ 
+      error: "Failed to create checkout session",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
+// Verify Payment and Update Subscription
+exports.verifySession = async (req, res) => {
+  const { sessionId, userId } = req.body;
+
+  if (!sessionId || !userId) {
+    return res.status(400).json({ error: "Session ID and User ID are required" });
+  }
+
+  try {
+    // First try - immediate check
+    let session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["subscription", "customer", "line_items"]
+    });
+
+    // If payment not complete, wait and retry (Stripe might be processing)
+    if (session.payment_status !== "paid") {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["subscription", "customer", "line_items"]
+      });
+    }
+
+    // Validate session
     if (!session) {
       return res.status(404).json({ error: "Session not found" });
     }
 
-    if (session.metadata.userId !== userId) {
-      return res.status(403).json({ error: "Unauthorized session" });
-    }
-
-    // Check if the session is completed and paid
-    if (session.payment_status !== "paid" || session.status !== "complete" || !session.subscription) {
-      return res.status(400).json({ error: "Payment not completed or no subscription created" });
-    }
-
-    // Check if the user already has this subscription
-    if (user.subscriptionId && user.subscriptionId === session.subscription.id) {
-      // Session already processed, but subscription is active
-      return res.json({
-        user,
-        message: "Session already processed, subscription is active",
+    // Check metadata in both session and subscription
+    const metadataUserId = session.metadata?.userId || session.subscription?.metadata?.userId;
+    if (metadataUserId !== userId.toString()) {
+      return res.status(403).json({ 
+        error: "Unauthorized session access",
+        details: `Expected ${userId}, got ${metadataUserId}`
       });
     }
 
-    // Prevent overwriting an active subscription with a different one
-    if (user.subscriptionId && user.subscriptionStatus !== "canceled") {
-      return res.status(400).json({ error: "User already has an active subscription" });
+    if (session.payment_status !== "paid") {
+      return res.status(402).json({ 
+        error: "Payment not completed",
+        status: session.payment_status
+      });
     }
 
-    const planType = session.metadata?.planType || "unknown";
-    const billingCycle = session.subscription.items.data[0].price.recurring.interval;
+    if (!session.subscription) {
+      return res.status(400).json({ 
+        error: "No subscription created",
+        sessionStatus: session.status
+      });
+    }
 
-    // Update user with subscription details
+    // Get subscription details with fallbacks
+    const subscription = session.subscription;
+    const planType = session.metadata?.planType || subscription.metadata?.planType;
+    const billingCycle = subscription.items?.data[0]?.price?.recurring?.interval;
+
+    if (!planType || !billingCycle) {
+      return res.status(400).json({
+        error: "Could not determine plan details",
+        metadata: session.metadata,
+        subscriptionMetadata: subscription.metadata
+      });
+    }
+
+    // Prepare subscription data
+    const subscriptionData = {
+      subscriptionStatus: subscription.status,
+      stripeCustomerId: typeof session.customer === 'string' ? session.customer : session.customer.id, // Use customer ID instead of object
+      subscriptionId: subscription.id,
+      plan: planType,
+      billingCycle,
+      nextBillingDate: new Date(subscription.current_period_end * 1000),
+      lastPaymentDate: new Date(subscription.current_period_start * 1000)
+    };
+
+    // Update user
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      {
-        subscriptionStatus: session.subscription.status,
-        stripeCustomerId: session.customer,
-        subscriptionId: session.subscription.id,
-        plan: planType,
-        billingCycle,
-        nextBillingDate: session.subscription.current_period_end
-          ? new Date(session.subscription.current_period_end * 1000)
-          : null,
-      },
+      subscriptionData,
       { new: true }
     );
 
-    res.json({ user: updatedUser });
+    return res.json({
+      success: true,
+      user: updatedUser,
+      subscription: {
+        id: subscription.id,
+        status: subscription.status,
+        currentPeriodEnd: subscription.current_period_end,
+        plan: planType,
+        billingCycle
+      }
+    });
+
   } catch (error) {
-    console.error("Error verifying session:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Session verification error:", error);
+    return res.status(500).json({ 
+      error: "Failed to verify session",
+      details: error.message
+    });
   }
 };
-
 exports.previewSubscriptionChange = async (req, res) => {
   const { userId, newPlanType, billingCycle } = req.body;
   if (!userId || !["starter", "professional"].includes(newPlanType) || !["monthly", "yearly"].includes(billingCycle)) {
@@ -354,7 +411,8 @@ exports.createCustomerPortalSession = async (req, res) => {
     }
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.Base_User_Url}/dashboard`,
+      return_url: `${process.env.Base_User_Url}/dashboard?returnFromPortal=true
+`,
     });
     res.json({ url: session.url });
   } catch (error) {
@@ -363,88 +421,116 @@ exports.createCustomerPortalSession = async (req, res) => {
   }
 };
 
+
 exports.handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, 
-      'whsec_b718e93668e25c117aa0fd4cf4a47e26236b694b0375ca7cda05e1d8bd9c963d'
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      "whsec_159MdofIxvIzJIdsx4uMiANY1IEQi9Ka"
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  console.log("Received event type:", event.type);
+
   switch (event.type) {
     case "customer.subscription.created":
-    case "customer.subscription.updated":
-      {
-        const subscription = event.data.object;
-        const user = await User.findOne({ stripeCustomerId: subscription.customer });
+    case "customer.subscription.updated": {
+      console.log("Processing subscription event:", event.type);
+      const subscription = event.data.object;
+      console.log("Subscription ID:", subscription.id);
+      console.log("Price ID:", subscription.items.data[0].price.id);
+      console.log("Subscription metadata:", subscription.metadata);
 
-        if (user) {
-          const planType = subscription.metadata?.planType || user.plan;
-          const billingCycle = subscription.items.data[0].price.recurring.interval;
+      const user = await User.findOne({ stripeCustomerId: subscription.customer });
+      if (!user) {
+        console.error("User not found for customer ID:", subscription.customer);
+        return res.status(404).json({ error: "User not found" });
+      }
+      console.log("User found:", user);
 
-          const updateFields = {
-            subscriptionStatus: subscription.status,
-            subscriptionId: subscription.id,
-            plan: planType,
-            billingCycle,
-          };
+      // Map price ID to planType
+      const priceId = subscription.items.data[0].price.id;
+      let planType = "unknown";
+      for (const [plan, config] of Object.entries(PRICE_IDS)) {
+        if (config.monthly === priceId || config.yearly === priceId) {
+          planType = plan;
+          break;
+        }
+      }
+      if (planType === "unknown") {
+        console.error("Unknown price ID:", priceId);
+      }
 
-          // If user is on a trial, clear trial data and mark as used
-          if (user.plan === "trial") {
-            updateFields.trialStartedAt = null;
-            updateFields.trialEndsAt = null;
-            updateFields.hasUsedTrial = true;
+      const billingCycle = subscription.items.data[0].price.recurring.interval;
+      const updateFields = {
+        subscriptionStatus: subscription.status,
+        subscriptionId: subscription.id,
+        plan: planType,
+        billingCycle,
+      };
+
+      if (user.plan === "trial") {
+        updateFields.trialStartedAt = null;
+        updateFields.trialEndsAt = null;
+        updateFields.hasUsedTrial = true;
+      }
+
+      console.log("Update fields:", updateFields);
+      const result = await User.updateOne({ _id: user._id }, updateFields);
+      console.log("Update result:", result);
+
+      if (result.modifiedCount === 0) {
+        console.warn("No fields updated for user:", user._id);
+        const updatedUser = await User.findOne({ _id: user._id });
+        console.log("Current user in DB:", updatedUser);
+      } else {
+        console.log(`Updated user ${user._id} with subscription data`);
+      }
+      break;
+    }
+
+    case "customer.subscription.deleted": {
+      const deletedSubscription = event.data.object;
+      const user = await User.findOne({ stripeCustomerId: deletedSubscription.customer });
+
+      if (user) {
+        const result = await User.updateOne(
+          { _id: user._id },
+          {
+            subscriptionStatus: "canceled",
+            subscriptionId: null,
+            plan: null,
+            billingCycle: null,
           }
-
-          await User.updateOne({ _id: user._id }, updateFields);
-          console.log(`Updated user ${user._id} with active subscription`);
-        }
+        );
+        console.log(`Canceled subscription for user ${user._id}`, result);
       }
       break;
+    }
 
-    case "customer.subscription.deleted":
-      {
-        const deletedSubscription = event.data.object;
-        const user = await User.findOne({ stripeCustomerId: deletedSubscription.customer });
+    case "invoice.payment_failed": {
+      const invoice = event.data.object;
+      const user = await User.findOne({ stripeCustomerId: invoice.customer });
 
-        if (user) {
-          await User.updateOne(
-            { _id: user._id },
-            {
-              subscriptionStatus: "canceled",
-              subscriptionId: null,
-              plan: null,
-              billingCycle: null,
-              // Do not reset trial fields or hasUsedTrial — that remains true
-            }
-          );
-          console.log(`Canceled subscription for user ${user._id}`);
-        }
+      if (user) {
+        const result = await User.updateOne(
+          { _id: user._id },
+          {
+            subscriptionStatus: "past_due",
+            lastPaymentError: invoice.last_payment_error?.message || "Payment failed",
+          }
+        );
+        console.log(`Payment failed for user ${user._id}`, result);
       }
       break;
-
-    case "invoice.payment_failed":
-      {
-        const invoice = event.data.object;
-        const user = await User.findOne({ stripeCustomerId: invoice.customer });
-
-        if (user) {
-          await User.updateOne(
-            { _id: user._id },
-            {
-              subscriptionStatus: "past_due",
-              lastPaymentError: invoice.last_payment_error?.message || "Payment failed",
-            }
-          );
-          console.log(`Payment failed for user ${user._id}`);
-        }
-      }
-      break;
+    }
 
     default:
       console.log(`Unhandled event type: ${event.type}`);

@@ -19,6 +19,7 @@ import {
 import toast from "react-hot-toast";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
+import { getUserInformation } from "../libs/authService";
 
 export const Dashboard = () => {
   const { isDark } = useThemeStore();
@@ -34,10 +35,38 @@ export const Dashboard = () => {
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
+const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const checkoutStatus = searchParams.get("checkout");
+
+
+useEffect(()=>{
+  console.log('into the new USeeffect to check the returnFromPortal')
+  const returnFromPortal = searchParams.get("returnFromPortal");
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+if(returnFromPortal && storedUser._id){
+      setIsFetchingUserInfo(true); // 👈 Start loader
+
+  getUserInformation(storedUser._id)
+      .then((updatedUser) => {
+        console.log('new updated user',updatedUser)
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      })
+      .catch(() => {
+        console.warn("Error fetching user info:", err);
+      })
+      .finally(() => {
+                setIsFetchingUserInfo(false); // 👈 Stop loader
+
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      });
+}
+
+},[searchParams])
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -273,6 +302,13 @@ export const Dashboard = () => {
         {isGeneratingPosts && (
           <PostsLoader progress={generationProgress} error={generationError} />
         )}
+        {isFetchingUserInfo && (
+  <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg shadow-md z-50">
+    <p className="text-sm text-gray-800 dark:text-gray-200">Fetching your updated subscription...</p>
+  </div>
+)}
+
+
       </div>
     </div>
   );

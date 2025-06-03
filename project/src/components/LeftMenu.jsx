@@ -15,6 +15,7 @@ import { AddWebsiteModal } from "./AddWebsiteModal";
 import { useDomains } from "../libs/domainService";
 import { updateSelectedDomain } from "../libs/authService";
 import PricingModal from "../PopUps/PricingModal";
+import { useAuthStore } from "../store/useAuthStore";
 
 export const LeftMenu = ({
   userId,
@@ -32,6 +33,7 @@ export const LeftMenu = ({
   const [showAddWebsite, setShowAddWebsite] = useState(false);
   const selectedWebsiteData = domains?.find((w) => w?._id === selectedWebsite);
   const [openModal, setopenModal] = useState(false);
+  const { setUser, clearUser } = useAuthStore();
   const openModalhandler = () => {
     setopenModal(true);
   };
@@ -52,7 +54,7 @@ export const LeftMenu = ({
         "[LeftMenu] Domain updated successfully on the backend:",
         result
       );
-      localStorage.setItem("user", JSON.stringify(result?.user));
+      setUser(result?.user);
     } catch (e) {
       console.error("[LeftMenu] Error updating selected domain on backend:", e);
     }
@@ -65,7 +67,7 @@ export const LeftMenu = ({
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearUser();
     navigate("/");
   };
 
@@ -211,9 +213,10 @@ export const LeftMenu = ({
           <Link href="#" onClick={openModalhandler}>
             Claim 50% Off Anually
           </Link>
-          <Link href="#"
-          active={currentTab==="subscription"}
-          onClick={()=>onTabChange("subscription")}
+          <Link
+            href="#"
+            active={currentTab === "subscription"}
+            onClick={() => onTabChange("subscription")}
           >
             Subscription Management
           </Link>
@@ -236,12 +239,12 @@ export const LeftMenu = ({
           onGenerate={handleGeneratePosts}
         />
       )}
-     
-        <PricingModal
-          isOpen={openModal}
-          onClose={closeModalhandler}
-          onNewPost={onNewPost}
-        />
+
+      <PricingModal
+        isOpen={openModal}
+        onClose={closeModalhandler}
+        onNewPost={onNewPost}
+      />
     </>
   );
 };

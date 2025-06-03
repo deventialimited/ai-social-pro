@@ -9,6 +9,7 @@ import EditorModal from "./Editor Components/EditorModal";
 
 export const PostEditModal = ({
   post,
+  selectedType,
   showEditModal,
   onClose,
   onSave,
@@ -78,6 +79,7 @@ export const PostEditModal = ({
           </Transition.Child>
           <EditorModal
             post={post}
+            selectedType={selectedType}
             onClose={() => setIsGraphicEditorModal(false)}
             isEditorOpen={isGraphicEditorModal}
           />
@@ -157,7 +159,7 @@ export const PostEditModal = ({
                           className="relative cursor-pointer group"
                         >
                           <img
-                            src={post.image}
+                            src={post[selectedType]}
                             alt="Post preview"
                             className="w-full h-64 object-contain rounded-lg"
                           />

@@ -1,12 +1,14 @@
-const baseURL = "http://localhost:5000/api/v1/payment";
+// const baseURL = "http://localhost:5000/api/v1/payment";
+const baseURL = "https://api.oneyearsocial.com/api/v1/payment";
+
 import axios from "axios";
-export const createCheckoutSession = async (planType, billingCycle, user) => {
+export const createCheckoutSession = async (planType, billingCycle, userId) => {
   try {
     console.log("baseURL", baseURL);
     const response = await axios.post(`${baseURL}/createCheckoutSession`, {
       planType,
       billingCycle,
-      user,
+      userId,
     });
 
     return response.data;

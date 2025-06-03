@@ -1,47 +1,28 @@
-import React, { useState } from "react";
-import {
-  X,
-  Globe,
-  Loader2,
-  Briefcase,
-  Palette,
-  Target,
-  Check,
-  ArrowRight,
-} from "lucide-react";
-import { useAddDomainMutation } from "../libs/domainService";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { updateSelectedDomain } from "../libs/authService.js";
+"use client"
+
+import { useState } from "react"
+import { X, Globe, Loader2, Briefcase, Palette, Target, Check, ArrowRight } from "lucide-react"
+import { useAddDomainMutation } from "../libs/domainService"
+import { useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
+import axios from "axios"
+import { updateSelectedDomain } from "../libs/authService.js"
 
 export function extractDomain(fullUrl) {
-  try {
-    const trimmedUrl = fullUrl.trim();
-    const normalized = trimmedUrl.startsWith("http")
-      ? trimmedUrl
-      : `https://${trimmedUrl}`;
-    const urlObj = new URL(normalized);
-    console.log("Extracted domain:", urlObj.hostname); // Debug log
-    return urlObj.hostname;
-  } catch (err) {
-    console.error("Error extracting domain:", err.message); // Debug log
-    // Fallback: assume it's a domain if it matches a basic pattern
-    if (trimmedUrl.match(/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/)) {
-      console.log("Fallback domain:", trimmedUrl); // Debug log
-      return trimmedUrl;
-    }
-    return null;
-  }
+  const trimmedUrl = fullUrl.trim()
+  const normalized = trimmedUrl.startsWith("http") ? trimmedUrl : `https://${trimmedUrl}`
+  const urlObj = new URL(normalized)
+  console.log("Extracted domain:", urlObj.hostname) // Debug log
+  return urlObj.hostname
 }
 
 export const AddWebsiteModal = ({ onClose, onGenerate }) => {
-  const [url, setUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [businessData, setBusinessData] = useState(null);
-  const [progress, setProgress] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [error, setError] = useState(null);
+  const [url, setUrl] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [businessData, setBusinessData] = useState(null)
+  const [progress, setProgress] = useState(0)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [error, setError] = useState(null)
 
   const steps = [
     {
@@ -74,126 +55,174 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
       icon: "✨",
       color: "from-indigo-500 to-violet-500",
     },
-  ];
+  ]
 
-  const addDomain = useAddDomainMutation();
-  const navigate = useNavigate();
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const addDomain = useAddDomainMutation()
+  const navigate = useNavigate()
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
   const generateCompanyData = async (domain, user) => {
     try {
-      if (!domain) throw new Error("Invalid domain extracted from URL.");
-      console.log("Generating data for domain:", domain);
+      if (!domain) throw new Error("Invalid domain extracted from URL.")
+      console.log("Generating data for domain:", domain)
 
-      // Call the unified API
-      const firstResponse = await axios.post(
-        "https://social-api-107470285539.us-central1.run.app/create-client",
-        {
-          user_email: user?.email,
-          client_Website: domain,
+      // Start animation immediately
+      setProgress(0)
+      setCurrentStep(0)
+
+      // Track API response status
+      let dataReceived = false
+      let apiResponse = null
+      let apiError = null
+
+      // Start API request but don't await yet
+      const apiPromise = axios.post("https://social-api-107470285539.us-central1.run.app/create-client", {
+        user_email: user?.email,
+        client_Website: domain,
+      })
+
+      // Handle API response in background
+      const handleApiResponse = async () => {
+        try {
+          apiResponse = await apiPromise
+          dataReceived = true
+        } catch (error) {
+          console.error("API error:", error)
+          apiError = error
+          dataReceived = true // Set to true to stop animation
         }
-      );
+      }
 
-      const Data = firstResponse.data;
-      console.log("API Response:", Data);
+      // Start API call in background
+      const responsePromise = handleApiResponse()
+
+      // Animation loop with immediate completion on API response
+      let animationRunning = true
+      const animateProgress = async () => {
+        for (let i = 0; i < steps.length && animationRunning; i++) {
+          setCurrentStep(i)
+
+          for (let p = 0; p <= 100 && animationRunning; p += 3) {
+            const currentProgress = (i * 100 + p) / steps.length
+            setProgress(currentProgress)
+
+            // If API response received, immediately jump to 100%
+            if (dataReceived) {
+              animationRunning = false
+              setProgress(100)
+              setCurrentStep(steps.length - 1)
+              break
+            }
+
+            await sleep(30)
+          }
+        }
+      }
+
+      // Start animation
+      const animationPromise = animateProgress()
+
+      // Wait for API response
+      await responsePromise
+
+      // Stop animation and set to 100%
+      animationRunning = false
+      setProgress(100)
+      setCurrentStep(steps.length - 1)
+
+      // Small delay to show 100% completion
+      await sleep(300)
+
+      // Handle API error
+      if (apiError) {
+        console.log("hello i am error",apiError.response.data.error)
+        setError(apiError.response.data.error || "Failed to generate company data.")
+        toast.error(apiError.response.data.error || "Failed to generate company data.")
+        return
+      }
+
+      const Data = apiResponse.data
+      console.log("API Response:", Data)
 
       // Handle existing client case
       if (Data.message === "Client already exists") {
-        toast.error("Try another website");
-        return;
-      }
-
-      // Simulate loading steps (if UI needs progress)
-      setProgress?.(0);
-      setCurrentStep?.(0);
-
-      for (let i = 0; i < steps.length; i++) {
-        setCurrentStep?.(i);
-        for (let p = 0; p <= 100; p += 2) {
-          setProgress?.((i * 100 + p) / steps.length);
-          await new Promise((resolve) => setTimeout(resolve, 30));
-        }
+        toast.error("Try another website")
+        return
       }
 
       // Check essential data
-      const { client_email, clientWebsite, clientDescription } = Data;
+      const { client_email, clientWebsite, clientDescription } = Data
       if (!client_email || !clientWebsite || !clientDescription) {
-        if (!client_email) toast.error("Client email is required.");
-        if (!clientWebsite) toast.error("Client website is required.");
-        if (!clientDescription) toast.error("Client description is required.");
-        return;
+        if (!client_email) toast.error("Client email is required.")
+        if (!clientWebsite) toast.error("Client website is required.")
+        if (!clientDescription) toast.error("Client description is required.")
+        return
       }
 
       // Save domain in DB
       const result = await addDomain.mutateAsync({
         ...Data,
         userId: user?._id,
-      });
+      })
 
-      toast.success("Domain successfully added!");
-      console.log("Domain saved:", result);
+      toast.success("Domain successfully added!")
+      console.log("Domain saved:", result)
 
       try {
-        const updateSelectedDom = await updateSelectedDomain(
-          user?._id,
-          result?._id
-        );
-        console.log(updateSelectedDom);
+        const updateSelectedDom = await updateSelectedDomain(user?._id, result?._id)
+        console.log(updateSelectedDom)
       } catch (err) {
-        console.log(err);
+        console.log(err)
       }
 
-      navigate(`/dashboard?domainId=${result?._id}`);
+      navigate(`/dashboard?domainId=${result?._id}`)
     } catch (error) {
-      toast.error(error.message || "Failed to generate company data.");
-      setError?.(error.message || "Failed to generate company data.");
+      console.error("Error in generateCompanyData:", error)
+      setError(error.message || "Failed to generate company data.")
+      toast.error(error.message || "Failed to generate company data.")
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const user = JSON.parse(localStorage.getItem("user"));
+    e.preventDefault()
+    const user = JSON.parse(localStorage.getItem("user"))
 
     if (!url) {
-      toast.error("Please enter a URL.");
-      return;
+      toast.error("Please enter a URL.")
+      return
     }
 
-    const domain = extractDomain(url);
-    console.log("Domain after extraction:", domain); // Debug log
+    const domain = extractDomain(url)
+    console.log("Domain after extraction:", domain) // Debug log
 
     if (!domain) {
-      toast.error("Please enter a valid URL (e.g., binance.com).");
-      return;
+      toast.error("Please enter a valid URL (e.g., binance.com).")
+      return
     }
 
     if (user) {
-      setIsLoading(true);
-      setError(null); // Reset any previous errors
-      await generateCompanyData(domain, user);
-      setUrl("");
-      setIsLoading(false);
-      onClose();
+      setIsLoading(true)
+      setError(null) // Reset any previous errors
+      await generateCompanyData(domain, user)
+      setUrl("")
+      setIsLoading(false)
+      onClose()
     } else {
-      toast.error("Please sign in to add a website.");
+      toast.error("Please sign in to add a website.")
     }
-  };
+  }
 
   const renderBusinessCard = (title, icon, content, className) => (
     <div
       className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 ${className}`}
     >
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-          {icon}
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {title}
-        </h3>
+        <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">{icon}</div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
       </div>
       {content}
     </div>
-  );
+  )
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -219,12 +248,10 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                 <div className="w-16 h-16 mx-auto rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-6">
                   <Globe className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                  Enter your website URL
-                </h3>
+                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Enter your website URL</h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  We'll analyze your website and create a year's worth of
-                  engaging social media content tailored to your brand.
+                  We'll analyze your website and create a year's worth of engaging social media content tailored to your
+                  brand.
                 </p>
                 <div className="relative mt-6">
                   <input
@@ -265,9 +292,7 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                     }}
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-pulse" />
-                    <span className="text-xs font-medium text-gray-900 dark:text-white">
-                      {Math.round(progress)}%
-                    </span>
+                    <span className="text-xs font-medium text-gray-900 dark:text-white">{Math.round(progress)}%</span>
                   </div>
                 </div>
 
@@ -279,32 +304,20 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                         index === currentStep
                           ? "scale-100 opacity-100"
                           : index < currentStep
-                          ? "scale-95 opacity-50"
-                          : "scale-95 opacity-30"
+                            ? "scale-95 opacity-50"
+                            : "scale-95 opacity-30"
                       }`}
                     >
                       <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                         <div
                           className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl
-                          ${
-                            index <= currentStep
-                              ? `bg-gradient-to-r ${step.color}`
-                              : "bg-gray-100 dark:bg-gray-700"
-                          }`}
+                          ${index <= currentStep ? `bg-gradient-to-r ${step.color}` : "bg-gray-100 dark:bg-gray-700"}`}
                         >
-                          {index < currentStep ? (
-                            <Check className="w-5 h-5 text-white" />
-                          ) : (
-                            <span>{step.icon}</span>
-                          )}
+                          {index < currentStep ? <Check className="w-5 h-5 text-white" /> : <span>{step.icon}</span>}
                         </div>
                         <div>
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                            {step.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {step.description}
-                          </p>
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">{step.title}</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{step.description}</p>
                         </div>
                       </div>
                     </div>
@@ -326,29 +339,18 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                         { label: "Country", value: businessData.country },
                         { label: "Language", value: businessData.language },
                       ].map((item, i) => (
-                        <div
-                          key={i}
-                          className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg"
-                        >
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {item.label}
-                          </div>
-                          <div className="text-gray-900 dark:text-white font-medium">
-                            {item.value}
-                          </div>
+                        <div key={i} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{item.label}</div>
+                          <div className="text-gray-900 dark:text-white font-medium">{item.value}</div>
                         </div>
                       ))}
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Description
-                      </div>
-                      <div className="text-gray-900 dark:text-white">
-                        {businessData.description}
-                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Description</div>
+                      <div className="text-gray-900 dark:text-white">{businessData.description}</div>
                     </div>
                   </div>,
-                  "col-span-2"
+                  "col-span-2",
                 )}
 
                 {renderBusinessCard(
@@ -358,7 +360,7 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                     <div className="flex items-center gap-6">
                       <div className="w-20 h-20 rounded-xl bg-white shadow-sm flex items-center justify-center">
                         <img
-                          src={businessData.logo}
+                          src={businessData.logo || "/placeholder.svg"}
                           alt="Logo"
                           className="w-16 h-16 object-contain"
                         />
@@ -377,14 +379,12 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                               className="w-12 h-12 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
                               style={{ backgroundColor: item.color }}
                             />
-                            <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block">
-                              {item.label}
-                            </span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block">{item.label}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </div>,
                 )}
 
                 {renderBusinessCard(
@@ -395,39 +395,31 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
                       {
                         title: "Target Audience",
                         items: businessData.marketingStrategy.audience,
-                        className:
-                          "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+                        className: "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
                       },
                       {
                         title: "Pain Points",
                         items: businessData.marketingStrategy.audiencePains,
-                        className:
-                          "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300",
+                        className: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300",
                       },
                       {
                         title: "Core Values",
                         items: businessData.marketingStrategy.coreValues,
-                        className:
-                          "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+                        className: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300",
                       },
                     ].map((section, i) => (
                       <div key={i}>
-                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {section.title}
-                        </h5>
+                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{section.title}</h5>
                         <div className="flex flex-wrap gap-2">
                           {section.items.map((item, j) => (
-                            <span
-                              key={j}
-                              className={`px-3 py-1 rounded-full text-sm ${section.className}`}
-                            >
+                            <span key={j} className={`px-3 py-1 rounded-full text-sm ${section.className}`}>
                               {item}
                             </span>
                           ))}
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </div>,
                 )}
               </div>
             )}
@@ -481,5 +473,5 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
