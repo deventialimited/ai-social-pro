@@ -5,6 +5,12 @@ const postDesignSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed to handle both types
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["image", "slogan", "branding"],
+    default: "image",
+    required: true,
+  },
   canvas: {
     width: Number,
     height: Number,

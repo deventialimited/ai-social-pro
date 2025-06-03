@@ -26,6 +26,7 @@ const TopHeaderBtns = ({
   onClose,
   postId,
   postImage,
+  type,
   defaultPlatform,
   postDetails,
 }) => {
@@ -129,6 +130,7 @@ const TopHeaderBtns = ({
       onSavePost.mutate(
         {
           postId,
+          type,
           postImage: file,
           postDesignData,
           allFiles,

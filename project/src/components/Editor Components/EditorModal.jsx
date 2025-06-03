@@ -119,9 +119,10 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
                     canvasContainerRef={canvasContainerRef}
                     onClose={onClose}
                     postId={post?._id}
+                    type={selectedType.replace("Image", "")}
                     postImage={
-                      post?.editorStatus === "not_edited"
-                        ? post[selectedType]
+                      post?.[selectedType]?.editorStatus === "not_edited"
+                        ? post?.[selectedType]
                         : null
                     }
                     defaultPlatform={post?.platforms?.[0]}
