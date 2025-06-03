@@ -15,6 +15,7 @@ const {
   generateHTMLFromTemplateData,
 } = require("./generateHTMLFromTemplateData");
 const { renderImageFromHTML } = require("./renderImageFromHTML");
+const PostDesign = require("../models/PostDesign");
 
 const prepareFileObject = async (filePath) => {
   const buffer = await fsp.readFile(filePath); // <-- THIS will work only with fs.promises
@@ -24,7 +25,14 @@ const prepareFileObject = async (filePath) => {
     buffer,
   };
 };
-const modifySloganTemplate = (template, sloganText, primaryColor) => {
+const platformDimensions = {
+  facebook: [1200, 630],
+  x: [1200, 675],
+  linkedin: [1200, 627],
+  instagram: [1080, 1080], // default square post
+};
+
+const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
   // 1. Replace slogan text in elements
   template.elements = template.elements.map((el) => {
     if (el.type === "text" && el.category === "slogan") {
@@ -46,18 +54,18 @@ const modifySloganTemplate = (template, sloganText, primaryColor) => {
   // 2. Update canvas background color
   if (template.canvas) {
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
-    template.canvas.width = `${Math.max(
-      Math.min(template.canvas.width / 3, 600)
-    )}px`;
-    template.canvas.height = `${Math.max(
-      Math.min(template.canvas.height / 3, 600)
-    )}px`;
+    const [canvasWidth, canvasHeight] = platformDimensions[
+      platform.toLowerCase()
+    ] || [600, 600];
+    template.canvas.width = `${Math.max(Math.min(canvasWidth / 3, 600))}px`;
+    template.canvas.height = `${Math.max(Math.min(canvasHeight / 3, 600))}px`;
   }
 
   return template;
 };
 
 const modifyBrandingTemplate = async (
+  platform,
   template,
   brandName,
   primaryColor,
@@ -83,10 +91,14 @@ const modifyBrandingTemplate = async (
   });
 
   // 2. Set background color in canvas and styles
-  if (template.canvas)
+  if (template.canvas) {
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
-  template.canvas.width = Math.max(Math.min(template.canvas.width / 3, 600));
-  template.canvas.height = Math.max(Math.min(template.canvas.height / 3, 600));
+    const [canvasWidth, canvasHeight] = platformDimensions[
+      platform.toLowerCase()
+    ] || [600, 600];
+    template.canvas.width = `${Math.max(Math.min(canvasWidth / 3, 600))}px`;
+    template.canvas.height = `${Math.max(Math.min(canvasHeight / 3, 600))}px`;
+  }
 
   // 3. Upload and replace brand logo
   if (brandLogoUrl) {
@@ -142,6 +154,8 @@ const modifyBrandingTemplate = async (
 };
 
 const generateDomainVisualAssets = async ({
+  postId,
+  platform,
   sloganText,
   brandName,
   primaryColor,
@@ -165,6 +179,7 @@ const generateDomainVisualAssets = async ({
 
   // 2. Modify slogan template
   const modifiedSlogan = modifySloganTemplate(
+    platform,
     JSON.parse(JSON.stringify(sloganTemplate)),
     sloganText,
     primaryColor
@@ -172,6 +187,7 @@ const generateDomainVisualAssets = async ({
 
   // 3. Modify branding template
   const modifiedBranding = await modifyBrandingTemplate(
+    platform,
     JSON.parse(JSON.stringify(brandingTemplate)),
     brandName,
     primaryColor,
@@ -210,6 +226,25 @@ const generateDomainVisualAssets = async ({
     fsp.unlink(sloganImagePath),
     fsp.unlink(brandingImagePath),
   ]);
+  // 8. Save PostDesign for slogan
+  await PostDesign.create({
+    postId: postId, // or any associated postId if available
+    type: "slogan",
+    canvas: modifiedSlogan.canvas,
+    elements: modifiedSlogan.elements,
+    layers: modifiedSlogan.layers || [],
+    backgrounds: modifiedSlogan.backgrounds || {},
+  });
+
+  // 9. Save PostDesign for branding
+  await PostDesign.create({
+    postId: postId, // or any associated postId if available
+    type: "branding",
+    canvas: modifiedBranding.canvas,
+    elements: modifiedBranding.elements,
+    layers: modifiedBranding.layers || [],
+    backgrounds: modifiedBranding.backgrounds || {},
+  });
   return {
     sloganImage,
     brandingImage,
