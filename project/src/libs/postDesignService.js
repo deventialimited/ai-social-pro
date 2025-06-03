@@ -6,12 +6,12 @@ const API_URL = "https://api.oneyearsocial.com";
 // const API_URL = "http://localhost:5000";
 
 // Get post design by ID
-export const getPostDesignById = async (postId) => {
+export const getPostDesignById = async (postId, type) => {
   try {
     // Ensure postId is a string
     const stringPostId = String(postId);
     const response = await axios.get(
-      `${API_URL}/api/v1/postsDesign/${stringPostId}`
+      `${API_URL}/api/v1/postsDesign/${stringPostId}?type=${type}`
     );
     return response.data;
   } catch (error) {
@@ -24,9 +24,16 @@ export const useSaveOrUpdatePostDesign = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ postId, postImage, postDesignData, allFiles }) => {
+    mutationFn: async ({
+      postId,
+      type,
+      postImage,
+      postDesignData,
+      allFiles,
+    }) => {
       return await saveOrUpdatePostDesignFrontendController(
         postId,
+        type,
         postImage,
         postDesignData,
         allFiles

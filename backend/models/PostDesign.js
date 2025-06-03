@@ -5,6 +5,12 @@ const postDesignSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed to handle both types
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["image", "slogan", "branding"],
+    default: "image",
+    required: true,
+  },
   canvas: {
     width: Number,
     height: Number,
@@ -14,7 +20,7 @@ const postDesignSchema = new mongoose.Schema({
 
   elements: [
     {
-      id: { type: String, unique: true }, // unique frontend ID
+      id: { type: String }, // unique frontend ID
       type: { type: String },
       category: { type: String }, // e.g., header, subheader, body (for text), or shape type
       position: {

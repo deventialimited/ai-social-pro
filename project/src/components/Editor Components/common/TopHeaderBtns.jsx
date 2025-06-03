@@ -26,6 +26,7 @@ const TopHeaderBtns = ({
   onClose,
   postId,
   postImage,
+  type,
   defaultPlatform,
   postDetails,
 }) => {
@@ -129,6 +130,7 @@ const TopHeaderBtns = ({
       onSavePost.mutate(
         {
           postId,
+          type,
           postImage: file,
           postDesignData,
           allFiles,
@@ -269,7 +271,7 @@ const TopHeaderBtns = ({
   const fetchPostDesign = async () => {
     try {
       setCanvasLoading(true);
-      const res = await getPostDesignById(postId);
+      const res = await getPostDesignById(postId, type);
       setCanvas(res?.canvas);
       setElements(res?.elements);
       setLayers(res?.layers);

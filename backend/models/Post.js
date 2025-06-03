@@ -5,9 +5,31 @@ const PostSchema = new Schema({
   domainId: { type: mongoose.Schema.Types.ObjectId, ref: "Domain" },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   postId: { type: String, default: "" },
-  image: { type: String, default: "" },
-  brandingImage: { type: String },
-  sloganImage: { type: String },
+  image: {
+    imageUrl: { type: String, default: "" },
+    editorStatus: {
+      type: String,
+      enum: ["not_edited", "edited"],
+      default: "not_edited",
+    },
+  },
+  brandingImage: {
+    imageUrl: { type: String, default: "" },
+    editorStatus: {
+      type: String,
+      enum: ["not_edited", "edited"],
+      default: "not_edited",
+    },
+  },
+  sloganImage: {
+    imageUrl: { type: String, default: "" },
+    editorStatus: {
+      type: String,
+      enum: ["not_edited", "edited"],
+      default: "not_edited",
+    },
+  },
+
   topic: { type: String, default: "" },
   content: { type: String, default: "" },
   slogan: { type: String, default: "" },
@@ -16,13 +38,6 @@ const PostSchema = new Schema({
   platforms: { type: [String], default: [] },
   status: { type: String, default: "generated" },
   followers: { type: Number, default: 0, min: 0 },
-
-  // 👇 Editor status to track if edited by user in main editor
-  editorStatus: {
-    type: String,
-    enum: ["not_edited", "edited"],
-    default: "not_edited",
-  },
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

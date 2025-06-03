@@ -277,14 +277,23 @@ exports.processPubSub = async (req, res) => {
       logoUrl = `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&format=png&size=128`;
     }
     const generatedImages = await generateDomainVisualAssets({
+      postId: savedPost?._id,
+      platform: savedPost?.platforms[0],
       sloganText: savedPost?.slogan,
       brandName: domain?.clientName,
       primaryColor: domain?.colors[0],
       brandLogoUrl: logoUrl,
       keywords: [domain?.niche],
     });
-    savedPost.sloganImage = generatedImages.sloganImage;
-    savedPost.brandingImage = generatedImages.brandingImage;
+    savedPost.sloganImage = {
+      imageUrl: generatedImages.sloganImage,
+      editorStatus: "edited",
+    };
+
+    savedPost.brandingImage = {
+      imageUrl: generatedImages.brandingImage,
+      editorStatus: "edited",
+    };
     console.log(savedPost);
     await savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
