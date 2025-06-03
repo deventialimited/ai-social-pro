@@ -55,7 +55,7 @@ const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
   if (template.canvas) {
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
     const [canvasWidth, canvasHeight] = platformDimensions[
-      platform.toLowerCase()
+      (platform || "")?.toLowerCase()
     ] || [600, 600];
     template.canvas.width = `${Math.max(Math.min(canvasWidth / 3, 600))}px`;
     template.canvas.height = `${Math.max(Math.min(canvasHeight / 3, 600))}px`;
@@ -94,7 +94,7 @@ const modifyBrandingTemplate = async (
   if (template.canvas) {
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
     const [canvasWidth, canvasHeight] = platformDimensions[
-      platform.toLowerCase()
+      (platform || "")?.toLowerCase()
     ] || [600, 600];
     template.canvas.width = `${Math.max(Math.min(canvasWidth / 3, 600))}px`;
     template.canvas.height = `${Math.max(Math.min(canvasHeight / 3, 600))}px`;
