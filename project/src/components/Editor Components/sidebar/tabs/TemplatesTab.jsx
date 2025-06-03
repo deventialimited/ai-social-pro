@@ -13,6 +13,8 @@ function TemplatesTab() {
     setBackgrounds,
     setCanvasLoading,
     canvasLoading,
+    pushToHistory,
+    historyRef
   } = useEditor();
 
   const [userId, setUserId] = useState(null);
@@ -42,10 +44,25 @@ function TemplatesTab() {
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
+      
+      // Create new state object with template data
+      const newState = {
+        ...historyRef.current.present,
+        canvas: template.canvas || historyRef.current.present.canvas,
+        elements: template.elements || historyRef.current.present.elements,
+        layers: template.layers || historyRef.current.present.layers,
+        backgrounds: template.backgrounds || historyRef.current.present.backgrounds
+      };
+
+      // Update states
       if (template.canvas) setCanvas(template.canvas);
       if (template.elements) setElements(template.elements);
       if (template.layers) setLayers(template.layers);
       if (template.backgrounds) setBackgrounds(template.backgrounds);
+
+      // Add to history
+      pushToHistory(newState);
+      
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
