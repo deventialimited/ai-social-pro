@@ -52,12 +52,11 @@ exports.generateHTMLFromTemplateData = (templateData) => {
   const { canvas, elements } = templateData;
 
   const backgroundColor = canvas?.styles?.backgroundColor || "transparent";
-
+  const width = `${Math.max(Math.min(canvas.width / 3, 600))}px`;
+  const height = `${Math.max(Math.min(canvas.height / 3, 600))}px`;
   return `
       <html>
-      <body style="margin:0; padding:0; background:${backgroundColor}; width:${
-    canvas.width
-  }px; height:${canvas.height}px; position:relative;">
+      <body style="margin:0; padding:0; background:${backgroundColor}; width:${width}px; height:${height}px; position:relative;">
         ${elements
           .map((el) => {
             if (el.type === "text") {
