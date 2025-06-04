@@ -212,14 +212,14 @@ export default function PostDetails({ postData }) {
       </div>
 
       {/* Footer */}
-      <div className="flex flex-col md:flex-row items-center justify-center text-center p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
+      <div className="flex flex-col md:flex-row gap-0 md:gap-8 items-center justify-center text-center p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-0 md:gap-4 bg-primary p-3 md:p-2 rounded-lg">
           <Tooltip title="Approve the Post" arrow>
             <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
               Approve <Check className="text-white w-4 h-4" />
             </button>
           </Tooltip>
-          <div className="flex items-center text-xs text-gray-800 dark:text-white">
+          <div className="flex pl-0 pl-6 items-center text-xs text-gray-800 dark:text-white">
             <CalendarDays className="h-4 w-4" />
             <span className="ml-2">
               <Tooltip title="Post Date" arrow>
@@ -229,20 +229,21 @@ export default function PostDetails({ postData }) {
               </Tooltip>
             </span>
           </div>
-          <span className="text-xs hidden sm:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+          {/* <span className="text-xs hidden sm:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
             <Tooltip title="Platform" arrow>
               {primaryPlatform}
             </Tooltip>
-          </span>
+          </span> */}
         </div>
         
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:gap-9">
         <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
             <Tooltip title="Platform" arrow>
               {primaryPlatform}
             </Tooltip>
           </span>
+          <div>
           <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
             <Tooltip title="Edit Post" arrow>
               <Edit className="w-4 h-4" />
@@ -258,6 +259,7 @@ export default function PostDetails({ postData }) {
               <Trash2 className="w-4 h-4" />
             </Tooltip>
           </button>
+          </div>
         </div>
       </div>
       <div className="flex justify-center mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
