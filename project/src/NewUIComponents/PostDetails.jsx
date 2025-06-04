@@ -124,9 +124,9 @@ export default function PostDetails({ postData }) {
 
         {/* Visual Toggle Buttons */}
         <div className="flex items-center space-x-2 p-2">
-          <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
+          {/* <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
             Visual
-          </h2>
+          </h2> */}
           <button
             onClick={() => setSelectedButton("image")}
             className={`${baseStyles} ${
