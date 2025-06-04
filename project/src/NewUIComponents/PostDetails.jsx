@@ -212,7 +212,7 @@ export default function PostDetails({ postData }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col md:flex-row items-center justify-center text-center p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
           <Tooltip title="Approve the Post" arrow>
             <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
@@ -229,14 +229,20 @@ export default function PostDetails({ postData }) {
               </Tooltip>
             </span>
           </div>
-          <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+          <span className="text-xs hidden sm:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
             <Tooltip title="Platform" arrow>
               {primaryPlatform}
             </Tooltip>
           </span>
         </div>
+        
 
         <div className="flex items-center gap-2">
+        <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+            <Tooltip title="Platform" arrow>
+              {primaryPlatform}
+            </Tooltip>
+          </span>
           <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
             <Tooltip title="Edit Post" arrow>
               <Edit className="w-4 h-4" />
@@ -254,13 +260,14 @@ export default function PostDetails({ postData }) {
           </button>
         </div>
       </div>
-      <div className="flex items-center gap-10 ml-7 mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
-        <Tooltip title="Post Id">
-          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-            POST ID: #{postData?.postId}
-          </span>
-        </Tooltip>
-      </div>
+      <div className="flex justify-center mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
+  <Tooltip title="Post Id">
+    <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+      POST ID: #{postData?.postId}
+    </span>
+  </Tooltip>
+</div>
+
 
       {/* Sticky Bottom Button */}
       <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">
