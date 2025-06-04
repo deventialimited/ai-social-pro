@@ -214,7 +214,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 flex flex-col md:flex-row items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <img
@@ -317,7 +317,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           )}
         </div>
 
-        <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col md:flex-row items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
             <button
               onClick={handleApprove}
@@ -342,13 +342,18 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               <span className="text-xs ml-1">
                 {format(postDate, "MMM d, yyyy, h:mm a")}
               </span>
-            </div>
-            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+              <span className="text-xs ml-6 hidden md:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
               {primaryPlatform}
             </span>
+            </div>
+           
           </div>
-
+         
           <div className="flex items-center gap-2">
+
+          <span className="text-xs inline md:hidden  bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+              {primaryPlatform}
+            </span>
             <button
               onClick={() => setShowEditModal(true)}
               className="icon-btn"
@@ -391,11 +396,12 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-10 ml-7 mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
-          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
-            ID: {post._id}
-          </span>
-        </div>
+        <div className="flex justify-center md:mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
+  <span className="text-[9px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+    ID: {post._id}
+  </span>
+</div>
+
       </div>
 
       {showEditModal && (
