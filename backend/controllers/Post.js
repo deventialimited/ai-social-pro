@@ -230,7 +230,10 @@ exports.updatePostImage = async (req, res) => {
         .json({ message: "Image upload failed", error: err.message });
     }
 
-    post.image = uploadedImageUrl;
+    post.image = {
+      imageUrl: uploadedImageUrl,
+      editorStatus: "not_edited",
+    };
     await post.save();
 
     const updatedPost = await Post.findOne({ postId }).populate(
