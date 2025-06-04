@@ -4,6 +4,7 @@ const axios = require("axios");
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const socket = require("../utils/socket");
 const generateDomainVisualAssets = require("../helpers/generatePostImages");
+const PostDesign = require("../models/PostDesign");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {
     const { domainId } = req.params; // Extract domainId from query parameters
@@ -33,6 +34,14 @@ exports.getAllPostsBydomainId = async (req, res) => {
 };
 exports.updatePostImageFile = async (req, res) => {
   const { id } = req.params;
+  const { type = "image" } = req.query;
+  const typeMap = {
+    image: "image",
+    branding: "brandingImage",
+    slogan: "sloganImage",
+  };
+  const schemaField = typeMap[type];
+
   const file = req.file;
 
   if (!id) {
@@ -49,6 +58,16 @@ exports.updatePostImageFile = async (req, res) => {
     });
   }
 
+  const validTypes = Object.keys(typeMap);
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid type provided. Must be one of: ${validTypes.join(
+        ", "
+      )}`,
+    });
+  }
+
   try {
     const post = await Post.findById(id);
     if (!post) {
@@ -58,30 +77,35 @@ exports.updatePostImageFile = async (req, res) => {
       });
     }
 
-    // If old image exists, delete it from S3
-    if (post.image) {
-      const oldImageKey = getS3KeyFromUrl(post.image);
+    // Delete old image from S3 if exists
+    const oldImageUrl = post[schemaField]?.imageUrl;
+    if (oldImageUrl) {
+      const oldImageKey = getS3KeyFromUrl(oldImageUrl);
       if (oldImageKey) {
         await deleteFromS3([oldImageKey]);
       }
     }
 
-    // Upload new image
+    // Upload new image to S3
     const fileForS3 = {
-      originalname: `post_image_${Date.now()}_${file.originalname}`,
+      originalname: `post_${type}_${Date.now()}_${file.originalname}`,
       mimetype: file.mimetype,
       buffer: file.buffer,
     };
 
     const uploadedImageUrl = await uploadToS3(fileForS3);
 
-    // Update DB
-    post.image = uploadedImageUrl;
+    // Update the corresponding image field
+    post[schemaField] = {
+      imageUrl: uploadedImageUrl,
+      editorStatus: "edited",
+    };
+
     await post.save();
 
     res.status(200).json({
       success: true,
-      message: "Post image updated successfully",
+      message: `${type} updated successfully`,
       post,
     });
   } catch (error) {
@@ -93,6 +117,7 @@ exports.updatePostImageFile = async (req, res) => {
     });
   }
 };
+
 // Update a post
 exports.updatePost = async (req, res) => {
   const { id } = req.params; // Get id from URL parameters
@@ -417,28 +442,50 @@ exports.updatePostTime = async (req, res) => {
 
 exports.deletePost = async (req, res) => {
   const id = req.params.id;
-  console.log("Deleting post   ID:", id);
+  console.log("Deleting post ID:", id);
+
   if (!id) {
     return res.status(400).json({ message: "Post ID is required" });
   }
+
   try {
     const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    if (post.image) {
-      const imageKey = getS3KeyFromUrl(post.image);
-      if (imageKey) {
-        await deleteFromS3([imageKey]);
+    // Delete images from S3 if present
+    const imageFields = ["image", "brandingImage", "sloganImage"];
+    const keysToDelete = [];
+
+    imageFields.forEach((field) => {
+      const imageUrl = post[field]?.imageUrl;
+      if (imageUrl) {
+        const imageKey = getS3KeyFromUrl(imageUrl);
+        if (imageKey) {
+          keysToDelete.push(imageKey);
+        }
       }
+    });
+
+    if (keysToDelete.length > 0) {
+      await deleteFromS3(keysToDelete);
     }
 
+    // Delete associated PostDesigns
+    await PostDesign.deleteMany({ postId: post._id });
+
+    // Delete Post itself
     await Post.findByIdAndDelete(id);
-    res.status(200).json({ message: "Post deleted successfully" });
+
+    res
+      .status(200)
+      .json({ message: "Post and related assets deleted successfully" });
   } catch (error) {
     console.error("Error deleting post:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 

@@ -20,22 +20,24 @@ exports.getImageFromUnsplash = async (keyword) => {
     keyword
   )}&client_id=${accessKey}`;
 
-  // Step 1: get JSON response with image info
+  // Step 1: get image metadata
   const response = await axios.get(url);
   const photoData = response.data;
 
-  // Step 2: extract the actual image URL (choose a suitable size)
-  const imageUrl =
-    photoData.urls?.regular || photoData.urls?.full || photoData.urls?.raw;
-  if (!imageUrl) throw new Error("No image URL found in response");
+  // Step 2: build high-res image URL
+  const rawUrl = photoData.urls?.raw;
+  if (!rawUrl) throw new Error("No raw image URL found in Unsplash response");
 
-  // Step 3: fetch the actual image bytes from imageUrl
+  // Add quality, format, and width parameters
+  const imageUrl = `${rawUrl}&q=100&fm=jpg&w=1920&fit=max`;
+
+  // Step 3: download the actual image
   const imageResponse = await axios.get(imageUrl, {
     responseType: "arraybuffer",
   });
   const buffer = Buffer.from(imageResponse.data, "binary");
 
-  // Extract content type from headers
+  // Step 4: extract content type
   const contentType = imageResponse.headers["content-type"] || "image/jpeg";
   const extension = contentType.split("/")[1] || "jpg";
 
