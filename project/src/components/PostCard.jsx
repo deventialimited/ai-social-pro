@@ -214,9 +214,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-4 flex flex-col md:flex-row items-center justify-between border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="p-4 flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 dark:border-gray-700">
+          <div className="flex  items-center space-x-3">
+            <div className="w-10 h-10  bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <img
                 src={post?.domainId?.siteLogo}
                 alt="Business logo"
