@@ -4,8 +4,8 @@ import clsx from "clsx";
 
 export const AnalyzeLoader = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[300px] space-y-8 py-10">
-      <div className="relative w-32 h-32">
+    <div className="flex flex-col items-center justify-center min-h-[250px] space-y-8 py-10">
+      <div className="relative w-20 h-20">
         <div
           className={clsx(
             "w-full h-full rounded-full border-8 border-purple-500/50 border-t-transparent animate-spin",
