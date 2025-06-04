@@ -124,6 +124,7 @@ export const BusinessSectionDummy = ({
     console.log("Post Data in Business Dummy ", postData);
     console.log("Popup in the business dummy", PopUp);
     if (postData && PopUp) {
+      console.log('postdata',postData)
         setComponentType("postDetails");
         setPopup(false);
     }
