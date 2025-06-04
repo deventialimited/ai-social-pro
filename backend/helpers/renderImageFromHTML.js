@@ -5,13 +5,31 @@ exports.renderImageFromHTML = async (canvas, htmlString, outputPath) => {
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
-  const width = parseInt(canvas?.width) || 800;
-  const height = parseInt(canvas?.height) || 600;
+
+  // Dynamic size logic (safe fallback if canvas sizes are small)
+  const width = Math.max(Math.min(canvas.width / 3, 600), 300);
+  const height = Math.max(Math.min(canvas.height / 3, 600), 300);
 
   const page = await browser.newPage();
+
+  // 👇 Apply high-resolution settings via deviceScaleFactor (like 2x Retina)
+  await page.setViewport({
+    width: parseInt(width),
+    height: parseInt(height),
+    deviceScaleFactor: 2, // Increase to 3 or 4 for even higher DPI
+  });
+
+  // Load HTML
   await page.setContent(htmlString, { waitUntil: "networkidle0" });
-  await page.setViewport({ width, height });
-  await page.screenshot({ path: outputPath, type: "png" });
+
+  // 👇 High-quality screenshot
+  await page.screenshot({
+    path: outputPath,
+    type: "png",
+    fullPage: true,
+    omitBackground: false,
+  });
+
   await browser.close();
   return outputPath;
 };

@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const {
   uploadToS3ForPostDesign,
   deleteFromS3ForPostDesign,
@@ -9,10 +10,21 @@ exports.getPostDesignById = async (req, res) => {
   try {
     const { id } = req.params;
     const { type = "image" } = req.query;
-    const postDesign = await PostDesign.findOne({ postId: id, type });
 
+    const objectId = mongoose.Types.ObjectId.isValid(id)
+      ? new mongoose.Types.ObjectId(id)
+      : null;
+    if (!objectId) {
+      return res.status(400).json({ message: "Invalid ID format" });
+    }
+
+    const postDesign = await PostDesign.findOne({ postId: objectId, type });
+
+    console.log(type);
+    console.log(id);
+    console.log(postDesign);
     if (!postDesign) {
-      return res.status(404).json({ message: "PostDesign not found" });
+      return res.status(401).json({ message: "PostDesign not found" });
     }
 
     return res.status(200).json(postDesign);
