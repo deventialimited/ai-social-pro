@@ -9,9 +9,8 @@ const API_URL = "https://api.oneyearsocial.com";
 export const getPostDesignById = async (postId, type) => {
   try {
     // Ensure postId is a string
-    const stringPostId = String(postId);
     const response = await axios.get(
-      `${API_URL}/api/v1/postsDesign/${stringPostId}?type=${type}`
+      `${API_URL}/api/v1/postsDesign/${postId}?type=${type}`
     );
     return response.data;
   } catch (error) {
@@ -52,6 +51,7 @@ export const useSaveOrUpdatePostDesign = () => {
 };
 export const saveOrUpdatePostDesignFrontendController = async (
   postId,
+  type,
   postImage,
   postDesignData,
   allFiles
@@ -60,7 +60,7 @@ export const saveOrUpdatePostDesignFrontendController = async (
     const formData = new FormData();
     const { elements, backgrounds } = postDesignData;
 
-    formData.append("data", JSON.stringify(postDesignData));
+    formData.append("data", JSON.stringify({ ...postDesignData, type }));
 
     // Only include files for element types that require them
     const validElementIds = elements
@@ -87,7 +87,7 @@ export const saveOrUpdatePostDesignFrontendController = async (
       imageFormData.append("image", postImage);
 
       await axios.patch(
-        `${API_URL}/api/v1/posts/updatePostImageFile/${postId}`,
+        `${API_URL}/api/v1/posts/updatePostImageFile/${postId}?type=${type}`,
         imageFormData,
         {
           headers: { "Content-Type": "multipart/form-data" },

@@ -106,6 +106,7 @@ const TopHeaderBtns = ({
       // Step 2: Convert canvas to PNG
       const dataUrl = await toPng(node, {
         cacheBust: true,
+        skipFonts: true, // avoids trying to embed them
         style: {
           transform: "scale(1)",
           transformOrigin: "top left",
@@ -272,6 +273,7 @@ const TopHeaderBtns = ({
     try {
       setCanvasLoading(true);
       const res = await getPostDesignById(postId, type);
+      console.log(res);
       setCanvas(res?.canvas);
       setElements(res?.elements);
       setLayers(res?.layers);

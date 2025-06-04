@@ -62,6 +62,26 @@ socket.initialize(httpServer); // Ensure only one instance of Socket.IO is initi
 
 // Pass the `io` instance to the SocketHandler
 SocketHandler(socket.getIO());
+// TEMP test
+// (async () => {
+//   try {
+//     const result = await generateDomainVisualAssets({
+//       postId: "683eec3edb04988345395f05",
+//       platform: "Facebook",
+//       sloganText: "Empowering the Future",
+//       brandName: "NextGen Tech",
+//       primaryColor: "#ff6600",
+//       brandLogoUrl:
+//         "https://one-year-social.s3.amazonaws.com/domains-brand-logo/1748954131933_logo_1748954131933.jpeg",
+//       keywords: ["technology", "innovation"],
+//     });
+
+//     console.log("✅ Visual assets generated:", result);
+//   } catch (error) {
+//     console.error("❌ Error generating visual assets:", error);
+//   }
+// })();
+
 // Start the server
 httpServer.listen(PORT, async () => {
   await require("./libs/db")();
