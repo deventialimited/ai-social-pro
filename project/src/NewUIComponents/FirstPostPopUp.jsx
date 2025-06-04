@@ -40,7 +40,7 @@ export const FirstPostPopUp = ({
             <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8">
               <div className="flex flex-col items-center justify-center min-h-[300px] space-y-8 py-10 text-center">
                 {/* Loader */}
-                <div className="relative w-32 h-32">
+                <div className="relative w-20 h-20">
                   <div
                     className={clsx(
                       "w-full h-full rounded-full border-8 border-purple-500/50 border-t-transparent animate-spin",
@@ -66,7 +66,7 @@ export const FirstPostPopUp = ({
                     <p className="text-sm text-gray-800 dark:text-gray-200">
                       {website}
                     </p>
-                    <div className="flex space-x-1 mt-2">
+                    <div className="flex space-x-1 gap-4 mt-6">
                       <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
                       <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
                       <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce" />
