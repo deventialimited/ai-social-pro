@@ -66,6 +66,7 @@ export const FirstPostPopUp = ({
                     <p className="text-sm text-gray-800 dark:text-gray-200">
                       {website}
                     </p>
+
                     <div className="flex space-x-1 gap-4 mt-6">
                       <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]" />
                       <span className="w-2 h-2 bg-gray-500 dark:bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]" />
@@ -77,6 +78,10 @@ export const FirstPostPopUp = ({
                 <p className="text-lg text-gray-600 dark:text-gray-400 max-w-lg">
                   {description}
                 </p>
+
+                <span className="animate-bounce text-lg text-gray-700 dark:text-gray-300">
+    Sit back — your social media genius is working. This will take 1–2 mins.
+  </span>
               </div>
             </Dialog.Panel>
           </Transition.Child>
