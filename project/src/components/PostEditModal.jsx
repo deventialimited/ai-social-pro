@@ -159,7 +159,7 @@ export const PostEditModal = ({
                           className="relative cursor-pointer group"
                         >
                           <img
-                            src={post[selectedType]}
+                            src={post[selectedType]?.imageUrl}
                             alt="Post preview"
                             className="w-full h-64 object-contain rounded-lg"
                           />

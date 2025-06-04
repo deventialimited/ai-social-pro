@@ -182,7 +182,7 @@ export default function PostDetails({ postData }) {
         <Tooltip title="Post Image" arrow>
           {postData[selectedButton] ? (
             <img
-              src={postData[selectedButton]}
+              src={postData[selectedButton]?.imageUrl}
               alt="Post"
               className="cursor-pointer"
               style={{

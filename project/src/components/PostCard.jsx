@@ -292,7 +292,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 />
               )}
               <img
-                src={post[selectedButton]}
+                src={post[selectedButton]?.imageUrl}
                 alt="Post content"
                 onLoad={() => setImageLoaded(true)}
                 style={{

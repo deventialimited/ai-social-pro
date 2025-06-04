@@ -122,7 +122,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
                     type={selectedType.replace("Image", "")}
                     postImage={
                       post?.[selectedType]?.editorStatus === "not_edited"
-                        ? post?.[selectedType]
+                        ? post?.[selectedType]?.imageUrl
                         : null
                     }
                     defaultPlatform={post?.platforms?.[0]}
