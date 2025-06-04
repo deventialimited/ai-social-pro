@@ -14,9 +14,9 @@ export const PostsHeader = ({
   filteredPosts,
 }) => {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col md:flex-row items-center justify-between">
       {/* Tabs */}
-      <div className="flex">
+      <div className="flex ">
         <button
           onClick={() => onTabChange('generated')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
@@ -60,7 +60,7 @@ export const PostsHeader = ({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-4">
+      <div className="flex md:mt-0 mt-6 items-center gap-4">
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-md">
           <button
             onClick={() => onViewChange('list')}
