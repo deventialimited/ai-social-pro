@@ -67,7 +67,7 @@ function ImagesTab() {
     if (bottom) setPage((prev) => prev + 1);
   };
 
-  const handleAddImage = async (src, category = "other") => {
+  const handleAddImage = async (src, category = null) => {
     try {
       setCanvasLoading(true);
 
@@ -160,6 +160,18 @@ function ImagesTab() {
               />
             </div>
           )}
+          {images[0] && (
+            <div
+              onClick={() => handleAddImage(images[0].urls.small, "other")}
+              className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+            >
+              <img
+                src={images[0].urls.small}
+                alt={images[0].alt_description}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           {uploadedImages?.map((img) => (
             <div
               key={img._id}
@@ -175,7 +187,7 @@ function ImagesTab() {
           ))}
 
           {/* Display Unsplash images */}
-          {images?.map((img, index) => (
+          {images?.slice(1)?.map((img, index) => (
             <div
               key={index}
               onClick={() => handleAddImage(img.urls.small)}

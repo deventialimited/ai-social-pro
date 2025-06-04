@@ -8,7 +8,8 @@ const path = require("path");
 exports.getPostDesignById = async (req, res) => {
   try {
     const { id } = req.params;
-    const postDesign = await PostDesign.findOne({ postId: id });
+    const { type = "image" } = req.query;
+    const postDesign = await PostDesign.findOne({ postId: id, type });
 
     if (!postDesign) {
       return res.status(404).json({ message: "PostDesign not found" });
@@ -27,10 +28,13 @@ exports.getPostDesignById = async (req, res) => {
 exports.saveOrUpdatePostDesign = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { canvas, elements, layers, backgrounds } = JSON.parse(req.body.data);
+    const { canvas, type, elements, layers, backgrounds } = JSON.parse(
+      req.body.data
+    );
+    const postType = type || "image";
     const files = req.files?.files || [];
 
-    const existingDesign = await PostDesign.findOne({ postId });
+    const existingDesign = await PostDesign.findOne({ postId, type: postType });
     let newFileUrls;
     if (files?.length > 0) {
       // Upload new files and map URLs back to props and backgrounds
@@ -102,9 +106,20 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       existingDesign.updatedAt = new Date();
 
       await existingDesign.save();
-      const latestPost = await Post.findByIdAndUpdate(postId, {
-        editorStatus: "edited",
-      });
+      const statusFieldMap = {
+        image: "image.editorStatus",
+        branding: "brandingImage.editorStatus",
+        slogan: "sloganImage.editorStatus",
+      };
+
+      const editorStatusField =
+        statusFieldMap[postType] || "image.editorStatus";
+
+      const latestPost = await Post.findByIdAndUpdate(
+        postId,
+        { [editorStatusField]: "edited" },
+        { new: true }
+      );
 
       return res.status(200).json({
         message: "PostDesign updated successfully",
@@ -114,6 +129,7 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
     } else {
       const newPostDesign = new PostDesign({
         postId,
+        type: postType,
         canvas,
         elements,
         layers,
@@ -121,9 +137,21 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       });
 
       await newPostDesign.save();
-      const latestPost = await Post.findByIdAndUpdate(postId, {
-        editorStatus: "edited",
-      });
+      const statusFieldMap = {
+        image: "image.editorStatus",
+        branding: "brandingImage.editorStatus",
+        slogan: "sloganImage.editorStatus",
+      };
+
+      const editorStatusField =
+        statusFieldMap[postType] || "image.editorStatus";
+
+      const latestPost = await Post.findByIdAndUpdate(
+        postId,
+        { [editorStatusField]: "edited" },
+        { new: true }
+      );
+
       return res.status(201).json({
         message: "PostDesign created successfully",
         postDesign: newPostDesign,

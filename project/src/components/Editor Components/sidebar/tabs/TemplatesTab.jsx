@@ -13,6 +13,8 @@ function TemplatesTab() {
     setBackgrounds,
     setCanvasLoading,
     canvasLoading,
+    pushToHistory,
+    historyRef
   } = useEditor();
 
   const [userId, setUserId] = useState(null);
@@ -42,10 +44,25 @@ function TemplatesTab() {
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
+      
+      // Create new state object with template data
+      const newState = {
+        ...historyRef.current.present,
+        canvas: template.canvas || historyRef.current.present.canvas,
+        elements: template.elements || historyRef.current.present.elements,
+        layers: template.layers || historyRef.current.present.layers,
+        backgrounds: template.backgrounds || historyRef.current.present.backgrounds
+      };
+
+      // Update states
       if (template.canvas) setCanvas(template.canvas);
       if (template.elements) setElements(template.elements);
       if (template.layers) setLayers(template.layers);
       if (template.backgrounds) setBackgrounds(template.backgrounds);
+
+      // Add to history
+      pushToHistory(newState);
+      
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
@@ -136,17 +153,17 @@ function TemplatesTab() {
         </div>
         {showPublic && (
           publicTemplates.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex  gap-2 ">
               {publicTemplates.map((template) => (
                 <div
                   key={template._id}
-                  className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+                  className=" h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 hover:opacity-80 cursor-pointer"
                   onClick={() => handleLoadTemplate(template)}
                 >
                   <img
                     src={template.templateImage}
                     alt="Public Template"
-                    className="w-full h-full object-cover"
+                    className="w-full "
                   />
                 </div>
               ))}
