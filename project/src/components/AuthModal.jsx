@@ -10,7 +10,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { OTPVerification } from "./OtpVerification"; // Import the new component
 import { useNavigate } from "react-router-dom";
 
-export const AuthModal = () => {
+export const AuthModal = ({ setGenerateAgain }) => {
   const {
     setIsSignInPopup,
     isSignUpPopup,
@@ -85,7 +85,7 @@ export const AuthModal = () => {
         setUser(userData?.user);
         toast.success("Signin successful!");
         setIsSignInPopup(false);
-        navigate("/"); // Redirect to home after login
+        setGenerateAgain(true);
       } catch (err) {
         console.error("Signin Error:", err);
         toast.error(err?.message || "Signin failed. Please try again.");
@@ -110,7 +110,7 @@ export const AuthModal = () => {
       toast.success("Google login successful!");
       setIsSignUpPopup(false);
       setIsSignInPopup(false);
-      navigate("/"); // Redirect to home
+      setGenerateAgain(true);
     } catch (error) {
       console.log(error);
       toast.error("Google Auth Failed");
