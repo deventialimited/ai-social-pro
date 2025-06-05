@@ -371,8 +371,8 @@ export const HomePage = () => {
             AI-Powered Social Media Content Creation
           </div>
 
-          <div className="space-y-4 mb-8">
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white">
+          <div className="space-y-4 mb-8 ">
+            <h1 className="text-2xl md:text-5xl font-bold text-gray-900 dark:text-white">
               Your Website to
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                 {" "}
@@ -380,15 +380,15 @@ export const HomePage = () => {
               </span>
               of Social Posts
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              Enter your website URL and let AI create a year's worth of
-              engaging social media content, perfectly tailored to your brand
+            <p className="text-md md:px-0 px-3 md:text-xl text-gray-600 dark:text-gray-400">
+              Enter your website URL and let AI create a year's worth of engaging social media content, perfectly
+              tailored to your brand
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
             <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-col sm:flex-row items-stretch justify-between">
                 <div className="flex-1 relative">
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                     <Globe className="w-5 h-5 text-gray-400 dark:text-gray-500" />
@@ -404,7 +404,7 @@ export const HomePage = () => {
                 </div>
                 <button
                   type="submit"
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-xl transition-opacity flex items-center gap-2 text-lg font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap"
+                  className="md:px-8 w-full md:w-auto  md:py-4 px-5 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-xl transition-opacity flex items-center gap-2 md:text-lg text-sm font-medium shadow-lg shadow-blue-500/20 whitespace-nowrap"
                   disabled={isLoading}
                 >
                   {isLoading ? (

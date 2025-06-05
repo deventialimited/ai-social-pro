@@ -51,7 +51,7 @@ export const BusinessModal = ({ isOpen, onClose, clientData }) => {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className="w-full max-w-[90%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
+            <Dialog.Panel className="w-full max-w-[70%] sm:max-w-[600px] rounded-2xl bg-white dark:bg-gray-900 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
               {componentType == "loading" && (
                 <AnalyzeLoader isOpen={true} onClose={() => {}} />
               )}

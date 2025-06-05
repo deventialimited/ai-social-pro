@@ -271,8 +271,8 @@ export const BusinessSectionDummy = ({
 
   return (
     <>
-      <div className="px-7 sm:px-6">
-        <div className="p-10 text-center dark:bg-gray-800 rounded-2xl dark:border-gray-700">
+      <div className="px-0 md:px-6">
+        <div className="md:p-10 text-center dark:bg-gray-800 rounded-2xl dark:border-gray-700">
           <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-white">
             Your Business Profile
           </h1>
@@ -282,7 +282,7 @@ export const BusinessSectionDummy = ({
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto p-4 sm:p-6 pb-24 bg-white dark:bg-gray-900 rounded-xl shadow-md relative">
+        <div className="max-w-3xl  mx-auto p-4 sm:p-6 pb-24 bg-white dark:bg-gray-900 rounded-xl shadow-md relative">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <div className="relative w-20 h-20 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
               <img
@@ -428,49 +428,56 @@ export const BusinessSectionDummy = ({
           )}
         </div>
 
-        <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow py-3 px-4 sm:px-6 flex items-center justify-between z-20">
-          <h2 className="text-sm font-semibold text-blue-600 dark:text-white">
-            Your Business Profile
-          </h2>
-          {editing ? (
-            <div className="flex gap-2">
-              <button
-                onClick={handleCancel}
-                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-              >
-                Save
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleEdit}
-                className="flex items-center gap-1 text-gray-600 dark:text-white hover:text-black dark:hover:text-gray-300"
-              >
-                <Edit className="w-4 h-4" />
-                <span className="text-sm">Edit</span>
-              </button>
-              <button
-                onClick={() => {
-                  setPopup(true);
-                }}
-                className="px-5 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition"
-              >
-                Looking Good! Let's Continue
-              </button>
-            </div>
-          )}
-        </div>
+       <div className="sticky bottom-0 mt-10 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200
+        dark:border-gray-700 shadow-lg py-4 px-4 sm:px-6 flex flex-col  
+        items-center justify-between z-20">
+  <h2 className="text-sm md:pb-0 pb-2 md:pb-3 font-semibold text-blue-600 dark:text-white">
+    Your Business Profile
+  </h2>
+  {editing ? (
+    <div className="flex gap-2">
+      <button
+        onClick={handleCancel}
+        className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition shadow-sm"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSave}
+        className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow"
+      >
+        Save
+      </button>
+    </div>
+  ) : (
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={handleEdit}
+        className="flex items-center gap-1 bg-blue-600 text-white border-2 border-blue-700 
+        hover:bg-blue-700 hover:border-blue-800 dark:text-white 
+        dark:hover:bg-blue-500 w-full sm:w-auto justify-center sm:justify-start 
+        px-4 py-2 rounded shadow"
+      >
+        <Edit className="w-4 h-4" />
+        <span className="text-sm">Edit</span>
+      </button>
+      <button
+        onClick={() => {
+          setPopup(true);
+        }}
+        className="md:px-5 px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition shadow border-2 border-green-600"
+       
+        >
+        Looking Good! Let's Continue
+      </button>
+    </div>
+  )}
+</div>
+
       </div>
 
       {PopUp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-lg">
+        <div className="fixed  inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-lg">
           <FirstPostPopUp
             isOpen={PopUp}
             onClose={() => {
