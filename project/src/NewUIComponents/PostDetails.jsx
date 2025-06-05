@@ -14,26 +14,24 @@ import { useNavigate } from "react-router-dom";
 import { updateSelectedDomain } from "../libs/authService";
 import Tooltip from "@mui/material/Tooltip";
 
-const getImageStyle = (platform) => {
-  const style = {
-    width: "100%",
-    objectFit: "cover",
-    borderRadius: "0.5rem",
-  };
-  switch (platform?.toLowerCase()) {
-    case "linkedin":
-      return { ...style, aspectRatio: "1200/627" };
-    case "x":
-      return { ...style, aspectRatio: "1200/675" };
-    case "facebook":
-      return { ...style, aspectRatio: "1200/630" };
-    case "instagram":
-      return { ...style, aspectRatio: "1" };
-    default:
-      return { ...style, aspectRatio: "16/9" };
-  }
+const platformDimensions = {
+  facebook: [1200, 630],
+  x: [1200, 675],
+  linkedin: [1200, 627],
+  instagram: [1080, 1080], // default square post
 };
 
+const getImageStyle = (platform) => {
+  const [canvasWidth, canvasHeight] = platformDimensions[
+    (platform || "")?.toLowerCase()
+  ] || [600, 600];
+  return {
+    // aspectRatio: getImageAspectRatio(platform),
+    width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
+    height: `${Math.max(Math.min(675 / 3, 600))}px`,
+    // objectFit: "cover",
+  };
+};
 export default function PostDetails({ postData }) {
   const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
@@ -180,34 +178,36 @@ export default function PostDetails({ postData }) {
         </div>
 
         <Tooltip title="Post Image" arrow>
-          {postData[selectedButton] ? (
-            <img
-              src={postData[selectedButton]?.imageUrl}
-              alt="Post"
-              className="cursor-pointer"
-              style={{
-                ...getImageStyle(primaryPlatform),
-                filter: showBlur ? "blur(8px)" : "none",
-                transition: "filter 0.5s ease-out",
-              }}
-              onLoad={() => {
-                setImageLoaded(true);
-                setTimeout(() => {
-                  setShowBlur(false);
-                }, 1500);
-              }}
-            />
-          ) : (
-            <div
-              className="w-full flex items-center justify-center animate-pulse rounded"
-              style={{
-                ...getImageStyle(primaryPlatform),
-                backgroundColor: "rgba(184, 188, 194, 0.87)",
-              }}
-            >
-              <Image className="w-12 h-12 text-gray-500" />
-            </div>
-          )}
+          <div className="flex items-center justify-center rounded-lg w-full bg-gray-200">
+            {postData[selectedButton] ? (
+              <img
+                src={postData[selectedButton]?.imageUrl}
+                alt="Post"
+                className="cursor-pointer"
+                style={{
+                  ...getImageStyle(primaryPlatform),
+                  filter: showBlur ? "blur(8px)" : "none",
+                  transition: "filter 0.5s ease-out",
+                }}
+                onLoad={() => {
+                  setImageLoaded(true);
+                  setTimeout(() => {
+                    setShowBlur(false);
+                  }, 1500);
+                }}
+              />
+            ) : (
+              <div
+                className="w-full flex items-center justify-center animate-pulse rounded"
+                style={{
+                  ...getImageStyle(primaryPlatform),
+                  backgroundColor: "rgba(184, 188, 194, 0.87)",
+                }}
+              >
+                <Image className="w-12 h-12 text-gray-500" />
+              </div>
+            )}
+          </div>
         </Tooltip>
       </div>
 

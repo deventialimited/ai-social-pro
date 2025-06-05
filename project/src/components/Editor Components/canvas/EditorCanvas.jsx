@@ -106,11 +106,7 @@ function EditorCanvas({
     }
     return () => window.removeEventListener("mousedown", handleClick);
   }, [showZoomDropdown]);
-  console.log(canvas.height);
-  console.log({
-    width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
-    height: `${Math.max(Math.min(675 / 3, 600))}px`,
-  });
+
   return (
     <div
       ref={containerRef}

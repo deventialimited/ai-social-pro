@@ -78,10 +78,11 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
+
     return {
       // aspectRatio: getImageAspectRatio(platform),
       width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
-      height: `${Math.max(Math.min(675 / 3, 600))}px`,
+      height: `${Math.max(Math.min(canvasHeight / 3, 600))}px`,
       // objectFit: "cover",
     };
   };
