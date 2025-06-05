@@ -11,6 +11,7 @@ export const PostEditModal = ({
   post,
   selectedType,
   showEditModal,
+  postImageSize,
   onClose,
   onSave,
 }) => {
@@ -54,7 +55,6 @@ export const PostEditModal = ({
       platforms: selectedSocials,
     });
   };
-
   return (
     <>
       <Transition appear show={showEditModal} as={Fragment}>
@@ -156,12 +156,13 @@ export const PostEditModal = ({
                         </div>
                         <div
                           onClick={() => setIsGraphicEditorModal(true)}
-                          className="relative cursor-pointer group"
+                          className="relative bg-gray-200 flex items-center rounded-lg justify-center group"
                         >
                           <img
                             src={post[selectedType]?.imageUrl}
                             alt="Post preview"
-                            className="w-full h-64 object-contain rounded-lg"
+                            style={{ ...postImageSize }}
+                            className=" cursor-pointer"
                           />
                         </div>
                       </div>

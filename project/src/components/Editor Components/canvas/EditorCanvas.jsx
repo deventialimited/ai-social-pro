@@ -25,8 +25,12 @@ function EditorCanvas({
   // Add delete handler
   useEffect(() => {
     const handleDelete = (e) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (selectedElementId && !e.target.closest('input') && !e.target.closest('textarea')) {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        if (
+          selectedElementId &&
+          !e.target.closest("input") &&
+          !e.target.closest("textarea")
+        ) {
           e.preventDefault();
           removeElement(selectedElementId);
           setSelectedElementId(null);
@@ -35,9 +39,14 @@ function EditorCanvas({
       }
     };
 
-    window.addEventListener('keydown', handleDelete);
-    return () => window.removeEventListener('keydown', handleDelete);
-  }, [selectedElementId, removeElement, setSelectedElementId, setSpecialActiveTab]);
+    window.addEventListener("keydown", handleDelete);
+    return () => window.removeEventListener("keydown", handleDelete);
+  }, [
+    selectedElementId,
+    removeElement,
+    setSelectedElementId,
+    setSpecialActiveTab,
+  ]);
 
   const handleSelectElement = (id, type) => {
     setSelectedElementId(id);
@@ -88,16 +97,20 @@ function EditorCanvas({
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (!e.target.closest('.zoom-dropdown')) {
+      if (!e.target.closest(".zoom-dropdown")) {
         setShowZoomDropdown(false);
       }
     };
     if (showZoomDropdown) {
-      window.addEventListener('mousedown', handleClick);
+      window.addEventListener("mousedown", handleClick);
     }
-    return () => window.removeEventListener('mousedown', handleClick);
+    return () => window.removeEventListener("mousedown", handleClick);
   }, [showZoomDropdown]);
-
+  console.log(canvas.height);
+  console.log({
+    width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
+    height: `${Math.max(Math.min(675 / 3, 600))}px`,
+  });
   return (
     <div
       ref={containerRef}
@@ -108,7 +121,7 @@ function EditorCanvas({
         WebkitUserSelect: "none",
         MozUserSelect: "none",
         msUserSelect: "none",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       {/* Canvas controls */}
@@ -167,10 +180,12 @@ function EditorCanvas({
                       {zoomLevels.map((level) => (
                         <button
                           key={level}
-                          className={`px-4 py-1 hover:bg-gray-100 text-left ${zoomLevel === level ? "font-bold" : ""}`}
+                          className={`px-4 py-1 hover:bg-gray-100 text-left ${
+                            zoomLevel === level ? "font-bold" : ""
+                          }`}
                           onClick={() => {
                             const scale = level / 100;
-                          
+
                             if (
                               transformRef.current &&
                               containerRef.current &&
@@ -209,15 +224,24 @@ function EditorCanvas({
                                   // For any other zoom level, calculate dynamically
                                   const container = containerRef.current;
                                   const canvas = canvasContainerRef.current;
-                                  const containerRect = container.getBoundingClientRect();
-                                  const canvasRect = canvas.getBoundingClientRect();
+                                  const containerRect =
+                                    container.getBoundingClientRect();
+                                  const canvasRect =
+                                    canvas.getBoundingClientRect();
                                   const scaledWidth = canvasRect.width * scale;
-                                  const scaledHeight = canvasRect.height * scale;
-                                  translateX = (containerRect.width - scaledWidth) / 2;
-                                  translateY = (containerRect.height - scaledHeight) / 2;
+                                  const scaledHeight =
+                                    canvasRect.height * scale;
+                                  translateX =
+                                    (containerRect.width - scaledWidth) / 2;
+                                  translateY =
+                                    (containerRect.height - scaledHeight) / 2;
                               }
-                          
-                              transformRef.current.setTransform(translateX, translateY, scale);
+
+                              transformRef.current.setTransform(
+                                translateX,
+                                translateY,
+                                scale
+                              );
                               setZoomLevel(level);
                               setShowZoomDropdown(false);
                             }
@@ -241,7 +265,7 @@ function EditorCanvas({
                 wrapperStyle={{
                   width: "100%",
                   height: "70vh",
-                  overflow: "hidden",   
+                  overflow: "hidden",
                   position: "relative",
                   marginBottom: "30px",
                 }}
@@ -251,7 +275,7 @@ function EditorCanvas({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  overflow: "hidden"
+                  overflow: "hidden",
                 }}
               >
                 <div
@@ -259,11 +283,11 @@ function EditorCanvas({
                   id="#canvas"
                   className="bg-white shadow-lg relative"
                   style={{
-                    width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
-                    height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
                     position: "relative",
                     overflow: "hidden",
                     ...canvas.styles,
+                    width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
+                    height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
                   }}
                   onClick={handleCanvasClick}
                 >

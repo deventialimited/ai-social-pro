@@ -7,8 +7,8 @@ exports.renderImageFromHTML = async (canvas, htmlString, outputPath) => {
   });
 
   // Dynamic size logic (safe fallback if canvas sizes are small)
-  const width = Math.max(Math.min(canvas.width / 3, 600), 300);
-  const height = Math.max(Math.min(canvas.height / 3, 600), 300);
+  const width = Math.max(Math.min(canvas.width / 3, 600));
+  const height = Math.max(Math.min(canvas.height / 3, 600));
 
   const page = await browser.newPage();
 

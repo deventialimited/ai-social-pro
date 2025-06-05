@@ -67,13 +67,24 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
+  const platformDimensions = {
+    facebook: [1200, 630],
+    x: [1200, 675],
+    linkedin: [1200, 627],
+    instagram: [1080, 1080], // default square post
+  };
 
-  const getImageStyle = (platform) => ({
-    aspectRatio: getImageAspectRatio(platform),
-    width: "100%",
-    objectFit: "cover",
-    borderRadius: "0.5rem",
-  });
+  const getImageStyle = (platform) => {
+    const [canvasWidth, canvasHeight] = platformDimensions[
+      (platform || "")?.toLowerCase()
+    ] || [600, 600];
+    return {
+      // aspectRatio: getImageAspectRatio(platform),
+      width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
+      height: `${Math.max(Math.min(675 / 3, 600))}px`,
+      // objectFit: "cover",
+    };
+  };
 
   const getStatusBadge = () => {
     switch (post.status) {
@@ -110,63 +121,63 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
- const handleApprove = async () => {
-  const now = new Date();
-  if (postDate < now) {
-    toast.error("Cannot schedule post in the past.");
-    return;
-  }
+  const handleApprove = async () => {
+    const now = new Date();
+    if (postDate < now) {
+      toast.error("Cannot schedule post in the past.");
+      return;
+    }
 
-  const schedulePayload = {
-    time: new Date(postDate).getTime(),
-    uid: post.userId || "",
-    postId: post.postId,
-    content: post.content,
-    image: post.image,
-    platforms: (post.platforms || [])
-      .map((p) => p.toLowerCase())
-      .map((p) => (p === "x" ? "twitter" : p)) // Map "x" to "twitter"
-      .filter((p) =>
-        ["twitter", "linkedin", "facebook", "instagram"].includes(p)
-      ),
+    const schedulePayload = {
+      time: new Date(postDate).getTime(),
+      uid: post.userId || "",
+      postId: post.postId,
+      content: post.content,
+      image: post.image,
+      platforms: (post.platforms || [])
+        .map((p) => p.toLowerCase())
+        .map((p) => (p === "x" ? "twitter" : p)) // Map "x" to "twitter"
+        .filter((p) =>
+          ["twitter", "linkedin", "facebook", "instagram"].includes(p)
+        ),
+    };
+
+    try {
+      setLoadingMessage("Scheduling post...");
+      console.log("schedulePayload", schedulePayload);
+      const scheduleResponse = await fetch(
+        "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/scheduleMulti",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(schedulePayload),
+        }
+      );
+
+      if (!scheduleResponse.ok)
+        throw new Error("Failed to schedule post externally");
+
+      const updateResponse = await fetch(
+        `http://localhost:5000/api/v1/posts/updatePost/${post._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "scheduled" }),
+        }
+      );
+
+      if (!updateResponse.ok)
+        throw new Error("Failed to update post status locally");
+
+      toast.success("Post approved and scheduled!");
+      onEdit({ ...post, status: "scheduled" }, "scheduled");
+    } catch (err) {
+      console.error("Approval error:", err);
+      toast.error("Failed to approve and schedule the post.");
+    } finally {
+      setLoadingMessage(null);
+    }
   };
-
-  try {
-    setLoadingMessage("Scheduling post...");
-    console.log("schedulePayload", schedulePayload);
-    const scheduleResponse = await fetch(
-      "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/scheduleMulti",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(schedulePayload),
-      }
-    );
-
-    if (!scheduleResponse.ok)
-      throw new Error("Failed to schedule post externally");
-
-    const updateResponse = await fetch(
-      `http://localhost:5000/api/v1/posts/updatePost/${post._id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "scheduled" }),
-      }
-    );
-
-    if (!updateResponse.ok)
-      throw new Error("Failed to update post status locally");
-
-    toast.success("Post approved and scheduled!");
-    onEdit({ ...post, status: "scheduled" }, "scheduled");
-  } catch (err) {
-    console.error("Approval error:", err);
-    toast.error("Failed to approve and schedule the post.");
-  } finally {
-    setLoadingMessage(null);
-  }
-};;
 
   const reschedulePost = async (newDate) => {
     const now = new Date();
@@ -204,7 +215,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       setLoadingMessage(null);
     }
   };
-
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
   const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
@@ -280,41 +290,39 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
             )}
           </div>
-          {post[selectedButton] ? (
-            <>
-              {!imageLoaded && (
-                <Skeleton
-                  height={300}
+          <div className="flex items-center justify-center rounded-lg w-full bg-gray-200">
+            {post[selectedButton] ? (
+              <>
+                {!imageLoaded && (
+                  <Skeleton
+                    style={{
+                      ...getImageStyle(primaryPlatform),
+                    }}
+                  />
+                )}
+                <img
+                  src={post[selectedButton]?.imageUrl}
+                  alt="Post content"
+                  onLoad={() => setImageLoaded(true)}
                   style={{
                     ...getImageStyle(primaryPlatform),
-                    borderRadius: "0.5rem",
+                    filter: imageBlurred ? "blur(20px)" : "none",
+                    transition: "filter 0.3s ease",
+                    display: imageLoaded ? "block" : "none", // Hide image until loaded
+                    cursor: "pointer",
                   }}
+                  onClick={() => setShowEditModal(true)}
                 />
-              )}
-              <img
-                src={post[selectedButton]?.imageUrl}
-                alt="Post content"
-                onLoad={() => setImageLoaded(true)}
+              </>
+            ) : (
+              <Skeleton
                 style={{
                   ...getImageStyle(primaryPlatform),
                   borderRadius: "0.5rem",
-                  filter: imageBlurred ? "blur(20px)" : "none",
-                  transition: "filter 0.3s ease",
-                  display: imageLoaded ? "block" : "none", // Hide image until loaded
-                  cursor: "pointer",
                 }}
-                onClick={() => setShowEditModal(true)}
               />
-            </>
-          ) : (
-            <Skeleton
-              height={300}
-              style={{
-                ...getImageStyle(primaryPlatform),
-                borderRadius: "0.5rem",
-              }}
-            />
-          )}
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
@@ -407,6 +415,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       {showEditModal && (
         <PostEditModal
           post={post}
+          postImageSize={{ ...getImageStyle(primaryPlatform) }}
           selectedType={selectedButton}
           showEditModal={showEditModal}
           onClose={() => setShowEditModal(false)}
