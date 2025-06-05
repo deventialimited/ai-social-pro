@@ -79,7 +79,7 @@ export const FirstPostPopUp = ({
                   {description}
                 </p>
 
-                <span className="animate-bounce text-lg text-gray-700 dark:text-gray-300">
+                <span className="animate-bounce w-[50%] text-md text-gray-600 dark:text-gray-400">
     Sit back — your social media genius is working. This will take 1–2 mins.
   </span>
               </div>
