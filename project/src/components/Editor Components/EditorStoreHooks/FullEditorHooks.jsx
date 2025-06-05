@@ -10,7 +10,6 @@ export const EditorProvider = ({ children }) => {
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
-    ratio: "1.91:1",
     styles: {
       boxShadow: "0 0 10px rgba(0,0,0,0.2)",
       // You can extend with other canvas-level styles here
