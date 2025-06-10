@@ -55,7 +55,7 @@ const MultiSelectDropdown = ({ options = [], selectedOptions = [], onChange }) =
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute z-10 bottom-10 w-full min-w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
+          <div className="absolute z-10 bottom-10 w-full md:min-w-[200px] min-w-[145px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg">
             <ul className="max-h-60 overflow-y-auto">
               {options.map((option) => (
                 <li
