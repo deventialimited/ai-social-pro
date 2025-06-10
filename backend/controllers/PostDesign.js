@@ -20,9 +20,9 @@ exports.getPostDesignById = async (req, res) => {
 
     const postDesign = await PostDesign.findOne({ postId: objectId, type });
 
-    console.log(type);
-    console.log(id);
-    console.log(postDesign);
+    // console.log(type);
+    // console.log(id);
+    // console.log(postDesign);
     if (!postDesign) {
       return res.status(401).json({ message: "PostDesign not found" });
     }
