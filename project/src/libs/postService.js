@@ -125,3 +125,50 @@ export const useDeletePostById = () => {
     },
   });
 };
+
+
+export const reschedulePost = async ({ postId, newTime }) => {
+  try {
+    const now = new Date();
+    if (new Date(newTime) < now) {
+      throw new Error("You cannot select a past time.");
+    }
+
+    const payload = {
+      postId,
+      newTime,
+    };
+
+    const response = await axios.post(`${API_URL}/updatePostTime`, payload);
+    return response.data?.post;
+  } catch (error) {
+    console.error(
+      "Error rescheduling post:",
+      error.response?.data?.message || error.message
+    );
+    throw error.response?.data?.message || error.message;
+  }
+};
+
+// Hook to reschedule a post
+export const useReschedulePost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: reschedulePost,
+    onSuccess: (updatedPost) => {
+      // Update the cache with the rescheduled post
+      queryClient.setQueryData(["posts", updatedPost.domainId], (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        );
+      });
+      // Invalidate queries to refetch the latest data
+      queryClient.invalidateQueries(["posts", updatedPost.domainId]);
+    },
+    onError: (error) => {
+      console.error("Failed to reschedule post:", error);
+    },
+  });
+};

@@ -18,6 +18,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { useReschedulePost } from "../libs/postService";
+
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   // console.log(post);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -34,6 +36,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageBlurred, setImageBlurred] = useState(true);
+  const { mutate: reschedule, isLoading } = useReschedulePost();
   useEffect(() => {
     if (imageLoaded) {
       const timer = setTimeout(() => {
@@ -186,41 +189,21 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
-  const reschedulePost = async (newDate) => {
-    const now = new Date();
-    if (newDate < now) {
-      toast.error("You cannot select a past time.");
-      return;
-    }
-
-    const payload = {
-      postId: post._id,
-      newTime: newDate.getTime(),
-    };
-
-    try {
-      setLoadingMessage("Updating schedule time...");
-      const response = await fetch(
-        "http://localhost:5000/api/v1/posts/updatePostTime",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to update post time");
-
-      toast.success("Post schedule updated!");
-      setPostDate(newDate);
-      handleDateChange(newDate);
-      setShowDatePicker(false);
-    } catch (error) {
-      console.error("Error updating post time:", error);
-      toast.error("Failed to update the post time.");
-    } finally {
-      setLoadingMessage(null);
-    }
+  const handleReschedule = (newDate) => {
+    reschedule(
+      { postId: post._id, newTime: newDate.getTime() },
+      {
+        onSuccess: () => {
+          toast.success("Post schedule updated!");
+          setPostDate(newDate);
+          handleDateChange(newDate);
+          setShowDatePicker(false);
+        },
+        onError: (error) => {
+          toast.error(error || "Failed to update the post time.");
+        },
+      }
+    );
   };
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
@@ -472,7 +455,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 Cancel
               </button>
               <button
-                onClick={() => reschedulePost(selectedDate)}
+                onClick={() => handleReschedule(selectedDate)}
                 disabled={!!loadingMessage}
                 className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded disabled:opacity-50"
               >
