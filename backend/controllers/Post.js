@@ -492,6 +492,54 @@ exports.deletePost = async (req, res) => {
   }
 };
 
+
+exports.updatePostStatusToPublished = async (req, res) => {
+  const { postId, status } = req.body;
+  console.log("Updating status for post ID:", postId, "to:", status);
+
+  if (!postId) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+  if (!status) {
+    return res.status(400).json({ message: "Status is required" });
+  }
+  const normalizedStatus = status.toLowerCase();
+
+  const validStatuses = ["generated", "scheduled", "published"];
+  if (!validStatuses.includes(normalizedStatus)) {
+    return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+  }
+
+  try {
+    const post = await Post.findOne({ postId });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (status === "published" && post.status !== "scheduled") {
+      return res.status(400).json({
+        message: `Post is not in scheduled status, current status: ${post.status}`,
+      });
+    }
+
+    // Update the post status
+    post.status = status;
+    post.updatedAt = Date.now();
+    await post.save();
+
+  
+
+    res.status(200).json({
+      message: `Post status updated to ${status} successfully`,
+      post
+    });
+  } catch (error) {
+    console.error("Error updating post status:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
 function getS3KeyFromUrl(url) {
   try {
     const urlObj = new URL(url);
