@@ -344,8 +344,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 </>
               )}
             </button>
-            <div className="flex items-center">
-              <button onClick={() => setShowDatePicker(!showDatePicker)}>
+            <div className="flex items-center cursor-pointer" onClick={() => setShowDatePicker(!showDatePicker)}>
+              <button >
                 <Calendar className="h-3 w-3" />
               </button>
               <span className="text-xs ml-1">
