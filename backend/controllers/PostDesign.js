@@ -45,8 +45,18 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
     );
     const postType = type || "image";
     const files = req.files?.files || [];
+    const objectId = mongoose.Types.ObjectId.isValid(postId)
+      ? new mongoose.Types.ObjectId(postId)
+      : null;
+    if (!objectId) {
+      return res.status(400).json({ message: "Invalid ID format" });
+    }
 
-    const existingDesign = await PostDesign.findOne({ postId, type: postType });
+    const existingDesign = await PostDesign.findOne({
+      postId: objectId,
+      type: postType,
+    });
+    console.log(existingDesign);
     let newFileUrls;
     if (files?.length > 0) {
       // Upload new files and map URLs back to props and backgrounds
