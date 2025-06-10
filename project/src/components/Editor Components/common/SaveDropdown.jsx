@@ -18,7 +18,8 @@ const SaveDropdown = ({
   };
 
   return (
-    <>
+    <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
+
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -32,9 +33,9 @@ const SaveDropdown = ({
           </>
         ) : (
           <>
-            <Save className="h-4 w-4" />
-            <span>Save As Template</span>
-          </>
+            <Save className="md:h-4 md:w-4" />
+            <span class="hidden sm:inline">Save As Template</span>
+            <span class="inline sm:hidden">Template</span>          </>
         )}
       </button>
 
@@ -104,7 +105,7 @@ const SaveDropdown = ({
           </Dialog.Panel>
         </div>
       </Dialog>
-    </>
+    </div>
   );
 };
 
