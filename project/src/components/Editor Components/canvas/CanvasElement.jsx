@@ -96,7 +96,8 @@ const CanvasElement = ({
     let newY = position.y;
 
     // Only maintain aspect ratio for images and shapes
-    const shouldMaintainAspectRatio = (type === "image" || type === "shape") && window.event.shiftKey;
+    const shouldMaintainAspectRatio =
+      (type === "image" || type === "shape") && window.event.shiftKey;
     const aspectRatio = shouldMaintainAspectRatio ? width / height : null;
 
     switch (direction) {
@@ -134,7 +135,7 @@ const CanvasElement = ({
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
           const signX = Math.sign(deltaX);
           const signY = Math.sign(deltaY);
-          newWidth = Math.max(width - (delta * signX), 20);
+          newWidth = Math.max(width - delta * signX, 20);
           newHeight = newWidth / aspectRatio;
           newX = position.x + (width - newWidth);
           newY = position.y + (height - newHeight);
@@ -150,7 +151,7 @@ const CanvasElement = ({
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
           const signX = Math.sign(deltaX);
           const signY = Math.sign(deltaY);
-          newWidth = Math.max(width + (delta * signX), 20);
+          newWidth = Math.max(width + delta * signX, 20);
           newHeight = newWidth / aspectRatio;
           newY = position.y + (height - newHeight);
         } else {
@@ -164,7 +165,7 @@ const CanvasElement = ({
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
           const signX = Math.sign(deltaX);
           const signY = Math.sign(deltaY);
-          newWidth = Math.max(width - (delta * signX), 20);
+          newWidth = Math.max(width - delta * signX, 20);
           newHeight = newWidth / aspectRatio;
           newX = position.x + (width - newWidth);
         } else {
@@ -178,7 +179,7 @@ const CanvasElement = ({
           const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
           const signX = Math.sign(deltaX);
           const signY = Math.sign(deltaY);
-          newWidth = Math.max(width + (delta * signX), 20);
+          newWidth = Math.max(width + delta * signX, 20);
           newHeight = newWidth / aspectRatio;
         } else {
           newWidth = Math.max(width + deltaX, 20);
@@ -189,12 +190,13 @@ const CanvasElement = ({
 
     // Only scale font size during diagonal resizing for text elements
     let newFontSize = fontSize;
-    if (type === "text" && (
-      direction === "nw" ||
-      direction === "ne" ||
-      direction === "sw" ||
-      direction === "se"
-    )) {
+    if (
+      type === "text" &&
+      (direction === "nw" ||
+        direction === "ne" ||
+        direction === "sw" ||
+        direction === "se")
+    ) {
       const scale = Math.max(newWidth / width, newHeight / height);
       newFontSize = Math.max(fontSize * scale, 8);
     }
@@ -275,6 +277,7 @@ const CanvasElement = ({
           position={{ x: position.x, y: position.y }}
           style={{
             backgroundColor: styles?.backgroundColor,
+            borderRadius: styles?.borderRadius,
             padding: styles?.padding,
             position: "absolute",
             zIndex: styles?.zIndex,

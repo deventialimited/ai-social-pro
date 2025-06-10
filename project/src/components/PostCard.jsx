@@ -78,13 +78,19 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
+    const edited = post[selectedButton]?.editorStatus === "edited";
 
-    return {
-      // aspectRatio: getImageAspectRatio(platform),
-      width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
-      height: `${Math.max(Math.min(canvasHeight / 3, 600))}px`,
-      // objectFit: "cover",
-    };
+    return edited
+      ? {
+          width: `auto`,
+          height: `auto`,
+        }
+      : {
+          // aspectRatio: getImageAspectRatio(platform),
+          width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
+          height: `${Math.max(Math.min(canvasHeight / 3, 600))}px`,
+          // objectFit: "cover",
+        };
   };
 
   const getStatusBadge = () => {
@@ -352,15 +358,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 {format(postDate, "MMM d, yyyy, h:mm a")}
               </span>
               <span className="text-xs ml-6 hidden md:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-              {primaryPlatform}
-            </span>
+                {primaryPlatform}
+              </span>
             </div>
-           
           </div>
-         
-          <div className="flex items-center gap-2">
 
-          <span className="text-xs inline md:hidden  bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+          <div className="flex items-center gap-2">
+            <span className="text-xs inline md:hidden  bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
               {primaryPlatform}
             </span>
             <button
@@ -406,11 +410,10 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         </div>
 
         <div className="flex justify-center md:mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
-  <span className="text-[9px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
-    ID: {post._id}
-  </span>
-</div>
-
+          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+            ID: {post._id}
+          </span>
+        </div>
       </div>
 
       {showEditModal && (
