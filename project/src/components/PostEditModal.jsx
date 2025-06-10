@@ -21,7 +21,7 @@ export const PostEditModal = ({
   const [selectedSocials, setSelectedSocials] = useState([]);
   const [postImageDetails, setPostImageDetails] = useState(null);
   const socialOptions = ["Facebook", "X", "Instagram", "LinkedIn"];
-  const [isGraphicEditorModal, setIsGraphicEditorModal] = useState(true);
+  const [isGraphicEditorModal, setIsGraphicEditorModal] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     setTopic(post?.topic);
