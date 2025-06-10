@@ -54,7 +54,7 @@ function EditorToolbar({
   };
 
   return (
-    <div className="p-2 border-b flex w-full h-[100px] items-center gap-2 bg-white">
+    <div className="p-2 border-b flex flex-wrap md:flex-nowrap w-full min-h-[100px] md:h-[100px] items-center gap-2 bg-white">
       {renderToolbar()}
     </div>
   );
