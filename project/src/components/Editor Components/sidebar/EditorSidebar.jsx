@@ -142,9 +142,9 @@ function EditorSidebar({
 
       {/* Mobile Bottom Sheet for Tab Content */}
       <Transition appear show={mobileSheetOpen} as={Fragment}>
-        <Dialog as="div" className="fixed inset-0 z-[10000] md:hidden" onClose={() => setMobileSheetOpen(false)}>
-          <div className="fixed inset-0 bg-black/30 z-[10000]" aria-hidden="true" onClick={() => setMobileSheetOpen(false)} />
-          <div className="fixed inset-x-0 bottom-0 flex justify-center items-end min-h-[30vh] z-[10000]">
+        <Dialog as="div" className="fixed inset-0  md:hidden" onClose={() => setMobileSheetOpen(false)}>
+          <div className="fixed inset-0 bg-black/30 " aria-hidden="true" onClick={() => setMobileSheetOpen(false)} />
+          <div className="fixed inset-x-0 bottom-0 flex justify-center items-end min-h-[30vh] ">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
