@@ -106,7 +106,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
             >
               <Dialog.Panel className="w-full max-w-6xl h-[90vh] flex flex-col transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-2 border-b">
+                <div className="flex gap-3 md:gap-0 flex-col md:flex-row items-center justify-between px-4 py-2 border-b">
                   <div className="flex items-center gap-2">
                     <ImageIcon className="h-5 w-5" />
                     <span className="font-medium">Image Post Editor</span>

@@ -84,8 +84,8 @@ export const PostEditModal = ({
             isEditorOpen={isGraphicEditorModal}
           />
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex h-full items-center justify-center p-4 text-center">
-              <Transition.Child
+          <div className="min-h-full flex items-start justify-center p-4 text-center sm:items-center">
+          <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -94,7 +94,7 @@ export const PostEditModal = ({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-6xl  transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
                   {/* Header */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -112,27 +112,27 @@ export const PostEditModal = ({
                   <div className="p-6 space-y-6">
                     {/* Topic */}
                     <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label className="block text-left pl-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Topic
                       </label>
                       <input
                         type="text"
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="text-left w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
-                    <div className=" grid grid-cols-2 gap-6">
+                    <div className=" grid md:grid-cols-2 grid-row-2 gap-6">
                       {/* Content */}
                       <div className=" space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Content
+                      <label className="block text-left pl-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Content
                         </label>
                         <textarea
                           value={content}
                           onChange={(e) => setContent(e.target.value)}
-                          className="w-full h-[200px] px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full text-left h-[200px] px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Enter your post text..."
                         />
                       </div>
@@ -170,28 +170,28 @@ export const PostEditModal = ({
                   </div>
 
                   {/* Footer */}
-                  <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                    <div className="">
+                  <div className="px-6 flex flex-col md:flex-row py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
+                    <div className=" ml-[11%] md:ml-0 md:w-auto">
                       <MultiSelectDropdown
                         options={socialOptions}
                         selectedOptions={selectedSocials}
                         onChange={setSelectedSocials}
                       />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex md:flex-row flex-col items-center gap-3">
                       <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="border md:border-0 border-gray-300 border-2 w-full md:w-auto order-3 md:order-none  px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSave}
-                        className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                        className="border md:border-0 border-gray-300 border-2 w-full md:w-auto order-2 md:order-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                       >
                         Save Changes
                       </button>
-                      <button className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1">
+                      <button className="text-white md:text-gray-700 px-32 md:px-0 bg-black md:bg-white w-full  md:w-auto order-1 md:order-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 md:hover:bg-gray-100 md:dark:hover:bg-gray-700 rounded-lg flex items-center gap-1">
                         Schedule
                       </button>
                     </div>

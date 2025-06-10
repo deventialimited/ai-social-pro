@@ -375,7 +375,8 @@ const TopHeaderBtns = ({
         ) : (
           <>
             <Save className="h-4 w-4" />
-            <span>Save and Close</span>
+            <span class="hidden sm:inline">Save and Close</span>
+            <span class="inline sm:hidden">Save</span>
           </>
         )}
       </button>
