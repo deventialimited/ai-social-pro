@@ -9,6 +9,7 @@ const {
   updatePostImageFile,
   updatePostTime,
   deletePost,
+  updatePostStatusToPublished
 } = require("../controllers/Post.js");
 // routes/postRoutes.js or similar
 const multer = require("multer");
@@ -30,4 +31,5 @@ router.patch(
 router.get("/getFirstPost/:id", getFirstPost);
 router.post("/updatePostTime", updatePostTime); // 👈 New route
 router.delete("/deletePost/:id", deletePost);
+router.post('/updatePostStatus',updatePostStatusToPublished)
 module.exports = router;
