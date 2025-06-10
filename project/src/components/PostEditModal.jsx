@@ -84,8 +84,8 @@ export const PostEditModal = ({
             isEditorOpen={isGraphicEditorModal}
           />
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex h-full items-center justify-center p-4 text-center">
-              <Transition.Child
+          <div className="min-h-full flex items-start justify-center p-4 text-center sm:items-center">
+          <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -191,7 +191,7 @@ export const PostEditModal = ({
                       >
                         Save Changes
                       </button>
-                      <button className="text-white md:text-gray-700 px-32 md:px-0 bg-black md:bg-white w-full  md:w-auto order-1 md:order-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex items-center gap-1">
+                      <button className="text-white md:text-gray-700 px-32 md:px-0 bg-black md:bg-white w-full  md:w-auto order-1 md:order-none px-4 py-2 text-sm text-gray-700 dark:text-gray-300 md:hover:bg-gray-100 md:dark:hover:bg-gray-700 rounded-lg flex items-center gap-1">
                         Schedule
                       </button>
                     </div>
