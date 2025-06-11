@@ -18,10 +18,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { useReschedulePost,useApproveAndSchedulePost } from "../libs/postService";
+import { useReschedulePost, useApproveAndSchedulePost } from "../libs/postService";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
-  // console.log(post);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
@@ -36,8 +35,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageBlurred, setImageBlurred] = useState(true);
-  const { mutate: reschedule, isLoading } = useReschedulePost();
-  const { mutate: approveAndSchedule, isLoading } = useApproveAndSchedulePost();
+  const { mutate: reschedule, isLoading: isRescheduling } = useReschedulePost();
+  const { mutate: approveAndSchedule, isLoading: isApproving } = useApproveAndSchedulePost();
+
   useEffect(() => {
     if (imageLoaded) {
       const timer = setTimeout(() => {
@@ -71,11 +71,12 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
+
   const platformDimensions = {
     facebook: [1200, 630],
     x: [1200, 675],
     linkedin: [1200, 627],
-    instagram: [1080, 1080], // default square post
+    instagram: [1080, 1080],
   };
 
   const getImageStyle = (platform) => {
@@ -90,10 +91,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           height: `auto`,
         }
       : {
-          // aspectRatio: getImageAspectRatio(platform),
           width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
           height: `${Math.max(Math.min(canvasHeight / 3, 600))}px`,
-          // objectFit: "cover",
         };
   };
 
@@ -147,7 +146,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       image: post.image,
       platforms: (post.platforms || [])
         .map((p) => p.toLowerCase())
-        .map((p) => (p === "x" ? "twitter" : p)) // Map "x" to "twitter"
+        .map((p) => (p === "x" ? "twitter" : p))
         .filter((p) =>
           ["twitter", "linkedin", "facebook", "instagram"].includes(p)
         ),
@@ -155,7 +154,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
 
     try {
       setLoadingMessage("Scheduling post...");
-      console.log("schedulePayload", schedulePayload);
+
       const scheduleResponse = await fetch(
         "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/scheduleMulti",
         {
@@ -165,23 +164,22 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         }
       );
 
-      if (!scheduleResponse.ok)
+      if (!scheduleResponse.ok) {
         throw new Error("Failed to schedule post externally");
+      }
 
-      const updateResponse = await fetch(
-        `http://localhost:5000/api/v1/posts/updatePost/${post._id}`,
+      approveAndSchedule(
+        { postId: post._id },
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "scheduled" }),
+          onSuccess: (updatedPost) => {
+            toast.success("Post approved and scheduled!");
+            onEdit({ ...post, status: "scheduled" }, "scheduled");
+          },
+          onError: (error) => {
+            toast.error("Failed to approve and schedule the post.");
+          },
         }
       );
-
-      if (!updateResponse.ok)
-        throw new Error("Failed to update post status locally");
-
-      toast.success("Post approved and scheduled!");
-      onEdit({ ...post, status: "scheduled" }, "scheduled");
     } catch (err) {
       console.error("Approval error:", err);
       toast.error("Failed to approve and schedule the post.");
@@ -206,6 +204,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       }
     );
   };
+
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
   const selectedStyles = "bg-blue-100 text-blue-700 hover:bg-blue-200";
@@ -216,8 +215,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     <>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-4 flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 dark:border-gray-700">
-          <div className="flex  items-center space-x-3">
-            <div className="w-10 h-10  bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <img
                 src={post?.domainId?.siteLogo}
                 alt="Business logo"
@@ -235,9 +234,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           </div>
 
           <div className="flex items-center space-x-2 p-2">
-            {/* <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
-              Visual
-            </h2> */}
             {["image", "brandingImage", "sloganImage"].map((type) => {
               const Icon =
                 type === "image"
@@ -299,7 +295,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                     ...getImageStyle(primaryPlatform),
                     filter: imageBlurred ? "blur(20px)" : "none",
                     transition: "filter 0.3s ease",
-                    display: imageLoaded ? "block" : "none", // Hide image until loaded
+                    display: imageLoaded ? "block" : "none",
                     cursor: "pointer",
                   }}
                   onClick={() => setShowEditModal(true)}
@@ -320,10 +316,10 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
             <button
               onClick={handleApprove}
-              disabled={!!loadingMessage}
+              disabled={isApproving || !!loadingMessage}
               className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2 disabled:opacity-50"
             >
-              {loadingMessage === "Scheduling post..." ? (
+              {isApproving || loadingMessage === "Scheduling post..." ? (
                 <>
                   <Loader2 className="animate-spin h-4 w-4" />
                   Scheduling...
@@ -335,7 +331,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               )}
             </button>
             <div className="flex items-center cursor-pointer" onClick={() => setShowDatePicker(!showDatePicker)}>
-              <button >
+              <button>
                 <Calendar className="h-3 w-3" />
               </button>
               <span className="text-xs ml-1">
@@ -348,7 +344,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs inline md:hidden  bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+            <span className="text-xs inline md:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
               {primaryPlatform}
             </span>
             <button
@@ -382,7 +378,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 <Check className="w-4 h-4" />
               </div>
             )}
-            {/* onDelete(post) */}
             <button
               onClick={() => setDeletePost(true)}
               className="icon-btn"
@@ -422,7 +417,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 onClick={() => setShowDatePicker(false)}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
               >
-                &times;
+                ×
               </button>
             </div>
 
@@ -457,10 +452,10 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
               <button
                 onClick={() => handleReschedule(selectedDate)}
-                disabled={!!loadingMessage}
+                disabled={isRescheduling}
                 className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded disabled:opacity-50"
               >
-                {loadingMessage === "Updating schedule time..." ? (
+                {isRescheduling ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="animate-spin h-4 w-4" /> Updating...
                   </span>
@@ -472,6 +467,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           </div>
         </div>
       )}
+
       {deletePost && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-md">
@@ -482,20 +478,20 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               <button
                 onClick={() => setDeletePost(false)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                disabled={isDeleting} // Disable during deletion
+                disabled={isDeleting}
               >
                 Cancel
               </button>
               <button
                 onClick={async () => {
-                  setIsDeleting(true); // Start loading
-                  await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds
+                  setIsDeleting(true);
+                  await new Promise((resolve) => setTimeout(resolve, 2000));
                   onDelete(post);
-                  setIsDeleting(false); // Stop loading
+                  setIsDeleting(false);
                   setDeletePost(false);
                 }}
                 className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded flex items-center justify-center min-w-20"
-                disabled={isDeleting} // Disable during deletion
+                disabled={isDeleting}
               >
                 {isDeleting ? (
                   <>
