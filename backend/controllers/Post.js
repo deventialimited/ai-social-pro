@@ -475,8 +475,34 @@ exports.deletePost = async (req, res) => {
       await deleteFromS3(keysToDelete);
     }
 
-    // Delete associated PostDesigns
+    // Delete associated PostDesigns and their images
+    const postDesigns = await PostDesign.find({ postId: post._id });
+
+    const allFilesToDelete = [];
+
+    for (const design of postDesigns) {
+      const designElements = design.elements || [];
+
+      designElements.forEach((el) => {
+        if (el.props?.src) {
+          const key = el.props.src.split("/").pop();
+          allFilesToDelete.push(key);
+        }
+      });
+
+      if (design.backgrounds?.src) {
+        const key = design.backgrounds.src.split("/").pop();
+        allFilesToDelete.push(key);
+      }
+    }
+
+    // Now delete PostDesigns
     await PostDesign.deleteMany({ postId: post._id });
+
+    // Delete all related images from S3
+    if (allFilesToDelete.length > 0) {
+      await deleteFromS3(allFilesToDelete);
+    }
 
     // Delete Post itself
     await Post.findByIdAndDelete(id);
@@ -492,7 +518,6 @@ exports.deletePost = async (req, res) => {
   }
 };
 
-
 exports.updatePostStatusToPublished = async (req, res) => {
   const { postId, status } = req.body;
   console.log("Updating status for post ID:", postId, "to:", status);
@@ -507,7 +532,9 @@ exports.updatePostStatusToPublished = async (req, res) => {
 
   const validStatuses = ["generated", "scheduled", "published"];
   if (!validStatuses.includes(normalizedStatus)) {
-    return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+    return res.status(400).json({
+      message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+    });
   }
 
   try {
@@ -527,11 +554,9 @@ exports.updatePostStatusToPublished = async (req, res) => {
     post.updatedAt = Date.now();
     await post.save();
 
-  
-
     res.status(200).json({
       message: `Post status updated to ${status} successfully`,
-      post
+      post,
     });
   } catch (error) {
     console.error("Error updating post status:", error);

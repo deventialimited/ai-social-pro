@@ -4,6 +4,45 @@ import axios from "axios";
 // const API_URL = import.meta.env.VITE_API_URL || '';
 const API_URL = "https://api.oneyearsocial.com";
 // const API_URL = "http://localhost:5000";
+export const useDeleteTemplateDesignById = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteTemplateDesignById,
+    onSuccess: (data, id) => {
+      console.log("Successfully deleted template design:", id);
+
+      // Invalidate queries for updated refetch
+      queryClient.invalidateQueries(["templates", data.userId]);
+
+      // Optional: Manually remove deleted design from the cache if needed
+      queryClient.setQueryData(["templates", data.userId], (oldData) => {
+        if (!oldData) return [];
+        return oldData.filter((design) => design._id !== id);
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to delete template design:", error);
+    },
+  });
+};
+
+export const deleteTemplateDesignById = async (id) => {
+  try {
+    console.log("Deleting template design with ID:", id);
+    const response = await axios.delete(
+      `${API_URL}/api/v1/templateDesign/deleteTemplateDesign/${id}`
+    );
+    console.log("Template design deleted successfully:", response);
+    return response.data;
+  } catch (err) {
+    console.error(
+      "Error deleting template design",
+      err.response?.data?.message || err.message
+    );
+    throw err.response?.data?.message || err.message;
+  }
+};
 
 // Get post design by ID
 export const getTemplateDesignById = async (userId) => {

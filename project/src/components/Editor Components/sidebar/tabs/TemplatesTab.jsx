@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useGetAllTemplatesByUserId } from "../../../../libs/templateDesignService";
+import {
+  useDeleteTemplateDesignById,
+  useGetAllTemplatesByUserId,
+} from "../../../../libs/templateDesignService";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, Trash2 } from "lucide-react";
 
 const CATEGORIES = ["branding", "slogan"];
 
@@ -14,8 +17,17 @@ function TemplatesTab() {
     setCanvasLoading,
     canvasLoading,
     pushToHistory,
-    historyRef
+    historyRef,
   } = useEditor();
+  const [deletingId, setDeletingId] = useState(null);
+
+  const deleteTemplateMutation = useDeleteTemplateDesignById();
+  const handleDeleteTemplate = (id) => {
+    setDeletingId(id);
+    deleteTemplateMutation.mutate(id, {
+      onSettled: () => setDeletingId(null),
+    });
+  };
 
   const [userId, setUserId] = useState(null);
   const [category, setCategory] = useState("branding");
@@ -44,14 +56,15 @@ function TemplatesTab() {
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
-      
+
       // Create new state object with template data
       const newState = {
         ...historyRef.current.present,
         canvas: template.canvas || historyRef.current.present.canvas,
         elements: template.elements || historyRef.current.present.elements,
         layers: template.layers || historyRef.current.present.layers,
-        backgrounds: template.backgrounds || historyRef.current.present.backgrounds
+        backgrounds:
+          template.backgrounds || historyRef.current.present.backgrounds,
       };
 
       // Update states
@@ -62,7 +75,7 @@ function TemplatesTab() {
 
       // Add to history
       pushToHistory(newState);
-      
+
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
@@ -77,23 +90,22 @@ function TemplatesTab() {
   return (
     <div className="p-4 h-full flex flex-col overflow-y-auto">
       {/* Category Tabs */}
-    {/* Category Tabs */}
-<div className="flex border-b mb-4">
-  {CATEGORIES.map((tab) => (
-    <button
-      key={tab}
-      onClick={() => setCategory(tab)}
-      className={`flex-1 text-center py-2 text-sm font-medium transition-colors ${
-        category === tab
-          ? "border-b-2 border-black text-black"
-          : "text-gray-500 hover:text-black"
-      }`}
-    >
-      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-    </button>
-  ))}
-</div>
-
+      {/* Category Tabs */}
+      <div className="flex border-b mb-4">
+        {CATEGORIES.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setCategory(tab)}
+            className={`flex-1 text-center py-2 text-sm font-medium transition-colors ${
+              category === tab
+                ? "border-b-2 border-black text-black"
+                : "text-gray-500 hover:text-black"
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
 
       {/* Status */}
       {isLoading && <div>Loading templates...</div>}
@@ -113,31 +125,49 @@ function TemplatesTab() {
           onClick={() => setShowPrivate(!showPrivate)}
         >
           <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
-            {showPrivate ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            {showPrivate ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
             Private Templates
           </div>
         </div>
-        {showPrivate && (
-          privateTemplates.length > 0 ? (
+        {showPrivate &&
+          (privateTemplates.length > 0 ? (
             <div className="grid grid-cols-2 gap-2">
               {privateTemplates.map((template) => (
                 <div
                   key={template._id}
-                  className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
-                  onClick={() => handleLoadTemplate(template)}
+                  className="relative group h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 cursor-pointer"
                 >
                   <img
                     src={template.templateImage}
                     alt="Private Template"
-                    className="w-full h-full object-cover"
+                    className="w-full"
+                    onClick={() => handleLoadTemplate(template)}
                   />
+                  <div
+                    className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTemplate(template._id);
+                    }}
+                  >
+                    {deletingId === template._id ? (
+                      <Loader2 size={20} className="animate-spin text-white" />
+                    ) : (
+                      <Trash2 size={20} className="text-white" />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-sm">No private templates found.</div>
-          )
-        )}
+            <div className="text-gray-500 text-sm">
+              No private templates found.
+            </div>
+          ))}
       </div>
 
       {/* Public Templates */}
@@ -147,17 +177,21 @@ function TemplatesTab() {
           onClick={() => setShowPublic(!showPublic)}
         >
           <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
-            {showPublic ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            {showPublic ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
             Public Templates
           </div>
         </div>
-        {showPublic && (
-          publicTemplates.length > 0 ? (
+        {showPublic &&
+          (publicTemplates.length > 0 ? (
             <div className="flex  gap-2 ">
               {publicTemplates.map((template) => (
                 <div
                   key={template._id}
-                  className=" h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 hover:opacity-80 cursor-pointer"
+                  className=" relative group h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 cursor-pointer"
                   onClick={() => handleLoadTemplate(template)}
                 >
                   <img
@@ -165,13 +199,27 @@ function TemplatesTab() {
                     alt="Public Template"
                     className="w-full "
                   />
+                  <div
+                    className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTemplate(template._id);
+                    }}
+                  >
+                    {deletingId === template._id ? (
+                      <Loader2 size={20} className="animate-spin text-white" />
+                    ) : (
+                      <Trash2 size={20} className="text-white" />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-sm">No public templates available.</div>
-          )
-        )}
+            <div className="text-gray-500 text-sm">
+              No public templates available.
+            </div>
+          ))}
       </div>
     </div>
   );
