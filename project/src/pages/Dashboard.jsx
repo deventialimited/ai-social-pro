@@ -11,6 +11,7 @@ import { PostsHeader } from "../components/PostsHeader";
 import { useDomains } from "../libs/domainService";
 import { SuccessPopup } from "./SuccessPopup";
 import { CancelPopup } from "./CancelPopup";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetAllPostsByDomainId,
   useUpdatePostById,
@@ -20,8 +21,10 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import { getUserInformation } from "../libs/authService";
+import {useSocket} from '../store/useSocket'
 
 export const Dashboard = () => {
+  const queryClient = useQueryClient();
   const { isDark } = useThemeStore();
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState({ username: "" });
@@ -36,12 +39,25 @@ export const Dashboard = () => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
 const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
-
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const checkoutStatus = searchParams.get("checkout");
+const socket=useSocket();
 
 
+  useEffect(()=>{
+    if (!socket){
+      console.log('socket not conected in the dashboard');
+      return;
+    }
+    socket.on('postStatusUpdated',(updatedPost)=>{
+      console.log("updated post in the dashboard",updatedPost)
+      if (updatedPost.domainId === selectedWebsite) 
+        {
+          queryClient.invalidateQueries(['posts',updatedPost.domainId])
+                  }
+    })
+  },[socket,queryClient,selectedWebsite])
 useEffect(()=>{
   console.log('into the new USeeffect to check the returnFromPortal')
   const returnFromPortal = searchParams.get("returnFromPortal");

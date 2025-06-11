@@ -29,7 +29,13 @@ const SocketHandler = (io) => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
     // Notify admin of a new tax return creation
-
+const userId = socket.handshake.query.userId;
+    if(userId){
+      console.log(userId)
+      const room=`room_${userId}`;
+      socket.join(room);
+      console.log(`Socket ${socket.id} joined ${room}`);
+    }
     // Handle connection errors
     socket.on("connect_error", (error) => {
       console.error("Connection error:", error.message);

@@ -390,7 +390,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
 
         <div className="flex justify-center md:mt-[-13px] mb-5 text-xs text-gray-500 dark:text-gray-400">
           <span className="text-[9px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
-            ID: {post._id}
+            ID: {post.postId}
           </span>
         </div>
       </div>

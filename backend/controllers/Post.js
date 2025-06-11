@@ -522,6 +522,17 @@ exports.updatePostStatusToPublished = async (req, res) => {
       });
     }
 
+
+    const io=socket.getIO();
+const room = `room_${post.userId}`;
+    io.to(room).emit("postStatusUpdated", {
+      postId: post.postId,
+      _id: post._id,
+      status: post.status,
+      domainId: post.domainId,
+      updatedAt: post.updatedAt,
+    });
+    console.log(`Emitted postStatusUpdated to ${room} for post ${postId}`);
     // Update the post status
     post.status = status;
     post.updatedAt = Date.now();
