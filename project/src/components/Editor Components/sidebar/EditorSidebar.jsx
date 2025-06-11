@@ -121,7 +121,7 @@ function EditorSidebar({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-30">
+      <div className="md:hidden fixed p-2 bottom-0 left-0 right-0 bg-white border-t z-30">
         <div className="flex justify-around items-center">
           {tabs.map((tab) => (
             <button
@@ -142,9 +142,9 @@ function EditorSidebar({
 
       {/* Mobile Bottom Sheet for Tab Content */}
       <Transition appear show={mobileSheetOpen} as={Fragment}>
-        <Dialog as="div" className="fixed inset-0 z-[10000] md:hidden" onClose={() => setMobileSheetOpen(false)}>
-          <div className="fixed inset-0 bg-black/30 z-[10000]" aria-hidden="true" onClick={() => setMobileSheetOpen(false)} />
-          <div className="fixed inset-x-0 bottom-0 flex justify-center items-end min-h-[30vh] z-[10000]">
+        <Dialog as="div" className="fixed  inset-0 z-[10000] md:hidden" onClose={() => setMobileSheetOpen(false)}>
+          <div className="fixed inset-0  bg-transparent z-[10000]" aria-hidden="true" onClick={() => setMobileSheetOpen(false)} />
+          <div className="fixed inset-x-0 bottom-24  p-4 flex justify-center items-end min-h-[30vh] z-[10000]">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
