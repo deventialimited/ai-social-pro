@@ -22,6 +22,16 @@ function EditorCanvas({
   const containerRef = useRef(null);
   const transformRef = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth <= 768);
+    }
+    handleResize(); // set on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   // Add delete handler
   useEffect(() => {
     const handleDelete = (e) => {
@@ -121,7 +131,7 @@ function EditorCanvas({
       }}
     >
       {/* Canvas controls */}
-      <div className="fixed top-32 right-4 float-right z-10 flex flex-col gap-1 ml-auto mr-4">
+      {/* <div className="fixed md:top-32 md:mt-0 pt-12 md:right-4 right-8 float-right z-10 flex md:flex-col flex-row gap-1 ml-auto mr-4">
         <button className="p-1 bg-white rounded-md shadow hover:bg-gray-50">
           <Copy className="h-4 w-4" />
         </button>
@@ -134,7 +144,7 @@ function EditorCanvas({
         <button className="p-1 bg-white rounded-md shadow hover:bg-gray-50">
           <Trash className="h-4 w-4" />
         </button>
-      </div>
+      </div> */}
 
       {/* Canvas container */}
       <div className="absolute inset-0">
@@ -157,7 +167,7 @@ function EditorCanvas({
         >
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
-              <div className="fixed bottom-6 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-40">
+              <div className="fixed md:bottom-6 bottom-20 right-6 flex items-center gap-2 bg-white rounded-full shadow px-2 z-40">
                 <button
                   onClick={() => zoomOut()}
                   className="p-2 hover:bg-gray-100 rounded-full"
@@ -260,7 +270,7 @@ function EditorCanvas({
               <TransformComponent
                 wrapperStyle={{
                   width: "100%",
-                  height: "70vh",
+                  height: isMobile ? "50vh" : "70vh",
                   overflow: "hidden",
                   position: "relative",
                   marginBottom: "30px",
