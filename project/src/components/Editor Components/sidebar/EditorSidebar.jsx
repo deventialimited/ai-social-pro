@@ -17,7 +17,7 @@ import ImageEffectsTab from "./tabs/effects/ImageEffectsTab";
 import ApplyMaskTab from "./tabs/ApplyMaskTab";
 import TemplatesTab from "./tabs/TemplatesTab";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Fragment, useState,useEffect } from "react";
 
 const tabs = [
   { id: "text", icon: Type, label: "Text", component: TextTab },
@@ -48,6 +48,8 @@ const specialTabs = {
   "apply-mask": { component: ApplyMaskTab },
 };
 
+
+
 function EditorSidebar({
   activeTab,
   setActiveTab,
@@ -65,6 +67,18 @@ function EditorSidebar({
       tabs.find((tab) => tab.id === activeTab)?.component || TextTab;
   }
 
+
+
+  useEffect(() => {
+    if (specialActiveTab && window.innerWidth < 768) {
+      setMobileSheetOpen(true);
+      setMobileActiveTab(specialActiveTab); 
+    } else {
+      setMobileActiveTab(null);  
+    }
+  }, [specialActiveTab]);
+  
+  
   // Mobile bottom sheet state
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState(null);
@@ -79,7 +93,9 @@ function EditorSidebar({
 
   // Get the component for the mobile active tab
   const MobileActiveTabComponent =
-    tabs.find((tab) => tab.id === mobileActiveTab)?.component || TextTab;
+  specialTabs[specialActiveTab]?.component ||
+  tabs.find((tab) => tab.id === mobileActiveTab)?.component ||
+  TextTab;
 
   return (
     <>
@@ -156,7 +172,9 @@ function EditorSidebar({
             >
               <Dialog.Panel className="w-full max-w-md mx-auto bg-white rounded-t-2xl shadow-xl p-0 overflow-hidden">
                 <div className="flex justify-between items-center px-4 py-2 border-b">
-                  <span className="font-medium text-base">{tabs.find(tab => tab.id === mobileActiveTab)?.label}</span>
+                  <span className="font-medium text-base">{specialActiveTab
+    ? specialActiveTab.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    : tabs.find((tab) => tab.id === mobileActiveTab)?.label || "Editor"}</span>
                   <button
                     onClick={() => setMobileSheetOpen(false)}
                     className="p-1 rounded-full hover:bg-gray-100"
