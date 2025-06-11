@@ -4,7 +4,14 @@ import {
   useGetAllTemplatesByUserId,
 } from "../../../../libs/templateDesignService";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
-import { ChevronDown, ChevronRight, Loader2, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Plus,
+  SquarePlus,
+  Trash2,
+} from "lucide-react";
 
 const CATEGORIES = ["branding", "slogan"];
 
@@ -145,20 +152,26 @@ function TemplatesTab() {
                     src={template.templateImage}
                     alt="Private Template"
                     className="w-full"
-                    onClick={() => handleLoadTemplate(template)}
                   />
                   <div
-                    className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                    className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteTemplate(template._id);
                     }}
                   >
-                    {deletingId === template._id ? (
-                      <Loader2 size={20} className="animate-spin text-white" />
-                    ) : (
-                      <Trash2 size={20} className="text-white" />
-                    )}
+                    <div onClick={() => handleLoadTemplate(template)}>
+                      <SquarePlus size={20} className="text-white" />
+                    </div>
+                    <div onClick={() => handleDeleteTemplate(template._id)}>
+                      {deletingId === template._id ? (
+                        <Loader2
+                          size={20}
+                          className="animate-spin text-white"
+                        />
+                      ) : (
+                        <Trash2 size={20} className="text-white" />
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -192,7 +205,6 @@ function TemplatesTab() {
                 <div
                   key={template._id}
                   className=" relative group h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 cursor-pointer"
-                  onClick={() => handleLoadTemplate(template)}
                 >
                   <img
                     src={template.templateImage}
@@ -200,17 +212,24 @@ function TemplatesTab() {
                     className="w-full "
                   />
                   <div
-                    className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                    className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteTemplate(template._id);
                     }}
                   >
-                    {deletingId === template._id ? (
-                      <Loader2 size={20} className="animate-spin text-white" />
-                    ) : (
-                      <Trash2 size={20} className="text-white" />
-                    )}
+                    <div onClick={() => handleLoadTemplate(template)}>
+                      <SquarePlus size={20} className="text-white" />
+                    </div>
+                    <div onClick={() => handleDeleteTemplate(template._id)}>
+                      {deletingId === template._id ? (
+                        <Loader2
+                          size={20}
+                          className="animate-spin text-white"
+                        />
+                      ) : (
+                        <Trash2 size={20} className="text-white" />
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
