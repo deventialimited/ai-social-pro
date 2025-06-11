@@ -44,7 +44,7 @@ export const PostEditModal = ({
   const handleSave = () => {
     if (!validateChanges()) {
       // Show toast message if no changes were made
-      toast.error("No changes made to the post.");
+      // toast.error("No changes made to the post.");
       onClose();
       return;
     }
