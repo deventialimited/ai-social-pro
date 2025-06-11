@@ -191,3 +191,51 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     });
   }
 };
+
+exports.deleteTemplateDesign = async (req, res) => {
+  const id = req.params.id;
+  console.log("Deleting template ID:", id);
+
+  if (!id) {
+    return res.status(400).json({ message: "Post ID is required" });
+  }
+
+  try {
+    const templateDesign = await TemplateDesign.findById(id);
+    if (!templateDesign) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (templateDesign) {
+      const filesToDelete = [];
+
+      const designElements = templateDesign?.elements || [];
+
+      designElements.forEach((el) => {
+        if (el.props?.src) {
+          const key = el.props.src.split("/").pop();
+          filesToDelete.push(key);
+        }
+      });
+
+      if (templateDesign.backgrounds?.src) {
+        const key = templateDesign.backgrounds.src.split("/").pop();
+        filesToDelete.push(key);
+      }
+
+      if (filesToDelete.length > 0) {
+        await deleteFromS3(filesToDelete);
+      }
+    }
+    await TemplateDesign.findByIdAndDelete(id);
+
+    res
+      .status(200)
+      .json({ message: "Template and related assets deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting templateDesign:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
