@@ -123,13 +123,44 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     onEdit(updatedPost, "generated");
     setShowEditModal(false);
   };
+const handleDownload=async()=>{
+  const imageUrl=await post[selectedButton]?.imageUrl
+   if (!imageUrl) {
+      toast.error("Image not found");
+      return;
+    }
 
+    try{
+      const response=await fetch(imageUrl)
+      const blob=await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Set download filename based on selected button
+      const filename = `${selectedButton}_${post.postId}.png`;
+      link.setAttribute('download', filename);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Image downloaded successfully!");
+    }
+    catch(error){
+      console.log(error)
+      toast.error("Failed to download image");
+    }
+}
   const handleDateChange = (date) => {
     setSelectedDate(date);
     if (onReschedule) {
       onReschedule(post._id, date);
     }
   };
+
+
 
   const handleApprove = async () => {
     const now = new Date();
@@ -138,12 +169,26 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       return;
     }
 
+
+
+const getSelectedImageUrl = () => {
+    switch (selectedButton) {
+      case "brandingImage":
+        return post.brandingImage?.imageUrl || "";
+      case "sloganImage":
+        return post.sloganImage?.imageUrl || "";
+      case "image":
+        return post.image?.imageUrl ||  post.brandingImage?.imageUrl ;
+      default:
+        return "";
+    }
+  };
     const schedulePayload = {
       time: new Date(postDate).getTime(),
       uid: post.userId || "",
       postId: post.postId,
       content: post.content,
-      image: post.image,
+      image: getSelectedImageUrl(),
       platforms: (post.platforms || [])
         .map((p) => p.toLowerCase())
         .map((p) => (p === "x" ? "twitter" : p))
@@ -364,7 +409,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
             )}
             <button
-              onClick={() => console.log("Download clicked")}
+              onClick={handleDownload}
               className="icon-btn"
               title="Download"
             >
