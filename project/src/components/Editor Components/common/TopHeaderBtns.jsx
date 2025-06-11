@@ -78,6 +78,30 @@ const TopHeaderBtns = ({
       image.onerror = () => reject(`Failed to load image: ${originalSrc}`);
     });
   };
+  const enhanceBlob = async (blob) => {
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+
+    return new Promise((resolve) => {
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = 2; // Upscale factor
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((newBlob) => {
+          resolve(newBlob);
+        }, "image/png");
+      };
+      img.src = url;
+    });
+  };
 
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
@@ -122,8 +146,9 @@ const TopHeaderBtns = ({
 
       // Step 4: Convert to Blob/File for backend upload
       const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      const file = new File([blob], `canvas_${Date.now()}.png`, {
+      const lowQualityBlob = await response.blob();
+      const highQualityBlob = await enhanceBlob(lowQualityBlob);
+      const file = new File([highQualityBlob], `canvas_${Date.now()}.png`, {
         type: "image/png",
       });
 
@@ -154,6 +179,8 @@ const TopHeaderBtns = ({
           },
         }
       );
+      // console.log(URL.createObjectURL(file));
+      // setIsSavePostLoading(false);
     } catch (error) {
       setIsSavePostLoading(false);
       toast.error("An error occurred while saving");
