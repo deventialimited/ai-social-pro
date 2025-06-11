@@ -170,7 +170,7 @@ function EditorSidebar({
               leaveFrom="translate-y-0 opacity-100"
               leaveTo="translate-y-full opacity-0"
             >
-              <Dialog.Panel className="w-full max-w-md mx-auto bg-white rounded-t-2xl shadow-xl p-0 overflow-hidden">
+              <Dialog.Panel className="w-full max-w-md mx-auto bg-white rounded-t-2xl shadow-xl p-0 overflow-hidden h-[35vh]">
                 <div className="flex justify-between items-center px-4 py-2 border-b">
                   <span className="font-medium text-base">{specialActiveTab
     ? specialActiveTab.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())
@@ -183,7 +183,7 @@ function EditorSidebar({
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto">
+                <div className="h-[calc(70vh-48px)] overflow-y-auto">
                   <MobileActiveTabComponent
                     selectedElementId={selectedElementId}
                     onClose={() => setMobileSheetOpen(false)}
