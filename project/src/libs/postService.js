@@ -172,3 +172,41 @@ export const useReschedulePost = () => {
     },
   });
 };
+
+
+export const approveAndSchedulePost = async ({ postId }) => {
+  try {
+    const postData = { status: "scheduled" };
+    const response = await axios.put(`${API_URL}/updatePost/${postId}`, postData);
+    return response.data?.post;
+  } catch (error) {
+    console.error(
+      "Error approving and scheduling post:",
+      error.response?.data?.message || error.message
+    );
+    throw error.response?.data?.message || error.message;
+  }
+};
+
+// Hook to approve and schedule a post
+export const useApproveAndSchedulePost = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: approveAndSchedulePost,
+    onSuccess: (updatedPost) => {
+      // Update the cache with the updated post
+      queryClient.setQueryData(["posts", updatedPost.domainId], (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        );
+      });
+      // Invalidate queries to refetch the latest data
+      queryClient.invalidateQueries(["posts", updatedPost.domainId]);
+    },
+    onError: (error) => {
+      console.error("Failed to approve and schedule post:", error);
+    },
+  });
+};

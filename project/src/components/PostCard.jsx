@@ -18,7 +18,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { useReschedulePost } from "../libs/postService";
+import { useReschedulePost,useApproveAndSchedulePost } from "../libs/postService";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   // console.log(post);
@@ -37,6 +37,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageBlurred, setImageBlurred] = useState(true);
   const { mutate: reschedule, isLoading } = useReschedulePost();
+  const { mutate: approveAndSchedule, isLoading } = useApproveAndSchedulePost();
   useEffect(() => {
     if (imageLoaded) {
       const timer = setTimeout(() => {
