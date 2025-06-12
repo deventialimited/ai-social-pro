@@ -68,7 +68,7 @@ export const SocialsTab = () => {
       "Connected platforms from localStorage:",
       storedUser?.PlatformConnected
     );
-  }, []);
+  }, [user]);
 
   const platforms = [
     {
