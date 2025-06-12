@@ -11,7 +11,7 @@ import {
   useSaveOrUpdatePostDesign,
 } from "../../../libs/postDesignService";
 import { createImageElement } from "../sidebar/hooks/ImagesHooks";
-import { presetSizes } from "../sidebar/tabs/SizeTab";
+import { getPlatformIdBySize, presetSizes } from "../sidebar/tabs/SizeTab";
 import toast from "react-hot-toast";
 import { useSaveOrUpdateTemplateDesign } from "../../../libs/templateDesignService";
 import { v4 as uuidv4 } from "uuid";
@@ -160,7 +160,6 @@ const TopHeaderBtns = ({
       console.error("Error saving design:", error);
     }
   };
-
   const handleSaveTemplateAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
@@ -193,12 +192,16 @@ const TopHeaderBtns = ({
       const file = new File([blob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-      console.log(file);
+      const platform = getPlatformIdBySize(
+        postDesignData.canvas.width,
+        postDesignData.canvas.height
+      );
       onSaveTemplate.mutate(
         {
           userId: user?._id,
           templateId: `${user?.username}-${uuidv4()}`,
           templateType,
+          templatePlatform: platform,
           templateCategory,
           templateImage: file,
           templateDesignData: postDesignData,
@@ -316,6 +319,10 @@ const TopHeaderBtns = ({
       setPostOtherValues({
         siteLogo: postDetails?.domainId?.siteLogo,
         siteColors: postDetails?.domainId?.colors,
+        keywords:
+          postDetails?.related_keywords?.length > 0
+            ? [...postDetails?.related_keywords, postDetails?.domainId?.niche]
+            : [postDetails?.domainId?.niche],
       });
     }
   }, [postDetails]);

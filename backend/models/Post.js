@@ -36,6 +36,7 @@ const PostSchema = new Schema({
 
   date: { type: Date, default: Date.now },
   platforms: { type: [String], default: [] },
+  related_keywords: { type: [String], default: [] },
   status: { type: String, default: "generated" },
   followers: { type: Number, default: 0, min: 0 },
 

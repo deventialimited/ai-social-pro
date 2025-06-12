@@ -42,6 +42,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     const {
       id,
       templateType,
+      templatePlatform,
       templateCategory,
       templateId,
       userId,
@@ -154,6 +155,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     let templateDesign;
     if (existingTemplate) {
       existingTemplate.templateType = templateType;
+      existingTemplate.templatePlatform = templatePlatform;
       existingTemplate.templateType = templateCategory;
       existingTemplate.templateImage = templateImage;
       existingTemplate.canvas = canvas;
@@ -168,6 +170,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
         userId,
         templateId,
         templateType,
+        templatePlatform,
         templateCategory,
         templateImage,
         canvas,
