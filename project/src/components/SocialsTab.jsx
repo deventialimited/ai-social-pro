@@ -156,7 +156,7 @@ export const SocialsTab = () => {
 
   const handleContinueConnect = () => {
     if (selectedPlatform?.url) {
-      window.open(selectedPlatform.url, "_blank");
+      window.location.href=selectedPlatform.url
       return;
     }
 

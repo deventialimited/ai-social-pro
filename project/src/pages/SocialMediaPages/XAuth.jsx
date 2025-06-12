@@ -33,7 +33,8 @@ export const XAuth = () => {
     if (socket?.connected) {
       updatePlatform();
       setPopUp(false);
-      navigate("/");
+      console.log('hey man i am going out')
+      navigate("/dashboard?=socials");
     }
   }, [status, uid, platform, socket]);
   return (

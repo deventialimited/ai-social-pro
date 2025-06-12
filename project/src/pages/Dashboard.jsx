@@ -43,7 +43,18 @@ const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
   const [searchParams] = useSearchParams();
   const checkoutStatus = searchParams.get("checkout");
 const socket=useSocket();
+useEffect(() => {
 
+
+  // Check for tab query parameter and set currentTab
+  const tab = searchParams.get("tab");
+  if (tab === "socials") {
+    setCurrentTab("socials");
+    // Clean up the URL by removing the tab query parameter
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+}, [searchParams]);
 
   useEffect(()=>{
     if (!socket){
