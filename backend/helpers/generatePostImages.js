@@ -3,7 +3,6 @@ const Domain = require("../models/Domain");
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
 const fsp = require("fs").promises;
-const sharp = require("sharp");
 const mime = require("mime-types");
 const fetch = require("node-fetch");
 
@@ -19,25 +18,11 @@ const { renderImageFromHTML } = require("./renderImageFromHTML");
 const PostDesign = require("../models/PostDesign");
 
 const prepareFileObject = async (filePath) => {
-  const originalBuffer = await fsp.readFile(filePath);
-
-  // Enhance quality using sharp (upscale & resample)
-  const metadata = await sharp(originalBuffer).metadata();
-  const scaleFactor = 2;
-
-  const enhancedBuffer = await sharp(originalBuffer)
-    .resize({
-      width: metadata.width * scaleFactor,
-      height: metadata.height * scaleFactor,
-      kernel: sharp.kernel.lanczos3, // High-quality resampling
-    })
-    .png({ compressionLevel: 0 }) // Keep PNG lossless
-    .toBuffer();
-
+  const buffer = await fsp.readFile(filePath); // <-- THIS will work only with fs.promises
   return {
     originalname: path.basename(filePath),
     mimetype: mime.lookup(filePath) || "application/octet-stream",
-    buffer: enhancedBuffer,
+    buffer,
   };
 };
 const platformDimensions = {
