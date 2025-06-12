@@ -23,7 +23,7 @@ exports.getAllPostsBydomainId = async (req, res) => {
     // Fetch all posts associated with the domain
     const posts = await Post.find({ domainId }).populate(
       "domainId",
-      "clientName clientWebsite siteLogo colors"
+      "clientName clientWebsite siteLogo colors niche"
     );
 
     res.status(200).json(posts);
@@ -238,7 +238,7 @@ exports.updatePostImage = async (req, res) => {
 
     const updatedPost = await Post.findOne({ postId }).populate(
       "domainId",
-      "clientName clientWebsite siteLogo colors"
+      "clientName clientWebsite siteLogo colors niche"
     );
 
     socket
@@ -286,6 +286,7 @@ exports.processPubSub = async (req, res) => {
       userId: domain.userId,
       image: "", // image will be added later
       topic: jsonData.topic || "",
+      related_keywords: jsonData.related_keywords || [],
       content: jsonData.content || "",
       slogan: jsonData.slogan || "",
       postDate: jsonData.date ? new Date(jsonData.date) : Date.now(),
@@ -311,22 +312,30 @@ exports.processPubSub = async (req, res) => {
       brandName: domain?.clientName,
       primaryColor: domain?.colors[0],
       brandLogoUrl: logoUrl,
-      keywords: [domain?.niche],
+      keywords:
+        savedPost?.related_keywords?.length > 0
+          ? [...savedPost?.related_keywords, domain?.niche]
+          : [domain?.niche],
     });
+
+    // Determine editorStatus based on fallbackCase
+    const editorStatus = generatedImages.fallbackCase ? "not_edited" : "edited";
+
     savedPost.sloganImage = {
       imageUrl: generatedImages.sloganImage,
-      editorStatus: "edited",
+      editorStatus,
     };
 
     savedPost.brandingImage = {
       imageUrl: generatedImages.brandingImage,
-      editorStatus: "edited",
+      editorStatus,
     };
+
     console.log(savedPost);
     await savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
-      "clientName clientWebsite siteLogo colors"
+      "clientName clientWebsite siteLogo colors niche"
     );
 
     socket
@@ -365,7 +374,7 @@ exports.getFirstPost = async (req, res) => {
 
     // Find the first post for this domain (sorted by createdAt)
     const firstPost = await Post.findOne({ domainId: id })
-      .populate("domainId", "clientName clientWebsite siteLogo colors")
+      .populate("domainId", "clientName clientWebsite siteLogo colors niche")
       .sort({ createdAt: 1 }) // Get the oldest post (first created)
       .lean(); // Convert to plain JavaScript object
     console.log(firstPost);
@@ -549,9 +558,8 @@ exports.updatePostStatusToPublished = async (req, res) => {
       });
     }
 
-
-    const io=socket.getIO();
-const room = `room_${post.userId}`;
+    const io = socket.getIO();
+    const room = `room_${post.userId}`;
     io.to(room).emit("postStatusUpdated", {
       postId: post.postId,
       _id: post._id,

@@ -1,3 +1,5 @@
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   useDeleteTemplateDesignById,
@@ -13,7 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-const CATEGORIES = ["branding", "slogan"];
+const CATEGORIES = ["branding", "slogan", "general"];
 
 function TemplatesTab() {
   const {
@@ -27,6 +29,7 @@ function TemplatesTab() {
     historyRef,
   } = useEditor();
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const deleteTemplateMutation = useDeleteTemplateDesignById();
   const handleDeleteTemplate = (id) => {
@@ -142,7 +145,7 @@ function TemplatesTab() {
         </div>
         {showPrivate &&
           (privateTemplates.length > 0 ? (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex gap-2">
               {privateTemplates.map((template) => (
                 <div
                   key={template._id}
@@ -162,7 +165,7 @@ function TemplatesTab() {
                     <div onClick={() => handleLoadTemplate(template)}>
                       <SquarePlus size={20} className="text-white" />
                     </div>
-                    <div onClick={() => handleDeleteTemplate(template._id)}>
+                    <div onClick={() => setConfirmDeleteId(template._id)}>
                       {deletingId === template._id ? (
                         <Loader2
                           size={20}
@@ -220,16 +223,14 @@ function TemplatesTab() {
                     <div onClick={() => handleLoadTemplate(template)}>
                       <SquarePlus size={20} className="text-white" />
                     </div>
-                    <div onClick={() => handleDeleteTemplate(template._id)}>
-                      {deletingId === template._id ? (
-                        <Loader2
-                          size={20}
-                          className="animate-spin text-white"
-                        />
-                      ) : (
-                        <Trash2 size={20} className="text-white" />
-                      )}
-                    </div>
+                    {/* <div onClick={() => setConfirmDeleteId(template._id)}>
+  {deletingId === template._id ? (
+    <Loader2 size={20} className="animate-spin text-white" />
+  ) : (
+    <Trash2 size={20} className="text-white" />
+  )}
+</div>
+ */}
                   </div>
                 </div>
               ))}
@@ -240,6 +241,74 @@ function TemplatesTab() {
             </div>
           ))}
       </div>
+      <Transition appear show={!!confirmDeleteId} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-[99999999999999999]"
+          onClose={() => setConfirmDeleteId(null)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    Confirm Deletion
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to delete this template? This action
+                      cannot be undone.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setConfirmDeleteId(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+                      onClick={() => {
+                        handleDeleteTemplate(confirmDeleteId);
+                        setConfirmDeleteId(null);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 }
