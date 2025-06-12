@@ -90,7 +90,7 @@ export const SocialsTab = () => {
       url: ` https://oneyearsocial.com/twitterLogin?uid=${user?._id}`,
     },
     {
-      name: "LinkedIn Personal Profile",
+      name: "LinkedIn",
       key: "linkedin",
       icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/linkedin.svg",
       url: ` https://oneyearsocial.com/linkedInLogin?uid=${user?._id}`,
