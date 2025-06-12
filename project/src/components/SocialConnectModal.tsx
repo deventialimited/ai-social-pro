@@ -106,7 +106,7 @@ export const SocialConnectModal: React.FC<SocialConnectModalProps> = ({
             </button>
             <button
               onClick={onConnect}
-              className="px-4 py-1.5 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 
+              className="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white border border-gray-300 rounded-md hover:bg-gray-50 
                 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors"
             >
               Continue
