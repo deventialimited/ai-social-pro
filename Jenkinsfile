@@ -104,19 +104,20 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies - Backend') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
-            steps {
-                dir(DEPLOY_PATH) {
-                    script {
-                        echo "Running npm ci in deployment directory..."
-                        sh 'npm ci'  // Run npm ci in the deployment path to install backend dependencies
-                    }
-                }
+       stage('Install Dependencies - Backend') {
+    when {
+        expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+    }
+    steps {
+        dir("${DEPLOY_PATH}/backend") {
+            script {
+                echo "Running npm ci in backend directory..."
+                sh 'npm ci'  // ✅ This installs correct dependencies including 'sharp'.
             }
         }
+    }
+}
+
 
         stage('Start Backend') {
             when {
