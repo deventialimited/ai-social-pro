@@ -195,8 +195,8 @@ const generateDomainVisualAssets = async ({
       console.warn("Templates missing, using fallback Unsplash images...");
       const [img1, img2] = await getTwoUnsplashImagesFromKeywords(keywords);
       return {
-        sloganImage: img1,
-        brandingImage: img2,
+        sloganImage: await uploadToS3(img1),
+        brandingImage: await uploadToS3(img2),
         fallbackCase: true,
       };
     }
@@ -279,8 +279,8 @@ const generateDomainVisualAssets = async ({
       error
     );
     const [img1, img2] = await getTwoUnsplashImagesFromKeywords(keywords);
-    sloganImage = img1;
-    brandingImage = img2;
+    sloganImage = await uploadToS3(img1);
+    brandingImage = await uploadToS3(img2);
     fallbackCase = true;
   }
 
@@ -290,6 +290,5 @@ const generateDomainVisualAssets = async ({
     fallbackCase,
   };
 };
-
 
 module.exports = generateDomainVisualAssets;
