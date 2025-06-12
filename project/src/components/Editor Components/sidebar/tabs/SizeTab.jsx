@@ -100,7 +100,7 @@ const SizeTab = () => {
 
   return (
     <div className="p-4 h-full flex flex-col">
-      <div className="mb-4">
+      <div className="mb-4 flex md:flex-col gap-6 md:gap-0">
         <div className="mb-2 flex items-center justify-between flex-wrap gap-3">
           <label htmlFor="width" className="block text-sm mb-1">
             Width (px)
