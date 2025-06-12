@@ -11,7 +11,7 @@ import {
 import { SocialConnectModal } from "./SocialConnectModal";
 import { disconnectPlatform, updatePostSchedule } from "../libs/authService";
 import { useAuthStore } from "../store/useAuthStore";
-
+import toast from 'react-hot-toast'
 // Disconnect Icon Component
 const DisconnectIcon = ({ className = "w-5 h-5" }) => (
   <svg
@@ -135,7 +135,7 @@ export const SocialsTab = () => {
           throw new Error(`Failed to disconnect from ${platformToDisconnect}`);
         }
         else{
-          toast.success('platform disconnected')
+          toast.success(`${platformToDisconnect} disconnected`)
         }
       }
 

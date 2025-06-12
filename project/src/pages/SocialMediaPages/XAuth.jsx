@@ -33,9 +33,8 @@ export const XAuth = () => {
     if (socket?.connected) {
       updatePlatform();
       setPopUp(false);
-      console.log('hey man i am going out')
       navigate("/dashboard?tab=socials");
-      toast.success('')
+      toast.success(`${ getPlatformName(platform)} connected`)
     }
   }, [status, uid, platform, socket]);
   return (
