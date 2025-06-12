@@ -134,6 +134,9 @@ export const SocialsTab = () => {
         if (!response.ok) {
           throw new Error(`Failed to disconnect from ${platformToDisconnect}`);
         }
+        else{
+          toast.success('platform disconnected')
+        }
       }
 
       // Only proceed to disconnect from our database if the platform disconnect was successful
