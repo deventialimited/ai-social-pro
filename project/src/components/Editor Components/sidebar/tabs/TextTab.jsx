@@ -9,8 +9,8 @@ function TextTab() {
   };
 
   return (
-    <div className="p-4">
-      <h2
+<div className="p-4 overflow-auto max-h-[30vh] sm:overflow-visible sm:max-h-none">
+<h2
         onClick={() => handleAddText("header")}
         className="text-xl font-bold cursor-pointer mb-4"
       >
