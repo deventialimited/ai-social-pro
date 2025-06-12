@@ -34,7 +34,7 @@ export const XAuth = () => {
       updatePlatform();
       setPopUp(false);
       console.log('hey man i am going out')
-      navigate("/dashboard?=socials");
+      navigate("/dashboard?tab=socials");
     }
   }, [status, uid, platform, socket]);
   return (
