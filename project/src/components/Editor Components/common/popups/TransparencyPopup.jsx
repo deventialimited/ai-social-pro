@@ -3,15 +3,14 @@ import { Droplet } from "lucide-react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
-function TransparencyPopup({ transparency = 100, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
+function TransparencyPopup({ transparency = 100, onChange, onClose }) {
   const [value, setValue] = useState(transparency);
   const popupRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setIsOpen(false);
+        onClose?.();
       }
     };
 
@@ -19,7 +18,7 @@ function TransparencyPopup({ transparency = 100, onChange }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [onClose]);
 
   const handleChange = (newValue) => {
     setValue(newValue);
@@ -29,36 +28,25 @@ function TransparencyPopup({ transparency = 100, onChange }) {
   };
 
   return (
-    <div className="relative" ref={popupRef}>
-      <button
-        className="p-2 rounded-md hover:bg-gray-100"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <Droplet className="h-5 w-5 text-gray-600" />
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
-          <h3 className="font-medium mb-3">Transparency</h3>
-          <div className="flex items-center gap-2">
-            <Slider
-              min={0}
-              max={100}
-              value={value}
-              onChange={handleChange}
-              className="w-full"
-            />
-            <input
-              type="number"
-              value={value}
-              onChange={(e) => handleChange(Number(e.target.value))}
-              className="w-16 p-2 border rounded-md"
-              min="0"
-              max="100"
-            />
-          </div>
-        </div>
-      )}
+    <div ref={popupRef} className="w-64 bg-white rounded-md shadow-lg border p-4">
+      <h3 className="font-medium mb-3">Transparency</h3>
+      <div className="flex items-center gap-2">
+        <Slider
+          min={0}
+          max={100}
+          value={value}
+          onChange={handleChange}
+          className="w-full"
+        />
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => handleChange(Number(e.target.value))}
+          className="w-16 p-2 border rounded-md"
+          min="0"
+          max="100"
+        />
+      </div>
     </div>
   );
 }
