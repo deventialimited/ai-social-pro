@@ -128,7 +128,7 @@ const userSchema = new mongoose.Schema(
           default: "disconnected",
         },
       username:{
-type:string
+type:String
       },
         _id: false,
       },
