@@ -56,7 +56,6 @@ export const SocialsTab = () => {
     };
 
     const storedUser = getUserFromStorage();
-    console.log("pub time:", storedUser);
     setPublishingTimes(storedUser?.postSchedule?.publishingTimes || "00:00 PM");
     setRandomizeTime(
       storedUser?.postSchedule?.randomizeTime || "0 min (dummy)"
@@ -268,8 +267,10 @@ export const SocialsTab = () => {
                       Connected
                     </button>
                     <p>
-                      {platform?.username || "hello check this issue"}
-                    </p>
+      {connectedPlatforms.find(
+        (p) => p.platformName.toLowerCase() === platform.key
+      )?.username || "No username available"}
+    </p>
                     <button
                       onClick={() => setPlatformToDisconnect(platform.key)}
                       className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 
