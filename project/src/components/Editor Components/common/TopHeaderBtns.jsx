@@ -30,6 +30,7 @@ const TopHeaderBtns = ({
   defaultPlatform,
   postDetails,
 }) => {
+  console.log(defaultPlatform);
   const {
     postDesignData,
     allFiles,
@@ -334,7 +335,9 @@ const TopHeaderBtns = ({
     }
 
     if (defaultPlatform) {
-      const platform = presetSizes.find((p) => p?.id === defaultPlatform);
+      const platform = presetSizes.find(
+        (p) => p?.id?.toLowerCase() === defaultPlatform?.toLowerCase()
+      );
       if (platform?.dimensions) {
         const [width, height] = platform.dimensions;
         updateCanvasSize(width, height);
