@@ -268,7 +268,7 @@ export const SocialsTab = () => {
                       Connected
                     </button>
                     <p>
-                      {platform?.username}
+                      {platform?.username || "hello check this issue"}
                     </p>
                     <button
                       onClick={() => setPlatformToDisconnect(platform.key)}
