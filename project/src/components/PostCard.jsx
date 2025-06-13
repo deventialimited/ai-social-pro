@@ -337,7 +337,7 @@ const getSelectedImageUrl = () => {
                   alt="Post content"
                   onLoad={() => setImageLoaded(true)}
                   style={{
-                    ...getImageStyle(primaryPlatform),
+                    // ...getImageStyle(primaryPlatform),
                     filter: imageBlurred ? "blur(20px)" : "none",
                     transition: "filter 0.3s ease",
                     display: imageLoaded ? "block" : "none",

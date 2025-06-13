@@ -161,7 +161,7 @@ export const PostEditModal = ({
                           <img
                             src={post[selectedType]?.imageUrl}
                             alt="Post preview"
-                            style={{ ...postImageSize }}
+                            // style={{ ...postImageSize }}
                             className=" cursor-pointer object-cover"
                           />
                         </div>
