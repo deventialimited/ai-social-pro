@@ -25,7 +25,6 @@ function TemplatesTab() {
     setBackgrounds,
     setCanvasLoading,
     canvasLoading,
-    pushToHistory,
     historyRef,
   } = useEditor();
   const [deletingId, setDeletingId] = useState(null);
@@ -82,10 +81,6 @@ function TemplatesTab() {
       if (template.elements) setElements(template.elements);
       if (template.layers) setLayers(template.layers);
       if (template.backgrounds) setBackgrounds(template.backgrounds);
-
-      // Add to history
-      pushToHistory(newState);
-
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
