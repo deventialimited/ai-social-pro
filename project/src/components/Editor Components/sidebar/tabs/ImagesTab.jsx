@@ -165,10 +165,10 @@ function ImagesTab() {
             <button
               key={idx}
               onClick={() => toggleKeyword(keyword)}
-              className={`px-3 py-1 rounded text-sm border transition-colors ${
+              className={`px-3 py-1 capitalize rounded text-sm border transition-colors ${
                 selectedKeywords.includes(keyword)
-                  ? "bg-primary text-white"
-                  : "bg-white text-black"
+                  ? " text-black"
+                  : "bg-gray-200 text-black"
               }`}
             >
               {keyword}
