@@ -267,6 +267,9 @@ export const SocialsTab = () => {
                     >
                       Connected
                     </button>
+                    <p>
+                      {platform?.username}
+                    </p>
                     <button
                       onClick={() => setPlatformToDisconnect(platform.key)}
                       className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 

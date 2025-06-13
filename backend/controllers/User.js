@@ -983,7 +983,7 @@ exports.updateSelectedDomain = async (req, res) => {
 
 exports.updatePlatformConnection = async (req, res) => {
   try {
-    const { userId, platformName, status } = req.body;
+    const { userId, platformName, status,username } = req.body;
     if (!userId || !platformName || !status) {
       console.log("missing data", req.body);
       return res
@@ -1004,7 +1004,7 @@ exports.updatePlatformConnection = async (req, res) => {
       user.PlatformConnected[platformIndex].status = status;
     } else {
       // Add new platform
-      user.PlatformConnected.push({ platformName, status });
+      user.PlatformConnected.push({ platformName, status ,username});
     }
 
     await user.save();
