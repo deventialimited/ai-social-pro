@@ -528,26 +528,39 @@ exports.deletePost = async (req, res) => {
 };
 
 exports.updatePostStatusToPublished = async (req, res) => {
-  const { postId, status,postURL } = req.body;
+  const { postId, status, socialMediaLinks } = req.body;
   console.log("Updating status for post ID:", postId, "to:", status);
 
+  // Validate required fields
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required" });
   }
   if (!status) {
     return res.status(400).json({ message: "Status is required" });
   }
-  if(!postURL){
-        return res.status(400).json({ message: "postURL is required" });
-
+  if (status.toLowerCase() === "published" && (!socialMediaLinks || !Array.isArray(socialMediaLinks) || socialMediaLinks.length === 0)) {
+    return res.status(400).json({ message: "socialMediaLinks must be a non-empty array of { platform, url } objects for published status" });
   }
-  const normalizedStatus = status.toLowerCase();
 
+  const normalizedStatus = status.toLowerCase();
   const validStatuses = ["generated", "scheduled", "published"];
   if (!validStatuses.includes(normalizedStatus)) {
     return res.status(400).json({
       message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
     });
+  }
+
+  // Validate socialMediaLinks array entries
+  if (normalizedStatus === "published") {
+    for (const entry of socialMediaLinks) {
+      if (!entry.platform || !entry.url) {
+        return res.status(400).json({ message: "Each socialMediaLinks entry must have platform and url" });
+      }
+      // Validate URL format
+      if (!/^https?:\/\/.+/.test(entry.url)) {
+        return res.status(400).json({ message: `Invalid URL format for ${entry.platform}: ${entry.url}` });
+      }
+    }
   }
 
   try {
@@ -556,13 +569,32 @@ exports.updatePostStatusToPublished = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    if (status === "published" && post.status !== "scheduled") {
+    // Ensure post is in "scheduled" status before allowing "published"
+    if (normalizedStatus === "published" && post.status !== "scheduled") {
       return res.status(400).json({
         message: `Post is not in scheduled status, current status: ${post.status}`,
       });
     }
-post.postURL=postURL;
-await post.save();
+
+    // Append new socialMediaLinks for "published" status, avoiding duplicates
+    if (normalizedStatus === "published") {
+      const existingPlatforms = post.socialMediaLinks.map(entry => entry.platform.toLowerCase());
+      const newLinks = socialMediaLinks.filter(entry => !existingPlatforms.includes(entry.platform.toLowerCase()));
+      if (newLinks.length === 0 && socialMediaLinks.length > 0) {
+        return res.status(400).json({ message: "All provided platforms already have associated URLs" });
+      }
+      post.socialMediaLinks.push(...newLinks.map(entry => ({
+        platform: entry.platform.toLowerCase(),
+        url: entry.url,
+      })));
+    }
+
+    // Update status and timestamp
+    post.status = normalizedStatus;
+    post.updatedAt = Date.now();
+    await post.save();
+
+    // Emit socket.io event
     const io = socket.getIO();
     const room = `room_${post.userId}`;
     io.to(room).emit("postStatusUpdated", {
@@ -573,20 +605,20 @@ await post.save();
       updatedAt: post.updatedAt,
     });
     console.log(`Emitted postStatusUpdated to ${room} for post ${postId}`);
-    // Update the post status
-    post.status = status;
-    post.updatedAt = Date.now();
-    await post.save();
 
     res.status(200).json({
-      message: `Post status updated to ${status} successfully`,
+      message: `Post status updated to ${normalizedStatus} successfully`,
       post,
     });
   } catch (error) {
     console.error("Error updating post status:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Validation error in post data",
+        error: Object.values(error.errors).map(err => err.message).join(", "),
+      });
+    }
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
 function getS3KeyFromUrl(url) {
