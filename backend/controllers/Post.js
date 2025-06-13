@@ -528,7 +528,7 @@ exports.deletePost = async (req, res) => {
 };
 
 exports.updatePostStatusToPublished = async (req, res) => {
-  const { postId, status } = req.body;
+  const { postId, status,postURL } = req.body;
   console.log("Updating status for post ID:", postId, "to:", status);
 
   if (!postId) {
@@ -536,6 +536,10 @@ exports.updatePostStatusToPublished = async (req, res) => {
   }
   if (!status) {
     return res.status(400).json({ message: "Status is required" });
+  }
+  if(!postURL){
+        return res.status(400).json({ message: "postURL is required" });
+
   }
   const normalizedStatus = status.toLowerCase();
 
@@ -557,7 +561,8 @@ exports.updatePostStatusToPublished = async (req, res) => {
         message: `Post is not in scheduled status, current status: ${post.status}`,
       });
     }
-
+post.postURL=postURL;
+await post.save();
     const io = socket.getIO();
     const room = `room_${post.userId}`;
     io.to(room).emit("postStatusUpdated", {
