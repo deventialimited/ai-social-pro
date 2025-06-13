@@ -36,7 +36,7 @@ export const LinkedIn = () => {
     if (socket?.connected) {
       updatePlatform();
       setPopUp(false);
-      navigate("/");
+      navigate("/dashboard?tab=socials");
     }
   }, [status, uid, platform, socket]);
   return (
