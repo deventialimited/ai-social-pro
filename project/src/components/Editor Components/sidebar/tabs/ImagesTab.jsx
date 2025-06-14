@@ -202,15 +202,21 @@ function ImagesTab() {
           {images[0] && (
             <div
               onClick={() => handleAddImage(images[0].urls.small, "other")}
-              className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+              className="relative aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
             >
               <img
                 src={images[0].urls.small}
                 alt={images[0].alt_description}
                 className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 right-5 left-5 flex items-center justify-center">
+                <div className="bg-white/70 px-4 py-2 rounded-md text-center text-sm font-semibold text-gray-800">
+                  Image based on keywords
+                </div>
+              </div>
             </div>
           )}
+
           {uploadedImages?.map((img) => (
             <div
               key={img._id}
