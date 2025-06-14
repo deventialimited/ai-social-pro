@@ -85,7 +85,7 @@ function ColorPicker({
 
   return (
     <div className="relative" ref={pickerRef}>
-      <button
+      {/* <button
         className="flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -95,9 +95,9 @@ function ColorPicker({
         />
         <span className="text-sm w-max font-medium">{label}</span>
         {showPalette && <ChevronDown className="h-4 w-4 text-gray-500" />}
-      </button>
+      </button> */}
 
-      {isOpen && (
+      {/* {isOpen && ( */}
         <div className="absolute z-50 mt-1 w-72 bg-white rounded-md shadow-lg border p-4">
           {/* Chrome Picker */}
           <ChromePicker
@@ -220,7 +220,7 @@ function ColorPicker({
             </>
           )}
         </div>
-      )}
+      {/* )} */}
     </div>
   );
 }
