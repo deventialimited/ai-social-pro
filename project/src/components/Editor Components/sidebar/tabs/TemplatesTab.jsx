@@ -122,282 +122,283 @@ function TemplatesTab() {
       {canvasLoading && (
         <div className="text-sm text-gray-600 mb-2">Loading template...</div>
       )}
-<div className="overflow-y-auto md:overflow-y-hidden max-h-40 md:max-h-none">
-      {/* Private Templates */}
-      <div className="mb-4">
-        <div
-          className="flex items-center justify-between cursor-pointer select-none mb-2"
-          onClick={() => setShowPrivate(!showPrivate)}
-        >
-          <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
-            {showPrivate ? (
-              <ChevronDown size={16} />
-            ) : (
-              <ChevronRight size={16} />
-            )}
-            Private Templates
-          </div>
-        </div>
-        {showPrivate && privateTemplates.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
-            {/* First Half */}
-            <div className="flex flex-col gap-2">
-              {privateTemplates
-                .slice(0, Math.ceil(privateTemplates.length / 2))
-                .map((template) => (
-                  <div
-                    key={template._id}
-                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
-                  >
-                    <img
-                      src={template.templateImage}
-                      alt="Private Template"
-                      className="w-full"
-                    />
-                    <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
-                      <span className="mr-2 font-bold">Platform:</span>
-                      {template?.templatePlatform || "None"}
-                    </p>
-                    <div
-                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div onClick={() => handleLoadTemplate(template)}>
-                        <SquarePlus size={20} className="text-white" />
-                      </div>
-                      <div onClick={() => setConfirmDeleteId(template._id)}>
-                        {deletingId === template._id ? (
-                          <Loader2
-                            size={20}
-                            className="animate-spin text-white"
-                          />
-                        ) : (
-                          <Trash2 size={20} className="text-white" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            {/* Second Half */}
-            <div className="flex flex-col gap-2">
-              {privateTemplates
-                .slice(Math.ceil(privateTemplates.length / 2))
-                .map((template) => (
-                  <div
-                    key={template._id}
-                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
-                  >
-                    <img
-                      src={template.templateImage}
-                      alt="Private Template"
-                      className="w-full"
-                    />
-                    <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
-                      <span className="mr-2 font-bold">Platform:</span>
-                      {template?.templatePlatform || "None"}
-                    </p>
-                    <div
-                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div onClick={() => handleLoadTemplate(template)}>
-                        <SquarePlus size={20} className="text-white" />
-                      </div>
-                      <div onClick={() => setConfirmDeleteId(template._id)}>
-                        {deletingId === template._id ? (
-                          <Loader2
-                            size={20}
-                            className="animate-spin text-white"
-                          />
-                        ) : (
-                          <Trash2 size={20} className="text-white" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-gray-500 text-sm">
-            No private templates found.
-          </div>
-        )}
-      </div>
-
-      {/* Public Templates */}
-      <div>
-        <div
-          className="flex items-center justify-between cursor-pointer select-none mb-2"
-          onClick={() => setShowPublic(!showPublic)}
-        >
-          <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
-            {showPublic ? (
-              <ChevronDown size={16} />
-            ) : (
-              <ChevronRight size={16} />
-            )}
-            Public Templates
-          </div>
-        </div>
-        {showPublic && publicTemplates?.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2">
-            {/* First Half */}
-            <div className="flex flex-col gap-2">
-              {publicTemplates
-                .slice(0, Math.ceil(publicTemplates.length / 2))
-                .map((template) => (
-                  <div
-                    key={template._id}
-                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
-                  >
-                    <img
-                      src={template.templateImage}
-                      alt="Public Template"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-center font-medium py-2 text-gray-700 bg-white">
-                      <span className="mr-2 font-bold">Platform:</span>
-                      {template?.templatePlatform || "None"}
-                    </p>
-                    <div
-                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div onClick={() => handleLoadTemplate(template)}>
-                        <SquarePlus size={20} className="text-white" />
-                      </div>
-                      <div onClick={() => setConfirmDeleteId(template._id)}>
-                        {deletingId === template._id ? (
-                          <Loader2
-                            size={20}
-                            className="animate-spin text-white"
-                          />
-                        ) : (
-                          <Trash2 size={20} className="text-white" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            {/* Second Half */}
-            <div className="flex flex-col gap-2">
-              {publicTemplates
-                .slice(Math.ceil(publicTemplates.length / 2))
-                .map((template) => (
-                  <div
-                    key={template._id}
-                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
-                  >
-                    <img
-                      src={template.templateImage}
-                      alt="Public Template"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-center font-medium py-2 text-gray-700 bg-white">
-                      <span className="mr-2 font-bold">Platform:</span>
-                      {template?.templatePlatform || "None"}
-                    </p>
-                    <div
-                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div onClick={() => handleLoadTemplate(template)}>
-                        <SquarePlus size={20} className="text-white" />
-                      </div>
-                      <div onClick={() => setConfirmDeleteId(template._id)}>
-                        {deletingId === template._id ? (
-                          <Loader2
-                            size={20}
-                            className="animate-spin text-white"
-                          />
-                        ) : (
-                          <Trash2 size={20} className="text-white" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        ) : (
-          <div className="text-gray-500 text-sm">
-            No public templates available.
-          </div>
-        )}
-      </div>
-      <Transition appear show={!!confirmDeleteId} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-[99999999999999999]"
-          onClose={() => setConfirmDeleteId(null)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+      <div className="overflow-y-auto md:overflow-y-hidden max-h-40 md:max-h-none">
+        {/* Private Templates */}
+        <div className="mb-4">
+          <div
+            className="flex items-center justify-between cursor-pointer select-none mb-2"
+            onClick={() => setShowPrivate(!showPrivate)}
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
-                    Confirm Deletion
-                  </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      Are you sure you want to delete this template? This action
-                      cannot be undone.
-                    </p>
-                  </div>
-
-                  <div className="mt-4 flex justify-end gap-2">
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setConfirmDeleteId(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
-                      onClick={() => {
-                        handleDeleteTemplate(confirmDeleteId);
-                        setConfirmDeleteId(null);
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
+            <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
+              {showPrivate ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )}
+              Private Templates
             </div>
           </div>
-        </Dialog>
-      </Transition>
+          {showPrivate && privateTemplates.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4">
+              {/* First Half */}
+              <div className="flex flex-col gap-2">
+                {privateTemplates
+                  .slice(0, Math.ceil(privateTemplates.length / 2))
+                  .map((template) => (
+                    <div
+                      key={template._id}
+                      className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
+                    >
+                      <img
+                        src={template.templateImage}
+                        alt="Private Template"
+                        className="w-full"
+                      />
+                      <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
+                        <span className="mr-2 font-bold">Platform:</span>
+                        {template?.templatePlatform || "None"}
+                      </p>
+                      <div
+                        className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div onClick={() => handleLoadTemplate(template)}>
+                          <SquarePlus size={20} className="text-white" />
+                        </div>
+                        <div onClick={() => setConfirmDeleteId(template._id)}>
+                          {deletingId === template._id ? (
+                            <Loader2
+                              size={20}
+                              className="animate-spin text-white"
+                            />
+                          ) : (
+                            <Trash2 size={20} className="text-white" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Second Half */}
+              <div className="flex flex-col gap-2">
+                {privateTemplates
+                  .slice(Math.ceil(privateTemplates.length / 2))
+                  .map((template) => (
+                    <div
+                      key={template._id}
+                      className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
+                    >
+                      <img
+                        src={template.templateImage}
+                        alt="Private Template"
+                        className="w-full"
+                      />
+                      <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
+                        <span className="mr-2 font-bold">Platform:</span>
+                        {template?.templatePlatform || "None"}
+                      </p>
+                      <div
+                        className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div onClick={() => handleLoadTemplate(template)}>
+                          <SquarePlus size={20} className="text-white" />
+                        </div>
+                        <div onClick={() => setConfirmDeleteId(template._id)}>
+                          {deletingId === template._id ? (
+                            <Loader2
+                              size={20}
+                              className="animate-spin text-white"
+                            />
+                          ) : (
+                            <Trash2 size={20} className="text-white" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm">
+              No private templates found.
+            </div>
+          )}
+        </div>
+
+        {/* Public Templates */}
+        <div>
+          <div
+            className="flex items-center justify-between cursor-pointer select-none mb-2"
+            onClick={() => setShowPublic(!showPublic)}
+          >
+            <div className="flex items-center gap-1 text-sm font-semibold text-gray-700">
+              {showPublic ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )}
+              Public Templates
+            </div>
+          </div>
+          {showPublic && publicTemplates?.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {/* First Half */}
+              <div className="flex flex-col gap-2">
+                {publicTemplates
+                  .slice(0, Math.ceil(publicTemplates.length / 2))
+                  .map((template) => (
+                    <div
+                      key={template._id}
+                      className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
+                    >
+                      <img
+                        src={template.templateImage}
+                        alt="Public Template"
+                        className="w-full"
+                      />
+                      <p className="text-xs text-center font-medium py-2 text-gray-700 bg-white">
+                        <span className="mr-2 font-bold">Platform:</span>
+                        {template?.templatePlatform || "None"}
+                      </p>
+                      <div
+                        className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div onClick={() => handleLoadTemplate(template)}>
+                          <SquarePlus size={20} className="text-white" />
+                        </div>
+                        <div onClick={() => setConfirmDeleteId(template._id)}>
+                          {deletingId === template._id ? (
+                            <Loader2
+                              size={20}
+                              className="animate-spin text-white"
+                            />
+                          ) : (
+                            <Trash2 size={20} className="text-white" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Second Half */}
+              <div className="flex flex-col gap-2">
+                {publicTemplates
+                  .slice(Math.ceil(publicTemplates.length / 2))
+                  .map((template) => (
+                    <div
+                      key={template._id}
+                      className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
+                    >
+                      <img
+                        src={template.templateImage}
+                        alt="Public Template"
+                        className="w-full"
+                      />
+                      <p className="text-xs text-center font-medium py-2 text-gray-700 bg-white">
+                        <span className="mr-2 font-bold">Platform:</span>
+                        {template?.templatePlatform || "None"}
+                      </p>
+                      <div
+                        className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div onClick={() => handleLoadTemplate(template)}>
+                          <SquarePlus size={20} className="text-white" />
+                        </div>
+                        <div onClick={() => setConfirmDeleteId(template._id)}>
+                          {deletingId === template._id ? (
+                            <Loader2
+                              size={20}
+                              className="animate-spin text-white"
+                            />
+                          ) : (
+                            <Trash2 size={20} className="text-white" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm">
+              No public templates available.
+            </div>
+          )}
+        </div>
+        <Transition appear show={!!confirmDeleteId} as={Fragment}>
+          <Dialog
+            as="div"
+            className="relative z-[99999999999999999]"
+            onClose={() => setConfirmDeleteId(null)}
+          >
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-25" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
+                >
+                  <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Title
+                      as="h3"
+                      className="text-lg font-medium leading-6 text-gray-900"
+                    >
+                      Confirm Deletion
+                    </Dialog.Title>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to delete this template? This
+                        action cannot be undone.
+                      </p>
+                    </div>
+
+                    <div className="mt-4 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        className="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setConfirmDeleteId(null)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+                        onClick={() => {
+                          handleDeleteTemplate(confirmDeleteId);
+                          setConfirmDeleteId(null);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition>
+      </div>
     </div>
   );
 }
