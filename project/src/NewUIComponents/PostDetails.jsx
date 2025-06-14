@@ -23,7 +23,7 @@ const platformDimensions = {
   facebook: [1200, 630],
   x: [1200, 675],
   linkedin: [1200, 627],
-  instagram: [1080, 1080], // default square post
+  instagram: [1080, 1080],
 };
 
 const getImageStyle = (platform) => {
@@ -32,7 +32,7 @@ const getImageStyle = (platform) => {
   ] || [600, 600];
   return {
     width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
-    height: `${Math.max(Math.min(canvasHeight / 3, 600))}px`,
+    height: `${Math.max(Math.min(675 / 3, 600))}px`,
   };
 };
 
@@ -345,8 +345,8 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
       </div>
 
       {/* Footer */}
-      <div className="flex flex-col md:flex-row gap-0 md:gap-8 items-center justify-center text-center p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-0 md:gap-4 bg-primary p-3 md:p-2 rounded-lg">
+      <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
           <Tooltip title="Approve the Post" arrow>
             <button
               onClick={handleApprove}
@@ -366,46 +366,47 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
             </button>
           </Tooltip>
           <div
-            className="flex pl-0 pl-6 items-center text-xs text-gray-800 dark:text-white cursor-pointer"
-            onClick={() => setShowDatePicker(!showDatePicker)}
+            className="flex items-center cursor-pointer"
+            onClick={() => setShowDatePicker(true)}
           >
             <CalendarDays className="h-4 w-4" />
-            <span className="ml-2">
+            <span className="text-xs ml-2">
               <Tooltip title="Post Date" arrow>
-                {format(postDate, "MMM d, yyyy, h:mm a")}
+                {postData?.date
+                  ? format(new Date(postDate), "MMM d, yyyy, h:mm a")
+                  : "Today"}
               </Tooltip>
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-9">
+        <div className="flex items-center gap-1">
           <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
             <Tooltip title="Platform" arrow>
               {primaryPlatform}
             </Tooltip>
           </span>
-          <div>
-            <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-              <Tooltip title="Edit Post" arrow>
-                <Edit className="w-4 h-4" />
-              </Tooltip>
-            </button>
-            <button
-              onClick={handleDownload}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            >
-              <Tooltip title="Download Post" arrow>
-                <Download className="w-4 h-4" />
-              </Tooltip>
-            </button>
-            <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-              <Tooltip title="Delete Post" arrow>
-                <Trash2 className="w-4 h-4" />
-              </Tooltip>
-            </button>
-          </div>
+          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <Tooltip title="Edit Post" arrow>
+              <Edit className="w-4 h-4" />
+            </Tooltip>
+          </button>
+          <button
+            onClick={handleDownload}
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+          >
+            <Tooltip title="Download Post" arrow>
+              <Download className="w-4 h-4" />
+            </Tooltip>
+          </button>
+          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <Tooltip title="Delete Post" arrow>
+              <Trash2 className="w-4 h-4" />
+            </Tooltip>
+          </button>
         </div>
       </div>
+
       <div className="flex justify-center mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
         <Tooltip title="Post Id">
           <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
