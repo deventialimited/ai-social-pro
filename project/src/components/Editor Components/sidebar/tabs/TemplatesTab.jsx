@@ -151,6 +151,10 @@ function TemplatesTab() {
                     alt="Private Template"
                     className="w-full"
                   />
+                  <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
+                    <span className="mr-2 font-bold">Platform:</span>
+                    {template?.templatePlatform || "None"}
+                  </p>
                   <div
                     className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
                     onClick={(e) => {
@@ -209,6 +213,10 @@ function TemplatesTab() {
                     alt="Public Template"
                     className="w-full "
                   />
+                  <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
+                    <span className="mr-2 font-bold">Platform:</span>
+                    {template?.templatePlatform || "None"}
+                  </p>
                   <div
                     className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
                     onClick={(e) => {

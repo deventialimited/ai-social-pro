@@ -14,7 +14,7 @@ exports.downloadImageFromUrl = async (imageUrl) => {
     buffer,
   };
 };
-const getImageFromUnsplash = async (keyword) => {
+const getImageFromUnsplash = async (keyword, width = 600, height = 600) => {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(
     keyword
@@ -28,8 +28,8 @@ const getImageFromUnsplash = async (keyword) => {
   const rawUrl = photoData.urls?.raw;
   if (!rawUrl) throw new Error("No raw image URL found in Unsplash response");
 
-  // Add quality, format, and width parameters
-  const imageUrl = `${rawUrl}&q=100&fm=jpg&w=1920&fit=max`;
+  // Add dynamic width and height with quality/format params
+  const imageUrl = `${rawUrl}&q=100&fm=jpg&w=${width}&h=${height}&fit=crop`;
 
   // Step 3: download the actual image
   const imageResponse = await axios.get(imageUrl, {
@@ -47,25 +47,29 @@ const getImageFromUnsplash = async (keyword) => {
     buffer,
   };
 };
-exports.getTwoUnsplashImagesFromKeywords = async (keywords) => {
+exports.getTwoUnsplashImagesFromKeywords = async (
+  keywords,
+  width = 600,
+  height = 600
+) => {
   const selected = keywords.sort(() => 0.5 - Math.random()).slice(0, 4); // 2 pairs
   const keyword1 = selected.slice(0, 2).join(" ");
   const keyword2 = selected.slice(2, 4).join(" ");
   const [img1, img2] = await Promise.all([
-    getImageFromUnsplash(keyword1),
-    getImageFromUnsplash(keyword2),
+    getImageFromUnsplash(keyword1, width, height),
+    getImageFromUnsplash(keyword2, width, height),
   ]);
   return [img1, img2];
 };
 
-exports.getValidImage = async (keywords, maxAttempts = 3) => {
+exports.getValidImage = async (keywords, width, height, maxAttempts = 3) => {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const selectedKeywords = keywords
       .sort(() => 0.5 - Math.random())
       .slice(0, 2);
     const keyword = selectedKeywords.join(" ");
     try {
-      return await getImageFromUnsplash(keyword);
+      return await getImageFromUnsplash(keyword, width, height);
     } catch (error) {
       console.warn(`Attempt ${attempt + 1} failed for keyword: ${keyword}`);
     }
