@@ -338,11 +338,15 @@ function TextToolbar({
             <button
               ref={colorButtonRef}
               onClick={() => handlePopupOpen('color', colorButtonRef)}
-              className="p-2 rounded-md hover:bg-gray-100"
-            >
-              <div className="w-6 h-6 rounded-full border border-gray-300" 
+              className="flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
+              >
+              <div  className="w-5 h-5 rounded-sm border border-gray-200" 
                    style={{ backgroundColor: selectedElement?.styles?.color }} />
+                    <span className="text-sm w-max font-medium">Color</span>
             </button>
+
+
+        
           </Tooltip>
 
           <Tooltip id="font-selector-tooltip" content="Change font family">

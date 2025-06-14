@@ -10,6 +10,7 @@ import {
   Sparkles,
   AlignJustify,
   Droplet,
+  ChevronDown,
 } from "lucide-react";
 import ColorPicker from "../../common/popups/ColorPicker";
 import PositionPopup from "../../common/popups/PositionPopup";
@@ -284,11 +285,16 @@ function ShapeToolbar({
           <button
             ref={colorButtonRef}
             onClick={() => handlePopupOpen('color', colorButtonRef)}
-            className="p-2 rounded-md hover:bg-gray-100"
-          >
-            <div className="w-6 h-6 rounded-full border border-gray-300" 
+            className="flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
+            >
+            <div           className="w-5 h-5 rounded-sm border border-gray-200"
                  style={{ backgroundColor: selectedElement?.styles?.fill }} />
+                         {/* <ChevronDown className="h-4 w-4 text-gray-500" /> */}
+                         <span className="text-sm w-max font-medium">Color</span>
+
           </button>
+
+       
         </Tooltip>
 
         <Tooltip id="stroke-tooltip" content="Adjust stroke settings">
