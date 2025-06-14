@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   RotateCcw,
@@ -132,6 +132,24 @@ function CanvasToolbar() {
     setActivePopup(null);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside any of the popup buttons and the popup itself
+      const popupElements = [colorButtonRef];
+      const clickedOnButton = popupElements.some(ref => ref.current && ref.current.contains(event.target));
+  
+      // If it's not on any popup button or popup content, close it
+      if (!clickedOnButton && !event.target.closest(".popup-content")) {
+        setActivePopup(null);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="w-full overflow-x-auto">
       <div className="flex items-center  gap-2 w-[200px] px-2">
@@ -219,7 +237,7 @@ function CanvasToolbar() {
 
       {activePopup === 'color' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
