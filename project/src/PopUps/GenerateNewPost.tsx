@@ -172,55 +172,7 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
           />
         </div>
 
-        {/* Content Type Draggable Slider */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Content Type
-          </label>
-          <div className="relative">
-            {/* Track */}
-            <div className="w-full h-12 bg-gray-200 dark:bg-gray-700 rounded-full relative overflow-hidden">
-              {/* Slider Handle */}
-              <div
-                className={`absolute top-1 bottom-1 w-1/2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full shadow-lg transition-transform duration-300 ease-out cursor-pointer ${
-                  contentType === 'article' ? 'translate-x-full' : 'translate-x-0'
-                }`}
-                onClick={() => setContentType(contentType === 'post' ? 'article' : 'post')}
-              >
-                {/* Draggable Handle */}
-                <div className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing">
-                  <div className="w-1 h-4 bg-gray-400 rounded-full" />
-                </div>
-              </div>
-              
-              {/* Labels */}
-              <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none">
-                <span className={`text-sm font-medium transition-colors ${
-                  contentType === 'post' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  Post
-                </span>
-                <span className={`text-sm font-medium transition-colors ${
-                  contentType === 'article' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  Article
-                </span>
-              </div>
-            </div>
-            
-            {/* Click areas for easier interaction */}
-            <button
-              type="button"
-              onClick={() => setContentType('post')}
-              className="absolute left-0 top-0 w-1/2 h-full"
-            />
-            <button
-              type="button"
-              onClick={() => setContentType('article')}
-              className="absolute right-0 top-0 w-1/2 h-full"
-            />
-          </div>
-        </div>
+      
 
         {/* Tone Selection */}
         <div>
