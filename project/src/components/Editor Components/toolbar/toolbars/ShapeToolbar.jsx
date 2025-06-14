@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   RotateCcw,
   RotateCw,
@@ -7,6 +8,8 @@ import {
   Copy,
   Trash,
   Sparkles,
+  AlignJustify,
+  Droplet,
 } from "lucide-react";
 import ColorPicker from "../../common/popups/ColorPicker";
 import PositionPopup from "../../common/popups/PositionPopup";
@@ -44,6 +47,14 @@ function ShapeToolbar({
   const { updateElement, handleLock, elements, addElement, removeElement, canvas, undo, redo, canUndo, canRedo } =
     useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [activePopup, setActivePopup] = useState(null);
+  const colorButtonRef = useRef(null);
+  const strokeButtonRef = useRef(null);
+  const shadowButtonRef = useRef(null);
+  const positionButtonRef = useRef(null);
+  const transparencyButtonRef = useRef(null);
+
   useEffect(() => {
     if (selectedElementId) {
       const selectedElement = elements.find(
@@ -182,9 +193,57 @@ function ShapeToolbar({
     });
   };
 
+  const handlePopupOpen = (popupType, buttonRef) => {
+    if (!buttonRef.current) return;
+    
+    const rect = buttonRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Get the scroll position using the most reliable method
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    
+    // Calculate the absolute position of the button
+    const buttonLeft = rect.left + scrollLeft;
+    const buttonTop = rect.top + scrollTop;
+    const buttonBottom = rect.bottom + scrollTop;
+    
+    // Define popup dimensions
+    const popupWidth = 200;
+    const popupHeight = 200;
+    
+    // Calculate initial position (below the button)
+    let x = buttonLeft;
+    let y = buttonBottom;
+    
+    // Adjust position to keep popup within viewport
+    if (x + popupWidth > viewportWidth + scrollLeft) {
+      x = viewportWidth + scrollLeft - popupWidth;
+    }
+    
+    // If popup would go below viewport, position it above the button
+    if (y + popupHeight > viewportHeight + scrollTop) {
+      y = buttonTop - popupHeight;
+    }
+    
+    // Ensure minimum distance from viewport edges
+    x = Math.max(scrollLeft, Math.min(x, viewportWidth + scrollLeft - popupWidth));
+    y = Math.max(scrollTop, Math.min(y, viewportHeight + scrollTop - popupHeight));
+    
+    setPopupPosition({ x, y });
+    setActivePopup(popupType);
+  };
+
+  const handlePopupClose = () => {
+    setActivePopup(null);
+  };
+
   return (
     <>
-      <div className="flex items-center flex-wrap gap-2">
+    <div className="w-full overflow-x-auto">
+          
+      <div className="flex flex-nowrap items-center gap-2 w-[200px] px-2">
         <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
           <button 
             onClick={undo}
@@ -206,45 +265,70 @@ function ShapeToolbar({
         </Tooltip>
 
         <Tooltip id="color-picker-tooltip" content="Change shape color">
-          <ColorPicker
-            color={selectedElement?.styles?.fill?.startsWith('rgba') ? 
-              `#${selectedElement?.styles?.fill.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
-              selectedElement?.styles?.fill}
-            onChange={handleColorChange}
-            showPalette={false}
-          />
+          <button
+            ref={colorButtonRef}
+            onClick={() => handlePopupOpen('color', colorButtonRef)}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <div className="w-6 h-6 rounded-full border border-gray-300" 
+                 style={{ backgroundColor: selectedElement?.styles?.fill }} />
+          </button>
         </Tooltip>
 
         <Tooltip id="stroke-tooltip" content="Adjust stroke settings">
-          <StrokeSelector
-            stroke={{
-              width: selectedElement?.styles?.strokeWidth,
-              style: selectedElement?.styles?.strokeDasharray,
-              color: selectedElement?.styles?.stroke,
-            }}
-            onChange={handleStrokeChange}
-          />
+
+          <button
+            ref={strokeButtonRef}
+            onClick={() => handlePopupOpen('stroke', strokeButtonRef)}
+            className="p-2 rounded-md hover:bg-gray-100"
+
+          >
+            {/* <div className="w-6 h-6 border-2 border-gray-600" /> */}
+            <AlignJustify className="h-5 w-5 text-gray-600" />
+
+          </button>
         </Tooltip>
 
         <Tooltip id="shadow-tooltip" content="Adjust shadow settings">
-          <ShadowSettings
-            selectedElement={selectedElement}
-            updateElement={updateElement}
-          />
+           <button
+                       ref={shadowButtonRef}
+
+                  className={`flex items-center gap-1 px-3 py-2 rounded-md ${
+                    shadowButtonRef ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
+                  }`}
+                  onClick={() => handlePopupOpen('shadow', shadowButtonRef)}
+                  >
+                  <Sparkles className="h-5 w-5" />
+                  <span>Effects</span>
+                </button>
+          {/* <button
+            ref={shadowButtonRef}
+            onClick={() => handlePopupOpen('shadow', shadowButtonRef)}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <Sparkles className="h-5 w-5 text-gray-600" />
+          </button> */}
         </Tooltip>
 
         <Tooltip id="position-tooltip" content="Adjust element position">
-          <PositionPopup
-            onLayerPositionChange={handleLayerPositionChange}
-            onPositionChange={handlePositionChange}
-          />
+          <button
+            ref={positionButtonRef}
+            onClick={() => handlePopupOpen('position', positionButtonRef)}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+            <span>Position</span>
+          </button>
         </Tooltip>
 
         <Tooltip id="transparency-tooltip" content="Adjust transparency">
-          <TransparencyPopup
-            transparency={selectedElement?.styles?.opacity}
-            onChange={handleTransparencyChange}
-          />
+          <button
+            ref={transparencyButtonRef}
+            onClick={() => handlePopupOpen('transparency', transparencyButtonRef)}
+            className="p-2 rounded-md hover:bg-gray-100"
+          >
+                          <Droplet className="h-5 w-5 text-gray-600" />
+
+          </button>
         </Tooltip>
 
         <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
@@ -279,6 +363,99 @@ function ShapeToolbar({
             <Trash className="h-5 w-5 text-gray-600" />
           </button>
         </Tooltip>
+      </div>
+
+      {activePopup === 'color' && createPortal(
+        <div 
+          className="absolute z-[9999]"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+          }}
+        >
+          <ColorPicker
+            color={selectedElement?.styles?.fill?.startsWith('rgba') ? 
+              `#${selectedElement?.styles?.fill.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
+              selectedElement?.styles?.fill}
+            onChange={handleColorChange}
+            showPalette={false}
+            onClose={handlePopupClose}
+          />
+        </div>,
+        document.body
+      )}
+
+      {activePopup === 'stroke' && createPortal(
+        <div 
+          className="absolute z-[9999]"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+          }}
+        >
+          <StrokeSelector
+            stroke={{
+              width: selectedElement?.styles?.strokeWidth,
+              style: selectedElement?.styles?.strokeDasharray,
+              color: selectedElement?.styles?.stroke,
+            }}
+            onChange={handleStrokeChange}
+            onClose={handlePopupClose}
+          />
+        </div>,
+        document.body
+      )}
+
+      {activePopup === 'shadow' && createPortal(
+        <div 
+          className="absolute z-[9999]"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+          }}
+        >
+          <ShadowSettings
+            selectedElement={selectedElement}
+            updateElement={updateElement}
+            onClose={handlePopupClose}
+          />
+        </div>,
+        document.body
+      )}
+
+      {activePopup === 'position' && createPortal(
+        <div 
+          className="absolute z-[9999]"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+          }}
+        >
+          <PositionPopup
+            onLayerPositionChange={handleLayerPositionChange}
+            onPositionChange={handlePositionChange}
+            onClose={handlePopupClose}
+          />
+        </div>,
+        document.body
+      )}
+
+      {activePopup === 'transparency' && createPortal(
+        <div 
+          className="absolute z-[9999]"
+          style={{
+            left: popupPosition.x,
+            top: popupPosition.y,
+          }}
+        >
+          <TransparencyPopup
+            transparency={selectedElement?.styles?.opacity}
+            onChange={handleTransparencyChange}
+            onClose={handlePopupClose}
+          />
+        </div>,
+        document.body
+      )}
       </div>
     </>
   );
