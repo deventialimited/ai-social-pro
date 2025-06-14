@@ -8,17 +8,22 @@ import {
   Edit,
   Trash2,
   Download,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { updateSelectedDomain } from "../libs/authService";
 import Tooltip from "@mui/material/Tooltip";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-hot-toast";
+import { useReschedulePost, useApproveAndSchedulePost } from "../libs/postService";
 
 const platformDimensions = {
   facebook: [1200, 630],
   x: [1200, 675],
   linkedin: [1200, 627],
-  instagram: [1080, 1080], // default square post
+  instagram: [1080, 1080],
 };
 
 const getImageStyle = (platform) => {
@@ -26,23 +31,32 @@ const getImageStyle = (platform) => {
     (platform || "")?.toLowerCase()
   ] || [600, 600];
   return {
-    // aspectRatio: getImageAspectRatio(platform),
     width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
     height: `${Math.max(Math.min(675 / 3, 600))}px`,
-    // objectFit: "cover",
   };
 };
-export default function PostDetails({ postData }) {
+
+export default function PostDetails({ postData, onEdit, onDelete }) {
   const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showBlur, setShowBlur] = useState(true);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(
+    postData?.date ? new Date(postData.date) : new Date()
+  );
+  const [postDate, setPostDate] = useState(
+    postData?.date ? new Date(postData.date) : new Date()
+  );
+  const [loadingMessage, setLoadingMessage] = useState(null);
 
   const contentRef = useRef(null);
   const navigate = useNavigate();
 
   const primaryPlatform = postData?.platforms?.[0] || "linkedin";
+  const { mutate: reschedule, isLoading: isRescheduling } = useReschedulePost();
+  const { mutate: approveAndSchedule, isLoading: isApproving } = useApproveAndSchedulePost();
 
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
@@ -60,6 +74,15 @@ export default function PostDetails({ postData }) {
     }
   }, [postData?.content]);
 
+  useEffect(() => {
+    if (imageLoaded) {
+      const timer = setTimeout(() => {
+        setShowBlur(false);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [imageLoaded]);
+
   const handleSeeAllPosts = async () => {
     try {
       const result = await updateSelectedDomain(
@@ -74,6 +97,119 @@ export default function PostDetails({ postData }) {
       );
     }
     navigate(`/dashboard?domainId=${postData?.domainId?._id}`);
+  };
+
+  const handleDownload = async () => {
+    const imageUrl = postData[selectedButton]?.imageUrl;
+    if (!imageUrl) {
+      toast.error("Image not found");
+      return;
+    }
+
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const filename = `${selectedButton}_${postData.postId}.png`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Image downloaded successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to download image");
+    }
+  };
+
+  const getSelectedImageUrl = () => {
+    switch (selectedButton) {
+      case "brandingImage":
+        return postData.brandingImage?.imageUrl || "";
+      case "sloganImage":
+        return postData.sloganImage?.imageUrl || "";
+      case "image":
+        return postData.image?.imageUrl || postData.brandingImage?.imageUrl;
+      default:
+        return "";
+    }
+  };
+
+  const handleApprove = async () => {
+    const now = new Date();
+    if (postDate < now) {
+      toast.error("Cannot schedule post in the past.");
+      return;
+    }
+
+    const schedulePayload = {
+      time: new Date(postDate).getTime(),
+      uid: postData.userId || "",
+      postId: postData.postId,
+      content: postData.content,
+      image: getSelectedImageUrl(),
+      platforms: (postData.platforms || [])
+        .map((p) => p.toLowerCase())
+        .map((p) => (p === "x" ? "twitter" : p))
+        .filter((p) =>
+          ["twitter", "linkedin", "facebook", "instagram"].includes(p)
+        ),
+    };
+
+    try {
+      setLoadingMessage("Scheduling post...");
+
+      const scheduleResponse = await fetch(
+        "https://us-central1-socialmediabranding-31c73.cloudfunctions.net/api/scheduleMulti",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(schedulePayload),
+        }
+      );
+
+      if (!scheduleResponse.ok) {
+        throw new Error("Failed to schedule post externally");
+      }
+
+      approveAndSchedule(
+        { postId: postData._id },
+        {
+          onSuccess: (updatedPost) => {
+            toast.success("Post approved and scheduled!");
+            onEdit({ ...postData, status: "scheduled" }, "scheduled");
+          },
+          onError: (error) => {
+            toast.error("Failed to approve and schedule the post.");
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Approval error:", err);
+      toast.error("Failed to approve and schedule the post.");
+    } finally {
+      setLoadingMessage(null);
+    }
+  };
+
+  const handleReschedule = (newDate) => {
+    reschedule(
+      { postId: postData._id, newTime: newDate.getTime() },
+      {
+        onSuccess: () => {
+          toast.success("Post schedule updated!");
+          setPostDate(newDate);
+          setSelectedDate(newDate);
+          setShowDatePicker(false);
+        },
+        onError: (error) => {
+          toast.error(error || "Failed to update the post time.");
+        },
+      }
+    );
   };
 
   return (
@@ -122,9 +258,6 @@ export default function PostDetails({ postData }) {
 
         {/* Visual Toggle Buttons */}
         <div className="flex items-center space-x-2 p-2">
-          {/* <h2 className="text-[12px] text-gray-500 dark:text-gray-400 rounded">
-            Visual
-          </h2> */}
           <button
             onClick={() => setSelectedButton("image")}
             className={`${baseStyles} ${
@@ -183,7 +316,7 @@ export default function PostDetails({ postData }) {
               <img
                 src={postData[selectedButton]?.imageUrl}
                 alt="Post"
-                className="cursor-pointer"
+                className="cursor-pointer w-auto h-auto"
                 style={{
                   ...getImageStyle(primaryPlatform),
                   filter: showBlur ? "blur(8px)" : "none",
@@ -212,44 +345,56 @@ export default function PostDetails({ postData }) {
       </div>
 
       {/* Footer */}
-      <div className="flex flex-col md:flex-row gap-0 md:gap-8 items-center justify-center text-center p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-0 md:gap-4 bg-primary p-3 md:p-2 rounded-lg">
+      <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-4 bg-primary p-4 rounded-lg">
           <Tooltip title="Approve the Post" arrow>
-            <button className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2">
-              Approve <Check className="text-white w-4 h-4" />
+            <button
+              onClick={handleApprove}
+              disabled={isApproving || !!loadingMessage}
+              className="text-white bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 flex items-center gap-2 disabled:opacity-50"
+            >
+              {isApproving || loadingMessage === "Scheduling post..." ? (
+                <>
+                  <Loader2 className="animate-spin h-4 w-4" />
+                  Scheduling...
+                </>
+              ) : (
+                <>
+                  Approve <Check className="text-white w-4 h-4" />
+                </>
+              )}
             </button>
           </Tooltip>
-          <div className="flex pl-0 pl-6 items-center text-xs text-gray-800 dark:text-white">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => setShowDatePicker(true)}
+          >
             <CalendarDays className="h-4 w-4" />
-            <span className="ml-2">
+            <span className="text-xs ml-2">
               <Tooltip title="Post Date" arrow>
                 {postData?.date
-                  ? format(new Date(postData.date), "MMM d, yyyy")
+                  ? format(new Date(postDate), "MMM d, yyyy, h:mm a")
                   : "Today"}
               </Tooltip>
             </span>
           </div>
-          {/* <span className="text-xs hidden sm:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-            <Tooltip title="Platform" arrow>
-              {primaryPlatform}
-            </Tooltip>
-          </span> */}
         </div>
-        
 
-        <div className="flex items-center gap-2 md:gap-9">
-        <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+        <div className="flex items-center gap-1">
+          <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
             <Tooltip title="Platform" arrow>
               {primaryPlatform}
             </Tooltip>
           </span>
-          <div>
           <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
             <Tooltip title="Edit Post" arrow>
               <Edit className="w-4 h-4" />
             </Tooltip>
           </button>
-          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+          <button
+            onClick={handleDownload}
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+          >
             <Tooltip title="Download Post" arrow>
               <Download className="w-4 h-4" />
             </Tooltip>
@@ -259,17 +404,79 @@ export default function PostDetails({ postData }) {
               <Trash2 className="w-4 h-4" />
             </Tooltip>
           </button>
-          </div>
         </div>
       </div>
-      <div className="flex justify-center mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
-  <Tooltip title="Post Id">
-    <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-      POST ID: #{postData?.postId}
-    </span>
-  </Tooltip>
-</div>
 
+      <div className="flex justify-center mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
+        <Tooltip title="Post Id">
+          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            POST ID: #{postData?.postId}
+          </span>
+        </Tooltip>
+      </div>
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Reschedule Post
+              </h2>
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date and Time
+              </label>
+              <div className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 w-full">
+                {format(new Date(selectedDate), "MMM d, yyyy, h:mm a")}
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => setSelectedDate(date)}
+                showTimeSelect
+                timeFormat="h:mm aa"
+                timeIntervals={15}
+                dateFormat="MMMM d, yyyy h:mm aa"
+                inline
+                className="w-full"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleReschedule(selectedDate)}
+                disabled={isRescheduling}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded disabled:opacity-50"
+              >
+                {isRescheduling ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" /> Updating...
+                  </span>
+                ) : (
+                  "Update Schedule Time"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sticky Bottom Button */}
       <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">

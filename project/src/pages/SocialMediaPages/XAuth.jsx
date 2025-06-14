@@ -3,12 +3,13 @@ import { SocialConnectLoader } from "../../PopUps/SocialMediaPopup";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { updatePlatformConnection } from "../../libs/authService";
 import { useSocket } from "../../store/useSocket";
-
+import toast from 'react-hot-toast'
 export const XAuth = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const uid = searchParams.get("uid");
+const userName=searchParams.get("name")
   const socket = useSocket();
   const navigate = useNavigate();
   const [popUp, setPopUp] = useState(true);
@@ -26,14 +27,17 @@ export const XAuth = () => {
           platformName: getPlatformName(platform),
           userId: uid,
           status: setStatus(status),
+          username:userName
         });
+        console.log('user sdncndjndcjnd',user)
       }
     };
 
     if (socket?.connected) {
       updatePlatform();
       setPopUp(false);
-      navigate("/");
+      navigate("/dashboard?tab=socials");
+      toast.success(`${ getPlatformName(platform)} connected`)
     }
   }, [status, uid, platform, socket]);
   return (

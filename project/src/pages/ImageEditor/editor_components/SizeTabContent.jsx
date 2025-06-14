@@ -1,5 +1,3 @@
-;
-
 import { useState } from "react";
 import { Instagram, Facebook, PinIcon as Pinterest } from "lucide-react";
 
@@ -21,52 +19,32 @@ const SizeTabContent = ({ canvas, updateCanvasSize }) => {
 
   const presetSizes = [
     {
+      id: "Instagram",
       icon: <Instagram className="w-6 h-6 text-gray-600" />,
       name: "Instagram Post",
       dimensions: [1080, 1080],
       description: "(1080x1080)",
     },
     {
-      icon: <Instagram className="w-6 h-6 text-gray-600" />,
-      name: "Instagram Story",
-      dimensions: [1080, 1920],
-      description: "(1080x1920)",
-    },
-    {
-      icon: <Instagram className="w-6 h-6 text-gray-600" />,
-      name: "Instagram Ad",
-      dimensions: [1080, 1080],
-      description: "(1080x1080)",
-    },
-    {
+      id: "Facebook",
       icon: <Facebook className="w-6 h-6 text-gray-600" />,
       name: "Facebook Post",
-      dimensions: [940, 788],
-      description: "(940x788)",
+      dimensions: [1200, 630],
+      description: "(1200x630)",
     },
     {
-      icon: <Facebook className="w-6 h-6 text-gray-600" />,
-      name: "Facebook Cover",
-      dimensions: [851, 315],
-      description: "(851x315)",
+      id: "LinkedIn",
+      icon: <Linkedin className="w-6 h-6 text-gray-600" />,
+      name: "LinkedIn Post",
+      dimensions: [1200, 627],
+      description: "(1200x627)",
     },
     {
-      icon: <Facebook className="w-6 h-6 text-gray-600" />,
-      name: "Facebook Ad",
-      dimensions: [1200, 628],
-      description: "(1200x628)",
-    },
-    {
-      icon: <Facebook className="w-6 h-6 text-gray-600" />,
-      name: "Facebook Ad",
-      dimensions: [1200, 628],
-      description: "(1200x628)",
-    },
-    {
-      icon: <Pinterest className="w-6 h-6 text-gray-600" />,
-      name: "Pinterest Post",
-      dimensions: [1000, 1500],
-      description: "(1000x1500)",
+      id: "X",
+      icon: <Twitter className="w-6 h-6 text-gray-600" />,
+      name: "Twitter Post",
+      dimensions: [1200, 675],
+      description: "(1200x675)",
     },
   ];
 

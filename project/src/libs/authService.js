@@ -230,6 +230,7 @@ export const updatePlatformConnection = async ({
   userId,
   platformName,
   status,
+  username
 }) => {
   console.log(userId, "this is id in the update Platform");
   console.log(platformName, "this is platformname in the update Platform");
@@ -240,6 +241,7 @@ export const updatePlatformConnection = async ({
       userId,
       platformName,
       status,
+      username
     });
 
     console.log("updatePlatform COnnection Log", response);

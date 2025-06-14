@@ -18,7 +18,10 @@ const templateDesignSchema = new mongoose.Schema({
     type: String, // URL to show preview of the template
     required: true, // Marked as required
   },
-
+  templatePlatform: {
+    type: String, // URL to show preview of the template
+    required: true, // Marked as required
+  },
   canvas: {
     width: Number,
     height: Number,

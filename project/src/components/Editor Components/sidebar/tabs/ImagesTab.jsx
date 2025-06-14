@@ -17,6 +17,23 @@ function ImagesTab() {
   const { mutate: uploadImage } = useUploadUserImageMutation(); // For image upload
   const [userId, setUserId] = useState(null);
   const { postOtherValues } = useEditor();
+  const [selectedKeywords, setSelectedKeywords] = useState([]);
+  const toggleKeyword = (keyword) => {
+    setSelectedKeywords((prev) =>
+      prev.includes(keyword)
+        ? prev.filter((k) => k !== keyword)
+        : [...prev, keyword]
+    );
+  };
+  useEffect(() => {
+    if (selectedKeywords.length > 0) {
+      const combined = selectedKeywords.join(" ");
+      setQuery(combined);
+      setPage(1);
+      setImages([]);
+    }
+  }, [selectedKeywords]);
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?._id) {
@@ -60,6 +77,11 @@ function ImagesTab() {
   useEffect(() => {
     fetchImages();
   }, [page, query]);
+  useEffect(() => {
+    if (postOtherValues?.keywords?.length > 0) {
+      setSelectedKeywords(postOtherValues.keywords); // select all by default
+    }
+  }, [postOtherValues?.keywords]);
 
   const handleScroll = (e) => {
     const bottom =
@@ -137,6 +159,23 @@ function ImagesTab() {
           />
         </div>
       </div>
+      {postOtherValues?.keywords?.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {postOtherValues.keywords.map((keyword, idx) => (
+            <button
+              key={idx}
+              onClick={() => toggleKeyword(keyword)}
+              className={`px-3 py-1 capitalize rounded text-sm border transition-colors ${
+                selectedKeywords.includes(keyword)
+                  ? " text-black"
+                  : "bg-gray-200 text-black"
+              }`}
+            >
+              {keyword}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Gallery Section */}
       <div
@@ -163,15 +202,21 @@ function ImagesTab() {
           {images[0] && (
             <div
               onClick={() => handleAddImage(images[0].urls.small, "other")}
-              className="aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
+              className="relative aspect-square bg-gray-200 rounded-md overflow-hidden hover:opacity-80 cursor-pointer"
             >
               <img
                 src={images[0].urls.small}
                 alt={images[0].alt_description}
                 className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 right-5 left-5 flex items-center justify-center">
+                <div className="bg-white/70 px-4 py-2 rounded-md text-center text-sm font-semibold text-gray-800">
+                  Image based on keywords
+                </div>
+              </div>
             </div>
           )}
+
           {uploadedImages?.map((img) => (
             <div
               key={img._id}

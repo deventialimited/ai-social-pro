@@ -22,6 +22,7 @@ import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import { getUserInformation } from "../libs/authService";
 import {useSocket} from '../store/useSocket'
+import { GeneratePostModal } from "../PopUps/GenerateNewPost";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
@@ -36,6 +37,8 @@ export const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
+    const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false); // New state for modal
+
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
 const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -43,7 +46,18 @@ const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
   const [searchParams] = useSearchParams();
   const checkoutStatus = searchParams.get("checkout");
 const socket=useSocket();
+useEffect(() => {
 
+
+  // Check for tab query parameter and set currentTab
+  const tab = searchParams.get("tab");
+  if (tab === "socials") {
+    setCurrentTab("socials");
+    // Clean up the URL by removing the tab query parameter
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+}, [searchParams]);
 
   useEffect(()=>{
     if (!socket){
@@ -221,68 +235,78 @@ if(returnFromPortal && storedUser._id){
     return matchesFilter && matchesTab;
   });
 
-  const renderContent = () => {
-    switch (currentTab) {
-      case "posts":
-        return (
-          <div className="space-y-6 mt-6">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
-              <PostsHeader
-                view={view}
-                onViewChange={setView}
-                filter={filter}
-                onFilterChange={setFilter}
-                currentTab={postsTab}
-                onTabChange={setPostsTab}
-                totalPosts={posts?.length}
-                filteredPosts={filteredPosts?.length}
-              />
-            </div>
-            <div
-              className={`max-w-[1200px] mx-auto px-4 sm:px-6 ${
-                view === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 gap-6"
-                  : "flex flex-col items-center space-y-6"
-              }`}
-            >
-              {filteredPosts?.map((post) => (
-                <div
-                  key={post._id}
-                  className={
-                    view === "list" ? "w-full max-w-[680px]" : "w-full"
-                  }
-                >
-                  <PostCard
-                    post={post}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onReschedule={handleReschedule}
-                    view={view}
-                  />
-                </div>
-              ))}
-            </div>
+ const renderContent = () => {
+  switch (currentTab) {
+    case "posts":
+      return (
+        <div className="space-y-6 mt-6">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+            <PostsHeader
+              view={view}
+              onViewChange={setView}
+              filter={filter}
+              onFilterChange={setFilter}
+              currentTab={postsTab}
+              onTabChange={setPostsTab}
+              totalPosts={posts?.length}
+              filteredPosts={filteredPosts?.length}
+            />
           </div>
-        );
-      case "business":
-        return (
-          <BusinessSection
-            selectedWebsiteId={selectedWebsite}
-            userId={userId}
-            onEdit={handleBusinessEdit}
-          />
-        );
-      case "subscription":
-        return <SubscriptionManagement/>
-      case "socials":
-        return <SocialsTab />
-        
-     
-      default:
-        return <div>Dashboard Contentsss</div>;
-    }
-  };
-
+          {postsTab === "generated" && (
+            <div className="px-6 py-4 flex justify-center">
+              <button
+                className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                onClick={()=>setIsGenerateModalOpen(true)}
+              >
+                <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
+                  +
+                </span>
+                Generate Post
+              </button>
+            </div>
+          )}
+          <div
+            className={`max-w-[1200px] mx-auto px-4 sm:px-6 ${
+              view === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 gap-6"
+                : "flex flex-col items-center space-y-6"
+            }`}
+          >
+            {filteredPosts?.map((post) => (
+              <div
+                key={post._id}
+                className={
+                  view === "list" ? "w-full max-w-[680px]" : "w-full"
+                }
+              >
+                <PostCard
+                  post={post}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onReschedule={handleReschedule}
+                  view={view}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    case "business":
+      return (
+        <BusinessSection
+          selectedWebsiteId={selectedWebsite}
+          userId={userId}
+          onEdit={handleBusinessEdit}
+        />
+      );
+    case "subscription":
+      return <SubscriptionManagement />;
+    case "socials":
+      return <SocialsTab />;
+    default:
+      return <div>Dashboard Contentsss</div>;
+  }
+};
   return (
     <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
@@ -323,9 +347,15 @@ if(returnFromPortal && storedUser._id){
     <p className="text-sm text-gray-800 dark:text-gray-200">Fetching your updated subscription...</p>
   </div>
 )}
-
+ {isGenerateModalOpen && (
+          <GeneratePostModal
+            onClose={() => setIsGenerateModalOpen(false)}
+            onGenerate={()=>{}}
+          />
+        )}
 
       </div>
     </div>
   );
+  
 };

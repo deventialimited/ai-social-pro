@@ -11,7 +11,7 @@ import {
 import { SocialConnectModal } from "./SocialConnectModal";
 import { disconnectPlatform, updatePostSchedule } from "../libs/authService";
 import { useAuthStore } from "../store/useAuthStore";
-
+import toast from 'react-hot-toast'
 // Disconnect Icon Component
 const DisconnectIcon = ({ className = "w-5 h-5" }) => (
   <svg
@@ -56,7 +56,6 @@ export const SocialsTab = () => {
     };
 
     const storedUser = getUserFromStorage();
-    console.log("pub time:", storedUser);
     setPublishingTimes(storedUser?.postSchedule?.publishingTimes || "00:00 PM");
     setRandomizeTime(
       storedUser?.postSchedule?.randomizeTime || "0 min (dummy)"
@@ -68,7 +67,7 @@ export const SocialsTab = () => {
       "Connected platforms from localStorage:",
       storedUser?.PlatformConnected
     );
-  }, []);
+  }, [user]);
 
   const platforms = [
     {
@@ -134,6 +133,9 @@ export const SocialsTab = () => {
         if (!response.ok) {
           throw new Error(`Failed to disconnect from ${platformToDisconnect}`);
         }
+        else{
+          toast.success(`${platformToDisconnect} disconnected`)
+        }
       }
 
       // Only proceed to disconnect from our database if the platform disconnect was successful
@@ -156,7 +158,7 @@ export const SocialsTab = () => {
 
   const handleContinueConnect = () => {
     if (selectedPlatform?.url) {
-      window.open(selectedPlatform.url, "_blank");
+      window.location.href=selectedPlatform.url
       return;
     }
 
@@ -264,6 +266,11 @@ export const SocialsTab = () => {
                     >
                       Connected
                     </button>
+                    <p>
+      {connectedPlatforms.find(
+        (p) => p.platformName.toLowerCase() === platform.key
+      )?.username || "No username available"}
+    </p>
                     <button
                       onClick={() => setPlatformToDisconnect(platform.key)}
                       className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 

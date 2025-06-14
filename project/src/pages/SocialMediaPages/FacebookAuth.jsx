@@ -9,6 +9,8 @@ export const FacebookAuth = () => {
   const [searchParams] = useSearchParams();
   const status = searchParams.get("status");
   const uid = searchParams.get("uid");
+  const userName=searchParams.get("name")
+
   const socket = useSocket();
   const navigate = useNavigate();
   const [popUp, setPopUp] = useState(true);
@@ -26,6 +28,7 @@ export const FacebookAuth = () => {
           platformName: getPlatformName(platform),
           userId: uid,
           status: setStatus(status),
+          username:userName
         });
       }
     };
@@ -33,7 +36,7 @@ export const FacebookAuth = () => {
     if (socket?.connected) {
       updatePlatform();
       setPopUp(false);
-      navigate("/");
+      navigate("/dashboard?tab=socials");
     }
   }, [status, uid, platform, socket]);
   return (

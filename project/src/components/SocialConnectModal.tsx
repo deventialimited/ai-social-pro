@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Shield } from 'lucide-react';
 
 interface SocialConnectModalProps {
@@ -12,6 +12,8 @@ export const SocialConnectModal: React.FC<SocialConnectModalProps> = ({
   onClose,
   onConnect,
 }) => {
+  const [isContinuing, setIsContinuing] = useState(false); // Add loading state
+
   const getInstructions = () => {
     switch (platform.toLowerCase()) {
       case 'facebook page':
@@ -43,6 +45,11 @@ export const SocialConnectModal: React.FC<SocialConnectModalProps> = ({
           'Follow the authentication steps.',
         ];
     }
+  };
+
+  const handleConnect = () => {
+    setIsContinuing(true); // Set loading state to true
+    onConnect(); // Call the onConnect function
   };
 
   return (
@@ -101,15 +108,43 @@ export const SocialConnectModal: React.FC<SocialConnectModalProps> = ({
               onClick={onClose}
               className="px-4 py-1.5 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 
                 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+              disabled={isContinuing} // Disable Cancel button while continuing
             >
               Cancel
             </button>
             <button
-              onClick={onConnect}
-              className="px-4 py-1.5 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 
-                dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors"
+              onClick={handleConnect}
+              className="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-md 
+                hover:from-blue-700 hover:to-purple-700 flex items-center justify-center min-w-[120px] transition-colors"
+              disabled={isContinuing} // Disable Continue button while continuing
             >
-              Continue
+              {isContinuing ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Continuing...
+                </>
+              ) : (
+                'Continue'
+              )}
             </button>
           </div>
         </div>

@@ -337,13 +337,14 @@ const getSelectedImageUrl = () => {
                   alt="Post content"
                   onLoad={() => setImageLoaded(true)}
                   style={{
-                    ...getImageStyle(primaryPlatform),
+                    // ...getImageStyle(primaryPlatform),
                     filter: imageBlurred ? "blur(20px)" : "none",
                     transition: "filter 0.3s ease",
                     display: imageLoaded ? "block" : "none",
                     cursor: "pointer",
                   }}
                   onClick={() => setShowEditModal(true)}
+                  className=" object-cover"
                 />
               </>
             ) : (
@@ -375,14 +376,14 @@ const getSelectedImageUrl = () => {
                 </>
               )}
             </button>
-            <div className="flex items-center cursor-pointer" >
+            <div className="flex items-center cursor-pointer">
               <div onClick={() => setShowDatePicker(!showDatePicker)}>
-              <button>
-                <Calendar className="h-3 w-3" />
-              </button>
-              <span className="text-xs ml-1">
-                {format(postDate, "MMM d, yyyy, h:mm a")}
-              </span>
+                <button>
+                  <Calendar className="h-3 w-3" />
+                </button>
+                <span className="text-xs ml-1">
+                  {format(postDate, "MMM d, yyyy, h:mm a")}
+                </span>
               </div>
               <span className="text-xs ml-6 hidden md:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
                 {primaryPlatform}

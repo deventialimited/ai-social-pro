@@ -84,8 +84,8 @@ export const PostEditModal = ({
             isEditorOpen={isGraphicEditorModal}
           />
           <div className="fixed inset-0 overflow-y-auto">
-          <div className="min-h-full flex items-start justify-center p-4 text-center sm:items-center">
-          <Transition.Child
+            <div className="min-h-full flex items-start justify-center p-4 text-center sm:items-center">
+              <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
@@ -126,8 +126,8 @@ export const PostEditModal = ({
                     <div className=" grid md:grid-cols-2 grid-row-2 gap-6">
                       {/* Content */}
                       <div className=" space-y-2">
-                      <label className="block text-left pl-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Content
+                        <label className="block text-left pl-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Content
                         </label>
                         <textarea
                           value={content}
@@ -161,8 +161,8 @@ export const PostEditModal = ({
                           <img
                             src={post[selectedType]?.imageUrl}
                             alt="Post preview"
-                            style={{ ...postImageSize }}
-                            className=" cursor-pointer"
+                            // style={{ ...postImageSize }}
+                            className=" cursor-pointer object-cover"
                           />
                         </div>
                       </div>

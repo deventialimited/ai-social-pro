@@ -36,7 +36,18 @@ const PostSchema = new Schema({
 
   date: { type: Date, default: Date.now },
   platforms: { type: [String], default: [] },
+  related_keywords: { type: [String], default: [] },
   status: { type: String, default: "generated" },
+  socialMediaLinks: [
+    {
+      platform: {
+        type: String,
+        enum: ["twitter", "instagram", "facebook", "linkedin"],
+        required: true,
+      },
+      url: { type: String, required: true },
+    },
+  ],
   followers: { type: Number, default: 0, min: 0 },
 
   createdAt: { type: Date, default: Date.now },

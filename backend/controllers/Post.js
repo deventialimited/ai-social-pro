@@ -23,7 +23,7 @@ exports.getAllPostsBydomainId = async (req, res) => {
     // Fetch all posts associated with the domain
     const posts = await Post.find({ domainId }).populate(
       "domainId",
-      "clientName clientWebsite siteLogo colors"
+      "clientName clientWebsite siteLogo colors niche"
     );
 
     res.status(200).json(posts);
@@ -238,7 +238,7 @@ exports.updatePostImage = async (req, res) => {
 
     const updatedPost = await Post.findOne({ postId }).populate(
       "domainId",
-      "clientName clientWebsite siteLogo colors"
+      "clientName clientWebsite siteLogo colors niche"
     );
 
     socket
@@ -286,6 +286,7 @@ exports.processPubSub = async (req, res) => {
       userId: domain.userId,
       image: "", // image will be added later
       topic: jsonData.topic || "",
+      related_keywords: jsonData.related_keywords || [],
       content: jsonData.content || "",
       slogan: jsonData.slogan || "",
       postDate: jsonData.date ? new Date(jsonData.date) : Date.now(),
@@ -311,22 +312,30 @@ exports.processPubSub = async (req, res) => {
       brandName: domain?.clientName,
       primaryColor: domain?.colors[0],
       brandLogoUrl: logoUrl,
-      keywords: [domain?.niche],
+      keywords:
+        savedPost?.related_keywords?.length > 0
+          ? [...savedPost?.related_keywords, domain?.niche]
+          : [domain?.niche],
     });
+
+    // Determine editorStatus based on fallbackCase
+    const editorStatus = generatedImages.fallbackCase ? "not_edited" : "edited";
+
     savedPost.sloganImage = {
       imageUrl: generatedImages.sloganImage,
-      editorStatus: "edited",
+      editorStatus,
     };
 
     savedPost.brandingImage = {
       imageUrl: generatedImages.brandingImage,
-      editorStatus: "edited",
+      editorStatus,
     };
+
     console.log(savedPost);
     await savedPost.save();
     const postData = await Post.findById(savedPost._id).populate(
       "domainId",
-      "clientName clientWebsite siteLogo colors"
+      "clientName clientWebsite siteLogo colors niche"
     );
 
     socket
@@ -365,7 +374,7 @@ exports.getFirstPost = async (req, res) => {
 
     // Find the first post for this domain (sorted by createdAt)
     const firstPost = await Post.findOne({ domainId: id })
-      .populate("domainId", "clientName clientWebsite siteLogo colors")
+      .populate("domainId", "clientName clientWebsite siteLogo colors niche")
       .sort({ createdAt: 1 }) // Get the oldest post (first created)
       .lean(); // Convert to plain JavaScript object
     console.log(firstPost);
@@ -519,22 +528,39 @@ exports.deletePost = async (req, res) => {
 };
 
 exports.updatePostStatusToPublished = async (req, res) => {
-  const { postId, status } = req.body;
+  const { postId, status, socialMediaLinks } = req.body;
   console.log("Updating status for post ID:", postId, "to:", status);
 
+  // Validate required fields
   if (!postId) {
     return res.status(400).json({ message: "Post ID is required" });
   }
   if (!status) {
     return res.status(400).json({ message: "Status is required" });
   }
-  const normalizedStatus = status.toLowerCase();
+  if (status.toLowerCase() === "published" && (!socialMediaLinks || !Array.isArray(socialMediaLinks) || socialMediaLinks.length === 0)) {
+    return res.status(400).json({ message: "socialMediaLinks must be a non-empty array of { platform, url } objects for published status" });
+  }
 
+  const normalizedStatus = status.toLowerCase();
   const validStatuses = ["generated", "scheduled", "published"];
   if (!validStatuses.includes(normalizedStatus)) {
     return res.status(400).json({
       message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
     });
+  }
+
+  // Validate socialMediaLinks array entries
+  if (normalizedStatus === "published") {
+    for (const entry of socialMediaLinks) {
+      if (!entry.platform || !entry.url) {
+        return res.status(400).json({ message: "Each socialMediaLinks entry must have platform and url" });
+      }
+      // Validate URL format
+      if (!/^https?:\/\/.+/.test(entry.url)) {
+        return res.status(400).json({ message: `Invalid URL format for ${entry.platform}: ${entry.url}` });
+      }
+    }
   }
 
   try {
@@ -543,15 +569,34 @@ exports.updatePostStatusToPublished = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    if (status === "published" && post.status !== "scheduled") {
+    // Ensure post is in "scheduled" status before allowing "published"
+    if (normalizedStatus === "published" && post.status !== "scheduled") {
       return res.status(400).json({
         message: `Post is not in scheduled status, current status: ${post.status}`,
       });
     }
 
+    // Append new socialMediaLinks for "published" status, avoiding duplicates
+    if (normalizedStatus === "published") {
+      const existingPlatforms = post.socialMediaLinks.map(entry => entry.platform.toLowerCase());
+      const newLinks = socialMediaLinks.filter(entry => !existingPlatforms.includes(entry.platform.toLowerCase()));
+      if (newLinks.length === 0 && socialMediaLinks.length > 0) {
+        return res.status(400).json({ message: "All provided platforms already have associated URLs" });
+      }
+      post.socialMediaLinks.push(...newLinks.map(entry => ({
+        platform: entry.platform.toLowerCase(),
+        url: entry.url,
+      })));
+    }
 
-    const io=socket.getIO();
-const room = `room_${post.userId}`;
+    // Update status and timestamp
+    post.status = normalizedStatus;
+    post.updatedAt = Date.now();
+    await post.save();
+
+    // Emit socket.io event
+    const io = socket.getIO();
+    const room = `room_${post.userId}`;
     io.to(room).emit("postStatusUpdated", {
       postId: post.postId,
       _id: post._id,
@@ -560,20 +605,20 @@ const room = `room_${post.userId}`;
       updatedAt: post.updatedAt,
     });
     console.log(`Emitted postStatusUpdated to ${room} for post ${postId}`);
-    // Update the post status
-    post.status = status;
-    post.updatedAt = Date.now();
-    await post.save();
 
     res.status(200).json({
-      message: `Post status updated to ${status} successfully`,
+      message: `Post status updated to ${normalizedStatus} successfully`,
       post,
     });
   } catch (error) {
     console.error("Error updating post status:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Validation error in post data",
+        error: Object.values(error.errors).map(err => err.message).join(", "),
+      });
+    }
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
 function getS3KeyFromUrl(url) {

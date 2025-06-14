@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const postDesignSchema = new mongoose.Schema({
   postId: {
-    type: mongoose.Schema.Types.Mixed, // Changed from ObjectId to Mixed to handle both types
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Post",
     required: true,
   },
   type: {

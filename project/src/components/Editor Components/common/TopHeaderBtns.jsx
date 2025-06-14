@@ -11,13 +11,13 @@ import {
   useSaveOrUpdatePostDesign,
 } from "../../../libs/postDesignService";
 import { createImageElement } from "../sidebar/hooks/ImagesHooks";
-import { presetSizes } from "../sidebar/tabs/SizeTab";
+import { getPlatformIdBySize, presetSizes } from "../sidebar/tabs/SizeTab";
 import toast from "react-hot-toast";
 import { useSaveOrUpdateTemplateDesign } from "../../../libs/templateDesignService";
 import { v4 as uuidv4 } from "uuid";
 import Dropdown from "./Dropdown";
 import SaveDropdown from "./SaveDropdown";
-
+import pica from "pica";
 const TopHeaderBtns = ({
   setActiveElement,
   setSelectedElementId,
@@ -30,6 +30,7 @@ const TopHeaderBtns = ({
   defaultPlatform,
   postDetails,
 }) => {
+  console.log(defaultPlatform);
   const {
     postDesignData,
     allFiles,
@@ -87,6 +88,9 @@ const TopHeaderBtns = ({
 
     try {
       const node = document.getElementById("#canvas");
+      const scale = 5;
+      const width = node.offsetWidth * scale;
+      const height = node.offsetHeight * scale;
       if (!node) throw new Error("Canvas element not found");
 
       // Step 1: Convert all <img> in canvas to base64
@@ -123,8 +127,29 @@ const TopHeaderBtns = ({
       // Step 4: Convert to Blob/File for backend upload
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-      const file = new File([blob], `canvas_${Date.now()}.png`, {
-        type: "image/png",
+      // Create image bitmap from the original blob
+      const inputImage = await createImageBitmap(blob);
+
+      // Create an offscreen canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      // Resize and apply unsharp mask using Pica
+      await pica().resize(inputImage, canvas, {
+        unsharpAmount: 100,
+        unsharpRadius: 0.6,
+        unsharpThreshold: 2,
+      });
+
+      // Convert sharpened canvas to blob
+      const enhancedBlob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), "image/webp");
+      });
+
+      // Create the final File object with enhanced sharpness
+      const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
+        type: "image/webp",
       });
 
       // Step 5: Send to API
@@ -154,13 +179,14 @@ const TopHeaderBtns = ({
           },
         }
       );
+      // console.log(URL.createObjectURL(file));
+      // setIsSavePostLoading(false);
     } catch (error) {
       setIsSavePostLoading(false);
       toast.error("An error occurred while saving");
       console.error("Error saving design:", error);
     }
   };
-
   const handleSaveTemplateAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
@@ -190,15 +216,40 @@ const TopHeaderBtns = ({
         throw new Error("Failed to convert canvas to image.");
       }
 
-      const file = new File([blob], `canvas_${Date.now()}.webp`, {
+      // Create image bitmap from the original blob
+      const inputImage = await createImageBitmap(blob);
+
+      // Create an offscreen canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      // Resize and apply unsharp mask using Pica
+      await pica().resize(inputImage, canvas, {
+        unsharpAmount: 100,
+        unsharpRadius: 0.6,
+        unsharpThreshold: 2,
+      });
+
+      // Convert sharpened canvas to blob
+      const enhancedBlob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), "image/webp");
+      });
+
+      // Create the final File object with enhanced sharpness
+      const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-      console.log(file);
+      const platform = getPlatformIdBySize(
+        postDesignData.canvas.width,
+        postDesignData.canvas.height
+      );
       onSaveTemplate.mutate(
         {
           userId: user?._id,
           templateId: `${user?.username}-${uuidv4()}`,
           templateType,
+          templatePlatform: platform,
           templateCategory,
           templateImage: file,
           templateDesignData: postDesignData,
@@ -316,6 +367,10 @@ const TopHeaderBtns = ({
       setPostOtherValues({
         siteLogo: postDetails?.domainId?.siteLogo,
         siteColors: postDetails?.domainId?.colors,
+        keywords:
+          postDetails?.related_keywords?.length > 0
+            ? [...postDetails?.related_keywords, postDetails?.domainId?.niche]
+            : [postDetails?.domainId?.niche],
       });
     }
   }, [postDetails]);
@@ -327,7 +382,9 @@ const TopHeaderBtns = ({
     }
 
     if (defaultPlatform) {
-      const platform = presetSizes.find((p) => p?.id === defaultPlatform);
+      const platform = presetSizes.find(
+        (p) => p?.id?.toLowerCase() === defaultPlatform?.toLowerCase()
+      );
       if (platform?.dimensions) {
         const [width, height] = platform.dimensions;
         updateCanvasSize(width, height);
