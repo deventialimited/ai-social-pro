@@ -126,7 +126,14 @@ const modifyBrandingTemplate = async (
 
   // 4. Get Unsplash image by keyword and replace background image
   if (Array.isArray(keywords) && keywords.length > 0) {
-    const unsplashImageFile = await getValidImage(keywords);
+    const [canvasWidth, canvasHeight] = platformDimensions[
+      (platform || "")?.toLowerCase()
+    ] || [600, 600];
+    const unsplashImageFile = await getValidImage(
+      keywords,
+      canvasWidth,
+      canvasHeight
+    );
     console.log(unsplashImageFile);
     if (unsplashImageFile) {
       const unsplashUrl = await uploadToS3(unsplashImageFile);
@@ -189,96 +196,112 @@ const generateDomainVisualAssets = async ({
       },
       { $sample: { size: 1 } },
     ]);
-
-    // === If any template is missing, fallback ===
-    if (!sloganTemplate || !brandingTemplate) {
-      console.warn("Templates missing, using fallback Unsplash images...");
-      const [img1, img2] = await getTwoUnsplashImagesFromKeywords(keywords);
-      return {
-        sloganImage: await uploadToS3(img1),
-        brandingImage: await uploadToS3(img2),
-        fallbackCase: true,
-      };
-    }
-
-    // 2. Modify templates
-    const modifiedSlogan = modifySloganTemplate(
-      platform,
-      JSON.parse(JSON.stringify(sloganTemplate)),
-      sloganText,
-      primaryColor
-    );
-
-    const modifiedBranding = await modifyBrandingTemplate(
-      platform,
-      JSON.parse(JSON.stringify(brandingTemplate)),
-      brandName,
-      primaryColor,
-      brandLogoUrl,
-      keywords
-    );
-
-    // 3. Generate HTML
-    const sloganHTML = generateHTMLFromTemplateData(modifiedSlogan);
-    const brandingHTML = generateHTMLFromTemplateData(modifiedBranding);
-
-    // 4. Generate images
     const generatedDir = path.join(__dirname, "../public/generated");
     await fsp.mkdir(generatedDir, { recursive: true });
 
-    const sloganImagePath = path.join(generatedDir, `slogan-${uuidv4()}.png`);
-    const brandingImagePath = path.join(
-      generatedDir,
-      `branding-${uuidv4()}.png`
-    );
+    const [imageWidth, imageHeight] = platformDimensions[
+      (platform || "")?.toLowerCase()
+    ] || [600, 600];
 
-    await renderImageFromHTML(
-      modifiedSlogan?.canvas,
-      sloganHTML,
-      sloganImagePath
-    );
-    await renderImageFromHTML(
-      modifiedBranding?.canvas,
-      brandingHTML,
-      brandingImagePath
-    );
+    if (!sloganTemplate) {
+      console.warn("Slogan template missing, using fallback Unsplash image...");
+      const [img] = await getTwoUnsplashImagesFromKeywords(
+        keywords,
+        imageWidth,
+        imageHeight
+      );
+      sloganImage = await uploadToS3(img);
+      fallbackCase = true;
+    } else {
+      const modifiedSlogan = modifySloganTemplate(
+        platform,
+        JSON.parse(JSON.stringify(sloganTemplate)),
+        sloganText,
+        primaryColor
+      );
 
-    // 5. Prepare and upload to S3
-    const sloganFile = await prepareFileObject(sloganImagePath);
-    const brandingFile = await prepareFileObject(brandingImagePath);
+      const sloganHTML = generateHTMLFromTemplateData(modifiedSlogan);
+      const sloganImagePath = path.join(generatedDir, `slogan-${uuidv4()}.png`);
 
-    sloganImage = await uploadToS3(sloganFile);
-    brandingImage = await uploadToS3(brandingFile);
+      await renderImageFromHTML(
+        modifiedSlogan?.canvas,
+        sloganHTML,
+        sloganImagePath
+      );
 
-    await Promise.all([
-      fsp.unlink(sloganImagePath),
-      fsp.unlink(brandingImagePath),
-    ]);
+      const sloganFile = await prepareFileObject(sloganImagePath);
+      sloganImage = await uploadToS3(sloganFile);
+      await fsp.unlink(sloganImagePath);
 
-    // 6. Save PostDesigns
-    await PostDesign.create({
-      postId,
-      type: "slogan",
-      canvas: modifiedSlogan.canvas,
-      elements: modifiedSlogan.elements,
-      layers: modifiedSlogan.layers || [],
-      backgrounds: modifiedSlogan.backgrounds || {},
-    });
+      await PostDesign.create({
+        postId,
+        type: "slogan",
+        canvas: modifiedSlogan.canvas,
+        elements: modifiedSlogan.elements,
+        layers: modifiedSlogan.layers || [],
+        backgrounds: modifiedSlogan.backgrounds || {},
+      });
+    }
 
-    await PostDesign.create({
-      postId,
-      type: "branding",
-      canvas: modifiedBranding.canvas,
-      elements: modifiedBranding.elements,
-      layers: modifiedBranding.layers || [],
-      backgrounds: modifiedBranding.backgrounds || {},
-    });
+    if (!brandingTemplate) {
+      console.warn(
+        "Branding template missing, using fallback Unsplash image..."
+      );
+      const [, img] = await getTwoUnsplashImagesFromKeywords(
+        keywords,
+        imageWidth,
+        imageHeight
+      );
+      brandingImage = await uploadToS3(img);
+      fallbackCase = true;
+    } else {
+      const modifiedBranding = await modifyBrandingTemplate(
+        platform,
+        JSON.parse(JSON.stringify(brandingTemplate)),
+        brandName,
+        primaryColor,
+        brandLogoUrl,
+        keywords
+      );
+
+      const brandingHTML = generateHTMLFromTemplateData(modifiedBranding);
+      const brandingImagePath = path.join(
+        generatedDir,
+        `branding-${uuidv4()}.png`
+      );
+
+      await renderImageFromHTML(
+        modifiedBranding?.canvas,
+        brandingHTML,
+        brandingImagePath
+      );
+
+      const brandingFile = await prepareFileObject(brandingImagePath);
+      brandingImage = await uploadToS3(brandingFile);
+      await fsp.unlink(brandingImagePath);
+
+      await PostDesign.create({
+        postId,
+        type: "branding",
+        canvas: modifiedBranding.canvas,
+        elements: modifiedBranding.elements,
+        layers: modifiedBranding.layers || [],
+        backgrounds: modifiedBranding.backgrounds || {},
+      });
+    }
   } catch (error) {
     console.error(
       "Error in generation, using fallback Unsplash images...",
       error
     );
-    const [img1, img2] = await getTwoUnsplashImagesFromKeywords(keywords);
+    const [imageWidth, imageHeight] = platformDimensions[
+      (platform || "")?.toLowerCase()
+    ] || [600, 600];
+    const [img1, img2] = await getTwoUnsplashImagesFromKeywords(
+      keywords,
+      imageWidth,
+      imageHeight
+    );
     sloganImage = await uploadToS3(img1);
     brandingImage = await uploadToS3(img2);
     fallbackCase = true;
