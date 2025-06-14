@@ -21,6 +21,7 @@ import {
   Sparkles,
   Wand2,
   Droplet,
+  ChevronDown,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -74,6 +75,24 @@ function TextToolbar({
       setSelectedElement(selectedElement);
     }
   }, [elements, selectedElementId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside any of the popup buttons and the popup itself
+      const popupElements = [colorButtonRef, fontButtonRef, positionButtonRef, transparencyButtonRef, textStyleButtonRef];
+      const clickedOnButton = popupElements.some(ref => ref.current && ref.current.contains(event.target));
+  
+      // If it's not on any popup button or popup content, close it
+      if (!clickedOnButton && !event.target.closest(".popup-content")) {
+        setActivePopup(null);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleColorChange = (color, opacity) => {
     if (!selectedElement || selectedElement.locked) return;
@@ -327,13 +346,17 @@ function TextToolbar({
           </Tooltip>
 
           <Tooltip id="font-selector-tooltip" content="Change font family">
-            <button
-              ref={fontButtonRef}
+
+
+          <button
+        className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
+        ref={fontButtonRef}
               onClick={() => handlePopupOpen('font', fontButtonRef)}
-              className="p-2 rounded-md hover:bg-gray-100"
-            >
-              <span>{selectedElement?.styles?.fontFamily || 'Font'}</span>
-            </button>
+      >
+        <span className="w-max">{selectedElement?.styles?.fontFamily || 'Roboto'}</span>
+        <ChevronDown className="h-4 w-4" />
+      </button> 
+       
           </Tooltip>
 
           <Tooltip id="font-size-tooltip" content="Change font size">
@@ -595,7 +618,7 @@ function TextToolbar({
 
       {activePopup === 'color' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -615,7 +638,7 @@ function TextToolbar({
 
       {activePopup === 'font' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -632,7 +655,7 @@ function TextToolbar({
 
       {activePopup === 'textStyle' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -650,7 +673,7 @@ function TextToolbar({
 
       {activePopup === 'position' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -667,7 +690,7 @@ function TextToolbar({
 
       {activePopup === 'transparency' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
