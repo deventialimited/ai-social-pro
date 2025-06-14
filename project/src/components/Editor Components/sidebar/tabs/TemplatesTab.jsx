@@ -138,51 +138,93 @@ function TemplatesTab() {
             Private Templates
           </div>
         </div>
-        {showPrivate &&
-          (privateTemplates.length > 0 ? (
-            <div className="flex gap-2">
-              {privateTemplates.map((template) => (
-                <div
-                  key={template._id}
-                  className="relative group h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 cursor-pointer"
-                >
-                  <img
-                    src={template.templateImage}
-                    alt="Private Template"
-                    className="w-full"
-                  />
-                  <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
-                    <span className="mr-2 font-bold">Platform:</span>
-                    {template?.templatePlatform || "None"}
-                  </p>
+        {showPrivate && privateTemplates.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4">
+            {/* First Half */}
+            <div className="flex flex-col gap-2">
+              {privateTemplates
+                .slice(0, Math.ceil(privateTemplates.length / 2))
+                .map((template) => (
                   <div
-                    className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
+                    key={template._id}
+                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
                   >
-                    <div onClick={() => handleLoadTemplate(template)}>
-                      <SquarePlus size={20} className="text-white" />
-                    </div>
-                    <div onClick={() => setConfirmDeleteId(template._id)}>
-                      {deletingId === template._id ? (
-                        <Loader2
-                          size={20}
-                          className="animate-spin text-white"
-                        />
-                      ) : (
-                        <Trash2 size={20} className="text-white" />
-                      )}
+                    <img
+                      src={template.templateImage}
+                      alt="Private Template"
+                      className="w-full"
+                    />
+                    <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
+                      <span className="mr-2 font-bold">Platform:</span>
+                      {template?.templatePlatform || "None"}
+                    </p>
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div onClick={() => handleLoadTemplate(template)}>
+                        <SquarePlus size={20} className="text-white" />
+                      </div>
+                      <div onClick={() => setConfirmDeleteId(template._id)}>
+                        {deletingId === template._id ? (
+                          <Loader2
+                            size={20}
+                            className="animate-spin text-white"
+                          />
+                        ) : (
+                          <Trash2 size={20} className="text-white" />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
-          ) : (
-            <div className="text-gray-500 text-sm">
-              No private templates found.
+
+            {/* Second Half */}
+            <div className="flex flex-col gap-2">
+              {privateTemplates
+                .slice(Math.ceil(privateTemplates.length / 2))
+                .map((template) => (
+                  <div
+                    key={template._id}
+                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
+                  >
+                    <img
+                      src={template.templateImage}
+                      alt="Private Template"
+                      className="w-full"
+                    />
+                    <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
+                      <span className="mr-2 font-bold">Platform:</span>
+                      {template?.templatePlatform || "None"}
+                    </p>
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div onClick={() => handleLoadTemplate(template)}>
+                        <SquarePlus size={20} className="text-white" />
+                      </div>
+                      <div onClick={() => setConfirmDeleteId(template._id)}>
+                        {deletingId === template._id ? (
+                          <Loader2
+                            size={20}
+                            className="animate-spin text-white"
+                          />
+                        ) : (
+                          <Trash2 size={20} className="text-white" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
-          ))}
+          </div>
+        ) : (
+          <div className="text-gray-500 text-sm">
+            No private templates found.
+          </div>
+        )}
       </div>
 
       {/* Public Templates */}
@@ -200,49 +242,93 @@ function TemplatesTab() {
             Public Templates
           </div>
         </div>
-        {showPublic &&
-          (publicTemplates.length > 0 ? (
-            <div className="flex  gap-2 ">
-              {publicTemplates.map((template) => (
-                <div
-                  key={template._id}
-                  className=" relative group h-max w-1/2 rounded-sm  overflow-hidden border border-gray-300 cursor-pointer"
-                >
-                  <img
-                    src={template.templateImage}
-                    alt="Public Template"
-                    className="w-full "
-                  />
-                  <p className="text-sm text-center font-medium py-2 text-gray-700 bg-white">
-                    <span className="mr-2 font-bold">Platform:</span>
-                    {template?.templatePlatform || "None"}
-                  </p>
+        {showPublic && publicTemplates?.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2">
+            {/* First Half */}
+            <div className="flex flex-col gap-2">
+              {publicTemplates
+                .slice(0, Math.ceil(publicTemplates.length / 2))
+                .map((template) => (
                   <div
-                    className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
+                    key={template._id}
+                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
                   >
-                    <div onClick={() => handleLoadTemplate(template)}>
-                      <SquarePlus size={20} className="text-white" />
+                    <img
+                      src={template.templateImage}
+                      alt="Public Template"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-center font-medium py-2 text-gray-700 bg-white">
+                      <span className="mr-2 font-bold">Platform:</span>
+                      {template?.templatePlatform || "None"}
+                    </p>
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div onClick={() => handleLoadTemplate(template)}>
+                        <SquarePlus size={20} className="text-white" />
+                      </div>
+                      <div onClick={() => setConfirmDeleteId(template._id)}>
+                        {deletingId === template._id ? (
+                          <Loader2
+                            size={20}
+                            className="animate-spin text-white"
+                          />
+                        ) : (
+                          <Trash2 size={20} className="text-white" />
+                        )}
+                      </div>
                     </div>
-                    {/* <div onClick={() => setConfirmDeleteId(template._id)}>
-  {deletingId === template._id ? (
-    <Loader2 size={20} className="animate-spin text-white" />
-  ) : (
-    <Trash2 size={20} className="text-white" />
-  )}
-</div>
- */}
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
-          ) : (
-            <div className="text-gray-500 text-sm">
-              No public templates available.
+
+            {/* Second Half */}
+            <div className="flex flex-col gap-2">
+              {publicTemplates
+                .slice(Math.ceil(publicTemplates.length / 2))
+                .map((template) => (
+                  <div
+                    key={template._id}
+                    className="relative group h-max rounded-sm border border-gray-300 cursor-pointer"
+                  >
+                    <img
+                      src={template.templateImage}
+                      alt="Public Template"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-center font-medium py-2 text-gray-700 bg-white">
+                      <span className="mr-2 font-bold">Platform:</span>
+                      {template?.templatePlatform || "None"}
+                    </p>
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-50 gap-2 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div onClick={() => handleLoadTemplate(template)}>
+                        <SquarePlus size={20} className="text-white" />
+                      </div>
+                      <div onClick={() => setConfirmDeleteId(template._id)}>
+                        {deletingId === template._id ? (
+                          <Loader2
+                            size={20}
+                            className="animate-spin text-white"
+                          />
+                        ) : (
+                          <Trash2 size={20} className="text-white" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
-          ))}
+          </div>
+        ) : (
+          <div className="text-gray-500 text-sm">
+            No public templates available.
+          </div>
+        )}
       </div>
       <Transition appear show={!!confirmDeleteId} as={Fragment}>
         <Dialog
