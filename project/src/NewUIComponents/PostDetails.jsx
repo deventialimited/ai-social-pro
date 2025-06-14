@@ -183,9 +183,9 @@ export default function PostDetails({ postData }) {
               <img
                 src={postData[selectedButton]?.imageUrl}
                 alt="Post"
-                className="cursor-pointer"
+                className="cursor-pointer w-auto h-auto"
                 style={{
-                  ...getImageStyle(primaryPlatform),
+                  // ...getImageStyle(primaryPlatform),
                   filter: showBlur ? "blur(8px)" : "none",
                   transition: "filter 0.5s ease-out",
                 }}
@@ -235,41 +235,39 @@ export default function PostDetails({ postData }) {
             </Tooltip>
           </span> */}
         </div>
-        
 
         <div className="flex items-center gap-2 md:gap-9">
-        <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
+          <span className="text-xs md:block sm:hidden bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
             <Tooltip title="Platform" arrow>
               {primaryPlatform}
             </Tooltip>
           </span>
           <div>
-          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <Tooltip title="Edit Post" arrow>
-              <Edit className="w-4 h-4" />
-            </Tooltip>
-          </button>
-          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <Tooltip title="Download Post" arrow>
-              <Download className="w-4 h-4" />
-            </Tooltip>
-          </button>
-          <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
-            <Tooltip title="Delete Post" arrow>
-              <Trash2 className="w-4 h-4" />
-            </Tooltip>
-          </button>
+            <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+              <Tooltip title="Edit Post" arrow>
+                <Edit className="w-4 h-4" />
+              </Tooltip>
+            </button>
+            <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+              <Tooltip title="Download Post" arrow>
+                <Download className="w-4 h-4" />
+              </Tooltip>
+            </button>
+            <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+              <Tooltip title="Delete Post" arrow>
+                <Trash2 className="w-4 h-4" />
+              </Tooltip>
+            </button>
           </div>
         </div>
       </div>
       <div className="flex justify-center mt-[-13px] text-xs text-gray-500 dark:text-gray-400">
-  <Tooltip title="Post Id">
-    <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-      POST ID: #{postData?.postId}
-    </span>
-  </Tooltip>
-</div>
-
+        <Tooltip title="Post Id">
+          <span className="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
+            POST ID: #{postData?.postId}
+          </span>
+        </Tooltip>
+      </div>
 
       {/* Sticky Bottom Button */}
       <div className="sticky bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4 shadow-lg">
