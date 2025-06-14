@@ -32,6 +32,9 @@ const getImageStyle = (platform) => {
     // objectFit: "cover",
   };
 };
+
+
+
 export default function PostDetails({ postData }) {
   const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
@@ -76,6 +79,37 @@ export default function PostDetails({ postData }) {
     navigate(`/dashboard?domainId=${postData?.domainId?._id}`);
   };
 
+
+  const handleDownload=async()=>{
+    const imageUrl=await post[selectedButton]?.imageUrl
+     if (!imageUrl) {
+        toast.error("Image not found");
+        return;
+      }
+  
+      try{
+        const response=await fetch(imageUrl)
+        const blob=await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Set download filename based on selected button
+        const filename = `${selectedButton}_${post.postId}.png`;
+        link.setAttribute('download', filename);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success("Image downloaded successfully!");
+      }
+      catch(error){
+        console.log(error)
+        toast.error("Failed to download image");
+      }
+  }
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-auto">
       {/* Header Title */}
@@ -248,7 +282,7 @@ export default function PostDetails({ postData }) {
                 <Edit className="w-4 h-4" />
               </Tooltip>
             </button>
-            <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <button onClick={handleDownload} className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
               <Tooltip title="Download Post" arrow>
                 <Download className="w-4 h-4" />
               </Tooltip>
