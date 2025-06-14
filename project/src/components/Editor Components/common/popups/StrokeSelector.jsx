@@ -53,14 +53,14 @@ function StrokeSelector({ stroke = 0, onChange }) {
 
   return (
     <div className="relative" ref={selectorRef}>
-      <button
+      {/* <button
         className="p-2 rounded-md hover:bg-gray-100"
         onClick={() => setIsOpen(!isOpen)}
       >
         <AlignJustify className="h-5 w-5 text-gray-600" />
       </button>
 
-      {isOpen && (
+      {isOpen && ( */}
         <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
           <div className="grid grid-cols-5 gap-2 mb-4">
             {strokeStyles.map((style) => (
@@ -145,7 +145,7 @@ function StrokeSelector({ stroke = 0, onChange }) {
             </div>
           </div>
         </div>
-      )}
+      {/* )} */}
     </div>
   );
 }

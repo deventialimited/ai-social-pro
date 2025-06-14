@@ -64,15 +64,15 @@ function FontSelector({ font = "Poppins", onChange }) {
 
   return (
     <div className=" relative " ref={selectorRef}>
-      <button
+      {/* <button
         className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className="w-max">{selectedFont}</span>
         <ChevronDown className="h-4 w-4" />
-      </button>
+      </button> */}
 
-      {isOpen && (
+      {/* {isOpen && ( */}
         <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border">
           <div className="p-2 border-b">
             <div className="relative">
@@ -99,7 +99,7 @@ function FontSelector({ font = "Poppins", onChange }) {
             ))}
           </div>
         </div>
-      )}
+      {/* )} */}
     </div>
   )
 }

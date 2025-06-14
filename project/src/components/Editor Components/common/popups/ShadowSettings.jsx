@@ -73,7 +73,7 @@ const ShadowSettings = ({ selectedElement, updateElement }) => {
 
   return (
     <div className="relative" ref={selectorRef}>
-      <button
+      {/* <button
         className={`flex items-center gap-1 px-3 py-2 rounded-md ${
           showEffects ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
         }`}
@@ -81,8 +81,8 @@ const ShadowSettings = ({ selectedElement, updateElement }) => {
       >
         <Sparkles className="h-5 w-5" />
         <span>Effects</span>
-      </button>
-      {showEffects && (
+      </button> */}
+      {/* {showEffects && ( */}
         <div className="absolute mt-2 w-72 p-4 border rounded-lg shadow-md bg-white z-50">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Shadow</h3>
@@ -154,7 +154,7 @@ const ShadowSettings = ({ selectedElement, updateElement }) => {
             </div>
           )}
         </div>
-      )}
+      {/* )} */}
     </div>
   );
 };

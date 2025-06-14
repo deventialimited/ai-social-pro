@@ -183,7 +183,7 @@ function ImagesTab() {
         style={{ maxHeight: "calc(100vh - 2px)" }}
         onScroll={handleScroll}
       >
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid md:grid-cols-2 grid-cols-3 gap-2">
           {/* Display uploaded images */}
           {postOtherValues?.siteLogo && (
             <div
