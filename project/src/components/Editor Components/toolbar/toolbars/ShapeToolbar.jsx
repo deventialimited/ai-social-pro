@@ -195,45 +195,61 @@ function ShapeToolbar({
 
   const handlePopupOpen = (popupType, buttonRef) => {
     if (!buttonRef.current) return;
-    
+  
+    // If the same popup is open, toggle it off
+    if (activePopup === popupType) {
+      setActivePopup(null);
+      return;
+    }
+  
     const rect = buttonRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Get the scroll position using the most reliable method
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    
-    // Calculate the absolute position of the button
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || 0;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
     const buttonLeft = rect.left + scrollLeft;
     const buttonTop = rect.top + scrollTop;
     const buttonBottom = rect.bottom + scrollTop;
-    
-    // Define popup dimensions
+  
     const popupWidth = 200;
     const popupHeight = 200;
-    
-    // Calculate initial position (below the button)
+  
     let x = buttonLeft;
     let y = buttonBottom;
-    
-    // Adjust position to keep popup within viewport
+  
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+  
     if (x + popupWidth > viewportWidth + scrollLeft) {
       x = viewportWidth + scrollLeft - popupWidth;
     }
-    
-    // If popup would go below viewport, position it above the button
     if (y + popupHeight > viewportHeight + scrollTop) {
       y = buttonTop - popupHeight;
     }
-    
-    // Ensure minimum distance from viewport edges
+  
     x = Math.max(scrollLeft, Math.min(x, viewportWidth + scrollLeft - popupWidth));
     y = Math.max(scrollTop, Math.min(y, viewportHeight + scrollTop - popupHeight));
-    
+  
     setPopupPosition({ x, y });
     setActivePopup(popupType);
   };
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside any of the popup buttons and the popup itself
+      const popupElements = [colorButtonRef, strokeButtonRef, shadowButtonRef, positionButtonRef, transparencyButtonRef];
+      const clickedOnButton = popupElements.some(ref => ref.current && ref.current.contains(event.target));
+  
+      // If it's not on any popup button or popup content, close it
+      if (!clickedOnButton && !event.target.closest(".popup-content")) {
+        setActivePopup(null);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
 
   const handlePopupClose = () => {
     setActivePopup(null);
@@ -367,7 +383,7 @@ function ShapeToolbar({
 
       {activePopup === 'color' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -387,7 +403,7 @@ function ShapeToolbar({
 
       {activePopup === 'stroke' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -408,7 +424,7 @@ function ShapeToolbar({
 
       {activePopup === 'shadow' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -425,7 +441,7 @@ function ShapeToolbar({
 
       {activePopup === 'position' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
@@ -442,7 +458,7 @@ function ShapeToolbar({
 
       {activePopup === 'transparency' && createPortal(
         <div 
-          className="absolute z-[9999]"
+          className="absolute z-[9999] popup-content"
           style={{
             left: popupPosition.x,
             top: popupPosition.y,
