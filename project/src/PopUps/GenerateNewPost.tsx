@@ -1,0 +1,331 @@
+import React, { useState } from 'react';
+import { X, Link2, FileText, Image as ImageIcon, Type, Globe, MessageSquare, Target, Sparkles, ArrowRight, Info } from 'lucide-react';
+
+interface GeneratePostModalProps {
+  onClose: () => void;
+  onGenerate: (data: any) => void;
+}
+
+export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, onGenerate }) => {
+  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image'>('text');
+  const [contentType, setContentType] = useState<'post' | 'article'>('post');
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    platform: 'facebook',
+    topic: '',
+    text: '',
+    url: '',
+    callToAction: '',
+    tone: 'professional'
+  });
+
+  const platforms = [
+    { value: 'facebook', label: 'Facebook' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'x', label: 'X (Twitter)' },
+    { value: 'linkedin', label: 'LinkedIn' }
+  ];
+
+  const tones = [
+    { value: 'funny', label: 'Funny' },
+    { value: 'smart', label: 'Smart' },
+    { value: 'detailed', label: 'Detailed' },
+    { value: 'professional', label: 'Professional' },
+    { value: 'educational', label: 'Educational' },
+    { value: 'casual', label: 'Casual' },
+    { value: 'inspiring', label: 'Inspiring' }
+  ];
+
+  const tabs = [
+    {
+      id: 'text' as const,
+      label: 'Text to Post',
+      icon: <Type className="w-4 h-4" />,
+      color: 'from-green-500 to-emerald-500',
+      tooltip: 'Transform your ideas and text content into engaging social media posts with AI-generated visuals'
+    },
+    {
+      id: 'url' as const,
+      label: 'URL to Post',
+      icon: <Link2 className="w-4 h-4" />,
+      color: 'from-blue-500 to-cyan-500',
+      tooltip: 'Convert any website URL into compelling social media content by extracting key information and creating posts'
+    },
+    {
+      id: 'image' as const,
+      label: 'Image to Post',
+      icon: <ImageIcon className="w-4 h-4" />,
+      color: 'from-purple-500 to-pink-500',
+      tooltip: 'Upload an image and let AI analyze it to create relevant, engaging captions and social media posts'
+    }
+  ];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onGenerate({
+      ...formData,
+      type: activeTab,
+      contentType
+    });
+  };
+
+  const renderTabContent = () => {
+    return (
+      <div className="space-y-6">
+        {/* Platform Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <Globe className="w-4 h-4 inline mr-2" />
+            Platform
+          </label>
+          <select
+            value={formData.platform}
+            onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+          >
+            {platforms.map((platform) => (
+              <option key={platform.value} value={platform.value}>
+                {platform.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Topic */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <MessageSquare className="w-4 h-4 inline mr-2" />
+            Topic
+          </label>
+          <input
+            type="text"
+            value={formData.topic}
+            onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+            placeholder="What's the main topic of your post?"
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Conditional Fields Based on Tab */}
+        {activeTab === 'text' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <FileText className="w-4 h-4 inline mr-2" />
+              What do you want to post about?
+            </label>
+            <textarea
+              value={formData.text}
+              onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+              placeholder="Describe what you want to post about..."
+              rows={4}
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
+            />
+          </div>
+        )}
+
+        {activeTab === 'url' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <Link2 className="w-4 h-4 inline mr-2" />
+              URL
+            </label>
+            <input
+              type="url"
+              value={formData.url}
+              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+              placeholder="https://example.com"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        )}
+
+        {activeTab === 'image' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <ImageIcon className="w-4 h-4 inline mr-2" />
+              Upload Image
+            </label>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer">
+              <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
+                <span className="font-medium text-blue-500 dark:text-blue-400">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                PNG, JPG or GIF (max. 5MB)
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Call to Action */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <Target className="w-4 h-4 inline mr-2" />
+            Call to Action
+          </label>
+          <input
+            type="text"
+            value={formData.callToAction}
+            onChange={(e) => setFormData({ ...formData, callToAction: e.target.value })}
+            placeholder="e.g., Visit our website, Book now, Learn more..."
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Content Type Draggable Slider */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            Content Type
+          </label>
+          <div className="relative">
+            {/* Track */}
+            <div className="w-full h-12 bg-gray-200 dark:bg-gray-700 rounded-full relative overflow-hidden">
+              {/* Slider Handle */}
+              <div
+                className={`absolute top-1 bottom-1 w-1/2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full shadow-lg transition-transform duration-300 ease-out cursor-pointer ${
+                  contentType === 'article' ? 'translate-x-full' : 'translate-x-0'
+                }`}
+                onClick={() => setContentType(contentType === 'post' ? 'article' : 'post')}
+              >
+                {/* Draggable Handle */}
+                <div className="absolute right-1 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing">
+                  <div className="w-1 h-4 bg-gray-400 rounded-full" />
+                </div>
+              </div>
+              
+              {/* Labels */}
+              <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none">
+                <span className={`text-sm font-medium transition-colors ${
+                  contentType === 'post' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  Post
+                </span>
+                <span className={`text-sm font-medium transition-colors ${
+                  contentType === 'article' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  Article
+                </span>
+              </div>
+            </div>
+            
+            {/* Click areas for easier interaction */}
+            <button
+              type="button"
+              onClick={() => setContentType('post')}
+              className="absolute left-0 top-0 w-1/2 h-full"
+            />
+            <button
+              type="button"
+              onClick={() => setContentType('article')}
+              className="absolute right-0 top-0 w-1/2 h-full"
+            />
+          </div>
+        </div>
+
+        {/* Tone Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <Sparkles className="w-4 h-4 inline mr-2" />
+            Tone
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {tones.map((tone) => (
+              <button
+                key={tone.value}
+                type="button"
+                onClick={() => setFormData({ ...formData, tone: tone.value })}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  formData.tone === tone.value
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {tone.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[700px] max-h-[90vh] overflow-hidden shadow-xl">
+        {/* Header */}
+        <div className="px-8 py-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Generate New Post
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tabs with Tooltips */}
+        <div className="px-8 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+            {tabs.map((tab) => (
+              <div key={tab.id} className="relative flex-1">
+                <button
+                  onClick={() => setActiveTab(tab.id)}
+                  onMouseEnter={() => setShowTooltip(tab.id)}
+                  onMouseLeave={() => setShowTooltip(null)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <div className={`${activeTab === tab.id ? `bg-gradient-to-r ${tab.color}` : ''} ${activeTab === tab.id ? 'text-white' : ''} p-1 rounded`}>
+                    {tab.icon}
+                  </div>
+                  {tab.label}
+                  <Info className="w-3 h-3 opacity-50" />
+                </button>
+                
+                {/* Tooltip */}
+                {showTooltip === tab.id && (
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 z-10">
+                    <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg px-3 py-2 max-w-xs text-center shadow-lg">
+                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
+                      {tab.tooltip}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <form onSubmit={handleSubmit} className="p-8 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
+          {renderTabContent()}
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 flex items-center gap-2"
+            >
+              Generate Post
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};

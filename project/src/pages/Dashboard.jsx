@@ -22,6 +22,7 @@ import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import { getUserInformation } from "../libs/authService";
 import {useSocket} from '../store/useSocket'
+import { GeneratePostModal } from "../PopUps/GenerateNewPost";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
@@ -36,6 +37,8 @@ export const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
+    const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false); // New state for modal
+
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
 const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -253,7 +256,7 @@ if(returnFromPortal && storedUser._id){
             <div className="px-6 py-4 flex justify-center">
               <button
                 className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                onClick={()=>{}}
+                onClick={()=>setIsGenerateModalOpen(true)}
               >
                 <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
                   +
@@ -344,7 +347,12 @@ if(returnFromPortal && storedUser._id){
     <p className="text-sm text-gray-800 dark:text-gray-200">Fetching your updated subscription...</p>
   </div>
 )}
-
+ {isGenerateModalOpen && (
+          <GeneratePostModal
+            onClose={() => setIsGenerateModalOpen(false)}
+            onGenerate={()=>{}}
+          />
+        )}
 
       </div>
     </div>
