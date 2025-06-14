@@ -543,8 +543,9 @@ function TextToolbar({
               onClick={() => handlePopupOpen('textStyle', textStyleButtonRef)}
               className="p-2 rounded-md hover:bg-gray-100"
             >
-              <span>Text Style</span>
-            </button>
+        <List className="h-5 w-5 text-gray-600" />
+        </button>
+
           </Tooltip>
 
           <Tooltip id="text-effects-tooltip" content="Apply text effects">
