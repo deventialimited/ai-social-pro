@@ -61,7 +61,7 @@ function ElementsTab() {
         {activeTab === "shapes" ? (
           <>
             <h3 className="text-sm font-medium mb-2">Shapes</h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 md:gap-2">
               {filteredShapes.map((shape) => (
                 <button
                   key={shape.id}
@@ -75,9 +75,10 @@ function ElementsTab() {
           </>
         ) : (
           <>
-            <h3 className="text-sm font-medium mb-2">Lines</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {filteredLines.map((line) => (
+          <div className="overflow-y-auto max-h-20 sm:overflow-visible sm:max-h-none">
+            <h3 className="text-sm font-medium mb-2 ">Lines</h3>
+            <div className="grid md:grid-cols-2 grid-cols-3 gap-2 ">
+            {filteredLines.map((line) => (
                 <button
                   key={line.id}
                   onClick={() => handleAddShape(line)}
@@ -86,6 +87,7 @@ function ElementsTab() {
                   <div dangerouslySetInnerHTML={{ __html: line.svg }} className="w-full h-6" />
                 </button>
               ))}
+            </div>
             </div>
           </>
         )}
