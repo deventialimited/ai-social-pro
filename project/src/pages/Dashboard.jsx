@@ -22,7 +22,7 @@ import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import { getUserInformation } from "../libs/authService";
 import {useSocket} from '../store/useSocket'
-import { GeneratePostModal } from "../PopUps/GenerateNewPost";
+import GeneratePostModal from "../PopUps/GenerateNewPost";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();

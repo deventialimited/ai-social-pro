@@ -1,26 +1,23 @@
 import React, { useState } from 'react';
 import { X, Link2, FileText, Image as ImageIcon, Type, Globe, MessageSquare, Target, Sparkles, ArrowRight, Info } from 'lucide-react';
+import { getDomainById } from '../libs/domainService';
+import axios from 'axios';
 
-interface GeneratePostModalProps {
-  onClose: () => void;
-  onGenerate: (data: any) => void;
-}
-
-export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, onGenerate }) => {
-  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image'>('text');
-  const [contentType, setContentType] = useState<'post' | 'article'>('post');
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
+const GeneratePostModal = ({ onClose, onGenerate }) => {
+  const [activeTab, setActiveTab] = useState('text');
+  const [contentType, setContentType] = useState('post');
+  const [showTooltip, setShowTooltip] = useState(null);
   const [formData, setFormData] = useState({
     platform: 'facebook',
     topic: '',
     text: '',
     url: '',
-    urlDescription: '', // New field for URL description
     callToAction: '',
     tone: 'professional',
-    imageDescription: '',
-    imageFile: null as File | null,
+    PostURL: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const platforms = [
     { value: 'facebook', label: 'Facebook' },
@@ -41,40 +38,90 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
 
   const tabs = [
     {
-      id: 'text' as const,
+      id: 'text',
       label: 'Text to Post',
       icon: <Type className="w-4 h-4" />,
       color: 'from-green-500 to-emerald-500',
       tooltip: 'Transform your ideas and text content into engaging social media posts with AI-generated visuals',
     },
     {
-      id: 'url' as const,
+      id: 'url',
       label: 'URL to Post',
       icon: <Link2 className="w-4 h-4" />,
       color: 'from-blue-500 to-cyan-500',
       tooltip: 'Convert any website URL into compelling social media content by extracting key information and creating posts',
     },
-    {
-      id: 'image' as const,
-      label: 'Image to Post',
-      icon: <ImageIcon className="w-4 h-4" />,
-      color: 'from-purple-500 to-pink-500',
-      tooltip: 'Upload an image and let AI analyze it to create relevant, engaging captions and social media posts',
-    },
+    // {
+    //   id: 'image',
+    //   label: 'Image to Post',
+    //   icon: <ImageIcon className="w-4 h-4" />,
+    //   color: 'from-purple-500 to-pink-500',
+    //   tooltip: 'Upload an image and let AI analyze it to create relevant, engaging captions and social media posts',
+    // },
   ];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setFormData({ ...formData, imageFile: file });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
+    console.log('handle submit');
     e.preventDefault();
-    onGenerate({
-      ...formData,
-      type: activeTab,
-      contentType,
-    });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Fetch user and selectedWebsiteId from localStorage
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const selectedWebsiteId = user?.selectedWebsiteId;
+
+      if (!selectedWebsiteId) {
+        throw new Error('No selected website found');
+      }
+
+      // Fetch domain details
+      const domain = await getDomainById(selectedWebsiteId);
+      if (!domain?.data) {
+        throw new Error('Domain not found');
+      }
+
+      // Prepare payload for the third-party API
+      const payload = {
+        name: domain.data.clientName || 'Unknown',
+        industry: domain.data.industry || 'Unknown',
+        niche: domain.data.niche || 'Unknown',
+        description: domain.data.clientDescription || '',
+        core_values: domain.data.marketingStrategy?.core_values || [],
+        target_audience: domain.data.marketingStrategy?.audience || [],
+        audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
+        post_topic: formData.topic || '',
+        post_description: activeTab === 'text' ? formData.text : '',
+        post_cta: formData.callToAction || '',
+        post_based_url: formData.PostURL,
+        post_link_url: activeTab === 'url' ? formData.url : '',
+        post_tone: formData.tone || 'professional',
+        post_platform: formData.platform || 'facebook',
+      };
+
+      // Make POST request to the third-party API
+      const response = await axios.post(
+        'https://social-api-107470285539.us-central1.run.app/generate-single-post',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      onGenerate({
+        ...formData,
+        type: activeTab,
+        contentType,
+        apiResponse: response.data,
+      });
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Failed to generate post');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderTabContent = () => {
@@ -132,92 +179,52 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
         )}
 
         {activeTab === 'url' && (
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* URL Input */}
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <Link2 className="w-4 h-4 inline mr-2" />
-                URL
-              </label>
-              <div
-                className="flex items-center justify-center border border-gray-300 dark:border-gray-600 rounded-xl p-4 box-border"
-                style={{ height: '160px', minHeight: '160px', width: '100%' }}
-              >
-                <input
-                  type="url"
-                  value={formData.url}
-                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                  placeholder="https://example.com"
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-0 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-0"
-                />
-              </div>
-            </div>
-            {/* Describe URL */}
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <FileText className="w-4 h-4 inline mr-2" />
-                Describe the URL
-              </label>
-              <textarea
-                value={formData.urlDescription}
-                onChange={(e) => setFormData({ ...formData, urlDescription: e.target.value })}
-                placeholder="Describe the content or context of the URL..."
-                rows={4}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none box-border"
-                style={{ height: '160px', minHeight: '160px', width: '100%' }}
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <Link2 className="w-4 h-4 inline mr-2" />
+              URL
+            </label>
+            <input
+              type="url"
+              value={formData.url}
+              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+              placeholder="https://example.com"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         )}
 
         {activeTab === 'image' && (
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Upload Image */}
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <ImageIcon className="w-4 h-4 inline mr-2" />
-                Upload Image
-              </label>
-              <div
-                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer flex flex-col justify-center items-center box-border"
-                style={{ height: '160px', minHeight: '160px', width: '100%' }}
-              >
-                <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/gif"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="text-gray-600 dark:text-gray-400 cursor-pointer"
-                >
-                  <span className="font-medium text-blue-500 dark:text-blue-400">Click to upload</span> or drag and drop
-                </label>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  PNG, JPG or GIF (max. 5MB)
-                </p>
-              </div>
-            </div>
-            {/* Describe Image */}
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                <FileText className="w-4 h-4 inline mr-2" />
-                Describe the Image
-              </label>
-              <textarea
-                value={formData.imageDescription}
-                onChange={(e) => setFormData({ ...formData, imageDescription: e.target.value })}
-                placeholder="Describe the content or context of the image..."
-                rows={4}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none box-border"
-                style={{ height: '160px', minHeight: '160px', width: '100%' }}
-              />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <ImageIcon className="w-4 h-4 inline mr-2" />
+              Upload Image
+            </label>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer">
+              <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">
+                <span className="font-medium text-blue-500 dark:text-blue-400">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                PNG, JPG or GIF (max. 5MB)
+              </p>
             </div>
           </div>
         )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <Link2 className="w-4 h-4 inline mr-2" />
+            URL to Redirect
+          </label>
+          <input
+            type="url"
+            value={formData.PostURL}
+            onChange={(e) => setFormData({ ...formData, PostURL: e.target.value })}
+            placeholder="e.g., Link you want to add to your post"
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
         {/* Call to Action */}
         <div>
@@ -233,8 +240,6 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
             className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-      
 
         {/* Tone Selection */}
         <div>
@@ -266,6 +271,7 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[700px] max-h-[90vh] overflow-hidden shadow-xl">
+        {/* Header */}
         <div className="px-8 py-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -279,6 +285,8 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
             </button>
           </div>
         </div>
+
+        {/* Tabs with Tooltips */}
         <div className="px-8 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex space-x-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
             {tabs.map((tab) => (
@@ -299,6 +307,8 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
                   {tab.label}
                   <Info className="w-3 h-3 opacity-50" />
                 </button>
+
+                {/* Tooltip */}
                 {showTooltip === tab.id && (
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 z-10">
                     <div className="bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg px-3 py-2 max-w-xs text-center shadow-lg">
@@ -311,8 +321,17 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
             ))}
           </div>
         </div>
+
+        {/* Content */}
         <form onSubmit={handleSubmit} className="p-8 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
           {renderTabContent()}
+
+          {/* Footer */}
           <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
@@ -323,9 +342,12 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 flex items-center gap-2"
+              disabled={isLoading}
+              className={`px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 flex items-center gap-2 ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Generate Post
+              {isLoading ? 'Generating...' : 'Generate Post'}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -334,3 +356,5 @@ export const GeneratePostModal: React.FC<GeneratePostModalProps> = ({ onClose, o
     </div>
   );
 };
+
+export default GeneratePostModal;
