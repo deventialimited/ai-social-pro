@@ -122,7 +122,7 @@ function TemplatesTab() {
       {canvasLoading && (
         <div className="text-sm text-gray-600 mb-2">Loading template...</div>
       )}
-      <div className="overflow-y-auto md:overflow-y-hidden max-h-40 md:max-h-none">
+      <div className="overflow-y-auto  max-h-40 md:max-h-none">
         {/* Private Templates */}
         <div className="mb-4">
           <div
