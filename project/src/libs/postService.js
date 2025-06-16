@@ -215,12 +215,14 @@ export const useApproveAndSchedulePost = () => {
 // Function to create a new post via processPubSub
 export const createPostViaPubSub = async (postData) => {
   try {
+    console.log("pubsub payload",postData)
     const response = await axios.post(`${API_URL}/processPubSub`, postData, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.data?.postId; // Return the postId from the response
+    console.log('response',response)
+    return response.data?.post; // Return the full post object from the response
   } catch (error) {
     console.error(
       'Error creating post via processPubSub:',
@@ -236,11 +238,11 @@ export const useCreatePostViaPubSub = () => {
 
   return useMutation({
     mutationFn: createPostViaPubSub,
-    onSuccess: (postId, variables) => {
+    onSuccess: (post, variables) => {
       // Update the cache with the new post
       queryClient.setQueryData(['posts', variables.domainId], (oldData) => {
-        if (!oldData) return [{ postId, ...variables }];
-        return [{ postId, ...variables }, ...oldData];
+        if (!oldData) return [post];
+        return [post, ...oldData];
       });
       // Invalidate queries to refetch the latest posts
       queryClient.invalidateQueries(['posts', variables.domainId]);

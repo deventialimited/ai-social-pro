@@ -231,7 +231,7 @@ const handleSinglePostGeneration=async()=>{
 
   
   const filteredPosts = posts?.filter((post) => {
-    const platforms = post.platforms?.map((p) => p.toLowerCase());
+    const platforms = post?.platforms?.map((p) => p.toLowerCase());
     const matchesFilter =
       filter === "all" || platforms.includes(filter.toLowerCase());
     const matchesTab = post.status === postsTab;

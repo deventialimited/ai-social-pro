@@ -3,8 +3,14 @@ import { X, Link2, FileText, Image as ImageIcon, Type, Globe, MessageSquare, Tar
 import { getDomainById } from '../libs/domainService';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useCreatePostViaPubSub } from '../libs/postService';
+import { useQueryClient } from "@tanstack/react-query";
 
 const GeneratePostModal = ({ onClose, onGenerate }) => {
+  
+  const queryClient = useQueryClient();
+  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
+
   const [activeTab, setActiveTab] = useState('text');
   const [contentType, setContentType] = useState('post');
   const [showTooltip, setShowTooltip] = useState(null);
@@ -143,13 +149,25 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
           },
         }
       );
-
-      onGenerate({
-        ...formData,
-        type: activeTab,
-        contentType,
-        apiResponse: response.data,
-      });
+console.log('response of the third part api',response.data)
+     const pubsubPayload={
+      postId:response.data.post_id,
+      client_id:domain.data.client_id,
+      domainId:selectedWebsiteId,
+      userId:user._id,
+      image:response.data.image || "",
+      topic:response.data.topic,
+     related_keywords:response.data.related_keywords ||[],
+     content:response.data.content,
+     slogan:response.data.slogan,
+     postDate:response.data.date,
+     platforms: Array.isArray(response.data.platform)
+          ? response.data.platform
+          : response.data.platform
+          ? [response.data.platform]
+          : [],
+     }
+     createPostViaPubSub(pubsubPayload);
       onClose();
     } catch (err) {
       const errorMessage = err.message.includes('Request failed with status code 500')
