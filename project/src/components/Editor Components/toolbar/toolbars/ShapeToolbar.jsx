@@ -81,7 +81,9 @@ function ShapeToolbar({
   const handleTransparencyChange = (value) => {
     if (!selectedElement || selectedElement.locked) return;
     // Convert percentage (0-100) to 0-1
-    const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
+    // const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
+    const newOpacity = Math.min(Math.max(value, 0), 1); // Ensure the value is clamped between 0 and 1
+
     updateElement(selectedElement.id, {
       styles: {
         ...selectedElement.styles,
