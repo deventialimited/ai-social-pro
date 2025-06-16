@@ -73,7 +73,7 @@ function FontSelector({ font = "Poppins", onChange }) {
       </button> */}
 
       {/* {isOpen && ( */}
-        <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border">
+        <div className="absolute z-50 mt-1 md:w-64 w-44 bg-white rounded-md shadow-lg border">
           <div className="p-2 border-b">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
