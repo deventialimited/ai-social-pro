@@ -116,6 +116,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
                     setActiveElement={setActiveElement}
                     setSelectedElementId={setSelectedElementId}
                     setSpecialActiveTab={setSpecialActiveTab}
+                    setActiveTab={setActiveTab}
                     canvasContainerRef={canvasContainerRef}
                     onClose={onClose}
                     postId={post?._id}

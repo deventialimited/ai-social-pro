@@ -21,6 +21,7 @@ import pica from "pica";
 const TopHeaderBtns = ({
   setActiveElement,
   setSelectedElementId,
+  setActiveTab,
   setSpecialActiveTab,
   canvasContainerRef,
   onClose,
@@ -259,7 +260,8 @@ const TopHeaderBtns = ({
           onSuccess: () => {
             setTimeout(() => {
               setIsSaveTemplateLoading(false);
-              onClose();
+              // onClose();
+              setActiveTab("templates");
               clearEditor();
               toast.success("Template saved successfully");
             }, 3000);
