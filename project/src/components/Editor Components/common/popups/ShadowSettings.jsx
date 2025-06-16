@@ -83,7 +83,7 @@ const ShadowSettings = ({ selectedElement, updateElement }) => {
         <span>Effects</span>
       </button> */}
       {/* {showEffects && ( */}
-        <div className="absolute mt-2 w-72 p-4 border rounded-lg shadow-md bg-white z-50">
+        <div className="absolute mt-2 md:w-72 w-52 p-4 border rounded-lg shadow-md bg-white z-50">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Shadow</h3>
             <div onClick={handleToggle} className="cursor-pointer">

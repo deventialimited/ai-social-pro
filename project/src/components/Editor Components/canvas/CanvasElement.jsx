@@ -267,6 +267,20 @@ const CanvasElement = ({
     onSelect(id, type);
   };
 
+  useEffect(() => {
+    const el = elementRef.current;
+    if (!el) return;
+  
+    const handler = (e) => {
+      e.stopPropagation();
+      onSelect(id, type);
+    };
+  
+    el.addEventListener("pointerdown", handler);
+  
+    return () => el.removeEventListener("pointerdown", handler);
+  }, [id, type, onSelect]);
+  
   return (
     <>
       {type === "text" ? (

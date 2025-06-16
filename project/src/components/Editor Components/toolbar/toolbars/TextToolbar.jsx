@@ -199,7 +199,9 @@ function TextToolbar({
     if (!selectedElement || selectedElement.locked) return;
     setTransparency(value);
     // Convert percentage (0-100) to 0-1
-    const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
+    // const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
+    const newOpacity = Math.min(Math.max(value, 0), 1); // Ensure the value is clamped between 0 and 1
+
     updateElement(selectedElement?.id, {
       styles: {
         ...selectedElement.styles,
@@ -207,6 +209,7 @@ function TextToolbar({
       },
     });
   };
+
 
   const handleTextStyleChange = ({ lineHeight, letterSpacing }) => {
     if (!selectedElement || selectedElement.locked) return;
