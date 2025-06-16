@@ -83,6 +83,10 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
 
       // Prepare payload for the third-party API
       const payload = {
+
+        client_email:domain.data.client_email,
+        client_id:domain.data.client_id,
+        website:domain.data.website,
         name: domain.data.clientName || 'Unknown',
         industry: domain.data.industry || 'Unknown',
         niche: domain.data.niche || 'Unknown',
