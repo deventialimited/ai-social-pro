@@ -37,7 +37,7 @@ export const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
-  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false); // New state for modal
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -45,13 +45,12 @@ export const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const checkoutStatus = searchParams.get("checkout");
   const socket=useSocket();
+  const [isGeneratingPost, setIsGeneratingPost] = useState(false);
 
   useEffect(() => {
-    // Check for tab query parameter and set currentTab
     const tab = searchParams.get("tab");
     if (tab === "socials") {
       setCurrentTab("socials");
-      // Clean up the URL by removing the tab query parameter
       const cleanUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
     }
@@ -76,7 +75,7 @@ export const Dashboard = () => {
     const returnFromPortal = searchParams.get("returnFromPortal");
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if(returnFromPortal && storedUser._id){
-      setIsFetchingUserInfo(true); // 👈 Start loader
+      setIsFetchingUserInfo(true);
       getUserInformation(storedUser._id)
         .then((updatedUser) => {
           console.log('new updated user',updatedUser)
@@ -87,7 +86,7 @@ export const Dashboard = () => {
           console.warn("Error fetching user info:", err);
         })
         .finally(() => {
-          setIsFetchingUserInfo(false); // 👈 Stop loader
+          setIsFetchingUserInfo(false);
           const cleanUrl = window.location.origin + window.location.pathname;
           window.history.replaceState({}, document.title, cleanUrl);
         });
@@ -255,13 +254,20 @@ export const Dashboard = () => {
             {postsTab === "generated" && (
               <div className="px-6 py-4 flex justify-center">
                 <button
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  onClick={()=>setIsGenerateModalOpen(true)}
+                  className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                    isGeneratingPost ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
+                  onClick={() => setIsGenerateModalOpen(true)}
+                  disabled={isGeneratingPost}
                 >
                   <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
-                    +
+                    {isGeneratingPost ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      '+'
+                    )}
                   </span>
-                  Generate Post
+                  {isGeneratingPost ? 'Generating Post...' : 'Generate Post'}
                 </button>
               </div>
             )}
@@ -348,10 +354,13 @@ export const Dashboard = () => {
             <p className="text-sm text-gray-800 dark:text-gray-200">Fetching your updated subscription...</p>
           </div>
         )}
-        {isGenerateModalOpen && (
+        {isGenerateModalOpen && !isGeneratingPost && (
           <GeneratePostModal
             onClose={() => setIsGenerateModalOpen(false)}
-            onGenerate={handleSinglePostGeneration}
+            onGenerate={() => {
+              queryClient.invalidateQueries(['posts', selectedWebsite]);
+            }}
+            onLoadingChange={setIsGeneratingPost}
           />
         )}
       </div>
