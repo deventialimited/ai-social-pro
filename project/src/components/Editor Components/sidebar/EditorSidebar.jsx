@@ -102,7 +102,7 @@ function EditorSidebar({
       {/* Desktop Sidebar */}
       <div className="hidden md:flex border-r h-full">
         {/* Tab buttons */}
-        <div className="w-[96px] border-r bg-gray-50">
+        <div className="w-[96px] overflow-x-auto max-h-[82vh] border-r bg-gray-50">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -137,12 +137,14 @@ function EditorSidebar({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed p-2 bottom-0 left-0 right-0 bg-white border-t z-30">
+      {/* <div className="md:hidden fixed p-2 bottom-0 left-0 right-0 bg-white border-t z-30"> */}
+      <div className="md:hidden fixed p-1 bottom-0 left-0 right-0 bg-white border-t z-30 gap-2 overflow-x-auto">
+
         <div className="flex justify-around items-center">
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`flex flex-col items-center justify-center py-2 px-1 text-xs ${
+              className={`flex flex-col items-center justify-center py-1 px-3 text-sm ${
                 activeTab === tab.id
                   ? "text-blue-600"
                   : "text-gray-500"

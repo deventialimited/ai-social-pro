@@ -61,7 +61,7 @@ function StrokeSelector({ stroke = 0, onChange }) {
       </button>
 
       {isOpen && ( */}
-        <div className="absolute z-50 mt-1 w-64 bg-white rounded-md shadow-lg border p-4">
+        <div className="absolute z-50 mt-1 md:w-64 w-56 bg-white rounded-md shadow-lg border p-4">
           <div className="grid grid-cols-5 gap-2 mb-4">
             {strokeStyles.map((style) => (
               <button

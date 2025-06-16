@@ -81,7 +81,9 @@ function ShapeToolbar({
   const handleTransparencyChange = (value) => {
     if (!selectedElement || selectedElement.locked) return;
     // Convert percentage (0-100) to 0-1
-    const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
+    // const newOpacity = Math.min(Math.max(value, 0), 100) / 100;
+    const newOpacity = Math.min(Math.max(value, 0), 1); // Ensure the value is clamped between 0 and 1
+
     updateElement(selectedElement.id, {
       styles: {
         ...selectedElement.styles,
@@ -315,8 +317,8 @@ function ShapeToolbar({
            <button
                        ref={shadowButtonRef}
 
-                  className={`flex items-center gap-1 px-3 py-2 rounded-md ${
-                    shadowButtonRef ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
+                  className={`flex items-center gap-1 px-3 py-2 rounded-md
+                    ${activePopup === 'shadow' ? "bg-blue-100 text-blue-600" : "hover:bg-gray-100"
                   }`}
                   onClick={() => handlePopupOpen('shadow', shadowButtonRef)}
                   >
