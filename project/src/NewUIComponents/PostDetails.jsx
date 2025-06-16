@@ -318,7 +318,7 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
                 alt="Post"
                 className="cursor-pointer w-auto h-auto"
                 style={{
-                  ...getImageStyle(primaryPlatform),
+                  // ...getImageStyle(primaryPlatform),
                   filter: showBlur ? "blur(8px)" : "none",
                   transition: "filter 0.5s ease-out",
                 }}
