@@ -102,7 +102,7 @@ function EditorSidebar({
       {/* Desktop Sidebar */}
       <div className="hidden md:flex border-r h-full">
         {/* Tab buttons */}
-        <div className="w-[96px] border-r bg-gray-50">
+        <div className="w-[96px] overflow-x-auto max-h-[82vh] border-r bg-gray-50">
           {tabs.map((tab) => (
             <button
               key={tab.id}
