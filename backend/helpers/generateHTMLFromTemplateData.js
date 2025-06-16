@@ -66,11 +66,26 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               const left = parseInt(el.position?.x) || 0;
 
               return `<div style="
-                position:absolute;
-                top:${top}px;
-                left:${left}px;
-                ${styleString}
-              ">${el.props?.text || ""}</div>`;
+  position: absolute;
+  top: ${top}px;
+  left: ${left}px;
+  width: ${el.size?.width || 100}px;
+  height: ${el.size?.height || 100}px;
+  display: flex;
+  align-items: ${
+    el.styles?.verticalAlign === "middle"
+      ? "center"
+      : el.styles?.verticalAlign === "bottom"
+      ? "flex-end"
+      : "flex-start"
+  };
+  justify-content: flex-start;
+  overflow: hidden;
+">
+  <div style="${styleString}">
+    ${el.props?.text || ""}
+  </div>
+</div>`;
             }
 
             if (el.type === "image") {
