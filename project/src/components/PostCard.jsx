@@ -91,8 +91,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           height: `auto`,
         }
       : {
-          width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
-          height: `${Math.max(Math.min(canvasHeight / 3, 600))}px`,
+          // width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
+          height: `${canvasHeight}px`,
         };
   };
 
@@ -123,9 +123,10 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     onEdit(updatedPost, "generated");
     setShowEditModal(false);
   };
-const handleDownload=async()=>{
-  const imageUrl=await post[selectedButton]?.imageUrl
-   if (!imageUrl) {
+
+  const handleDownload=async()=>{
+    const imageUrl=await post[selectedButton]?.imageUrl
+    if (!imageUrl) {
       toast.error("Image not found");
       return;
     }
@@ -152,7 +153,8 @@ const handleDownload=async()=>{
       console.log(error)
       toast.error("Failed to download image");
     }
-}
+  }
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
     if (onReschedule) {
@@ -160,18 +162,7 @@ const handleDownload=async()=>{
     }
   };
 
-
-
-  const handleApprove = async () => {
-    const now = new Date();
-    if (postDate < now) {
-      toast.error("Cannot schedule post in the past.");
-      return;
-    }
-
-
-
-const getSelectedImageUrl = () => {
+  const getSelectedImageUrl = () => {
     switch (selectedButton) {
       case "brandingImage":
         return post.brandingImage?.imageUrl || "";
@@ -183,6 +174,14 @@ const getSelectedImageUrl = () => {
         return "";
     }
   };
+
+  const handleApprove = async () => {
+    const now = new Date();
+    if (postDate < now) {
+      toast.error("Cannot schedule post in the past.");
+      return;
+    }
+
     const schedulePayload = {
       time: new Date(postDate).getTime(),
       uid: post.userId || "",
@@ -323,12 +322,13 @@ const getSelectedImageUrl = () => {
             )}
           </div>
           <div className="flex items-center justify-center rounded-lg w-full bg-gray-200">
-            {post[selectedButton] ? (
+            {post[selectedButton]?.imageUrl ? (
               <>
                 {!imageLoaded && (
                   <Skeleton
                     style={{
                       ...getImageStyle(primaryPlatform),
+                      borderRadius: "0.5rem",
                     }}
                   />
                 )}
@@ -337,14 +337,14 @@ const getSelectedImageUrl = () => {
                   alt="Post content"
                   onLoad={() => setImageLoaded(true)}
                   style={{
-                    // ...getImageStyle(primaryPlatform),
+                    ...getImageStyle(primaryPlatform),
                     filter: imageBlurred ? "blur(20px)" : "none",
                     transition: "filter 0.3s ease",
                     display: imageLoaded ? "block" : "none",
                     cursor: "pointer",
                   }}
                   onClick={() => setShowEditModal(true)}
-                  className=" object-cover"
+                  className="object-cover"
                 />
               </>
             ) : (
