@@ -70,7 +70,8 @@ const SizeTab = () => {
   };
 
   return (
-    <div className="p-4 h-full flex flex-col">
+    <div className="p-4 h-full flex flex-col overflow-y-auto md:overflow-y-visible md:max-h-none"
+        style={{ maxHeight: "calc(80vh - 300px)" }}>
       <div className="mb-4 flex md:flex-col gap-6 md:gap-0">
         <div className="mb-2 flex items-center justify-between flex-wrap gap-3">
           <label htmlFor="width" className="block text-sm mb-1">
@@ -100,8 +101,7 @@ const SizeTab = () => {
       </div>
 
       <div
-        className="overflow-y-auto"
-        style={{ maxHeight: "calc(100vh - 300px)" }}
+        
       >
         <div className="space-y-3 pb-12">
           {presetSizes.map((preset, index) => (
