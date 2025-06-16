@@ -178,7 +178,9 @@ if(returnFromPortal && storedUser._id){
       setTimeout(() => setIsGeneratingPosts(false), 2000);
     }
   };
-
+const handleSinglePostGeneration=async()=>{
+  
+}
   const handleNewPost = (post) => {
     setCurrentTab("posts");
     setPostsTab("generated");
@@ -227,6 +229,7 @@ if(returnFromPortal && storedUser._id){
     console.log("Edit business section:", section);
   };
 
+  
   const filteredPosts = posts?.filter((post) => {
     const platforms = post.platforms?.map((p) => p.toLowerCase());
     const matchesFilter =
@@ -234,6 +237,8 @@ if(returnFromPortal && storedUser._id){
     const matchesTab = post.status === postsTab;
     return matchesFilter && matchesTab;
   });
+
+
 
  const renderContent = () => {
   switch (currentTab) {
@@ -304,7 +309,7 @@ if(returnFromPortal && storedUser._id){
     case "socials":
       return <SocialsTab />;
     default:
-      return <div>Dashboard Contentsss</div>;
+      return <div>Dashboard Contents</div>;
   }
 };
   return (
@@ -350,7 +355,7 @@ if(returnFromPortal && storedUser._id){
  {isGenerateModalOpen && (
           <GeneratePostModal
             onClose={() => setIsGenerateModalOpen(false)}
-            onGenerate={()=>{}}
+            onGenerate={handleSinglePostGeneration}
           />
         )}
 

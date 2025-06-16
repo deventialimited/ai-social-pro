@@ -73,9 +73,9 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
     if (!formData.topic) {
       missingFields.push('Topic');
     }
-    if ((activeTab === 'text' || activeTab === 'url') && !formData.text) {
-      missingFields.push('Description');
-    }
+    // if ((activeTab === 'text' || activeTab === 'url') && !formData.text) {
+    //   missingFields.push('Description');
+    // }
     if (activeTab === 'url' && !formData.url) {
       missingFields.push('URL');
     }

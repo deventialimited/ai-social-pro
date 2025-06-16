@@ -210,3 +210,43 @@ export const useApproveAndSchedulePost = () => {
     },
   });
 };
+
+
+// Function to create a new post via processPubSub
+export const createPostViaPubSub = async (postData) => {
+  try {
+    const response = await axios.post(`${API_URL}/processPubSub`, postData, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data?.postId; // Return the postId from the response
+  } catch (error) {
+    console.error(
+      'Error creating post via processPubSub:',
+      error.response?.data?.message || error.message
+    );
+    throw error.response?.data?.message || error.message;
+  }
+};
+
+// Hook to create a new post via processPubSub
+export const useCreatePostViaPubSub = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createPostViaPubSub,
+    onSuccess: (postId, variables) => {
+      // Update the cache with the new post
+      queryClient.setQueryData(['posts', variables.domainId], (oldData) => {
+        if (!oldData) return [{ postId, ...variables }];
+        return [{ postId, ...variables }, ...oldData];
+      });
+      // Invalidate queries to refetch the latest posts
+      queryClient.invalidateQueries(['posts', variables.domainId]);
+    },
+    onError: (error) => {
+      console.error('Failed to create post via processPubSub:', error);
+    },
+  });
+};
