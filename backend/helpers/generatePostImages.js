@@ -215,7 +215,7 @@ const generateDomainVisualAssets = async ({
       (platform || "")?.toLowerCase()
     ] || [600, 600];
 
-    if (!sloganTemplate) {
+    if (!sloganTemplate && sloganText?.trim()) {
       console.warn("Slogan template missing, using fallback Unsplash image...");
       const [img] = await getTwoUnsplashImagesFromKeywords(
         keywords,
