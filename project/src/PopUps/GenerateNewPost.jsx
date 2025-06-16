@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Link2, FileText, Image as ImageIcon, Type, Globe, MessageSquare, Target, Sparkles, ArrowRight, Info } from 'lucide-react';
 import { getDomainById } from '../libs/domainService';
 import axios from 'axios';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const GeneratePostModal = ({ onClose, onGenerate }) => {
   const [activeTab, setActiveTab] = useState('text');
@@ -73,8 +73,8 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
     if (!formData.topic) {
       missingFields.push('Topic');
     }
-    if (activeTab === 'text' && !formData.text) {
-      missingFields.push('Text content');
+    if ((activeTab === 'text' || activeTab === 'url') && !formData.text) {
+      missingFields.push('Description');
     }
     if (activeTab === 'url' && !formData.url) {
       missingFields.push('URL');
@@ -87,7 +87,10 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
     }
 
     if (missingFields.length > 0) {
-      toast.error(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+      toast.error(`Please fill in the following required fields: ${missingFields.join(', ')}`, {
+        position: 'top-right',
+        duration: 4000,
+      });
       return;
     }
 
@@ -122,7 +125,7 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
         target_audience: domain.data.marketingStrategy?.audience || [],
         audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
         post_topic: formData.topic || '',
-        post_description: activeTab === 'text' ? formData.text : '',
+        post_description: formData.text,
         post_cta: formData.callToAction || '',
         post_based_url: formData.PostURL,
         post_link_url: activeTab === 'url' ? formData.url : '',
@@ -149,8 +152,13 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
       });
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to generate post');
-      toast.error(err.message || 'Failed to generate post');
+      const errorMessage = err.message.includes('Request failed with status code 500')
+        ? 'An unexpected error occurred while generating the post'
+        : err.message || 'Failed to generate post';
+      toast.error(errorMessage, {
+        position: 'top-right',
+        duration: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -211,19 +219,34 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
         )}
 
         {activeTab === 'url' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <Link2 className="w-4 h-4 inline mr-2" />
-              URL
-            </label>
-            <input
-              type="url"
-              value={formData.url}
-              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-              placeholder="https://example.com"
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <Link2 className="w-4 h-4 inline mr-2" />
+                URL
+              </label>
+              <input
+                type="url"
+                value={formData.url}
+                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                placeholder="https://example.com"
+                className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <FileText className="w-4 h-4 inline mr-2" />
+                Description
+              </label>
+              <textarea
+                value={formData.text}
+                onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+                placeholder="Describe the content of the URL..."
+                rows={4}
+                className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+          </>
         )}
 
         {activeTab === 'image' && (
@@ -315,7 +338,7 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
             >
               <X className="w-5 h-5" />
             </button>
-            </div>
+          </div>
         </div>
 
         {/* Tabs with Tooltips */}
@@ -328,7 +351,7 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
                   onMouseEnter={() => setShowTooltip(tab.id)}
                   onMouseLeave={() => setShowTooltip(null)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === tab.id
+                    activeTab === 'tab.id'
                       ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
