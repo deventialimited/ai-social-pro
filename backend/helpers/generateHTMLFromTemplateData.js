@@ -112,7 +112,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 overflow: hidden;
                 ${layoutStyleString}
               ">
-                <div style="position: static; ${fontStyleString}">
+                <div style="position: static; width:"100%"; ${fontStyleString}">
                   ${el.props?.text || ""}
                 </div>
               </div>`;
