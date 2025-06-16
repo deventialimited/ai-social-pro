@@ -13,6 +13,8 @@ function ColorPicker({
   const [currentColor, setCurrentColor] = useState(color);
   const [opacity, setOpacity] = useState(100);
   const [recentColors, setRecentColors] = useState([]);
+  const [showRecentColors, setShowRecentColors] = useState(false);
+  const [showSiteColors, setShowSiteColors] = useState(false);
   const pickerRef = useRef(null);
   const { postOtherValues } = useEditor();
 
@@ -93,12 +95,12 @@ function ColorPicker({
           className="w-5 h-5 rounded-sm border border-gray-200"
           style={{ backgroundColor: currentColor }}
         />
-        <span className="text-sm w-max font-medium">{label}</span>
+        <span flexclassName="text-sm w-max font-medium">{label}</span>
         {showPalette && <ChevronDown className="h-4 w-4 text-gray-500" />}
       </button> */}
 
       {/* {isOpen && ( */}
-        <div className="absolute z-50 mt-1 w-72 bg-white rounded-md shadow-lg border p-4">
+        <div className="absolute z-50 mt-1 md:w-72 w-52  bg-white rounded-md shadow-lg border p-4">
           {/* Chrome Picker */}
           <ChromePicker
             color={currentColor}
@@ -124,7 +126,7 @@ function ColorPicker({
           />
 
           {/* Opacity slider */}
-          <div className="mt-4">
+          <div className="md:mt-4">
             <div className="flex items-center gap-2">
               <input
                 type="range"
@@ -138,14 +140,14 @@ function ColorPicker({
                 }}
               />
               <div
-                className="w-8 h-8 rounded-sm border border-gray-200"
+                className="w-8 h-8  rounded-sm border border-gray-200"
                 style={{
                   backgroundColor: currentColor,
                   opacity: opacity / 100,
                 }}
               />
             </div>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center  gap-2 mt-2">
               <input
                 type="number"
                 value={opacity}
@@ -161,42 +163,52 @@ function ColorPicker({
           {/* Recent Colors */}
           {recentColors.length > 0 && (
             <>
-              <div className="flex items-center mt-4 mb-2">
-                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+              <div 
+                className="flex items-center md:mt-4 mt-0 mb-2 cursor-pointer"
+                onClick={() => setShowRecentColors(!showRecentColors)}
+              >
+                <ChevronDown className={`h-4 w-4 mr-2 text-gray-500 transition-transform ${showRecentColors ? 'rotate-180' : ''}`} />
                 <span className="text-sm font-medium">Recent Colors</span>
               </div>
-              <div className="flex gap-2 flex-wrap mb-2">
-                {recentColors.map((color, index) => (
-                  <div
-                    key={index}
-                    className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: color }}
-                    onClick={() => handleColorChangeComplete({ hex: color })}
-                  />
-                ))}
-              </div>
+              {showRecentColors && (
+                <div className="flex gap-2 flex-wrap mb-2">
+                  {recentColors.map((color, index) => (
+                    <div
+                      key={index}
+                      className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: color }}
+                      onClick={() => handleColorChangeComplete({ hex: color })}
+                    />
+                  ))}
+                </div>
+              )}
             </>
           )}
 
           {/* Site Colors */}
           {postOtherValues?.siteColors?.length > 0 && (
             <>
-              <div className="flex items-center mt-2 mb-2">
-                <ChevronDown className="h-4 w-4 mr-2 text-gray-500" />
+              <div 
+                className="flex items-center mt-2 mb-2 cursor-pointer"
+                onClick={() => setShowSiteColors(!showSiteColors)}
+              >
+                <ChevronDown className={`h-4 w-4 mr-2 text-gray-500 transition-transform ${showSiteColors ? 'rotate-180' : ''}`} />
                 <span className="text-sm font-medium">Site Colors</span>
               </div>
-              <div className="flex gap-2 flex-wrap mb-4">
-                {postOtherValues.siteColors.map((siteColor, index) => (
-                  <div
-                    key={index}
-                    className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: siteColor }}
-                    onClick={() =>
-                      handleColorChangeComplete({ hex: siteColor })
-                    }
-                  />
-                ))}
-              </div>
+              {showSiteColors && (
+                <div className="flex gap-2 flex-wrap mb-4">
+                  {postOtherValues.siteColors.map((siteColor, index) => (
+                    <div
+                      key={index}
+                      className="w-6 h-6 rounded-sm cursor-pointer border border-gray-200 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: siteColor }}
+                      onClick={() =>
+                        handleColorChangeComplete({ hex: siteColor })
+                      }
+                    />
+                  ))}
+                </div>
+              )}
             </>
           )}
 
