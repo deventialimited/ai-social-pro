@@ -151,7 +151,7 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
       );
 console.log('response of the third part api',response.data)
      const pubsubPayload={
-      postId:response.data.post_id,
+      post_id:response.data.post_id,
       client_id:domain.data.client_id,
       domainId:selectedWebsiteId,
       userId:user._id,
@@ -161,11 +161,11 @@ console.log('response of the third part api',response.data)
      content:response.data.content,
      slogan:response.data.slogan,
      postDate:response.data.date,
-     platforms: Array.isArray(response.data.platform)
-          ? response.data.platform
-          : response.data.platform
-          ? [response.data.platform]
-          : [],
+     platform: Array.isArray(response.data.platform) // Changed from platforms to match API's jsonData.platform
+    ? response.data.platform
+    : response.data.platform
+    ? [response.data.platform]
+    : [],
      }
      createPostViaPubSub(pubsubPayload);
       onClose();

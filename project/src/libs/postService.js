@@ -221,7 +221,7 @@ export const createPostViaPubSub = async (postData) => {
         'Content-Type': 'application/json',
       },
     });
-    console.log('response',response)
+    console.log('response inn the service man',response?.data?.post)
     return response.data?.post; // Return the full post object from the response
   } catch (error) {
     console.error(
@@ -231,7 +231,7 @@ export const createPostViaPubSub = async (postData) => {
     throw error.response?.data?.message || error.message;
   }
 };
-
+  
 // Hook to create a new post via processPubSub
 export const useCreatePostViaPubSub = () => {
   const queryClient = useQueryClient();
