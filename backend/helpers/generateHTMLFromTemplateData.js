@@ -54,38 +54,68 @@ exports.generateHTMLFromTemplateData = (templateData) => {
   const backgroundColor = canvas?.styles?.backgroundColor || "transparent";
   const width = `${Math.max(Math.min(canvas.width / 3, 600))}px`;
   const height = `${Math.max(Math.min(canvas.height / 3, 600))}px`;
+
   return `
       <html>
       <body style="margin:0; padding:0; background:${backgroundColor}; width:${width}px; height:${height}px; position:relative;">
         ${elements
           .map((el) => {
             if (el.type === "text") {
-              const styleString = convertStylesToString(el.styles || {});
+              const allStyles = el.styles || {};
+
+              const fontStylesKeys = [
+                "color",
+                "fontSize",
+                "fontWeight",
+                "fontFamily",
+                "lineHeight",
+                "letterSpacing",
+                "textTransform",
+                "textAlign",
+                "whiteSpace",
+                "wordBreak",
+                "textDecoration",
+                "fontStyle",
+                "textShadow",
+              ];
+
+              const fontStyles = {};
+              const layoutStyles = {};
+
+              for (const key in allStyles) {
+                if (fontStylesKeys.includes(key)) {
+                  fontStyles[key] = allStyles[key];
+                } else {
+                  layoutStyles[key] = allStyles[key];
+                }
+              }
+
+              const fontStyleString = convertStylesToString(fontStyles);
+              const layoutStyleString = convertStylesToString(layoutStyles);
 
               const top = parseInt(el.position?.y) || 0;
               const left = parseInt(el.position?.x) || 0;
 
               return `<div style="
-  position: absolute;
-  top: ${top}px;
-  left: ${left}px;
-  width: ${el.size?.width || 100}px;
-  height: ${el.size?.height || 100}px;
-  display: flex;
-  align-items: ${
-    el.styles?.verticalAlign === "middle"
-      ? "center"
-      : el.styles?.verticalAlign === "bottom"
-      ? "flex-end"
-      : "flex-start"
-  };
-  justify-content: flex-start;
-  overflow: hidden;
-">
-  <div style="${styleString}">
-    ${el.props?.text || ""}
-  </div>
-</div>`;
+                position: absolute;
+                top: ${top}px;
+                left: ${left}px;
+                display: flex;
+                align-items: ${
+                  allStyles.verticalAlign === "middle"
+                    ? "center"
+                    : allStyles.verticalAlign === "bottom"
+                    ? "flex-end"
+                    : "flex-start"
+                };
+                justify-content: flex-start;
+                overflow: hidden;
+                ${layoutStyleString}
+              ">
+                <div style="position: static; ${fontStyleString}">
+                  ${el.props?.text || ""}
+                </div>
+              </div>`;
             }
 
             if (el.type === "image") {
