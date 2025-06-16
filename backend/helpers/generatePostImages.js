@@ -54,7 +54,19 @@ const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
 
   // 2. Update canvas background color
   if (template.canvas) {
+    // Remove other background-related styles
+    const styleKeysToRemove = [
+      "background",
+      "backgroundImage",
+      "backgroundGradient",
+    ];
+    styleKeysToRemove.forEach((key) => {
+      delete template.canvas.styles[key];
+    });
+
+    // Set the new background color
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
+
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
@@ -203,7 +215,7 @@ const generateDomainVisualAssets = async ({
       (platform || "")?.toLowerCase()
     ] || [600, 600];
 
-    if (!sloganTemplate) {
+    if (!sloganTemplate && sloganText?.trim()) {
       console.warn("Slogan template missing, using fallback Unsplash image...");
       const [img] = await getTwoUnsplashImagesFromKeywords(
         keywords,

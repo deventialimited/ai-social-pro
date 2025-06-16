@@ -17,7 +17,10 @@ import Tooltip from "@mui/material/Tooltip";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
-import { useReschedulePost, useApproveAndSchedulePost } from "../libs/postService";
+import {
+  useReschedulePost,
+  useApproveAndSchedulePost,
+} from "../libs/postService";
 
 const platformDimensions = {
   facebook: [1200, 630],
@@ -31,8 +34,8 @@ const getImageStyle = (platform) => {
     (platform || "")?.toLowerCase()
   ] || [600, 600];
   return {
-    width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
-    height: `${Math.max(Math.min(675 / 3, 600))}px`,
+    // width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
+    height: `${canvasHeight}px`,
   };
 };
 
@@ -56,7 +59,8 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
 
   const primaryPlatform = postData?.platforms?.[0] || "linkedin";
   const { mutate: reschedule, isLoading: isRescheduling } = useReschedulePost();
-  const { mutate: approveAndSchedule, isLoading: isApproving } = useApproveAndSchedulePost();
+  const { mutate: approveAndSchedule, isLoading: isApproving } =
+    useApproveAndSchedulePost();
 
   const baseStyles =
     "flex border-b border-light-border dark:border-dark-border rounded-3xl items-center justify-between gap-1 px-2 py-1 transition-colors";
@@ -318,7 +322,7 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
                 alt="Post"
                 className="cursor-pointer w-auto h-auto"
                 style={{
-                  ...getImageStyle(primaryPlatform),
+                  // ...getImageStyle(primaryPlatform),
                   filter: showBlur ? "blur(8px)" : "none",
                   transition: "filter 0.5s ease-out",
                 }}
