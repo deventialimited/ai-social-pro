@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Link2, FileText, Image as ImageIcon, Type, Globe, MessageSquare, Target, Sparkles, ArrowRight, Info } from 'lucide-react';
 import { getDomainById } from '../libs/domainService';
 import axios from 'axios';
+import { toast, Toaster } from 'react-hot-toast';
 
 const GeneratePostModal = ({ onClose, onGenerate }) => {
   const [activeTab, setActiveTab] = useState('text');
@@ -61,8 +62,35 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
   ];
 
   const handleSubmit = async (e) => {
-    console.log('handle submit');
     e.preventDefault();
+
+    // Validate required fields
+    const missingFields = [];
+
+    if (!formData.platform) {
+      missingFields.push('Platform');
+    }
+    if (!formData.topic) {
+      missingFields.push('Topic');
+    }
+    if (activeTab === 'text' && !formData.text) {
+      missingFields.push('Text content');
+    }
+    if (activeTab === 'url' && !formData.url) {
+      missingFields.push('URL');
+    }
+    if (!formData.callToAction) {
+      missingFields.push('Call to Action');
+    }
+    if (!formData.tone) {
+      missingFields.push('Tone');
+    }
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -83,10 +111,9 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
 
       // Prepare payload for the third-party API
       const payload = {
-
-        client_email:domain.data.client_email,
-        client_id:domain.data.client_id,
-        website:domain.data.website,
+        client_email: domain.data.client_email,
+        client_id: domain.data.client_id,
+        website: domain.data.clientWebsite,
         name: domain.data.clientName || 'Unknown',
         industry: domain.data.industry || 'Unknown',
         niche: domain.data.niche || 'Unknown',
@@ -123,6 +150,7 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
       onClose();
     } catch (err) {
       setError(err.message || 'Failed to generate post');
+      toast.error(err.message || 'Failed to generate post');
     } finally {
       setIsLoading(false);
     }
@@ -287,7 +315,7 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
             >
               <X className="w-5 h-5" />
             </button>
-          </div>
+            </div>
         </div>
 
         {/* Tabs with Tooltips */}
