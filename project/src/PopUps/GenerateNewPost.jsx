@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useCreatePostViaPubSub } from '../libs/postService';
 import { useQueryClient } from "@tanstack/react-query";
 
-const GeneratePostModal = ({ onClose, onGenerate }) => {
+const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
   
   const queryClient = useQueryClient();
   const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
@@ -79,9 +79,6 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
     if (!formData.topic) {
       missingFields.push('Topic');
     }
-    // if ((activeTab === 'text' || activeTab === 'url') && !formData.text) {
-    //   missingFields.push('Description');
-    // }
     if (activeTab === 'url' && !formData.url) {
       missingFields.push('URL');
     }
@@ -100,8 +97,11 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
       return;
     }
 
+    // Set loading state and close modal immediately
     setIsLoading(true);
     setError(null);
+    onLoadingChange?.(true);
+    onClose(); // Close modal immediately when starting API call
 
     try {
       // Fetch user and selectedWebsiteId from localStorage
@@ -149,26 +149,27 @@ const GeneratePostModal = ({ onClose, onGenerate }) => {
           },
         }
       );
-console.log('response of the third part api',response.data)
-     const pubsubPayload={
-      post_id:response.data.post_id,
-      client_id:domain.data.client_id,
-      domainId:selectedWebsiteId,
-      userId:user._id,
-      image:response.data.image || "",
-      topic:response.data.topic,
-     related_keywords:response.data.related_keywords ||[],
-     content:response.data.content,
-     slogan:response.data.slogan,
-     postDate:response.data.date,
-     platform: Array.isArray(response.data.platform) // Changed from platforms to match API's jsonData.platform
-    ? response.data.platform
-    : response.data.platform
-    ? [response.data.platform]
-    : [],
-     }
-     createPostViaPubSub(pubsubPayload);
-      onClose();
+
+      const pubsubPayload = {
+        post_id: response.data.post_id,
+        client_id: domain.data.client_id,
+        domainId: selectedWebsiteId,
+        userId: user._id,
+        image: response.data.image || "",
+        topic: response.data.topic,
+        related_keywords: response.data.related_keywords || [],
+        content: response.data.content,
+        slogan: response.data.slogan,
+        postDate: response.data.date,
+        platform: Array.isArray(response.data.platform)
+          ? response.data.platform
+          : response.data.platform
+          ? [response.data.platform]
+          : [],
+      };
+
+      await createPostViaPubSub(pubsubPayload);
+      onGenerate?.();
     } catch (err) {
       const errorMessage = err.message.includes('Request failed with status code 500')
         ? 'An unexpected error occurred while generating the post'
@@ -179,6 +180,7 @@ console.log('response of the third part api',response.data)
       });
     } finally {
       setIsLoading(false);
+      onLoadingChange?.(false);
     }
   };
 
