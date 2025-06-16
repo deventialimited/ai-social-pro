@@ -54,7 +54,19 @@ const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
 
   // 2. Update canvas background color
   if (template.canvas) {
+    // Remove other background-related styles
+    const styleKeysToRemove = [
+      "background",
+      "backgroundImage",
+      "backgroundGradient",
+    ];
+    styleKeysToRemove.forEach((key) => {
+      delete template.canvas.styles[key];
+    });
+
+    // Set the new background color
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
+
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
