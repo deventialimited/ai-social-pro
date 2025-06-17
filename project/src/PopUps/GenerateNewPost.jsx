@@ -117,7 +117,7 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
       if (!domain?.data) {
         throw new Error('Domain not found');
       }
-
+console.log('selected Domain Data',domain.data)
       // Prepare payload for the third-party API
       const payload = {
         client_email: domain.data.client_email,

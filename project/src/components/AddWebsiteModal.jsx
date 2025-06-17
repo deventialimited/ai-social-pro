@@ -133,7 +133,7 @@ export const AddWebsiteModal = ({ onClose, onGenerate }) => {
       // Small delay to show 100% completion
       await sleep(300)
 
-      // Handle API error
+      // Handle API updateSelectedDomain
       if (apiError) {
         console.log("hello i am error",apiError.response.data.error)
         setError(apiError.response.data.error || "Failed to generate company data.")

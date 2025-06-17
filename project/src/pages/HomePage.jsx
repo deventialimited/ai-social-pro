@@ -22,6 +22,7 @@ import { useAddDomainMutation } from "../libs/domainService";
 import axios from "axios";
 import { BusinessModal } from "../NewUIComponents/Modal";
 import { useSocket } from "../store/useSocket";
+import { updateSelectedDomain } from "../libs/authService"
 
 export function extractDomain(fullUrl) {
   try {
@@ -249,6 +250,10 @@ export const HomePage = () => {
             : [],
         },
       });
+          const user = JSON.parse(localStorage.getItem("user"));
+
+        const updateSelectedDom = await updateSelectedDomain(user._id, result?._id)
+        console.log(updateSelectedDom)
 
       toast.success("Domain successfully added!");
       setIsLoading(false);
