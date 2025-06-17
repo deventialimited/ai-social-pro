@@ -93,6 +93,11 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
         postData.userId,
         postData?.domainId?._id
       );
+       if(result?.user){
+        console.log('user is changed in the localstorage')
+                localStorage.setItem("user", JSON.stringify(result.user));
+
+       }
       console.log(result);
     } catch (err) {
       console.error(
