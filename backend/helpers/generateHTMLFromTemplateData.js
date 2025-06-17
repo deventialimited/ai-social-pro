@@ -86,7 +86,14 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 if (fontStylesKeys.includes(key)) {
                   fontStyles[key] = allStyles[key];
                 } else {
-                  layoutStyles[key] = allStyles[key];
+                  if (
+                    (key === "width" || key === "height") &&
+                    !`${allStyles[key]}`.includes("px")
+                  ) {
+                    layoutStyles[key] = `${allStyles[key]}px`;
+                  } else {
+                    layoutStyles[key] = allStyles[key];
+                  }
                 }
               }
 
@@ -112,7 +119,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 overflow: hidden;
                 ${layoutStyleString}
               ">
-                <div style="position: static; width:"100%"; ${fontStyleString}">
+                <div style="position: static; width:100%; ${fontStyleString}">
                   ${el.props?.text || ""}
                 </div>
               </div>`;
