@@ -250,11 +250,7 @@ export const HomePage = () => {
             : [],
         },
       });
-          const user = JSON.parse(localStorage.getItem("user"));
-
-        const updateSelectedDom = await updateSelectedDomain(user._id, result?._id)
-        console.log(updateSelectedDom)
-
+          
       toast.success("Domain successfully added!");
       setIsLoading(false);
       setisModalOpen(true);
