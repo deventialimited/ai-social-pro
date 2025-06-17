@@ -9,6 +9,7 @@ function BackgroundTab() {
   const [isLoadingColors, setIsLoadingColors] = useState(true);
   const [isLoadingGradients, setIsLoadingGradients] = useState(true);
   const [error, setError] = useState(null);
+  const { postOtherValues } = useEditor();
 
   const { updateCanvasStyles, updateBackground } = useEditor();
 
@@ -75,8 +76,19 @@ function BackgroundTab() {
           id: gradient.name.toLowerCase().replace(/\s+/g, "-"),
           name: gradient.name,
           colors: gradient.colors,
-          css: `linear-gradient(to bottom right, ${gradient.colors.join(", ")})`,
+          css: `linear-gradient(to bottom right, ${gradient.colors.join(
+            ", "
+          )})`,
         }));
+        const brandGradient = {
+          id: "brand-colors",
+          name: "Use Brand Background Color",
+          colors: postOtherValues.siteColors,
+          css: `linear-gradient(to bottom right, ${postOtherValues.siteColors.join(
+            ", "
+          )})`,
+        };
+        gradientList.unshift(brandGradient);
 
         setGradients(gradientList);
       } catch (err) {
@@ -146,7 +158,11 @@ function BackgroundTab() {
   };
 
   const handleGradientClick = (gradient) => {
-    updateCanvasStyles({ backgroundImage: gradient.css, backgroundColor: "" });
+    updateCanvasStyles({
+      backgroundType: gradient.id,
+      backgroundImage: gradient.css,
+      backgroundColor: "",
+    });
     updateBackground("gradient", gradient.css);
   };
 
@@ -201,14 +217,22 @@ function BackgroundTab() {
           </div>
         ) : (
           <div className="grid grid-cols-2 pb-10 gap-2">
-            {filteredGradients.slice(0, 12).map((gradient) => (
+            {filteredGradients.slice(0, 12).map((gradient, index) => (
               <div
                 key={gradient.id}
-                className="aspect-video rounded-md overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                className="relative aspect-video rounded-md overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                 style={{ backgroundImage: gradient.css }}
                 onClick={() => handleGradientClick(gradient)}
                 title={gradient.name}
-              />
+              >
+                {gradient.id === "brand-colors" && (
+                  <div className="absolute inset-0 right-5 left-5 flex items-center justify-center">
+                    <div className="bg-white/70 px-4 py-2 rounded-md text-center text-sm font-semibold text-gray-800">
+                      Use Brand Background Color
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
