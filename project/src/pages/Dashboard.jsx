@@ -47,6 +47,17 @@ export const Dashboard = () => {
   const socket=useSocket();
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
 
+useEffect(() => {
+    // Extract domainId from query parameters
+    const searchParams = new URLSearchParams(location.search);
+    const domainId = searchParams.get("domainId");
+
+    if (domainId) {
+      // Remove domainId from URL without refreshing
+      navigate("/dashboard", { replace: true });
+    }
+  }, [location.search, navigate]);
+
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab === "socials") {
