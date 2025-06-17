@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 
-export const createImageElement = (src, category) => {
+export const createImageElement = (src, category,originalSrc) => {
   return {
     id: `image-${uuidv4()}`,
     type: "image",
@@ -28,8 +28,8 @@ export const createImageElement = (src, category) => {
     },
     props: {
       src,
-      previewUrl: src,
-      originalSrc: src,
+      previewUrl: originalSrc,
+      originalSrc: originalSrc,
     },
   };
 };

@@ -396,7 +396,7 @@ function ImageToolbar({
           </Tooltip>
 
           <div>
-            <Tooltip id="upload-tooltip" content="Upload new image">
+            {/* <Tooltip id="upload-tooltip" content="Upload new image">
               <button
                 className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border"
                 onClick={() => document.getElementById("file-upload-input").click()}
@@ -404,7 +404,7 @@ function ImageToolbar({
                 <Upload className="h-5 w-5 text-gray-600" />
                 <span className="w-max">Upload</span>
               </button>
-            </Tooltip>
+            </Tooltip> */}
 
             <input
               id="file-upload-input"

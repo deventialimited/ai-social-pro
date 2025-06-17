@@ -103,7 +103,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
           const el = elements.find((el) => el.id === id);
           if (el) {
             el.props.src = url;
-            el.props.previewUrl = url;
+            // el.props.previewUrl = url;
           }
         } else if (type === "background") {
           backgrounds.src = url;
