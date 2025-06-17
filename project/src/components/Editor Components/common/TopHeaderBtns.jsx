@@ -367,6 +367,7 @@ const TopHeaderBtns = ({
   useEffect(() => {
     if (postDetails) {
       setPostOtherValues({
+        platforms: postDetails?.platforms,
         siteLogo: postDetails?.domainId?.siteLogo,
         siteColors: postDetails?.domainId?.colors,
         keywords:

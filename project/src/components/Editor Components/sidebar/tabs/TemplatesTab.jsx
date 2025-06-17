@@ -26,6 +26,7 @@ function TemplatesTab() {
     setCanvasLoading,
     canvasLoading,
     historyRef,
+    postOtherValues,
   } = useEditor();
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -52,9 +53,14 @@ function TemplatesTab() {
 
   const { data, isLoading, isError, error, refetch } =
     useGetAllTemplatesByUserId(userId);
-
-  const templates = Array.isArray(data) ? data : data?.templates ?? [];
-
+  console.log(postOtherValues);
+  console.log(data);
+  const templates = (Array.isArray(data) ? data : data?.templates ?? []).filter(
+    (t) =>
+      t.templatePlatform?.toLowerCase() ===
+      postOtherValues?.platforms?.[0]?.toLowerCase()
+  );
+  console.log(templates);
   const privateTemplates = templates.filter(
     (t) => t.templateCategory === category && t.templateType === "private"
   );
@@ -122,7 +128,7 @@ function TemplatesTab() {
       {canvasLoading && (
         <div className="text-sm text-gray-600 mb-2">Loading template...</div>
       )}
-      <div className="overflow-y-auto  max-h-40 md:max-h-none pb-12">
+      <div className="overflow-y-auto md:overflow-y-hidden max-h-40 md:max-h-none">
         {/* Private Templates */}
         <div className="mb-4">
           <div
