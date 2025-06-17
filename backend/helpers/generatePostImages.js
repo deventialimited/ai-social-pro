@@ -54,18 +54,20 @@ const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
 
   // 2. Update canvas background color
   if (template.canvas) {
-    // Remove other background-related styles
-    const styleKeysToRemove = [
-      "background",
-      "backgroundImage",
-      "backgroundGradient",
-    ];
-    styleKeysToRemove.forEach((key) => {
-      delete template.canvas.styles[key];
-    });
+    if (template?.canvas?.styles?.backgroundType === "brand-colors") {
+      // Remove other background-related styles
+      const styleKeysToRemove = [
+        "background",
+        "backgroundImage",
+        "backgroundGradient",
+      ];
+      styleKeysToRemove.forEach((key) => {
+        delete template.canvas.styles[key];
+      });
 
-    // Set the new background color
-    template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
+      // Set the new background color
+      template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
+    }
 
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
@@ -105,7 +107,21 @@ const modifyBrandingTemplate = async (
 
   // 2. Set background color in canvas and styles
   if (template.canvas) {
-    template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
+    if (template?.canvas?.styles?.backgroundType === "brand-colors") {
+      // Remove other background-related styles
+      const styleKeysToRemove = [
+        "background",
+        "backgroundImage",
+        "backgroundGradient",
+      ];
+      styleKeysToRemove.forEach((key) => {
+        delete template.canvas.styles[key];
+      });
+
+      // Set the new background color
+      template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
+    }
+
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];

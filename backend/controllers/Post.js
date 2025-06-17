@@ -310,7 +310,7 @@ exports.processPubSub = async (req, res) => {
       platform: savedPost?.platforms[0],
       sloganText: savedPost?.slogan,
       brandName: domain?.clientName,
-      primaryColor: domain?.colors[0],
+      primaryColor: domain?.colors[1],
       brandLogoUrl: logoUrl,
       keywords:
         savedPost?.related_keywords?.length > 0
