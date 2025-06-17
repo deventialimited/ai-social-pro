@@ -168,7 +168,7 @@ console.log('selected Domain Data',domain.data)
           : [],
       };
 
-      await createPostViaPubSub(pubsubPayload);
+      // await createPostViaPubSub(pubsubPayload);
       onGenerate?.();
     } catch (err) {
       const errorMessage = err.message.includes('Request failed with status code 500')
