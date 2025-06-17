@@ -82,18 +82,25 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const getImageStyle = (platform) => {
     const [canvasWidth, canvasHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
-    ] || [600, 600];
+    ] || [1200, 675]; // Default to x platform dimensions if none specified
     const edited = post[selectedButton]?.editorStatus === "edited";
+    const aspectRatio = canvasWidth / canvasHeight;
 
-    return edited
-      ? {
-          width: `auto`,
-          height: `auto`,
-        }
-      : {
-          // width: `${Math.max(Math.min(canvasWidth / 3, 600))}px`,
-          height: `${canvasHeight}px`,
-        };
+    if (edited) {
+      return {
+        width: "100%", // Allow edited images to scale to container width
+        height: "auto", // Maintain aspect ratio
+        maxWidth: `${canvasWidth}px`, // Cap at original width
+        aspectRatio: aspectRatio, // Enforce platform-specific aspect ratio
+      };
+    } else {
+      return {
+        width: "100%", // Scale to container width
+        height: "auto", // Maintain aspect ratio
+        maxWidth: `${Math.min(canvasWidth, 600)}px`, // Limit max width for display
+        aspectRatio: aspectRatio, // Enforce platform-specific aspect ratio
+      };
+    }
   };
 
   const getStatusBadge = () => {
@@ -124,36 +131,31 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     setShowEditModal(false);
   };
 
-  const handleDownload=async()=>{
-    const imageUrl=await post[selectedButton]?.imageUrl
+  const handleDownload = async () => {
+    const imageUrl = await post[selectedButton]?.imageUrl;
     if (!imageUrl) {
       toast.error("Image not found");
       return;
     }
 
-    try{
-      const response=await fetch(imageUrl)
-      const blob=await response.blob();
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
-      // Set download filename based on selected button
       const filename = `${selectedButton}_${post.postId}.png`;
       link.setAttribute('download', filename);
-      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
       toast.success("Image downloaded successfully!");
-    }
-    catch(error){
-      console.log(error)
+    } catch (error) {
+      console.log(error);
       toast.error("Failed to download image");
     }
-  }
+  };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -169,7 +171,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       case "sloganImage":
         return post.sloganImage?.imageUrl || "";
       case "image":
-        return post.image?.imageUrl ||  post.brandingImage?.imageUrl ;
+        return post.image?.imageUrl || post.brandingImage?.imageUrl;
       default:
         return "";
     }
