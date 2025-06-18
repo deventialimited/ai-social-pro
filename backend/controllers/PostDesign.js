@@ -74,10 +74,10 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
           const el = elements.find((el) => el.id === id);
           if (el) {
             el.props.src = url;
-            if (!existingDesign) {
-              el.props.previewUrl = url;
-              el.props.originalSrc = url;
-            }
+            // if (!existingDesign) {
+            //   el.props.previewUrl = url;
+            //   el.props.originalSrc = url;
+            // }
           }
         } else if (type === "background") {
           backgrounds.src = url;

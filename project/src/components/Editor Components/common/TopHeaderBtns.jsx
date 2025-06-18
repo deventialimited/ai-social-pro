@@ -293,7 +293,7 @@ const TopHeaderBtns = ({
       });
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
-      const newElement = createImageElement(objectUrl);
+      const newElement = createImageElement(objectUrl,"other",src); 
       addElement(newElement);
 
       const file = new File([blob], newElement.id, { type: blob.type });
