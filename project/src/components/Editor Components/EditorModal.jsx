@@ -140,6 +140,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
                     setActiveTab={setActiveTab}
                     specialActiveTab={specialActiveTab}
                     selectedElementId={selectedElementId}
+                    setSelectedElementId={setSelectedElementId}
                     setSpecialActiveTab={setSpecialActiveTab}
                   />
 

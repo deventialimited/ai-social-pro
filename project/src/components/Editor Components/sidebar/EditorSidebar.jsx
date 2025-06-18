@@ -56,6 +56,7 @@ function EditorSidebar({
   specialActiveTab,
   setSpecialActiveTab,
   selectedElementId,
+  setSelectedElementId,
 }) {
   // Get the active component based on the active tab
   let ActiveTabComponent;
@@ -126,6 +127,7 @@ function EditorSidebar({
         <div className="flex-1 w-72 h-full">
           <ActiveTabComponent
             selectedElementId={selectedElementId}
+            setSelectedElementId={setSelectedElementId}
             onClose={() => {
               if (specialTabs[specialActiveTab]) {
                 setActiveTab("text");
@@ -188,6 +190,7 @@ function EditorSidebar({
                 <div className="h-[calc(70vh-48px)] overflow-y-auto">
                   <MobileActiveTabComponent
                     selectedElementId={selectedElementId}
+                    setSelectedElementId={setSelectedElementId}
                     onClose={() => setMobileSheetOpen(false)}
                   />
                 </div>
