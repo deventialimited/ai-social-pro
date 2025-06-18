@@ -208,7 +208,7 @@ const generateDomainVisualAssets = async ({
         $match: {
           templateType: "public",
           templateCategory: "slogan",
-          templatePlatform: platform,
+          templatePlatform: platform?.toLowerCase(),
         },
       },
       { $sample: { size: 1 } },
@@ -219,7 +219,7 @@ const generateDomainVisualAssets = async ({
         $match: {
           templateType: "public",
           templateCategory: "branding",
-          templatePlatform: platform,
+          templatePlatform: platform?.toLowerCase(),
         },
       },
       { $sample: { size: 1 } },
