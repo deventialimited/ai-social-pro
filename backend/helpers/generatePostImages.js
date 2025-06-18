@@ -33,157 +33,83 @@ const platformDimensions = {
   instagram: [1080, 1080], // default square post
 };
 
-const modifySloganTemplate = (platform, template, sloganText, primaryColor) => {
-  // 1. Replace slogan text in elements
-  template.elements = template.elements.map((el) => {
-    if (el.type === "text" && el.category === "slogan") {
-      return {
-        ...el,
-        styles: {
-          ...el.styles,
-          position: "absolute",
-        },
-        props: {
-          ...el.props,
-          text: sloganText,
-        },
-      };
-    }
-    return el;
-  });
-
-  // 2. Update canvas background color
-  if (template.canvas) {
-    if (template?.canvas?.styles?.backgroundType === "brand-colors") {
-      // Remove other background-related styles
-      const styleKeysToRemove = [
-        "background",
-        "backgroundImage",
-        "backgroundGradient",
-      ];
-      styleKeysToRemove.forEach((key) => {
-        delete template.canvas.styles[key];
-      });
-
-      // Set the new background color
-      template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
-    }
-
-    const [canvasWidth, canvasHeight] = platformDimensions[
-      (platform || "")?.toLowerCase()
-    ] || [600, 600];
-    template.canvas.width = canvasWidth;
-    template.canvas.height = canvasHeight;
-  }
-
-  return template;
-};
-
-const modifyBrandingTemplate = async (
+const modifyTemplate = async (
   platform,
   template,
-  brandName,
-  primaryColor,
-  brandLogoUrl,
-  keywords
+  { sloganText, brandName, primaryColor, brandLogoUrl, keywords }
 ) => {
-  // 1. Replace brand text elements
-  template.elements = template.elements.map((el) => {
-    if (el.type === "text" && el.category === "brandName") {
-      return {
-        ...el,
-        styles: {
-          ...el.styles,
-          position: "absolute",
-        },
-        props: {
-          ...el.props,
-          text: brandName,
-        },
-      };
-    }
-    return el;
-  });
+  // Replace text and image elements by their category if present
+  template.elements = await Promise.all(
+    template.elements.map(async (el) => {
+      const updated = { ...el, styles: { ...el.styles, position: "absolute" } };
 
-  // 2. Set background color in canvas and styles
-  if (template.canvas) {
-    if (template?.canvas?.styles?.backgroundType === "brand-colors") {
-      // Remove other background-related styles
-      const styleKeysToRemove = [
-        "background",
-        "backgroundImage",
-        "backgroundGradient",
-      ];
-      styleKeysToRemove.forEach((key) => {
-        delete template.canvas.styles[key];
-      });
+      if (el.type === "text") {
+        if (el.category === "slogan" && sloganText) {
+          updated.props = { ...el.props, text: sloganText };
+          return updated;
+        }
+        if (el.category === "brandName" && brandName) {
+          updated.props = { ...el.props, text: brandName };
+          return updated;
+        }
+      }
 
-      // Set the new background color
-      template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
-    }
-
-    const [canvasWidth, canvasHeight] = platformDimensions[
-      (platform || "")?.toLowerCase()
-    ] || [600, 600];
-    template.canvas.width = canvasWidth;
-    template.canvas.height = canvasHeight;
-  }
-
-  // 3. Upload and replace brand logo
-  if (brandLogoUrl) {
-    const logoFile = await downloadImageFromUrl(brandLogoUrl);
-    const logoUrl = await uploadToS3(logoFile);
-    template.elements = template.elements.map((el) => {
-      if (el.type === "image" && el.category === "brandLogo") {
-        return {
-          ...el,
-          styles: {
-            ...el.styles,
-            position: "absolute",
-          },
-          props: {
+      if (el.type === "image") {
+        if (el.category === "brandLogo" && brandLogoUrl) {
+          const logoFile = await downloadImageFromUrl(brandLogoUrl);
+          const logoUrl = await uploadToS3(logoFile);
+          updated.props = {
             ...el.props,
+            originalSrc: logoUrl,
             src: logoUrl,
             previewUrl: logoUrl,
-          },
-        };
+          };
+          return updated;
+        }
+        if (
+          el.category === "other" &&
+          Array.isArray(keywords) &&
+          keywords.length > 0
+        ) {
+          const [canvasWidth, canvasHeight] = platformDimensions[
+            (platform || "")?.toLowerCase()
+          ] || [600, 600];
+          const bgImageFile = await getValidImage(
+            keywords,
+            canvasWidth,
+            canvasHeight
+          );
+          if (bgImageFile) {
+            const imageUrl = await uploadToS3(bgImageFile);
+            updated.props = {
+              ...el.props,
+              originalSrc: imageUrl,
+              src: imageUrl,
+              previewUrl: imageUrl,
+            };
+            return updated;
+          }
+        }
       }
+
       return el;
+    })
+  );
+
+  // Clean and set background color
+  if (template.canvas?.styles?.backgroundType === "brand-colors") {
+    ["background", "backgroundImage", "backgroundGradient"].forEach((key) => {
+      delete template.canvas.styles[key];
     });
+    template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
   }
 
-  // 4. Get Unsplash image by keyword and replace background image
-  if (Array.isArray(keywords) && keywords.length > 0) {
-    const [canvasWidth, canvasHeight] = platformDimensions[
-      (platform || "")?.toLowerCase()
-    ] || [600, 600];
-    const unsplashImageFile = await getValidImage(
-      keywords,
-      canvasWidth,
-      canvasHeight
-    );
-    console.log(unsplashImageFile);
-    if (unsplashImageFile) {
-      const unsplashUrl = await uploadToS3(unsplashImageFile);
-      template.elements = template.elements.map((el) => {
-        if (el.type === "image" && el.category === "other") {
-          return {
-            ...el,
-            styles: {
-              ...el.styles,
-              position: "absolute",
-            },
-            props: {
-              ...el.props,
-              src: unsplashUrl,
-              previewUrl: unsplashUrl,
-            },
-          };
-        }
-        return el;
-      });
-    }
-  }
+  // Set canvas dimensions
+  const [canvasWidth, canvasHeight] = platformDimensions[
+    (platform || "")?.toLowerCase()
+  ] || [600, 600];
+  template.canvas.width = canvasWidth;
+  template.canvas.height = canvasHeight;
 
   return template;
 };
@@ -224,6 +150,7 @@ const generateDomainVisualAssets = async ({
       },
       { $sample: { size: 1 } },
     ]);
+
     const generatedDir = path.join(__dirname, "../public/generated");
     await fsp.mkdir(generatedDir, { recursive: true });
 
@@ -241,11 +168,16 @@ const generateDomainVisualAssets = async ({
       sloganImage = await uploadToS3(img);
       fallbackCase = true;
     } else {
-      const modifiedSlogan = modifySloganTemplate(
+      const modifiedSlogan = await modifyTemplate(
         platform,
         JSON.parse(JSON.stringify(sloganTemplate)),
-        sloganText,
-        primaryColor
+        {
+          sloganText,
+          brandName,
+          primaryColor,
+          brandLogoUrl,
+          keywords,
+        }
       );
 
       const sloganHTML = generateHTMLFromTemplateData(modifiedSlogan);
@@ -283,13 +215,16 @@ const generateDomainVisualAssets = async ({
       brandingImage = await uploadToS3(img);
       fallbackCase = true;
     } else {
-      const modifiedBranding = await modifyBrandingTemplate(
+      const modifiedBranding = await modifyTemplate(
         platform,
         JSON.parse(JSON.stringify(brandingTemplate)),
-        brandName,
-        primaryColor,
-        brandLogoUrl,
-        keywords
+        {
+          sloganText,
+          brandName,
+          primaryColor,
+          brandLogoUrl,
+          keywords,
+        }
       );
 
       const brandingHTML = generateHTMLFromTemplateData(modifiedBranding);
