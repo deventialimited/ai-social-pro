@@ -319,7 +319,9 @@ function ImageToolbar({
   return (
     <>
       <div className="w-full overflow-x-auto">
-        <div ref={toolbarRef} className="flex flex-nowrap items-center gap-2 w-[200px] px-2">
+      <div ref={toolbarRef} className="flex items-center gap-2 px-2 overflow-x-auto w-[90vw] md:w-full scrollbar-hide sm:flex-wrap sm:justify-start">
+
+        {/* <div ref={toolbarRef} className="flex flex-nowrap items-center gap-2 w-[200px] px-2"> */}
           <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
             <button 
               onClick={undo}
