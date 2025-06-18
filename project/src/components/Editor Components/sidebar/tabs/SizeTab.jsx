@@ -24,7 +24,7 @@ export const presetSizes = [
     description: "(1200x630)",
   },
   {
-    id: "linkedIn",
+    id: "linkedin",
     icon: <Linkedin className="w-6 h-6 text-gray-600" />,
     name: "LinkedIn Post",
     dimensions: [1200, 627],
