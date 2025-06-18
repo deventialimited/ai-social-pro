@@ -18,7 +18,6 @@ export const PostEditModal = ({
   console.log(post);
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
-  const [selectedSocials, setSelectedSocials] = useState([]);
   const [postImageDetails, setPostImageDetails] = useState(null);
   const socialOptions = ["Facebook", "X", "Instagram", "LinkedIn"];
   const [isGraphicEditorModal, setIsGraphicEditorModal] = useState(false);
@@ -26,20 +25,16 @@ export const PostEditModal = ({
   useEffect(() => {
     setTopic(post?.topic);
     setContent(post?.content);
-    setSelectedSocials([...post?.platforms]);
     // Destructure and exclude specific fields
-    const { topic, content, platforms, status, ...imageData } = post || {};
+    const { topic, content, platform, status, ...imageData } = post || {};
     setPostImageDetails(imageData);
   }, [post]);
   // Function to validate if any changes were made
   const validateChanges = () => {
     const hasTopicChanged = topic !== (post?.topic || "");
     const hasContentChanged = content !== (post?.content || "");
-    const hasPlatformsChanged =
-      JSON.stringify(selectedSocials.sort()) !==
-      JSON.stringify((post?.platforms || []).sort());
 
-    return hasTopicChanged || hasContentChanged || hasPlatformsChanged;
+    return hasTopicChanged || hasContentChanged;
   };
   const handleSave = () => {
     if (!validateChanges()) {
@@ -52,7 +47,6 @@ export const PostEditModal = ({
       ...post,
       topic,
       content,
-      platforms: selectedSocials,
     });
   };
   return (
@@ -172,11 +166,7 @@ export const PostEditModal = ({
                   {/* Footer */}
                   <div className="px-6 flex flex-col md:flex-row py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between gap-3">
                     <div className=" ml-[11%] md:ml-0 md:w-auto">
-                      <MultiSelectDropdown
-                        options={socialOptions}
-                        selectedOptions={selectedSocials}
-                        onChange={setSelectedSocials}
-                      />
+                      <h2 className=" capitalize">{post?.platform}</h2>
                     </div>
                     <div className="flex md:flex-row flex-col items-center gap-3">
                       <button

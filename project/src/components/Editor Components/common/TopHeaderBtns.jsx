@@ -250,7 +250,7 @@ const TopHeaderBtns = ({
           userId: user?._id,
           templateId: `${user?.username}-${uuidv4()}`,
           templateType,
-          templatePlatform: platform,
+          templatePlatform: platform?.toLowerCase(),
           templateCategory,
           templateImage: file,
           templateDesignData: postDesignData,
@@ -293,7 +293,7 @@ const TopHeaderBtns = ({
       });
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
-      const newElement = createImageElement(objectUrl,"other",src); 
+      const newElement = createImageElement(objectUrl, "other", src);
       addElement(newElement);
 
       const file = new File([blob], newElement.id, { type: blob.type });
@@ -367,7 +367,7 @@ const TopHeaderBtns = ({
   useEffect(() => {
     if (postDetails) {
       setPostOtherValues({
-        platforms: postDetails?.platforms,
+        platform: postDetails?.platform,
         siteLogo: postDetails?.domainId?.siteLogo,
         siteColors: postDetails?.domainId?.colors,
         keywords:

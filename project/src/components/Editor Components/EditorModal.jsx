@@ -126,7 +126,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
                         ? post?.[selectedType]?.imageUrl
                         : null
                     }
-                    defaultPlatform={post?.platforms?.[0]}
+                    defaultPlatform={post?.platform}
                     postDetails={post}
                     isEditingTemplate={!!postDesignData?._id}
                   />
