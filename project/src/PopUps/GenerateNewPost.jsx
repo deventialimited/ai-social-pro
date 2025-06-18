@@ -7,7 +7,6 @@ import { useCreatePostViaPubSub } from '../libs/postService';
 import { useQueryClient } from "@tanstack/react-query";
 
 const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
-  
   const queryClient = useQueryClient();
   const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
 
@@ -58,39 +57,22 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
       color: 'from-blue-500 to-cyan-500',
       tooltip: 'Convert any website URL into compelling social media content by extracting key information and creating posts',
     },
-    // {
-    //   id: 'image',
-    //   label: 'Image to Post',
-    //   icon: <ImageIcon className="w-4 h-4" />,
-    //   color: 'from-purple-500 to-pink-500',
-    //   tooltip: 'Upload an image and let AI analyze it to create relevant, engaging captions and social media posts',
-    // },
   ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
-    const missingFields = [];
+    // Validate required fields based on active tab
+    if (activeTab === 'text' && !formData.topic && !formData.text) {
+      toast.error('Please provide either a Topic or Description', {
+        position: 'top-right',
+        duration: 4000,
+      });
+      return;
+    }
 
-    if (!formData.platform) {
-      missingFields.push('Platform');
-    }
-    if (!formData.topic) {
-      missingFields.push('Topic');
-    }
     if (activeTab === 'url' && !formData.url) {
-      missingFields.push('URL');
-    }
-    if (!formData.callToAction) {
-      missingFields.push('Call to Action');
-    }
-    if (!formData.tone) {
-      missingFields.push('Tone');
-    }
-
-    if (missingFields.length > 0) {
-      toast.error(`Please fill in the following required fields: ${missingFields.join(', ')}`, {
+      toast.error('Please provide a URL', {
         position: 'top-right',
         duration: 4000,
       });
@@ -101,7 +83,7 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
     setIsLoading(true);
     setError(null);
     onLoadingChange?.(true);
-    onClose(); // Close modal immediately when starting API call
+    onClose();
 
     try {
       // Fetch user and selectedWebsiteId from localStorage
@@ -109,15 +91,15 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
       const selectedWebsiteId = user?.selectedWebsiteId;
 
       if (!selectedWebsiteId) {
-        throw new Error('No selected website found');
+        throw new Error('No website selected. Please select a website and try again.');
       }
 
       // Fetch domain details
       const domain = await getDomainById(selectedWebsiteId);
       if (!domain?.data) {
-        throw new Error('Domain not found');
+        throw new Error('Unable to find website details. Please try again later.');
       }
-console.log('selected Domain Data',domain.data)
+
       // Prepare payload for the third-party API
       const payload = {
         client_email: domain.data.client_email,
@@ -169,14 +151,44 @@ console.log('selected Domain Data',domain.data)
       };
 
       await createPostViaPubSub(pubsubPayload);
-      onGenerate?.();
-    } catch (err) {
-      const errorMessage = err.message.includes('Request failed with status code 500')
-        ? 'An unexpected error occurred while generating the post'
-        : err.message || 'Failed to generate post';
-      toast.error(errorMessage, {
+      toast.success('Post generated and saved successfully!', {
         position: 'top-right',
         duration: 4000,
+      });
+      onGenerate?.();
+    } catch (err) {
+      let errorMessage = 'Something went wrong while generating your post. Please try again later.';
+      
+      if (err.response) {
+        // Handle specific HTTP status codes
+        switch (err.response.status) {
+          case 400:
+            errorMessage = 'Invalid input provided. Please check your inputs and try again.';
+            break;
+          case 401:
+            errorMessage = 'Authentication failed. Please log in again.';
+            break;
+          case 429:
+            errorMessage = 'Too many requests. Please wait a moment and try again.';
+            break;
+          case 500:
+            errorMessage = 'Server error occurred. Please try again later.';
+            break;
+          default:
+            errorMessage = err.response.data?.message || errorMessage;
+        }
+      } else if (err.message) {
+        // Handle specific error messages
+        errorMessage = err.message.includes('No selected website')
+          ? err.message
+          : err.message.includes('Domain not found')
+          ? err.message
+          : errorMessage;
+      }
+
+      toast.error(errorMessage, {
+        position: 'top-right',
+        duration: 6000,
       });
     } finally {
       setIsLoading(false);
@@ -191,13 +203,14 @@ console.log('selected Domain Data',domain.data)
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Globe className="w-4 h-4 inline mr-2" />
-            Platform
+            Platform (Optional)
           </label>
           <select
             value={formData.platform}
             onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
             className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
           >
+            <option value="">Select a platform</option>
             {platforms.map((platform) => (
               <option key={platform.value} value={platform.value}>
                 {platform.label}
@@ -210,7 +223,7 @@ console.log('selected Domain Data',domain.data)
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <MessageSquare className="w-4 h-4 inline mr-2" />
-            Topic
+            Topic {activeTab === 'text' ? '(Required if no description)' : '(Optional)'}
           </label>
           <input
             type="text"
@@ -226,7 +239,7 @@ console.log('selected Domain Data',domain.data)
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <FileText className="w-4 h-4 inline mr-2" />
-              What do you want to post about?
+              Description (Required if no topic)
             </label>
             <textarea
               value={formData.text}
@@ -243,7 +256,7 @@ console.log('selected Domain Data',domain.data)
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Link2 className="w-4 h-4 inline mr-2" />
-                URL
+                URL (Required)
               </label>
               <input
                 type="url"
@@ -256,7 +269,7 @@ console.log('selected Domain Data',domain.data)
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <FileText className="w-4 h-4 inline mr-2" />
-                Description
+                Description (Optional)
               </label>
               <textarea
                 value={formData.text}
@@ -269,28 +282,10 @@ console.log('selected Domain Data',domain.data)
           </>
         )}
 
-        {activeTab === 'image' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <ImageIcon className="w-4 h-4 inline mr-2" />
-              Upload Image
-            </label>
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer">
-              <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">
-                <span className="font-medium text-blue-500 dark:text-blue-400">Click to upload</span> or drag and drop
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                PNG, JPG or GIF (max. 5MB)
-              </p>
-            </div>
-          </div>
-        )}
-
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Link2 className="w-4 h-4 inline mr-2" />
-            URL to Redirect
+            URL to Redirect (Optional)
           </label>
           <input
             type="url"
@@ -305,7 +300,7 @@ console.log('selected Domain Data',domain.data)
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Target className="w-4 h-4 inline mr-2" />
-            Call to Action
+            Call to Action (Optional)
           </label>
           <input
             type="text"
@@ -320,7 +315,7 @@ console.log('selected Domain Data',domain.data)
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             <Sparkles className="w-4 h-4 inline mr-2" />
-            Tone
+            Tone (Optional)
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {tones.map((tone) => (
@@ -371,7 +366,7 @@ console.log('selected Domain Data',domain.data)
                   onMouseEnter={() => setShowTooltip(tab.id)}
                   onMouseLeave={() => setShowTooltip(null)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === 'tab.id'
+                    activeTab === tab.id
                       ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}

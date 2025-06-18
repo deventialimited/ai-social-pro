@@ -47,6 +47,17 @@ export const Dashboard = () => {
   const socket=useSocket();
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
 
+
+  useEffect(() => {
+  if (isGeneratingPost) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+  return () => {
+    document.body.style.overflow = 'auto';
+  };
+}, [isGeneratingPost]);
 useEffect(() => {
     // Extract domainId from query parameters
     const searchParams = new URLSearchParams(location.search);
