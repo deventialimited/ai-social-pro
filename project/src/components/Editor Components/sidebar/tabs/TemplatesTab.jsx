@@ -53,14 +53,9 @@ function TemplatesTab() {
 
   const { data, isLoading, isError, error, refetch } =
     useGetAllTemplatesByUserId(userId);
-  console.log(postOtherValues);
-  console.log(data);
   const templates = (Array.isArray(data) ? data : data?.templates ?? []).filter(
-    (t) =>
-      t.templatePlatform?.toLowerCase() ===
-      postOtherValues?.platforms?.[0]?.toLowerCase()
+    (t) => t.templatePlatform?.toLowerCase() === postOtherValues?.platform
   );
-  console.log(templates);
   const privateTemplates = templates.filter(
     (t) => t.templateCategory === category && t.templateType === "private"
   );
