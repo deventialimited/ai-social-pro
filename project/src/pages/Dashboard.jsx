@@ -21,8 +21,9 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import { getUserInformation } from "../libs/authService";
-import {useSocket} from '../store/useSocket'
+import { useSocket } from '../store/useSocket';
 import GeneratePostModal from "../PopUps/GenerateNewPost";
+import GenerateBatchModal from "../PopUps/GenerateBatch";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
@@ -38,33 +39,33 @@ export const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [isGenerateBatchModalOpen, setIsGenerateBatchModalOpen] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const checkoutStatus = searchParams.get("checkout");
-  const socket=useSocket();
+  const socket = useSocket();
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
+  const [isGeneratingBatchPost, setIsGeneratingBatchPost] = useState(false);
 
+ useEffect(() => {
+    if (isGeneratingPost || isGeneratingBatchPost) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isGeneratingPost, isGeneratingBatchPost]);
 
   useEffect(() => {
-  if (isGeneratingPost) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = 'auto';
-  }
-  return () => {
-    document.body.style.overflow = 'auto';
-  };
-}, [isGeneratingPost]);
-useEffect(() => {
-    // Extract domainId from query parameters
     const searchParams = new URLSearchParams(location.search);
     const domainId = searchParams.get("domainId");
 
     if (domainId) {
-      // Remove domainId from URL without refreshing
       navigate("/dashboard", { replace: true });
     }
   }, [location.search, navigate]);
@@ -78,33 +79,32 @@ useEffect(() => {
     }
   }, [searchParams]);
 
-  useEffect(()=>{
-    if (!socket){
-      console.log('socket not conected in the dashboard');
+  useEffect(() => {
+    if (!socket) {
+      console.log('socket not connected in the dashboard');
       return;
     }
-    socket.on('postStatusUpdated',(updatedPost)=>{
-      console.log("updated post in the dashboard",updatedPost)
-      if (updatedPost.domainId === selectedWebsite) 
-        {
-          queryClient.invalidateQueries(['posts',updatedPost.domainId])
-        }
-    })
-  },[socket,queryClient,selectedWebsite])
+    socket.on('postStatusUpdated', (updatedPost) => {
+      console.log("updated post in the dashboard", updatedPost);
+      if (updatedPost.domainId === selectedWebsite) {
+        queryClient.invalidateQueries(['posts', updatedPost.domainId]);
+      }
+    });
+  }, [socket, queryClient, selectedWebsite]);
 
-  useEffect(()=>{
-    console.log('into the new USeeffect to check the returnFromPortal')
+  useEffect(() => {
+    console.log('into the new useEffect to check the returnFromPortal');
     const returnFromPortal = searchParams.get("returnFromPortal");
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    if(returnFromPortal && storedUser._id){
+    if (returnFromPortal && storedUser._id) {
       setIsFetchingUserInfo(true);
       getUserInformation(storedUser._id)
         .then((updatedUser) => {
-          console.log('new updated user',updatedUser)
+          console.log('new updated user', updatedUser);
           localStorage.setItem("user", JSON.stringify(updatedUser));
           setUser(updatedUser);
         })
-        .catch(() => {
+        .catch((err) => {
           console.warn("Error fetching user info:", err);
         })
         .finally(() => {
@@ -113,7 +113,7 @@ useEffect(() => {
           window.history.replaceState({}, document.title, cleanUrl);
         });
     }
-  },[searchParams])
+  }, [searchParams]);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -138,9 +138,7 @@ useEffect(() => {
   } = useGetAllPostsByDomainId(selectedWebsite);
 
   useEffect(() => {
-    const selectedWebsiteId = JSON.parse(
-      localStorage.getItem("user")
-    )?.selectedWebsiteId;
+    const selectedWebsiteId = JSON.parse(localStorage.getItem("user"))?.selectedWebsiteId;
     if (domains?.length > 0) {
       const domainId = searchParams.get("domainId");
       if (domainId) {
@@ -196,9 +194,9 @@ useEffect(() => {
     }
   };
 
-  const handleSinglePostGeneration=async()=>{
-    
-  }
+  const handleSinglePostGeneration = async () => {
+    // Implement single post generation logic here
+  };
 
   const handleNewPost = (post) => {
     setCurrentTab("posts");
@@ -274,23 +272,47 @@ useEffect(() => {
               />
             </div>
             {postsTab === "generated" && (
-              <div className="px-6 py-4 flex justify-center">
-                <button
-                  className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    isGeneratingPost ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
-                  onClick={() => setIsGenerateModalOpen(true)}
-                  disabled={isGeneratingPost}
-                >
-                  <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
-                    {isGeneratingPost ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      '+'
-                    )}
-                  </span>
-                  {isGeneratingPost ? 'Generating Post...' : 'Generate Post'}
-                </button>
+              <div className="px-6 py-4 flex justify-center space-x-20">
+                <div className="flex flex-col items-center">
+                  <button
+                    className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md ${
+                      isGeneratingPost ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                    onClick={() => setIsGenerateModalOpen(true)}
+                    disabled={isGeneratingPost}
+                  >
+                    <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
+                      {isGeneratingPost ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        '+'
+                      )}
+                    </span>
+                    {isGeneratingPost ? 'Generating...' : 'Generate Post'}
+                  </button>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+Create a single customized post <br></br> with specific settings and content                  </p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <button
+                    className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-pink-600 text-white rounded-lg hover:from-blue-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md ${
+                      isGeneratingPost ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                    onClick={()=>{setIsGenerateBatchModalOpen(true)}}
+                    disabled={isGeneratingBatchPost}
+                  >
+                    <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
+                      {isGeneratingBatchPost ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        '+'
+                      )}
+                    </span>
+                    {isGeneratingBatchPost ? 'Generating...' : 'Generate Batch'}
+                  </button>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+Generate multiple posts across <br></br> different platforms at once                  </p>
+                </div>
               </div>
             )}
             <div
@@ -383,6 +405,16 @@ useEffect(() => {
               queryClient.invalidateQueries(['posts', selectedWebsite]);
             }}
             onLoadingChange={setIsGeneratingPost}
+          />
+        )}
+
+        {isGenerateBatchModalOpen && !isGeneratingBatchPost && (
+          <GenerateBatchModal
+            onClose={() => setIsGenerateBatchModalOpen(false)}
+            onGenerate={() => {
+              queryClient.invalidateQueries(['posts', selectedWebsite]);
+            }}
+            onLoadingChange={setIsGeneratingBatchPost}
           />
         )}
       </div>
