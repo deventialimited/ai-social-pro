@@ -31,12 +31,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [loadingMessage, setLoadingMessage] = useState(null);
   const [deletePost, setDeletePost] = useState(false);
   const contentRef = useRef(null);
-  const primaryPlatform = post?.platforms?.[0];
+  const primaryPlatform = post?.platform;
   const [isDeleting, setIsDeleting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageBlurred, setImageBlurred] = useState(true);
   const { mutate: reschedule, isLoading: isRescheduling } = useReschedulePost();
-  const { mutate: approveAndSchedule, isLoading: isApproving } = useApproveAndSchedulePost();
+  const { mutate: approveAndSchedule, isLoading: isApproving } =
+    useApproveAndSchedulePost();
 
   useEffect(() => {
     if (imageLoaded) {
@@ -124,36 +125,35 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     setShowEditModal(false);
   };
 
-  const handleDownload=async()=>{
-    const imageUrl=await post[selectedButton]?.imageUrl
+  const handleDownload = async () => {
+    const imageUrl = await post[selectedButton]?.imageUrl;
     if (!imageUrl) {
       toast.error("Image not found");
       return;
     }
 
-    try{
-      const response=await fetch(imageUrl)
-      const blob=await response.blob();
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Set download filename based on selected button
       const filename = `${selectedButton}_${post.postId}.png`;
-      link.setAttribute('download', filename);
-      
+      link.setAttribute("download", filename);
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.success("Image downloaded successfully!");
-    }
-    catch(error){
-      console.log(error)
+    } catch (error) {
+      console.log(error);
       toast.error("Failed to download image");
     }
-  }
+  };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -169,7 +169,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       case "sloganImage":
         return post.sloganImage?.imageUrl || "";
       case "image":
-        return post.image?.imageUrl ||  post.brandingImage?.imageUrl ;
+        return post.image?.imageUrl || post.brandingImage?.imageUrl;
       default:
         return "";
     }
@@ -188,12 +188,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       postId: post.postId,
       content: post.content,
       image: getSelectedImageUrl(),
-      platforms: (post.platforms || [])
-        .map((p) => p.toLowerCase())
-        .map((p) => (p === "x" ? "twitter" : p))
-        .filter((p) =>
-          ["twitter", "linkedin", "facebook", "instagram"].includes(p)
-        ),
+      platforms: [post?.platform],
     };
 
     try {

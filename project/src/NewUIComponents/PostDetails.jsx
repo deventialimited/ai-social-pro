@@ -57,7 +57,7 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
   const contentRef = useRef(null);
   const navigate = useNavigate();
 
-  const primaryPlatform = postData?.platforms?.[0] || "linkedin";
+  const primaryPlatform = postData?.platform || "linkedin";
   const { mutate: reschedule, isLoading: isRescheduling } = useReschedulePost();
   const { mutate: approveAndSchedule, isLoading: isApproving } =
     useApproveAndSchedulePost();
@@ -93,11 +93,10 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
         postData.userId,
         postData?.domainId?._id
       );
-       if(result?.user){
-        console.log('user is changed in the localstorage')
-                localStorage.setItem("user", JSON.stringify(result.user));
-
-       }
+      if (result?.user) {
+        console.log("user is changed in the localstorage");
+        localStorage.setItem("user", JSON.stringify(result.user));
+      }
       console.log(result);
     } catch (err) {
       console.error(
@@ -160,12 +159,7 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
       postId: postData.postId,
       content: postData.content,
       image: getSelectedImageUrl(),
-      platforms: (postData.platforms || [])
-        .map((p) => p.toLowerCase())
-        .map((p) => (p === "x" ? "twitter" : p))
-        .filter((p) =>
-          ["twitter", "linkedin", "facebook", "instagram"].includes(p)
-        ),
+      platforms: [postData?.platform],
     };
 
     try {

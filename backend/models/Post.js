@@ -35,7 +35,7 @@ const PostSchema = new Schema({
   slogan: { type: String, default: "" },
 
   date: { type: Date, default: Date.now },
-  platforms: { type: [String], default: [] },
+  platform: { type: String, default: "" },
   related_keywords: { type: [String], default: [] },
   status: { type: String, default: "generated" },
   socialMediaLinks: [
@@ -54,7 +54,7 @@ const PostSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-PostSchema.index({ platforms: 1, createdAt: -1 });
+PostSchema.index({ platform: 1, createdAt: -1 });
 
 PostSchema.pre("save", function (next) {
   this.updatedAt = Date.now();

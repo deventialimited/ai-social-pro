@@ -121,14 +121,14 @@ exports.updatePostImageFile = async (req, res) => {
 // Update a post
 exports.updatePost = async (req, res) => {
   const { id } = req.params; // Get id from URL parameters
-  const { topic, content, platforms, status } = req.body; // Get fields to update from request body
+  const { topic, content, status } = req.body; // Get fields to update from request body
 
   // Validate required fields (at least one field should be provided to update)
-  if (!topic && !content && !platforms && !status) {
+  if (!topic && !content && !status) {
     return res.status(400).json({
       success: false,
       message:
-        "At least one field (topic, content, platforms, or status) is required to update the post",
+        "At least one field (topic, content, or status) is required to update the post",
     });
   }
 
@@ -154,16 +154,7 @@ exports.updatePost = async (req, res) => {
     const updateData = {};
     if (topic !== undefined) updateData.topic = topic;
     if (content !== undefined) updateData.content = content;
-    if (platforms !== undefined && platforms?.length > 0) {
-      // Validate platforms (ensure it's an array of strings)
-      if (!Array.isArray(platforms)) {
-        return res.status(400).json({
-          success: false,
-          message: "Platforms must be an array of strings",
-        });
-      }
-      updateData.platforms = platforms;
-    }
+
     if (status !== undefined) {
       updateData.status = status;
     }
@@ -290,11 +281,7 @@ exports.processPubSub = async (req, res) => {
       content: jsonData.content || "",
       slogan: jsonData.slogan || "",
       postDate: jsonData.date ? new Date(jsonData.date) : Date.now(),
-      platforms: Array.isArray(jsonData.platform)
-        ? jsonData.platform
-        : jsonData.platform
-        ? [jsonData.platform]
-        : [],
+      platform: jsonData.platform?.toLowerCase(),
     });
 
     const savedPost = await newPost.save();
@@ -307,7 +294,7 @@ exports.processPubSub = async (req, res) => {
     }
     const generatedImages = await generateDomainVisualAssets({
       postId: savedPost?._id,
-      platform: savedPost?.platforms[0],
+      platform: savedPost?.platform,
       sloganText: savedPost?.slogan,
       brandName: domain?.clientName,
       primaryColor: domain?.colors[1],
@@ -402,7 +389,7 @@ exports.getFirstPost = async (req, res) => {
       content: firstPost.content,
       slogan: firstPost.slogan,
       date: firstPost.date,
-      platforms: firstPost.platforms,
+      platform: firstPost.platform,
       status: firstPost.status,
       followers: firstPost.followers,
       editorStatus: firstPost.editorStatus,
@@ -538,8 +525,16 @@ exports.updatePostStatusToPublished = async (req, res) => {
   if (!status) {
     return res.status(400).json({ message: "Status is required" });
   }
-  if (status.toLowerCase() === "published" && (!socialMediaLinks || !Array.isArray(socialMediaLinks) || socialMediaLinks.length === 0)) {
-    return res.status(400).json({ message: "socialMediaLinks must be a non-empty array of { platform, url } objects for published status" });
+  if (
+    status.toLowerCase() === "published" &&
+    (!socialMediaLinks ||
+      !Array.isArray(socialMediaLinks) ||
+      socialMediaLinks.length === 0)
+  ) {
+    return res.status(400).json({
+      message:
+        "socialMediaLinks must be a non-empty array of { platform, url } objects for published status",
+    });
   }
 
   const normalizedStatus = status.toLowerCase();
@@ -554,11 +549,15 @@ exports.updatePostStatusToPublished = async (req, res) => {
   if (normalizedStatus === "published") {
     for (const entry of socialMediaLinks) {
       if (!entry.platform || !entry.url) {
-        return res.status(400).json({ message: "Each socialMediaLinks entry must have platform and url" });
+        return res.status(400).json({
+          message: "Each socialMediaLinks entry must have platform and url",
+        });
       }
       // Validate URL format
       if (!/^https?:\/\/.+/.test(entry.url)) {
-        return res.status(400).json({ message: `Invalid URL format for ${entry.platform}: ${entry.url}` });
+        return res.status(400).json({
+          message: `Invalid URL format for ${entry.platform}: ${entry.url}`,
+        });
       }
     }
   }
@@ -578,15 +577,23 @@ exports.updatePostStatusToPublished = async (req, res) => {
 
     // Append new socialMediaLinks for "published" status, avoiding duplicates
     if (normalizedStatus === "published") {
-      const existingPlatforms = post.socialMediaLinks.map(entry => entry.platform.toLowerCase());
-      const newLinks = socialMediaLinks.filter(entry => !existingPlatforms.includes(entry.platform.toLowerCase()));
+      const existingPlatforms = post.socialMediaLinks.map((entry) =>
+        entry.platform.toLowerCase()
+      );
+      const newLinks = socialMediaLinks.filter(
+        (entry) => !existingPlatforms.includes(entry.platform.toLowerCase())
+      );
       if (newLinks.length === 0 && socialMediaLinks.length > 0) {
-        return res.status(400).json({ message: "All provided platforms already have associated URLs" });
+        return res.status(400).json({
+          message: "All provided platforms already have associated URLs",
+        });
       }
-      post.socialMediaLinks.push(...newLinks.map(entry => ({
-        platform: entry.platform.toLowerCase(),
-        url: entry.url,
-      })));
+      post.socialMediaLinks.push(
+        ...newLinks.map((entry) => ({
+          platform: entry.platform.toLowerCase(),
+          url: entry.url,
+        }))
+      );
     }
 
     // Update status and timestamp
@@ -615,10 +622,14 @@ exports.updatePostStatusToPublished = async (req, res) => {
     if (error.name === "ValidationError") {
       return res.status(400).json({
         message: "Validation error in post data",
-        error: Object.values(error.errors).map(err => err.message).join(", "),
+        error: Object.values(error.errors)
+          .map((err) => err.message)
+          .join(", "),
       });
     }
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
   }
 };
 function getS3KeyFromUrl(url) {
