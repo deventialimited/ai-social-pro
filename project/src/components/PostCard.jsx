@@ -145,11 +145,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       link.href = url;
 
       // Set download filename based on selected button
-      const filename = `${selectedButton}_${post.postId}.png`;
-      link.setAttribute("download", filename);
 
       const filename = `${selectedButton}_${post.postId}.png`;
-      link.setAttribute('download', filename);
+      link.setAttribute("download", filename);
 
       document.body.appendChild(link);
       link.click();
