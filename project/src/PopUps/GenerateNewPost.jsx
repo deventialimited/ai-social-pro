@@ -143,11 +143,7 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         content: response.data.content,
         slogan: response.data.slogan,
         postDate: response.data.date,
-        platform: Array.isArray(response.data.platform)
-          ? response.data.platform
-          : response.data.platform
-          ? [response.data.platform]
-          : [],
+        platform: response.data.platform
       };
 
       await createPostViaPubSub(pubsubPayload);
