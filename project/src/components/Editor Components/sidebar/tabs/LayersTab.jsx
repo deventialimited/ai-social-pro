@@ -17,7 +17,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useMemo } from "react";
 
-function LayersTab({ selectedElementId }) {
+function LayersTab({ selectedElementId, setSelectedElementId }) {
   const {
     layers,
     setLayers,
@@ -104,6 +104,7 @@ function LayersTab({ selectedElementId }) {
                 handleLock={handleLock}
                 handleVisible={handleVisible}
                 selectedElementId={selectedElementId}
+                setSelectedElementId={setSelectedElementId}
               />
             ))}
           </SortableContext>
@@ -120,6 +121,7 @@ function SortableItem({
   handleLock,
   handleVisible,
   selectedElementId,
+  setSelectedElementId,
 }) {
   const {
     attributes,
@@ -137,28 +139,44 @@ function SortableItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleClick = (e) => {
+    // Don't trigger selection if clicking on buttons or drag handle
+    if (e.target.closest('button') || e.target.closest('.drag-handle')) return;
+    setSelectedElementId(layer.elementId);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 p-2 rounded-md border hover:bg-gray-50 bg-white transition-shadow cursor-grab ${
+      className={`flex items-center gap-2 p-2 rounded-md border hover:bg-gray-50 bg-white transition-shadow ${
         isDragging ? "shadow-lg" : ""
       }  ${
-        selectedElementId === layer?.elementId ? "border border-black" : null
+        selectedElementId === layer?.elementId ? "border-2 border-blue-500" : "border-gray-200"
       }`}
-      {...listeners}
-      {...attributes}
+      onClick={handleClick}
     >
-      <div className="flex items-center gap-1 w-max">
+      {/* Drag Handle */}
+      <div 
+        className="drag-handle cursor-grab hover:bg-gray-100 p-1 rounded"
+        {...listeners}
+        {...attributes}
+      >
         <span className="text-gray-500 text-lg">≡</span>
       </div>
 
       <div className="w-max capitalize text-xs text-gray-500">{layer.type}</div>
 
-      <div className="flex-1 truncate text-sm">{layer.elementId}</div>
+      {/* Element ID */}
+      <div className="flex-1 truncate text-sm">
+        {layer.elementId}
+      </div>
 
       <button
-        onClick={() => handleVisible(layer.elementId)}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleVisible(layer.elementId);
+        }}
         className="text-gray-500 hover:text-gray-700"
       >
         {layer.visible ? (
@@ -169,7 +187,10 @@ function SortableItem({
       </button>
 
       <button
-        onClick={() => handleLock(layer.elementId)}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleLock(layer.elementId);
+        }}
         className={`p-2 rounded-md hover:bg-gray-100 ${
           layer?.locked ? "bg-gray-300" : ""
         }`}
@@ -182,7 +203,10 @@ function SortableItem({
       </button>
 
       <button
-        onClick={() => removeElement(layer.elementId)}
+        onClick={(e) => {
+          e.stopPropagation();
+          removeElement(layer.elementId);
+        }}
         className="text-gray-500 hover:text-gray-700"
       >
         <Trash className="h-4 w-4" />
