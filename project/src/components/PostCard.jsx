@@ -330,7 +330,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
           </div>
           <div
-            className="flex items-center justify-center rounded-lg w-full bg-gray-200"
+            className="flex items-center justify-center rounded-lg w-full"
             style={{ aspectRatio: getImageAspectRatio(primaryPlatform) }}
           >
             {post[selectedButton]?.imageUrl ? (
