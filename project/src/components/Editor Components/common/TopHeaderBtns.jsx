@@ -262,7 +262,7 @@ const TopHeaderBtns = ({
               setIsSaveTemplateLoading(false);
               // onClose();
               setActiveTab("templates");
-              clearEditor();
+              // clearEditor();
               toast.success("Template saved successfully");
             }, 3000);
           },
