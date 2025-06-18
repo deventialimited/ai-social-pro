@@ -10,28 +10,28 @@ import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
 export const presetSizes = [
   {
-    id: "Instagram",
+    id: "instagram",
     icon: <Instagram className="w-6 h-6 text-gray-600" />,
     name: "Instagram Post",
     dimensions: [1080, 1080],
     description: "(1080x1080)",
   },
   {
-    id: "Facebook",
+    id: "facebook",
     icon: <Facebook className="w-6 h-6 text-gray-600" />,
     name: "Facebook Post",
     dimensions: [1200, 630],
     description: "(1200x630)",
   },
   {
-    id: "LinkedIn",
+    id: "linkedIn",
     icon: <Linkedin className="w-6 h-6 text-gray-600" />,
     name: "LinkedIn Post",
     dimensions: [1200, 627],
     description: "(1200x627)",
   },
   {
-    id: "X",
+    id: "x",
     icon: <Twitter className="w-6 h-6 text-gray-600" />,
     name: "Twitter Post",
     dimensions: [1200, 675],
