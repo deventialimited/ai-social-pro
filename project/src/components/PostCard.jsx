@@ -21,13 +21,19 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { useReschedulePost, useApproveAndSchedulePost } from "../libs/postService";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
+  // Validate post.date, default to current date if invalid
+  const getValidDate = (date) => {
+    const parsedDate = new Date(date);
+    return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+  };
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("brandingImage");
   const [showFullText, setShowFullText] = useState(false);
   const [isClamped, setIsClamped] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date(post.date));
-  const [postDate, setPostDate] = useState(new Date(post.date));
+  const [selectedDate, setSelectedDate] = useState(getValidDate(post.date));
+  const [postDate, setPostDate] = useState(getValidDate(post.date));
   const [loadingMessage, setLoadingMessage] = useState(null);
   const [deletePost, setDeletePost] = useState(false);
   const contentRef = useRef(null);
@@ -60,15 +66,15 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const getImageAspectRatio = (platform) => {
     switch (platform?.toLowerCase()) {
       case "facebook":
-        return 1200 / 630;
+        return 1200 / 630; // 1.905
       case "x":
-        return 1200 / 675;
+        return 1200 / 675; // 1.778
       case "linkedin":
-        return 1200 / 627;
+        return 1200 / 627; // 1.914
       case "instagram":
-        return 1;
+        return 1; // 1
       default:
-        return 16 / 9;
+        return 16 / 9; // Default fallback
     }
   };
 
@@ -81,26 +87,18 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
 
   const getImageStyle = (platform) => {
     const [canvasWidth, canvasHeight] = platformDimensions[
-      (platform || "")?.toLowerCase()
-    ] || [1200, 675]; // Default to x platform dimensions if none specified
+      (platform || "").toLowerCase()
+    ] || [1200, 675]; // Default to x platform dimensions
     const edited = post[selectedButton]?.editorStatus === "edited";
     const aspectRatio = canvasWidth / canvasHeight;
 
-    if (edited) {
-      return {
-        width: "100%", // Allow edited images to scale to container width
-        height: "auto", // Maintain aspect ratio
-        maxWidth: `${canvasWidth}px`, // Cap at original width
-        aspectRatio: aspectRatio, // Enforce platform-specific aspect ratio
-      };
-    } else {
-      return {
-        width: "100%", // Scale to container width
-        height: "auto", // Maintain aspect ratio
-        maxWidth: `${Math.min(canvasWidth, 600)}px`, // Limit max width for display
-        aspectRatio: aspectRatio, // Enforce platform-specific aspect ratio
-      };
-    }
+    return {
+      width: "100%", // Fill container width
+      aspectRatio: aspectRatio, // Enforce platform-specific aspect ratio
+      objectFit: "cover", // Ensure image covers container
+      maxWidth: edited ? `${canvasWidth}px` : `${Math.min(canvasWidth, 600)}px`, // Cap at original or scaled width
+      height: "auto", // Adjust height based on aspect ratio
+    };
   };
 
   const getStatusBadge = () => {
@@ -158,9 +156,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   };
 
   const handleDateChange = (date) => {
-    setSelectedDate(date);
-    if (onReschedule) {
-      onReschedule(post._id, date);
+    if (date && !isNaN(date.getTime())) {
+      setSelectedDate(date);
+      if (onReschedule) {
+        onReschedule(post._id, date);
+      }
+    } else {
+      toast.error("Invalid date selected");
     }
   };
 
@@ -185,7 +187,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
 
     const schedulePayload = {
-      time: new Date(postDate).getTime(),
+      time: postDate.getTime(),
       uid: post.userId || "",
       postId: post.postId,
       content: post.content,
@@ -235,20 +237,24 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   };
 
   const handleReschedule = (newDate) => {
-    reschedule(
-      { postId: post._id, newTime: newDate.getTime() },
-      {
-        onSuccess: () => {
-          toast.success("Post schedule updated!");
-          setPostDate(newDate);
-          handleDateChange(newDate);
-          setShowDatePicker(false);
-        },
-        onError: (error) => {
-          toast.error(error || "Failed to update the post time.");
-        },
-      }
-    );
+    if (newDate && !isNaN(newDate.getTime())) {
+      reschedule(
+        { postId: post._id, newTime: newDate.getTime() },
+        {
+          onSuccess: () => {
+            toast.success("Post schedule updated!");
+            setPostDate(newDate);
+            handleDateChange(newDate);
+            setShowDatePicker(false);
+          },
+          onError: (error) => {
+            toast.error(error?.message || "Failed to update the post time.");
+          },
+        }
+      );
+    } else {
+      toast.error("Invalid reschedule date");
+    }
   };
 
   const baseStyles =
@@ -323,16 +329,22 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
             )}
           </div>
-          <div className="flex items-center justify-center rounded-lg w-full bg-gray-200">
+          <div
+            className="flex items-center justify-center rounded-lg w-full bg-gray-200"
+            style={{ aspectRatio: getImageAspectRatio(primaryPlatform) }}
+          >
             {post[selectedButton]?.imageUrl ? (
               <>
                 {!imageLoaded && (
-                  <Skeleton
+                  <div
                     style={{
                       ...getImageStyle(primaryPlatform),
                       borderRadius: "0.5rem",
+                      overflow: "hidden",
                     }}
-                  />
+                  >
+                    <Skeleton width="100%" height="100%" />
+                  </div>
                 )}
                 <img
                   src={post[selectedButton]?.imageUrl}
@@ -346,16 +358,19 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                     cursor: "pointer",
                   }}
                   onClick={() => setShowEditModal(true)}
-                  className="object-cover"
+                  className="object-cover w-full h-full"
                 />
               </>
             ) : (
-              <Skeleton
+              <div
                 style={{
                   ...getImageStyle(primaryPlatform),
                   borderRadius: "0.5rem",
+                  overflow: "hidden",
                 }}
-              />
+              >
+                <Skeleton width="100%" height="100%" />
+              </div>
             )}
           </div>
         </div>
