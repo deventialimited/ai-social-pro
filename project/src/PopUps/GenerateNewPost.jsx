@@ -156,7 +156,6 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
       let errorMessage = 'Something went wrong while generating your post. Please try again later.';
       
       if (err.response) {
-        // Handle specific HTTP status codes
         switch (err.response.status) {
           case 400:
             errorMessage = 'Invalid input provided. Please check your inputs and try again.';
@@ -174,7 +173,6 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
             errorMessage = err.response.data?.message || errorMessage;
         }
       } else if (err.message) {
-        // Handle specific error messages
         errorMessage = err.message.includes('No selected website')
           ? err.message
           : err.message.includes('Domain not found')
@@ -336,19 +334,24 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[700px] max-h-[90vh] overflow-hidden shadow-xl">
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[700px] max-h-[90vh] flex flex-col overflow-hidden shadow-xl relative">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Header */}
-        <div className="px-8 py-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
+        <div className="px-8 pt-12 pb-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Generate New Post
+              AI Smart Post Builder for Any Platform
             </h2>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Use this tool to generate a high-quality post for your chosen platform. Just enter a topic or description, and optionally add a link, call to action, and tone. We’ll turn your input into an engaging post tailored for your audience.
+            </p>
           </div>
         </div>
 
@@ -389,35 +392,39 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-8 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-              {error}
+        <div className="flex-1 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <div className="p-8">
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+                  {error}
+                </div>
+              )}
+              {renderTabContent()}
             </div>
-          )}
-          {renderTabContent()}
-
-          {/* Footer */}
-          <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 flex items-center gap-2 ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isLoading ? 'Generating...' : 'Generate Post'}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </form>
+            <div className="p-8 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || isPubSubLoading}
+                  className={`px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 flex items-center gap-2 ${
+                    isLoading || isPubSubLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isLoading || isPubSubLoading ? 'Generating...' : 'Generate Post'}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
