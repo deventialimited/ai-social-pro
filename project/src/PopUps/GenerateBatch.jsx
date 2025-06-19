@@ -15,28 +15,28 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     {
       id: 'facebook',
       name: 'Facebook',
-      icon: '📘',
+      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/facebook.svg',
       enabled: true,
       postCount: 1
     },
     {
       id: 'instagram',
       name: 'Instagram',
-      icon: '📷',
+      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/instagram.svg',
       enabled: true,
       postCount: 1
     },
     {
       id: 'x',
       name: 'X (Twitter)',
-      icon: '🐦',
+      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/twitter.svg',
       enabled: true,
       postCount: 1
     },
     {
       id: 'linkedin',
       name: 'LinkedIn',
-      icon: '💼',
+      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/linkedin.svg',
       enabled: true,
       postCount: 1
     }
@@ -202,28 +202,26 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[600px] max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
-        <div className="px-8 py-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Generate Batch
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Create multiple posts across different platforms
-                </p>
-              </div>
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[600px] max-h-[90vh] flex flex-col overflow-hidden shadow-xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <div className="px-8 pt-12 pb-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
+              <Sparkles className="w-6 h-6" />
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Generate Batch
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Create multiple posts across different platforms
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -260,7 +258,13 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                         )}
                       </button>
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{platform.icon}</span>
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <img
+                            src={platform.icon}
+                            alt={platform.name}
+                            className="w-5 h-5"
+                          />
+                        </div>
                         <span className="font-medium text-gray-900 dark:text-white">
                           {platform.name}
                         </span>
