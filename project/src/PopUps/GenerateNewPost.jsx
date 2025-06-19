@@ -282,7 +282,7 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
             URL to Redirect (Optional)
           </label>
           <input
-            type="url"
+            type="text"
             value={formData.PostURL}
             onChange={(e) => setFormData({ ...formData, PostURL: e.target.value })}
             placeholder="e.g., Link you want to add to your post"
