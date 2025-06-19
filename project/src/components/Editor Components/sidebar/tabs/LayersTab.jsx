@@ -17,7 +17,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useMemo } from "react";
 
-function LayersTab({ selectedElementId, setSelectedElementId }) {
+function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }) {
   const {
     layers,
     setLayers,
@@ -105,6 +105,7 @@ function LayersTab({ selectedElementId, setSelectedElementId }) {
                 handleVisible={handleVisible}
                 selectedElementId={selectedElementId}
                 setSelectedElementId={setSelectedElementId}
+                setActiveElement={setActiveElement}
               />
             ))}
           </SortableContext>
@@ -122,6 +123,7 @@ function SortableItem({
   handleVisible,
   selectedElementId,
   setSelectedElementId,
+  setActiveElement,
 }) {
   const {
     attributes,
@@ -140,9 +142,9 @@ function SortableItem({
   };
 
   const handleClick = (e) => {
-    // Don't trigger selection if clicking on buttons or drag handle
     if (e.target.closest('button') || e.target.closest('.drag-handle')) return;
     setSelectedElementId(layer.elementId);
+    setActiveElement(layer.type);
   };
 
   return (
