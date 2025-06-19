@@ -202,7 +202,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[600px] max-h-[90vh] overflow-hidden shadow-xl">
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl w-[600px] max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
         <div className="px-8 py-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -226,100 +226,109 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
             </button>
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="p-8">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              Select Platforms & Post Count
-            </h3>
-            {platforms.map((platform) => (
-              <div
-                key={platform.id}
-                className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
-                  platform.enabled
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => togglePlatform(platform.id)}
-                    className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
+        <div className="flex-1 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="flex flex-col h-full">
+            <div className="p-8">
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                  Create Multiple Posts at Once
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Use this tool to generate a batch of social media posts across multiple platforms in one click. Simply select the platforms you want to post to and choose how many posts you’d like for each. We’ll generate custom content tailored to each platform’s style.
+                </p>
+                {platforms.map((platform) => (
+                  <div
+                    key={platform.id}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
                       platform.enabled
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => togglePlatform(platform.id)}
+                        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
+                          platform.enabled
+                            ? 'border-blue-500 bg-blue-500'
+                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'
+                        }`}
+                      >
+                        {platform.enabled && (
+                          <Check className="w-4 h-4 text-white" />
+                        )}
+                      </button>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{platform.icon}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {platform.name}
+                        </span>
+                      </div>
+                    </div>
                     {platform.enabled && (
-                      <Check className="w-4 h-4 text-white" />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Posts:
+                        </span>
+                        <select
+                          value={platform.postCount}
+                          onChange={(e) => updatePostCount(platform.id, parseInt(e.target.value))}
+                          className="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value={1}>1</option>
+                          <option value={2}>2</option>
+                          <option value={3}>3</option>
+                          <option value={4}>4</option>
+                        </select>
+                      </div>
                     )}
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{platform.icon}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {platform.name}
-                    </span>
                   </div>
-                </div>
-                {platform.enabled && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Posts:
-                    </span>
-                    <select
-                      value={platform.postCount}
-                      onChange={(e) => updatePostCount(platform.id, parseInt(e.target.value))}
-                      className="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value={1}>1</option>
-                      <option value={2}>2</option>
-                      <option value={3}>3</option>
-                      <option value={4}>4</option>
-                    </select>
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
-          </div>
-          {enabledPlatforms.length > 0 && (
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-blue-900 dark:text-blue-100">
-                    Batch Summary
-                  </h4>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    {enabledPlatforms.length} platform{enabledPlatforms.length !== 1 ? 's' : ''} • {totalPosts} total post{totalPosts !== 1 ? 's' : ''}
-                  </p>
+              {enabledPlatforms.length > 0 && (
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                        Batch Summary
+                      </h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        {enabledPlatforms.length} platform{enabledPlatforms.length !== 1 ? 's' : ''} • {totalPosts} total post{totalPosts !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {totalPosts}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {totalPosts}
-                </div>
+              )}
+            </div>
+            <div className="p-8 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={enabledPlatforms.length === 0 || isLoading || isPubSubLoading}
+                  className={`px-6 py-2.5 rounded-lg flex items-center gap-2 transition-opacity ${
+                    enabledPlatforms.length > 0 && !isLoading && !isPubSubLoading
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90'
+                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {isLoading || isPubSubLoading ? 'Generating...' : 'Generate Batch'}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
-          )}
-          <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={enabledPlatforms.length === 0 || isLoading || isPubSubLoading}
-              className={`px-6 py-2.5 rounded-lg flex items-center gap-2 transition-opacity ${
-                enabledPlatforms.length > 0 && !isLoading && !isPubSubLoading
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90'
-                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {isLoading || isPubSubLoading ? 'Generating...' : 'Generate Batch'}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
