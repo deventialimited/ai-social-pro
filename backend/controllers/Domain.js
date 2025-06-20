@@ -238,102 +238,103 @@ exports.deleteDomain = async (req, res) => {
 };
 
 // Update domain business data only if values are changed
-exports.updateDomain = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body; // Fields sent in the request
-
-    if (!id) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Domain ID is required" });
-    }
-
-    // Find the existing domain
-    const existingDomain = await Domain.findById(id);
-    if (!existingDomain) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Domain not found" });
-    }
-
-    let updateFields = {};
-
-    // Helper function to check and update fields only if they changed
-    const checkAndUpdate = (field, newValue) => {
-      if (newValue !== undefined && newValue !== existingDomain[field]) {
-        updateFields[field] = newValue;
+  exports.updateDomain = async (req, res) => {
+    console.log('into the update Domain Controller')
+    try {
+      const { id } = req.params;
+      const updates = req.body; // Fields sent in the request
+console.log("updates",updates)
+      if (!id) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Domain ID is required" });
       }
-    };
 
-    // Check and update basic fields
-    checkAndUpdate("clientName", updates.clientName);
-    checkAndUpdate("clientDescription", updates.clientDescription);
-    checkAndUpdate("industry", updates.industry);
-    checkAndUpdate("niche", updates.niche);
-    checkAndUpdate("clientWebsite", updates.clientWebsite);
-    checkAndUpdate("language", updates.language);
-    checkAndUpdate("country", updates.country);
-    checkAndUpdate("state", updates.state);
-checkAndUpdate("colors",updates.colors)
-    // Handle colors update (convert array to string if provided)
-    // if (Array.isArray(updates.colors)) {
-    //   const newColors = updates.colors.join(", ");
-    //   checkAndUpdate("colors", newColors);
-    // }
-    // Handle marketing strategy updates
-    if (updates.marketingStrategy) {
-      updateFields.marketingStrategy = {
-        core_values:
-          JSON.stringify(updates.marketingStrategy.core_values) !==
-          JSON.stringify(existingDomain.marketingStrategy?.core_values)
-            ? updates.marketingStrategy.core_values
-            : existingDomain.marketingStrategy?.core_values,
+      // Find the existing domain
+      const existingDomain = await Domain.findById(id);
+      if (!existingDomain) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Domain not found" });
+      }
 
-        audiencePains:
-          JSON.stringify(updates.marketingStrategy.audiencePains) !==
-          JSON.stringify(existingDomain.marketingStrategy?.audiencePains)
-            ? updates.marketingStrategy.audiencePains
-            : existingDomain.marketingStrategy?.audiencePains,
+      let updateFields = {};
 
-        audience:
-          JSON.stringify(updates.marketingStrategy.audience) !==
-          JSON.stringify(existingDomain.marketingStrategy?.audience)
-            ? updates.marketingStrategy.audience
-            : existingDomain.marketingStrategy?.audience,
+      // Helper function to check and update fields only if they changed
+      const checkAndUpdate = (field, newValue) => {
+        if (newValue !== undefined && newValue !== existingDomain[field]) {
+          updateFields[field] = newValue;
+        }
       };
-    }
 
-    // If no changes, return without updating
-    if (Object.keys(updateFields).length === 0) {
-      return res.status(200).json({
+      // Check and update basic fields
+      checkAndUpdate("clientName", updates.clientName);
+      checkAndUpdate("clientDescription", updates.clientDescription);
+      checkAndUpdate("industry", updates.industry);
+      checkAndUpdate("niche", updates.niche);
+      checkAndUpdate("clientWebsite", updates.clientWebsite);
+      checkAndUpdate("language", updates.language);
+      checkAndUpdate("country", updates.country);
+      checkAndUpdate("state", updates.state);
+  checkAndUpdate("colors",updates.colors)
+      // Handle colors update (convert array to string if provided)
+      // if (Array.isArray(updates.colors)) {
+      //   const newColors = updates.colors.join(", ");
+      //   checkAndUpdate("colors", newColors);
+      // }
+      // Handle marketing strategy updates
+      if (updates.marketingStrategy) {
+        updateFields.marketingStrategy = {
+          core_values:
+            JSON.stringify(updates.marketingStrategy.core_values) !==
+            JSON.stringify(existingDomain.marketingStrategy?.core_values)
+              ? updates.marketingStrategy.core_values
+              : existingDomain.marketingStrategy?.core_values,
+
+          audiencePains:
+            JSON.stringify(updates.marketingStrategy.audiencePains) !==
+            JSON.stringify(existingDomain.marketingStrategy?.audiencePains)
+              ? updates.marketingStrategy.audiencePains
+              : existingDomain.marketingStrategy?.audiencePains,
+
+          audience:
+            JSON.stringify(updates.marketingStrategy.audience) !==
+            JSON.stringify(existingDomain.marketingStrategy?.audience)
+              ? updates.marketingStrategy.audience
+              : existingDomain.marketingStrategy?.audience,
+        };
+      }
+
+      // If no changes, return without updating
+      if (Object.keys(updateFields).length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: "No changes detected",
+          data: existingDomain,
+        });
+      }
+
+      // Update the document only with changed fields
+      const updatedDomain = await Domain.findByIdAndUpdate(
+        id,
+        { $set: updateFields },
+        { new: true, runValidators: true }
+      );
+
+      res.status(200).json({
         success: true,
-        message: "No changes detected",
-        data: existingDomain,
+        message: "Domain updated successfully",
+        data: updatedDomain,
+      });
+    } catch (error) {
+      console.error("Error updating domain:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message,
       });
     }
-
-    // Update the document only with changed fields
-    const updatedDomain = await Domain.findByIdAndUpdate(
-      id,
-      { $set: updateFields },
-      { new: true, runValidators: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Domain updated successfully",
-      data: updatedDomain,
-    });
-  } catch (error) {
-    console.error("Error updating domain:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
-  }
-};
+  };
 
 // exports.uploadBrand = async (req, res) => {
 //   const domainId = req.params.id;
