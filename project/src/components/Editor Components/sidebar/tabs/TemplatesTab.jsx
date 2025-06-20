@@ -27,6 +27,8 @@ function TemplatesTab() {
     canvasLoading,
     historyRef,
     postOtherValues,
+    selectedTemplateId,
+    setSelectedTemplateId,
   } = useEditor();
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -82,6 +84,7 @@ function TemplatesTab() {
       if (template.elements) setElements(template.elements);
       if (template.layers) setLayers(template.layers);
       if (template.backgrounds) setBackgrounds(template.backgrounds);
+      setSelectedTemplateId(template?.templateId);
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
