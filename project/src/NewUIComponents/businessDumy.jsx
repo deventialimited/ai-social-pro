@@ -466,7 +466,7 @@ const navigate=useNavigate()
       </button>
       <button
         onClick={() => {
-          navigate("/dashboard?PopUp=Batch")
+setPopup(true);
         }}
         className="md:px-5 px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition shadow border-2 border-green-600"
        
