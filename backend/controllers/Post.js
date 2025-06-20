@@ -292,6 +292,7 @@ exports.processPubSub = async (req, res) => {
       const name = encodeURIComponent(domain?.clientName || "Logo");
       logoUrl = `https://ui-avatars.com/api/?name=${name}&background=random&color=fff&format=png&size=128`;
     }
+    console.log(domain);
     const generatedImages = await generateDomainVisualAssets({
       postId: savedPost?._id,
       platform: savedPost?.platform,
@@ -335,7 +336,7 @@ exports.processPubSub = async (req, res) => {
 
     res.status(201).json({
       message: "Post created successfully (without image)",
-      post: savedPost,
+      post: postData,
     });
   } catch (error) {
     console.error("Error in processPubSub:", error);
