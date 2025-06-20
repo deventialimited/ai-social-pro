@@ -19,6 +19,7 @@ import { FirstPostPopUp } from "./FirstPostPopUp";
 import { useUpdateDomainDetails } from "../libs/domainService";
 import { getFirstPost } from "../libs/postService";
 import { useSocket } from "../store/useSocket";
+import {useNavigate} from 'react-router-dom'
 export const BusinessSectionDummy = ({
   setComponentType,
   clientData,
@@ -48,7 +49,7 @@ export const BusinessSectionDummy = ({
     },
   });
   const socket = useSocket();
-
+const navigate=useNavigate()
   const updateDomainDetails = useUpdateDomainDetails();
   const fileInputRef = useRef(null);
 
@@ -463,7 +464,7 @@ export const BusinessSectionDummy = ({
       </button>
       <button
         onClick={() => {
-          setPopup(true);
+          navigate("/dashboard?PopUp=Batch")
         }}
         className="md:px-5 px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition shadow border-2 border-green-600"
        

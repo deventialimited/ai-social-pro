@@ -60,7 +60,15 @@ export const Dashboard = () => {
       document.body.style.overflow = 'auto';
     };
   }, [isGeneratingPost, isGeneratingBatchPost]);
+useEffect(()=>{
+  const popup=searchParams.get("PopUp");
+  if(popup==="Batch"){
+          const cleanUrl = window.location.origin + window.location.pathname;
 
+setIsGenerateBatchModalOpen(true)
+
+  }
+},[searchParams])
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const domainId = searchParams.get("domainId");
