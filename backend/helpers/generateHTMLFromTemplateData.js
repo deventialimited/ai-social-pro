@@ -1,3 +1,5 @@
+const {hardCodedShapes} = require("../helpers/ShapesHardCoded.js");
+
 // Convert camelCase to kebab-case CSS property names
 function camelToKebab(str) {
   return str.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
@@ -57,6 +59,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
       width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
       height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
       position: "relative",
+      margin: "0 ",
     })}">
         ${elements
           .map((el) => {
@@ -132,31 +135,60 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 </div>
               </div>`;
             }
-
             if (el.type === "image") {
+              const top = parseInt(el.position?.y) || 0;
+              const left = parseInt(el.position?.x) || 0;
               const adjustedStyles = { ...el.styles };
+            
               ["width", "height"].forEach((dim) => {
-                if (
-                  adjustedStyles[dim] &&
-                  !`${adjustedStyles[dim]}`.includes("px")
-                ) {
+                if (adjustedStyles[dim] && !`${adjustedStyles[dim]}`.includes("px")) {
                   adjustedStyles[dim] = `${adjustedStyles[dim]}px`;
                 }
               });
-
+            
               const styleString = `
                 position: absolute;
-                top: ${parseInt(el.position?.y) || 0}px;
-                left: ${parseInt(el.position?.x) || 0}px;
+                object-fit: cover;
+                top: ${top}px;
+                left: ${left}px;
                 ${convertStylesToString(adjustedStyles)}
-              `
-                .trim()
-                .replace(/\s+/g, " ");
-
-              return `<img src="${
-                el.props?.src || ""
-              }" style="${styleString}" />`;
+              `.trim().replace(/\s+/g, " ");
+            
+              const id = el.id;
+              const maskId = el.props?.mask;
+            
+              if (maskId) {
+                const shape = hardCodedShapes?.find((s) => s.id === maskId);
+                if (shape) {
+                  const pathMatch = shape.svg.match(/<path[^>]*d="([^"]+)"[^>]*>/);
+                  const polygonMatch = shape.svg.match(/<polygon[^>]*points="([^"]+)"[^>]*>/);
+                  const rectMatch = shape.svg.match(/<rect[^>]*x="([^"]*)" y="([^"]*)" width="([^"]*)" height="([^"]*)"[^>]*>/);
+            
+                  const clipElement = pathMatch
+                    ? `<path d="${pathMatch[1]}" />`
+                    : polygonMatch
+                    ? `<polygon points="${polygonMatch[1]}" />`
+                    : rectMatch
+                    ? `<rect x="${rectMatch[1]}" y="${rectMatch[2]}" width="${rectMatch[3]}" height="${rectMatch[4]}" />`
+                    : "";
+            
+                  return `
+                    <svg style="${styleString};" width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <defs>
+                        <clipPath id="clip-${id}">
+                          ${clipElement}
+                        </clipPath>
+                      </defs>
+                      <image href="${el.props?.src || ""}" width="100" height="100" clip-path="url(#clip-${id})" preserveAspectRatio="none" />
+                    </svg>
+                  `;
+                }
+              }
+            
+              return `<img src="${el.props?.src || ""}" style="${styleString}" />`;
             }
+            
+         
             if (el.type === "shape") {
               const styles = el.styles || {};
               const top = parseInt(el.position?.y) || 0;
