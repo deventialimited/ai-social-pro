@@ -578,7 +578,7 @@ export const HomePage = () => {
       <BusinessModal
         isOpen={isModalOpen}
         clientData={clientData}
-        onClose={() => setisModalOpen(false)}
+        onClose={() => {}}
       />
     </div>
   );

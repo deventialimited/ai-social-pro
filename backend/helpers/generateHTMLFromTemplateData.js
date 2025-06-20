@@ -50,14 +50,14 @@ function convertStylesToString(styles) {
 
 exports.generateHTMLFromTemplateData = (templateData) => {
   const { canvas, elements } = templateData;
-
-  const backgroundColor = canvas?.styles?.backgroundColor || "transparent";
-  const width = `${Math.max(Math.min(canvas.width / 3, 600))}px`;
-  const height = `${Math.max(Math.min(canvas.height / 3, 600))}px`;
-
   return `
       <html>
-      <body style="margin:0; padding:0; background:${backgroundColor}; width:${width}px; height:${height}px; position:relative;">
+    <body style="${convertStylesToString({
+      ...(canvas?.styles || {}),
+      width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
+      height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+      position: "relative",
+    })}">
         ${elements
           .map((el) => {
             if (el.type === "text") {
@@ -86,8 +86,16 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 if (fontStylesKeys.includes(key)) {
                   fontStyles[key] = allStyles[key];
                 } else {
-                  if (
-                    (key === "width" || key === "height") &&
+                  if (key === "height") {
+                    // Set height to auto and move the original height value to minHeight
+                    layoutStyles["height"] = "auto";
+                    layoutStyles["minHeight"] = `${allStyles[key]}`.includes(
+                      "px"
+                    )
+                      ? allStyles[key]
+                      : `${allStyles[key]}px`;
+                  } else if (
+                    key === "width" &&
                     !`${allStyles[key]}`.includes("px")
                   ) {
                     layoutStyles[key] = `${allStyles[key]}px`;
@@ -126,11 +134,21 @@ exports.generateHTMLFromTemplateData = (templateData) => {
             }
 
             if (el.type === "image") {
+              const adjustedStyles = { ...el.styles };
+              ["width", "height"].forEach((dim) => {
+                if (
+                  adjustedStyles[dim] &&
+                  !`${adjustedStyles[dim]}`.includes("px")
+                ) {
+                  adjustedStyles[dim] = `${adjustedStyles[dim]}px`;
+                }
+              });
+
               const styleString = `
                 position: absolute;
                 top: ${parseInt(el.position?.y) || 0}px;
                 left: ${parseInt(el.position?.x) || 0}px;
-                ${convertStylesToString(el.styles)}
+                ${convertStylesToString(adjustedStyles)}
               `
                 .trim()
                 .replace(/\s+/g, " ");
@@ -138,6 +156,49 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               return `<img src="${
                 el.props?.src || ""
               }" style="${styleString}" />`;
+            }
+            if (el.type === "shape") {
+              const styles = el.styles || {};
+              const top = parseInt(el.position?.y) || 0;
+              const left = parseInt(el.position?.x) || 0;
+
+              const color = styles.fill || styles.color || "#D3D3D3";
+
+              const outerStyle = convertStylesToString({
+                ...{
+                  ...styles,
+                  width:
+                    styles.width && !`${styles.width}`.includes("px")
+                      ? `${styles.width}px`
+                      : styles.width,
+                  height:
+                    styles.height && !`${styles.height}`.includes("px")
+                      ? `${styles.height}px`
+                      : styles.height,
+                },
+                position: "absolute",
+                top: `${top}px`,
+                left: `${left}px`,
+                overflow: "hidden",
+                color,
+                padding: 0,
+                margin: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              });
+
+              const svgRaw = el.props?.svg?.svg || "";
+              const updatedSvg = svgRaw.replace(
+                /<svg([^>]*)>/,
+                `<svg$1 width="100%" height="100%" preserveAspectRatio="none" style="display:block;">`
+              );
+
+              return `<div style="${outerStyle}">
+                <div style="width: 100%; height: 100%; display: flex;">
+                  ${updatedSvg}
+                </div>
+              </div>`;
             }
 
             return "";
