@@ -1,13 +1,13 @@
 const { v4: uuidv4 } = require("uuid");
 
 const hardCodedShapes = [
-  {
-    id: "rounded-rectangle",
-    name: "Rounded Rectangle",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <rect x="10" y="20" width="80" height="60" rx="15" ry="15" fill="currentColor" stroke="currentColor" stroke-width="4" fill="none" />
-    </svg>`,
-  },
+   // {
+  //   id: "rounded-rectangle",
+  //   name: "Rounded Rectangle",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //     <rect x="10" y="20" width="80" height="60" rx="15" ry="15" fill="currentColor" stroke="currentColor" stroke-width="4" fill="none" />
+  //   </svg>`,
+  // },
   // Basic shapes from first image
   {
     id: "square",
@@ -72,21 +72,21 @@ const hardCodedShapes = [
         <path d="M10 10H90V70H55L50 90L45 70H10V10Z" fill="currentColor"/>
       </svg>`,
   },
-  {
-    id: "cross",
-    name: "Cross",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <rect x="40" y="10" width="20" height="80" fill="currentColor"/>
-        <rect x="10" y="40" width="80" height="20" fill="currentColor"/>
-      </svg>`,
-  },
-  {
-    id: "pill",
-    name: "Pill",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <rect x="20" y="30" width="60" height="40" rx="20" ry="20" fill="currentColor"/>
-      </svg>`,
-  },
+  // {
+  //   id: "cross",
+  //   name: "Cross",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <rect x="40" y="10" width="20" height="80" fill="currentColor"/>
+  //       <rect x="10" y="40" width="80" height="20" fill="currentColor"/>
+  //     </svg>`,
+  // },
+  // {
+  //   id: "pill",
+  //   name: "Pill",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <rect x="20" y="30" width="60" height="40" rx="20" ry="20" fill="currentColor"/>
+  //     </svg>`,
+  // },
   {
     id: "cloud",
     name: "Cloud",
@@ -124,23 +124,23 @@ const hardCodedShapes = [
   },
 
   // Shapes from second image
-  {
-    id: "flower",
-    name: "Flower",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 30C55 20 65 20 70 30C75 40 65 50 50 50C35 50 25 40 30 30C35 20 45 20 50 30Z" fill="currentColor"/>
-        <path d="M70 50C80 45 90 50 90 60C90 70 80 75 70 70C60 65 60 55 70 50Z" fill="currentColor"/>
-        <path d="M50 70C45 80 35 80 30 70C25 60 35 50 50 50C65 50 75 60 70 70C65 80 55 80 50 70Z" fill="currentColor"/>
-        <path d="M30 50C20 55 10 50 10 40C10 30 20 25 30 30C40 35 40 45 30 50Z" fill="currentColor"/>
-      </svg>`,
-  },
-  {
-    id: "asterisk",
-    name: "Asterisk",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 20V80M30 30L70 70M20 50H80M30 70L70 30" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
-      </svg>`,
-  },
+  // {
+  //   id: "flower",
+  //   name: "Flower",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <path d="M50 30C55 20 65 20 70 30C75 40 65 50 50 50C35 50 25 40 30 30C35 20 45 20 50 30Z" fill="currentColor"/>
+  //       <path d="M70 50C80 45 90 50 90 60C90 70 80 75 70 70C60 65 60 55 70 50Z" fill="currentColor"/>
+  //       <path d="M50 70C45 80 35 80 30 70C25 60 35 50 50 50C65 50 75 60 70 70C65 80 55 80 50 70Z" fill="currentColor"/>
+  //       <path d="M30 50C20 55 10 50 10 40C10 30 20 25 30 30C40 35 40 45 30 50Z" fill="currentColor"/>
+  //     </svg>`,
+  // },
+  // {
+  //   id: "asterisk",
+  //   name: "Asterisk",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <path d="M50 20V80M30 30L70 70M20 50H80M30 70L70 30" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
+  //     </svg>`,
+  // },
   {
     id: "chevron",
     name: "Chevron",
@@ -192,16 +192,16 @@ const hardCodedShapes = [
         <polygon points="30,20 80,20 70,80 20,80" fill="currentColor"/>
       </svg>`,
   },
-  {
-    id: "quatrefoil",
-    name: "Quatrefoil",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 20C55 10 65 10 70 20C75 30 65 40 50 40C35 40 25 30 30 20C35 10 45 10 50 20Z" fill="currentColor"/>
-        <path d="M80 50C90 45 90 35 80 30C70 25 60 35 60 50C60 65 70 75 80 70C90 65 90 55 80 50Z" fill="currentColor"/>
-        <path d="M50 80C45 90 35 90 30 80C25 70 35 60 50 60C65 60 75 70 70 80C65 90 55 90 50 80Z" fill="currentColor"/>
-        <path d="M20 50C10 55 10 65 20 70C30 75 40 65 40 50C40 35 30 25 20 30C10 35 10 45 20 50Z" fill="currentColor"/>
-      </svg>`,
-  },
+  // {
+  //   id: "quatrefoil",
+  //   name: "Quatrefoil",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <path d="M50 20C55 10 65 10 70 20C75 30 65 40 50 40C35 40 25 30 30 20C35 10 45 10 50 20Z" fill="currentColor"/>
+  //       <path d="M80 50C90 45 90 35 80 30C70 25 60 35 60 50C60 65 70 75 80 70C90 65 90 55 80 50Z" fill="currentColor"/>
+  //       <path d="M50 80C45 90 35 90 30 80C25 70 35 60 50 60C65 60 75 70 70 80C65 90 55 90 50 80Z" fill="currentColor"/>
+  //       <path d="M20 50C10 55 10 65 20 70C30 75 40 65 40 50C40 35 30 25 20 30C10 35 10 45 20 50Z" fill="currentColor"/>
+  //     </svg>`,
+  // },
   {
     id: "sparkle",
     name: "Sparkle",
@@ -363,14 +363,14 @@ const hardCodedShapes = [
         <rect x="45" y="60" width="10" height="25" fill="white"/>
       </svg>`,
   },
-  {
-    id: "mushroom",
-    name: "Mushroom",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M30 50C30 30 70 30 70 50H30Z" fill="currentColor"/>
-        <rect x="45" y="50" width="10" height="30" fill="currentColor"/>
-      </svg>`,
-  },
+  // {
+  //   id: "mushroom",
+  //   name: "Mushroom",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <path d="M30 50C30 30 70 30 70 50H30Z" fill="currentColor"/>
+  //       <rect x="45" y="50" width="10" height="30" fill="currentColor"/>
+  //     </svg>`,
+  // },
   {
     id: "heart-alt",
     name: "Heart Alt",
@@ -420,14 +420,14 @@ const hardCodedShapes = [
         <path d="M30 30V70H70V55H45V30H30Z" fill="currentColor"/>
       </svg>`,
   },
-  {
-    id: "sunburst",
-    name: "Sunburst",
-    svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 30V10M70 35L85 20M80 50H95M70 65L85 80M50 70V90M30 65L15 80M20 50H5M30 35L15 20" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        <circle cx="50" cy="50" r="15" fill="currentColor"/>
-      </svg>`,
-  },
+  // {
+  //   id: "sunburst",
+  //   name: "Sunburst",
+  //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  //       <path d="M50 30V10M70 35L85 20M80 50H95M70 65L85 80M50 70V90M30 65L15 80M20 50H5M30 35L15 20" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+  //       <circle cx="50" cy="50" r="15" fill="currentColor"/>
+  //     </svg>`,
+  // },
   {
     id: "wave",
     name: "Wave",
@@ -471,7 +471,6 @@ const hardCodedShapes = [
       </svg>`,
   },
 ];
-
 // Define line shapes
 const lineShapes = [
   {
