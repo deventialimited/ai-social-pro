@@ -1,3 +1,5 @@
+const {hardCodedShapes} = require("../helpers/ShapesHardCoded.js");
+
 // Convert camelCase to kebab-case CSS property names
 function camelToKebab(str) {
   return str.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
@@ -51,12 +53,15 @@ function convertStylesToString(styles) {
 exports.generateHTMLFromTemplateData = (templateData) => {
   const { canvas, elements } = templateData;
   return `
-      <html>
+      <html
+      style="width:400px; 
+      >
     <body style="${convertStylesToString({
       ...(canvas?.styles || {}),
       width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
       height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
       position: "relative",
+      margin: "0 ",
     })}">
         ${elements
           .map((el) => {
@@ -132,31 +137,78 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 </div>
               </div>`;
             }
-
             if (el.type === "image") {
+              const top = parseInt(el.position?.y) || 0;
+              const left = parseInt(el.position?.x) || 0;
               const adjustedStyles = { ...el.styles };
+            
               ["width", "height"].forEach((dim) => {
-                if (
-                  adjustedStyles[dim] &&
-                  !`${adjustedStyles[dim]}`.includes("px")
-                ) {
+                if (adjustedStyles[dim] && !`${adjustedStyles[dim]}`.includes("px")) {
                   adjustedStyles[dim] = `${adjustedStyles[dim]}px`;
                 }
               });
-
+            
               const styleString = `
                 position: absolute;
-                top: ${parseInt(el.position?.y) || 0}px;
-                left: ${parseInt(el.position?.x) || 0}px;
+                object-fit: cover;
+                top: ${top}px;
+                left: ${left}px;
                 ${convertStylesToString(adjustedStyles)}
-              `
-                .trim()
-                .replace(/\s+/g, " ");
-
-              return `<img src="${
-                el.props?.src || ""
-              }" style="${styleString}" />`;
+              `.trim().replace(/\s+/g, " ");
+            
+              const id = el.id;
+              const maskId = el.props?.mask;
+            
+              if (maskId) {
+                const shape = hardCodedShapes?.find((s) => s.id === maskId);
+                if (shape) {
+                  const innerSVG = shape.svg
+                    .replace(/<svg[^>]*>/i, "")   // Remove opening <svg> tag
+                    .replace(/<\/svg>/i, "")      // Remove closing </svg> tag
+                    .trim();
+              
+                  const pathMatch = innerSVG.match(/<path[^>]*d="([^"]+)"[^>]*>/);
+                  const polygonMatch = innerSVG.match(/<polygon[^>]*points="([^"]+)"[^>]*>/);
+                  const rectMatch = innerSVG.match(/<rect[^>]*?(?:x="([^"]*)")?[^>]*?(?:y="([^"]*)")?[^>]*?width="([^"]+)"[^>]*?height="([^"]+)"[^>]*>/);
+                  const rxMatch = innerSVG.match(/rx="([^"]+)"/);
+                  const ryMatch = innerSVG.match(/ry="([^"]+)"/);
+                  const circleMatch = innerSVG.match(/<circle[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*r="([^"]+)"[^>]*>/);
+                  const ellipseMatch = innerSVG.match(/<ellipse[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*rx="([^"]+)"[^>]*ry="([^"]+)"[^>]*>/);
+                  const lineMatch = innerSVG.match(/<line[^>]*x1="([^"]+)"[^>]*y1="([^"]+)"[^>]*x2="([^"]+)"[^>]*y2="([^"]+)"[^>]*>/);
+              
+                  let clipElement = "";
+                  if (pathMatch) {
+                    clipElement = `<path d="${pathMatch[1]}" />`;
+                  } else if (polygonMatch) {
+                    clipElement = `<polygon points="${polygonMatch[1]}" />`;
+                  } else if (rectMatch) {
+                    clipElement = `<rect x="${rectMatch[1] || "0"}" y="${rectMatch[2] || "0"}" width="${rectMatch[3]}" height="${rectMatch[4]}"${rxMatch ? ` rx="${rxMatch[1]}"` : ""}${ryMatch ? ` ry="${ryMatch[1]}"` : ""} />`;
+                  } else if (circleMatch) {
+                    clipElement = `<circle cx="${circleMatch[1]}" cy="${circleMatch[2]}" r="${circleMatch[3]}" />`;
+                  } else if (ellipseMatch) {
+                    clipElement = `<ellipse cx="${ellipseMatch[1]}" cy="${ellipseMatch[2]}" rx="${ellipseMatch[3]}" ry="${ellipseMatch[4]}" />`;
+                  } else if (lineMatch) {
+                    clipElement = `<line x1="${lineMatch[1]}" y1="${lineMatch[2]}" x2="${lineMatch[3]}" y2="${lineMatch[4]}" />`;
+                  }
+              
+                  return `
+                    <svg style="${styleString};" width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <defs>
+                        <clipPath id="clip-${id}">
+                          ${clipElement}
+                        </clipPath>
+                      </defs>
+                      <image href="${el.props?.src || ""}" width="100" height="100" clip-path="url(#clip-${id})" preserveAspectRatio="none" />
+                    </svg>
+                  `;
+                }
+              }
+              
+            
+              return `<img src="${el.props?.src || ""}" style="${styleString}" />`;
             }
+            
+         
             if (el.type === "shape") {
               const styles = el.styles || {};
               const top = parseInt(el.position?.y) || 0;

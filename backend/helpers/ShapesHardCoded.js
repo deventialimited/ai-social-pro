@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
+const { v4: uuidv4 } = require("uuid");
 
-export const hardCodedShapes = [
-  // {
+const hardCodedShapes = [
+   // {
   //   id: "rounded-rectangle",
   //   name: "Rounded Rectangle",
   //   svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -471,9 +471,8 @@ export const hardCodedShapes = [
       </svg>`,
   },
 ];
-
 // Define line shapes
-export const lineShapes = [
+const lineShapes = [
   {
     id: "solid-line",
     name: "Solid Line",
@@ -521,7 +520,7 @@ export const lineShapes = [
     </svg>`,
   },
 ];
-export const createShapeElement = (svgString) => {
+ const createShapeElement = (svgString) => {
   return {
     id: `shape-${uuidv4()}`,
     type: "shape",
@@ -537,3 +536,9 @@ export const createShapeElement = (svgString) => {
     },
   };
 };
+
+module.exports = {
+    hardCodedShapes,
+    lineShapes,
+    createShapeElement,
+  };
