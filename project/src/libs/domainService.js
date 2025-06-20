@@ -196,7 +196,7 @@ export const useUpdateDomainDetails = () => {
 
 export const updateDomainDetails = async ({ domainId, formData, logoFile }) => {
   const formDataToSend = new FormData();
-
+console.log('FORM DATA',formData)
   // Append all regular fields
   Object.entries(formData).forEach(([key, value]) => {
     // Skip marketingStrategy and siteLogo (handled separately)

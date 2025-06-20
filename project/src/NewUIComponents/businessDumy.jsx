@@ -15,9 +15,13 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import axios from 'axios';
+
 import { FirstPostPopUp } from "./FirstPostPopUp";
-import { useUpdateDomainDetails } from "../libs/domainService";
-import { getFirstPost } from "../libs/postService";
+import { useUpdateDomainDetails ,getDomainById} from "../libs/domainService";
+import { getFirstPost,useCreatePostViaPubSub } from "../libs/postService";
+import { useQueryClient } from "@tanstack/react-query";
+
 import { useSocket } from "../store/useSocket";
 import {useNavigate} from 'react-router-dom'
 export const BusinessSectionDummy = ({
@@ -34,6 +38,8 @@ export const BusinessSectionDummy = ({
     clientName: "",
     clientDescription: "",
     clientWebsite: "",
+        client_id:"",
+
     client_email: "",
     colors: [],
     country: "",
@@ -52,6 +58,8 @@ export const BusinessSectionDummy = ({
 const navigate=useNavigate()
   const updateDomainDetails = useUpdateDomainDetails();
   const fileInputRef = useRef(null);
+const queryClient = useQueryClient();
+  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
 
   useEffect(() => {
     if (clientData) {
@@ -69,6 +77,9 @@ const navigate=useNavigate()
         client_email: clientData.client_email || "",
         colors: Array.isArray(clientData.colors) ? clientData.colors : [],
         country: clientData.country || "",
+            client_id:clientData.client_id||""
+,
+
         state: clientData.state || "",
         language: clientData.language || "",
         niche: clientData.niche || "",
@@ -98,28 +109,103 @@ const navigate=useNavigate()
     }
   };
 
+const handleGeneratePost = async (e) => {
+  e.preventDefault();
+  // try{
+
+  // }catch(err){
+  //   console.log(err)
+  // }
+  setPopup(true);
+
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const selectedWebsiteId = user?.selectedWebsiteId;
+
+    if (!selectedWebsiteId) {
+      throw new Error('No website selected. Please select a website and try again.');
+    }
+
+    const domain = await getDomainById(selectedWebsiteId);
+    const domainData = domain?.data;
+
+    if (!domainData) {
+      throw new Error('Unable to find website details. Please try again later.');
+    }
+console.log("client Data",clientData)
+    const payload = {
+      client_email: clientData.client_email,
+      client_id: clientData.client_id,
+      website: clientData.clientWebsite,
+      name: clientData.clientName || 'Unknown',
+      industry: clientData.industry || 'Unknown',
+      niche: clientData.niche || 'Unknown',
+      description: clientData.clientDescription || '',
+      core_values: clientData.marketingStrategy?.core_values || [],
+      target_audience: clientData.marketingStrategy?.audience || [],
+      audience_pain_points: clientData.marketingStrategy?.audiencePains || [],
+      post_platform:"Facebook"
+    };
+
+    const response = await axios.post(
+      'https://social-api-107470285539.us-central1.run.app/generate-single-post',
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const resData = response.data;
+
+    const pubsubPayload = {
+      post_id: resData.post_id,
+      client_id: clientData.client_id,
+      domainId: clientData.id,
+      userId: user._id,
+      image: resData.image || "",
+      topic: resData.topic,
+      related_keywords: resData.related_keywords || [],
+      content: resData.content,
+      slogan: resData.slogan,
+      postDate: resData.date,
+      platform: resData.platform,
+    };
+
+    const pubsubApi=await createPostViaPubSub(pubsubPayload);
+
+    setPostData(pubsubApi)
+  } catch (error) {
+    console.error("Error generating post:", error);
+    toast.error(error.message || "Something went wrong. Please try again.");
+  }
+};
+
+
   const handleColorChange = (index, value) => {
     const updatedColors = [...formData.colors];
+    console.log("updated COlors",updatedColors);
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
-  useEffect(() => {
-    if (!socket) {
-      console.log("Socket not connected");
-      return;
-    }
+  // useEffect(() => {
+  //   if (!socket) {
+  //     console.log("Socket not connected");
+  //     return;
+  //   }
 
-    socket.on("PostSaved", (data) => {
-      console.log("Post saved successfully!", data);
-      setPostData({
-        ...data?.post,
-      });
-    });
+  //   socket.on("PostSaved", (data) => {
+  //     console.log("Post saved successfully!", data);
+  //     setPostData({
+  //       ...data?.post,
+  //     });
+  //   });
 
-    return () => {
-      socket.off("PostSaved");
-    };
-  }, []);
+  //   return () => {
+  //     socket.off("PostSaved");
+  //   };
+  // }, []);
 
   useEffect(() => {
     console.log("Post Data in Business Dummy ", postData);
@@ -176,7 +262,7 @@ const navigate=useNavigate()
   const handleSave = async () => {
     try {
       const logoFileToUpload = logoFile || null;
-      console.log(clientData, "domainId");
+      console.log("colors in the handle Save",formData.colors)
       await updateDomainDetails.mutateAsync({
         domainId: clientData.id,
         formData: {
@@ -465,9 +551,9 @@ const navigate=useNavigate()
         <span className="text-sm">Edit</span>
       </button>
       <button
-        onClick={() => {
-setPopup(true);
-        }}
+        onClick={
+handleGeneratePost
+        }
         className="md:px-5 px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition shadow border-2 border-green-600"
        
         >
