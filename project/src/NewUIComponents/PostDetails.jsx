@@ -77,7 +77,7 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
       setIsClamped(contentRef.current.scrollHeight > maxHeight);
     }
   }, [postData?.content]);
-
+console.log("postData in the PostDetails Section checking the logo",postData)
   useEffect(() => {
     if (imageLoaded) {
       const timer = setTimeout(() => {
@@ -88,10 +88,11 @@ export default function PostDetails({ postData, onEdit, onDelete }) {
   }, [imageLoaded]);
 
   const handleSeeAllPosts = async () => {
+
     try {
       const result = await updateSelectedDomain(
-        postData.userId,
-        postData?.domainId?._id
+        postData?.userId,
+        postData?.domainId
       );
       if (result?.user) {
         console.log("user is changed in the localstorage");

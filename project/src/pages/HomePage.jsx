@@ -52,6 +52,7 @@ export const HomePage = () => {
     client_email: "",
     clientWebsite: "",
     clientName: "",
+    client_id:"",
     clientDescription: "",
     industry: "",
     niche: "",
@@ -237,6 +238,7 @@ export const HomePage = () => {
         country: result?.country || "",
         state: result?.state || "",
         userId: result?.userId || "",
+        client_id:result?.client_id || "",
         siteLogo: result?.siteLogo || "",
         marketingStrategy: {
           audience: Array.isArray(result?.marketingStrategy?.audience)

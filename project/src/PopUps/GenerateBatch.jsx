@@ -97,12 +97,12 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         core_values: domain.data.marketingStrategy?.core_values || [],
         target_audience: domain.data.marketingStrategy?.audience || [],
         audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
-        post_topic: '',
-        post_description: '',
-        post_cta: '',
-        post_based_url: '',
-        post_link_url: '',
-        post_tone: 'professional',
+        // post_topic: '',
+        // post_description: '',
+        // post_cta: '',
+        // post_based_url: '',
+        // post_link_url: '',
+        // post_tone: 'professional',
       };
 
       const postPromises = [];
