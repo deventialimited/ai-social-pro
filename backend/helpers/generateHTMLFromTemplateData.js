@@ -53,7 +53,9 @@ function convertStylesToString(styles) {
 exports.generateHTMLFromTemplateData = (templateData) => {
   const { canvas, elements } = templateData;
   return `
-      <html>
+      <html
+      style="width:400px; 
+      >
     <body style="${convertStylesToString({
       ...(canvas?.styles || {}),
       width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
@@ -160,18 +162,35 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               if (maskId) {
                 const shape = hardCodedShapes?.find((s) => s.id === maskId);
                 if (shape) {
-                  const pathMatch = shape.svg.match(/<path[^>]*d="([^"]+)"[^>]*>/);
-                  const polygonMatch = shape.svg.match(/<polygon[^>]*points="([^"]+)"[^>]*>/);
-                  const rectMatch = shape.svg.match(/<rect[^>]*x="([^"]*)" y="([^"]*)" width="([^"]*)" height="([^"]*)"[^>]*>/);
-            
-                  const clipElement = pathMatch
-                    ? `<path d="${pathMatch[1]}" />`
-                    : polygonMatch
-                    ? `<polygon points="${polygonMatch[1]}" />`
-                    : rectMatch
-                    ? `<rect x="${rectMatch[1]}" y="${rectMatch[2]}" width="${rectMatch[3]}" height="${rectMatch[4]}" />`
-                    : "";
-            
+                  const innerSVG = shape.svg
+                    .replace(/<svg[^>]*>/i, "")   // Remove opening <svg> tag
+                    .replace(/<\/svg>/i, "")      // Remove closing </svg> tag
+                    .trim();
+              
+                  const pathMatch = innerSVG.match(/<path[^>]*d="([^"]+)"[^>]*>/);
+                  const polygonMatch = innerSVG.match(/<polygon[^>]*points="([^"]+)"[^>]*>/);
+                  const rectMatch = innerSVG.match(/<rect[^>]*?(?:x="([^"]*)")?[^>]*?(?:y="([^"]*)")?[^>]*?width="([^"]+)"[^>]*?height="([^"]+)"[^>]*>/);
+                  const rxMatch = innerSVG.match(/rx="([^"]+)"/);
+                  const ryMatch = innerSVG.match(/ry="([^"]+)"/);
+                  const circleMatch = innerSVG.match(/<circle[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*r="([^"]+)"[^>]*>/);
+                  const ellipseMatch = innerSVG.match(/<ellipse[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*rx="([^"]+)"[^>]*ry="([^"]+)"[^>]*>/);
+                  const lineMatch = innerSVG.match(/<line[^>]*x1="([^"]+)"[^>]*y1="([^"]+)"[^>]*x2="([^"]+)"[^>]*y2="([^"]+)"[^>]*>/);
+              
+                  let clipElement = "";
+                  if (pathMatch) {
+                    clipElement = `<path d="${pathMatch[1]}" />`;
+                  } else if (polygonMatch) {
+                    clipElement = `<polygon points="${polygonMatch[1]}" />`;
+                  } else if (rectMatch) {
+                    clipElement = `<rect x="${rectMatch[1] || "0"}" y="${rectMatch[2] || "0"}" width="${rectMatch[3]}" height="${rectMatch[4]}"${rxMatch ? ` rx="${rxMatch[1]}"` : ""}${ryMatch ? ` ry="${ryMatch[1]}"` : ""} />`;
+                  } else if (circleMatch) {
+                    clipElement = `<circle cx="${circleMatch[1]}" cy="${circleMatch[2]}" r="${circleMatch[3]}" />`;
+                  } else if (ellipseMatch) {
+                    clipElement = `<ellipse cx="${ellipseMatch[1]}" cy="${ellipseMatch[2]}" rx="${ellipseMatch[3]}" ry="${ellipseMatch[4]}" />`;
+                  } else if (lineMatch) {
+                    clipElement = `<line x1="${lineMatch[1]}" y1="${lineMatch[2]}" x2="${lineMatch[3]}" y2="${lineMatch[4]}" />`;
+                  }
+              
                   return `
                     <svg style="${styleString};" width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="none">
                       <defs>
@@ -184,6 +203,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                   `;
                 }
               }
+              
             
               return `<img src="${el.props?.src || ""}" style="${styleString}" />`;
             }
