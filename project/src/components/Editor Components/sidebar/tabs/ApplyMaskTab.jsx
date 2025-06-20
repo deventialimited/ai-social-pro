@@ -39,96 +39,12 @@ function ApplyMaskTab({ onClose, selectedElementId }) {
   // Function to apply mask to the selected element
   const applyMask = (shapeId) => {
     if (!selectedElement || selectedElement.locked) return;
-
-    const selectedShape = hardCodedShapes.find((shape) => shape.id === shapeId);
-    if (!selectedShape) return;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = selectedElement.styles.width || 300;
-    canvas.height = selectedElement.styles.height || 300;
-
-    ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
-
-    const maskCanvas = document.createElement("canvas");
-    const maskCtx = maskCanvas.getContext("2d");
-    maskCanvas.width = canvas.width;
-    maskCanvas.height = canvas.height;
-
-    maskCtx.fillStyle = "#ffffff";
-
-    const svgElement = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    svgElement.setAttribute("width", canvas.width.toString());
-    svgElement.setAttribute("height", canvas.height.toString());
-    svgElement.setAttribute("viewBox", "0 0 100 100");
-    svgElement.innerHTML = selectedShape.svg
-      .replace(/<svg[^>]*>/, "")
-      .replace("</svg>", "")
-      .replace(/fill="currentColor"/g, 'fill="white"');
-
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
+    updateElement(selectedElementId, {
+      props: {
+        ...selectedElement.props,
+        mask: shapeId,
+      },
     });
-    const svgUrl = URL.createObjectURL(svgBlob);
-
-    const maskImage = new Image();
-    maskImage.crossOrigin = "anonymous";
-    // Ensure the element ID is set correctly
-    maskImage.onload = () => {
-      try {
-        maskCtx.drawImage(maskImage, 0, 0, canvas.width, canvas.height);
-        ctx.globalCompositeOperation = "destination-in";
-        ctx.drawImage(maskCanvas, 0, 0);
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const file = new File([blob], selectedElementId, {
-              type: blob.type,
-            });
-            const objectUrl = URL.createObjectURL(blob);
-
-            addFile(file); // Ensure this goes into the central store
-            console.log("Masked image file added:", file);
-            console.log("Masked image selectedElementId:", selectedElementId);
-
-            updateElement(selectedElementId, {
-              props: {
-                ...selectedElement.props,
-                src: objectUrl,
-                fileId: selectedElementId, // Crucial to match loading logic
-                mask: shapeId,
-              },
-            });
-
-            URL.revokeObjectURL(svgUrl);
-          } else {
-            const dataUrl = canvas.toDataURL("image/png");
-            updateElement(selectedElementId, {
-              props: {
-                ...selectedElement.props,
-                src: dataUrl,
-                mask: shapeId,
-              },
-            });
-            URL.revokeObjectURL(svgUrl);
-          }
-        }, "image/png");
-      } catch (err) {
-        console.error("Masking failed:", err);
-        URL.revokeObjectURL(svgUrl);
-      }
-    };
-
-    maskImage.onerror = (err) => {
-      console.error("Failed to load mask image:", err);
-      URL.revokeObjectURL(svgUrl);
-    };
-
-    maskImage.src = svgUrl;
   };
 
   return (
