@@ -275,12 +275,12 @@ exports.updateDomain = async (req, res) => {
     checkAndUpdate("language", updates.language);
     checkAndUpdate("country", updates.country);
     checkAndUpdate("state", updates.state);
-
+checkAndUpdate("colors",updates.colors)
     // Handle colors update (convert array to string if provided)
-    if (Array.isArray(updates.colors)) {
-      const newColors = updates.colors.join(", ");
-      checkAndUpdate("colors", newColors);
-    }
+    // if (Array.isArray(updates.colors)) {
+    //   const newColors = updates.colors.join(", ");
+    //   checkAndUpdate("colors", newColors);
+    // }
     // Handle marketing strategy updates
     if (updates.marketingStrategy) {
       updateFields.marketingStrategy = {
