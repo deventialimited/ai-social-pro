@@ -46,6 +46,9 @@ const TopHeaderBtns = ({
     updateCanvasSize,
     setCanvasLoading,
     setPostOtherValues,
+    selectedTemplateId,
+    replacedPostDesignValues,
+    setReplacedPostDesignValues,
   } = useEditor();
   const [isSavePostLoading, setIsSavePostLoading] = useState(false);
   const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);
@@ -88,7 +91,13 @@ const TopHeaderBtns = ({
     setIsSavePostLoading(true);
 
     try {
-      const node = document.getElementById("#canvas");
+      let node;
+      if (selectedTemplateId) {
+        node = document.getElementById("hiddenCanvas");
+      } else {
+        node = document.getElementById("#canvas");
+      }
+
       const scale = 5;
       const width = node.offsetWidth * scale;
       const height = node.offsetHeight * scale;
@@ -152,15 +161,17 @@ const TopHeaderBtns = ({
       const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-
+      const postDesign = selectedTemplateId
+        ? replacedPostDesignValues
+        : postDesignData;
       // Step 5: Send to API
       onSavePost.mutate(
         {
           postId,
           type,
           postImage: file,
-          postDesignData,
-          allFiles,
+          postDesignData: postDesign,
+          allFiles: selectedTemplateId ? postDesign?.allFiles : allFiles,
         },
         {
           onSuccess: () => {
@@ -370,6 +381,8 @@ const TopHeaderBtns = ({
         platform: postDetails?.platform,
         siteLogo: postDetails?.domainId?.siteLogo,
         siteColors: postDetails?.domainId?.colors,
+        brandName: postDetails?.domainId?.clientName,
+        slogan: postDetails?.slogan,
         keywords:
           postDetails?.related_keywords?.length > 0
             ? [...postDetails?.related_keywords, postDetails?.domainId?.niche]
