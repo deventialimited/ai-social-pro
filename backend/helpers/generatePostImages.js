@@ -229,6 +229,7 @@ const generateDomainVisualAssets = async ({
       );
 
       const brandingHTML = generateHTMLFromTemplateData(modifiedBranding);
+      console.log(brandingHTML);
       const brandingImagePath = path.join(
         generatedDir,
         `branding-${uuidv4()}.png`
