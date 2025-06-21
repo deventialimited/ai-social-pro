@@ -14,6 +14,9 @@ export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
   const [isCanvasLoading, setCanvasLoading] = useState(false);
   const [postOtherValues, setPostOtherValues] = useState(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [replacedPostDesignValues, setReplacedPostDesignValues] =
+    useState(null);
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
@@ -393,9 +396,13 @@ export const EditorProvider = ({ children }) => {
     setCanvasLoading,
     postOtherValues,
     setPostOtherValues,
+    setSelectedTemplateId,
+    selectedTemplateId,
     // Files
     allFiles,
     setAllFiles,
+    replacedPostDesignValues,
+    setReplacedPostDesignValues,
 
     // Composite
     postDesignData,
@@ -428,4 +435,11 @@ export const EditorProvider = ({ children }) => {
 };
 
 // ✅ Hook for usage
-export const useEditor = () => useContext(EditorContext);
+export const useEditor = () => {
+  const context = useContext(EditorContext);
+  if (!context) {
+    console.trace("EditorContext is null!");
+    throw new Error("❌ useEditor must be used within <EditorProvider>");
+  }
+  return context;
+};

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
 import LoadingOverlay from "../common/LoadingOverlay";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { generateReplacedPostDesignValues } from "./helpers/generateReplacedPostDesignValues";
 
 function EditorCanvas({
   canvasContainerRef,
@@ -14,7 +15,21 @@ function EditorCanvas({
   setSpecialActiveTab,
   specialActiveTab,
 }) {
-  const { canvas, elements, isCanvasLoading, removeElement } = useEditor();
+  const {
+    canvas,
+    elements,
+    isCanvasLoading,
+    postOtherValues,
+    selectedTemplateId,
+    setSelectedTemplateId,
+    removeElement,
+    allFiles,
+    layers,
+    backgrounds,
+    replacedPostDesignValues,
+    setReplacedPostDesignValues,
+  } = useEditor();
+
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showZoomDropdown, setShowZoomDropdown] = useState(false);
@@ -23,6 +38,30 @@ function EditorCanvas({
   const transformRef = useRef(null);
 
   const [isMobile, setIsMobile] = useState(false);
+  const handleGenerate = useCallback(async () => {
+    const result = await generateReplacedPostDesignValues(postOtherValues, {
+      canvas,
+      elements,
+      layers,
+      backgrounds,
+    });
+
+    setReplacedPostDesignValues(result);
+  }, [postOtherValues, canvas, elements, layers, backgrounds]);
+
+  useEffect(() => {
+    const shouldGenerate =
+      selectedTemplateId &&
+      (canvas ||
+        elements?.length ||
+        layers?.length ||
+        Object.keys(backgrounds || {}).length);
+
+    if (shouldGenerate) {
+      handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplateId, canvas, elements, layers, backgrounds]);
 
   useEffect(() => {
     function handleResize() {
@@ -267,7 +306,7 @@ function EditorCanvas({
                 </button>
               </div>
 
-              <TransformComponent
+              {/* <TransformComponent
                 wrapperStyle={{
                   width: "100%",
                   height: isMobile ? "50vh" : "70vh",
@@ -309,6 +348,86 @@ function EditorCanvas({
                     />
                   ))}
                 </div>
+              </TransformComponent> */}
+
+              <TransformComponent
+                wrapperStyle={{
+                  width: "100%",
+                  height: isMobile ? "50vh" : "70vh",
+                  overflow: "hidden",
+                  position: "relative",
+                  marginBottom: "30px",
+                }}
+                contentStyle={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Main visible canvas */}
+                <div className="absolute left-0 z-10 right-0 top-0 bottom-0 flex items-center justify-center">
+                  <div
+                    ref={canvasContainerRef}
+                    id="#canvas"
+                    className="bg-white shadow-lg overflow-hidden relative z-0"
+                    style={{
+                      ...canvas.styles,
+                      width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
+                      height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+                    }}
+                    onClick={handleCanvasClick}
+                  >
+                    {isCanvasLoading && <LoadingOverlay />}
+                    {elements?.map((el) => (
+                      <CanvasElement
+                        key={el.id}
+                        element={el}
+                        onSelect={handleSelectElement}
+                        isSelected={el.id === selectedElementId}
+                        showSelectorOverlay={showSelectorOverlay}
+                        setShowSelectorOverlay={setShowSelectorOverlay}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {/* Hidden canvas for PNG conversion */}
+                {selectedTemplateId && replacedPostDesignValues && (
+                  <div className="absolute left-0 right-0 z-[-5] top-0 bottom-0 flex items-center justify-center">
+                    <div
+                      id="hiddenCanvas"
+                      className="bg-white shadow-lg overflow-hidden relative z-0"
+                      style={{
+                        ...replacedPostDesignValues?.canvas.styles,
+                        width: `${Math.max(
+                          Math.min(
+                            replacedPostDesignValues?.canvas.width / 3,
+                            600
+                          )
+                        )}px`,
+                        height: `${Math.max(
+                          Math.min(
+                            replacedPostDesignValues?.canvas.height / 3,
+                            600
+                          )
+                        )}px`,
+                      }}
+                    >
+                      {replacedPostDesignValues?.elements?.map((el) => (
+                        <CanvasElement
+                          key={el.id}
+                          element={el}
+                          onSelect={handleSelectElement}
+                          isSelected={el.id === selectedElementId}
+                          showSelectorOverlay={showSelectorOverlay}
+                          setShowSelectorOverlay={setShowSelectorOverlay}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </TransformComponent>
             </>
           )}

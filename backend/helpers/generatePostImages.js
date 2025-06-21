@@ -101,6 +101,7 @@ const modifyTemplate = async (
     ["background", "backgroundImage", "backgroundGradient"].forEach((key) => {
       delete template.canvas.styles[key];
     });
+    console.log(primaryColor);
     template.canvas.styles.backgroundColor = primaryColor || "#ffffff";
   }
 

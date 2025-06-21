@@ -13,7 +13,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [activeElement, setActiveElement] = useState("canvas"); // Default to canvas toolbar
   const canvasContainerRef = useRef(null);
-  const { postDesignData, undo, redo, canUndo, canRedo } = useEditor();
+  const { postDesignData, undo, redo, canUndo, canRedo, elements } = useEditor();
   const [canvasContent, setCanvasContent] = useState({
     backgroundColor: "#87CEEB",
     elements: [
@@ -73,6 +73,16 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
   const handleElementSelect = (elementType) => {
     setActiveElement(elementType);
   };
+
+  // Sync activeElement with selectedElementId and elements
+  useEffect(() => {
+    if (selectedElementId && elements && elements.length > 0) {
+      const el = elements.find((e) => e.id === selectedElementId);
+      if (el && activeElement !== el.type) {
+        setActiveElement(el.type);
+      }
+    }
+  }, [selectedElementId, elements]);
 
   return (
     <Transition appear show={isEditorOpen} as={Fragment}>
@@ -142,6 +152,7 @@ function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
                     selectedElementId={selectedElementId}
                     setSelectedElementId={setSelectedElementId}
                     setSpecialActiveTab={setSpecialActiveTab}
+                    setActiveElement={setActiveElement}
                   />
 
                   {/* Editor Area */}

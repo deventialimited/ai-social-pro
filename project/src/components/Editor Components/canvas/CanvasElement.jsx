@@ -6,6 +6,7 @@ import { useElementResize } from "./helpers/useElementResize";
 import { useElementRotate } from "./helpers/useElementRotate";
 import { MoveDiagonal, RotateCcw } from "lucide-react";
 import { ResizeHandle } from "./ResizeHandle";
+import { hardCodedShapes } from "../sidebar/hooks/ShapesHooks";
 
 /**
  * Renders and controls individual canvas elements
@@ -472,18 +473,90 @@ const CanvasElement = ({
               }}
             >
               {type === "image" && (
-                <img
-                  id={element.id}
-                  src={props.src}
-                  style={{
-                    ...styles,
-                    position: "static",
-                    transform: "rotate(0deg)",
-                  }}
-                  alt="Canvas"
-                  className="w-full h-full object-cover"
-                  draggable={false} // ADDED: Prevent default browser dragging
-                />
+                props.mask ? (
+                  (() => {
+                    const maskShape = hardCodedShapes.find(s => s.id === props.mask);
+                    if (!maskShape) return (
+                      <img
+                        id={element.id}
+                        src={props.src}
+                        style={{
+                          ...styles,
+                          position: "static",
+                          transform: "rotate(0deg)",
+                        }}
+                        alt="Canvas"
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    );
+                    // Try to extract path or polygon
+                    const innerSVG = maskShape.svg.replace(/<svg[^>]*>/i, "")   // Remove opening <svg> tag
+  .replace(/<\/svg>/i, "")      // Remove closing </svg> tag
+  .trim();
+                    const pathMatch = innerSVG.match(/<path[^>]*d="([^"]+)"[^>]*>/);
+                    const polygonMatch = innerSVG.match(/<polygon[^>]*points="([^"]+)"[^>]*>/);
+                    const rectMatch = innerSVG.match(/<rect[^>]*?(?:x="([^"]*)")?[^>]*?(?:y="([^"]*)")?[^>]*?width="([^"]+)"[^>]*?height="([^"]+)"[^>]*>/);
+                    const rxMatch = innerSVG.match(/rx="([^"]+)"/);
+                    const ryMatch = innerSVG.match(/ry="([^"]+)"/);
+                    const circleMatch = innerSVG.match(/<circle[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*r="([^"]+)"[^>]*>/);
+                    const ellipseMatch = innerSVG.match(/<ellipse[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*rx="([^"]+)"[^>]*ry="([^"]+)"[^>]*>/);
+                    const lineMatch = innerSVG.match(/<line[^>]*x1="([^"]+)"[^>]*y1="([^"]+)"[^>]*x2="([^"]+)"[^>]*y2="([^"]+)"[^>]*>/);
+                    
+                
+                         
+                    return (
+                      <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ display: "block" }}>
+                        <defs>
+                        <clipPath id={`clip-${element.id}`}>
+        {pathMatch ? (
+          <path d={pathMatch[1]} />
+        ) : polygonMatch ? (
+          <polygon points={polygonMatch[1]} />
+        ) : rectMatch ? (
+          <rect
+            x={rectMatch[1] || "0"}
+            y={rectMatch[2] || "0"}
+            width={rectMatch[3]}
+            height={rectMatch[4]}
+            rx={rxMatch ? rxMatch[1] : undefined}
+            ry={ryMatch ? ryMatch[1] : undefined}
+          />
+        ) : circleMatch ? (
+          <circle cx={circleMatch[1]} cy={circleMatch[2]} r={circleMatch[3]} />
+        ) : ellipseMatch ? (
+          <ellipse cx={ellipseMatch[1]} cy={ellipseMatch[2]} rx={ellipseMatch[3]} ry={ellipseMatch[4]} />
+        ) : lineMatch ? (
+          <line x1={lineMatch[1]} y1={lineMatch[2]} x2={lineMatch[3]} y2={lineMatch[4]} />
+        ) : null}
+      </clipPath>
+
+                        </defs>
+                        <image
+                          href={props.src}
+                          width="100"
+                          height="100"
+                          clipPath={`url(#clip-${element.id})`}
+                          preserveAspectRatio="none"
+                          style={{ width: "100%", height: "100%" }}
+                        />
+                      </svg>
+                    );
+                  })()
+                ) : (
+                  <img
+                    id={element.id}
+                    src={props.src}
+                    style={{
+                      ...styles,
+                      position: "static",
+                      transform: "rotate(0deg)",
+                    }}
+                    alt="Canvas"
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                )
               )}
 
               {type === "shape" && (

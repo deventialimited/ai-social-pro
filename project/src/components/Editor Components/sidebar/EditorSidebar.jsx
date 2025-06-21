@@ -57,6 +57,7 @@ function EditorSidebar({
   setSpecialActiveTab,
   selectedElementId,
   setSelectedElementId,
+  setActiveElement,
 }) {
   // Get the active component based on the active tab
   let ActiveTabComponent;
@@ -128,6 +129,7 @@ function EditorSidebar({
           <ActiveTabComponent
             selectedElementId={selectedElementId}
             setSelectedElementId={setSelectedElementId}
+            setActiveElement={setActiveElement}
             onClose={() => {
               if (specialTabs[specialActiveTab]) {
                 setActiveTab("text");
