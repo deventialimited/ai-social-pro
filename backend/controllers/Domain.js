@@ -276,12 +276,11 @@ console.log("updates",updates)
       checkAndUpdate("language", updates.language);
       checkAndUpdate("country", updates.country);
       checkAndUpdate("state", updates.state);
-  checkAndUpdate("colors",updates.colors)
       // Handle colors update (convert array to string if provided)
-      // if (Array.isArray(updates.colors)) {
-      //   const newColors = updates.colors.join(", ");
-      //   checkAndUpdate("colors", newColors);
-      // }
+      if (Array.isArray(updates.colors)) {
+        const newColors = updates.colors.join(", ");
+        checkAndUpdate("colors", newColors);
+      }
       // Handle marketing strategy updates
       if (updates.marketingStrategy) {
         updateFields.marketingStrategy = {
@@ -475,12 +474,12 @@ exports.updateDomainDetails = async (req, res) => {
       const newLogoUrl = await uploadToS3(file);
       updateFields.siteLogo = newLogoUrl;
     }
-
+console.log("COLORS",updates.colors)
     // 3. Handle color updates
     if (updates.colors) {
-      updateFields.colors = Array.isArray(updates.colors)
-        ? updates.colors.join(", ")
-        : updates.colors;
+      updateFields.colors = Array.isArray(JSON.parse(updates.colors))
+        ? JSON.parse(updates.colors)
+        :  updates.colors.join(", ");
     }
 
     // 4. Handle regular field updates
