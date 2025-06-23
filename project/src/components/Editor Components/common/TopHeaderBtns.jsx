@@ -163,7 +163,8 @@ const TopHeaderBtns = ({
       });
       const postDesign = selectedTemplateId
         ? replacedPostDesignValues
-        : postDesignData;
+        : { ...postDesignData, allFiles };
+
       // Step 5: Send to API
       onSavePost.mutate(
         {
@@ -171,7 +172,6 @@ const TopHeaderBtns = ({
           type,
           postImage: file,
           postDesignData: postDesign,
-          allFiles: selectedTemplateId ? postDesign?.allFiles : allFiles,
         },
         {
           onSuccess: () => {
