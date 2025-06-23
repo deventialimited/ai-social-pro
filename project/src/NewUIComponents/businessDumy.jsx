@@ -110,29 +110,13 @@ export const BusinessSectionDummy = ({
 
   const handleGeneratePost = async (e) => {
     e.preventDefault();
-    // try{
-
-    // }catch(err){
-    //   console.log(err)
-    // }
     setPopup(true);
 
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      // const selectedWebsiteId = user?.selectedWebsiteId;
 
-      // if (!selectedWebsiteId) {
-      //   throw new Error('No website selected. Please select a website and try again.');
-      // }
-
-      // const domain = await getDomainById(selectedWebsiteId);
-      // const domainData = domain?.data;
-
-      // if (!domainData) {
-      //   throw new Error('Unable to find website details. Please try again later.');
-      // }
-      console.log("client Data", clientData);
-      const payload = {
+      const platforms = ["x", "LinkedIn", "Instagram"];
+      const basePayload = {
         client_email: clientData.client_email,
         client_id: clientData.client_id,
         website: clientData.clientWebsite,
@@ -143,38 +127,74 @@ export const BusinessSectionDummy = ({
         core_values: clientData.marketingStrategy?.core_values || [],
         target_audience: clientData.marketingStrategy?.audience || [],
         audience_pain_points: clientData.marketingStrategy?.audiencePains || [],
-        post_platform: "Facebook",
       };
 
-      const response = await axios.post(
+      // Step 1: Facebook post
+      const facebookPayload = { ...basePayload, post_platform: "Facebook" };
+      const facebookResponse = await axios.post(
         "https://social-api-107470285539.us-central1.run.app/generate-single-post",
-        payload,
+        facebookPayload,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
+      const requests = platforms.map((platform) => {
+        const payload = { ...basePayload, post_platform: platform };
+        return axios.post(
+          "https://social-api-107470285539.us-central1.run.app/generate-single-post",
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      });
+      const facebookData = facebookResponse.data;
 
-      const resData = response.data;
-
-      const pubsubPayload = {
-        post_id: resData.post_id,
+      const FacebookpubsubPayload = {
+        post_id: facebookData.post_id,
         client_id: clientData.client_id,
         domainId: clientData.id,
         userId: user._id,
-        image: resData.image || "",
-        topic: resData.topic,
-        related_keywords: resData.related_keywords || [],
-        content: resData.content,
-        slogan: resData.slogan,
-        postDate: resData.date,
-        platform: resData.platform,
+        image: facebookData.image || "",
+        topic: facebookData.topic,
+        related_keywords: facebookData.related_keywords || [],
+        content: facebookData.content,
+        slogan: facebookData.slogan,
+        postDate: facebookData.date,
+        platform: facebookData.platform,
       };
 
-      const pubsubApi = await createPostViaPubSub(pubsubPayload);
+      const pubsubApi = await createPostViaPubSub(FacebookpubsubPayload);
+      setPostData(pubsubApi); // Set Facebook post data
 
-      setPostData(pubsubApi);
+      // Step 2: Generate posts for other platforms in parallel
+
+      const responses = await Promise.all(requests);
+
+      // Step 3: Send each of the 3 posts to PubSub
+      await Promise.all(
+        responses.map((res) => {
+          const data = res.data;
+          const pubsubPayload = {
+            post_id: data.post_id,
+            client_id: clientData.client_id,
+            domainId: clientData.id,
+            userId: user._id,
+            image: data.image || "",
+            topic: data.topic,
+            related_keywords: data.related_keywords || [],
+            content: data.content,
+            slogan: data.slogan,
+            postDate: data.date,
+            platform: data.platform,
+          };
+          return createPostViaPubSub(pubsubPayload);
+        })
+      );
     } catch (error) {
       console.error("Error generating post:", error);
       toast.error(error.message || "Something went wrong. Please try again.");
