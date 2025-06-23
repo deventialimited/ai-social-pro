@@ -15,15 +15,15 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axios from 'axios';
+import axios from "axios";
 
 import { FirstPostPopUp } from "./FirstPostPopUp";
-import { useUpdateDomainDetails ,getDomainById} from "../libs/domainService";
-import { getFirstPost,useCreatePostViaPubSub } from "../libs/postService";
+import { useUpdateDomainDetails, getDomainById } from "../libs/domainService";
+import { getFirstPost, useCreatePostViaPubSub } from "../libs/postService";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useSocket } from "../store/useSocket";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 export const BusinessSectionDummy = ({
   setComponentType,
   clientData,
@@ -38,7 +38,7 @@ export const BusinessSectionDummy = ({
     clientName: "",
     clientDescription: "",
     clientWebsite: "",
-        client_id:"",
+    client_id: "",
 
     client_email: "",
     colors: [],
@@ -55,11 +55,12 @@ export const BusinessSectionDummy = ({
     },
   });
   const socket = useSocket();
-const navigate=useNavigate()
+  const navigate = useNavigate();
   const updateDomainDetails = useUpdateDomainDetails();
   const fileInputRef = useRef(null);
-const queryClient = useQueryClient();
-  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
+  const queryClient = useQueryClient();
+  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } =
+    useCreatePostViaPubSub();
 
   useEffect(() => {
     if (clientData) {
@@ -77,9 +78,7 @@ const queryClient = useQueryClient();
         client_email: clientData.client_email || "",
         colors: Array.isArray(clientData.colors) ? clientData.colors : [],
         country: clientData.country || "",
-            client_id:clientData.client_id||""
-,
-
+        client_id: clientData.client_id || "",
         state: clientData.state || "",
         language: clientData.language || "",
         niche: clientData.niche || "",
@@ -109,83 +108,82 @@ const queryClient = useQueryClient();
     }
   };
 
-const handleGeneratePost = async (e) => {
-  e.preventDefault();
-  // try{
+  const handleGeneratePost = async (e) => {
+    e.preventDefault();
+    // try{
 
-  // }catch(err){
-  //   console.log(err)
-  // }
-  setPopup(true);
+    // }catch(err){
+    //   console.log(err)
+    // }
+    setPopup(true);
 
-  try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const selectedWebsiteId = user?.selectedWebsiteId;
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      // const selectedWebsiteId = user?.selectedWebsiteId;
 
-    if (!selectedWebsiteId) {
-      throw new Error('No website selected. Please select a website and try again.');
+      // if (!selectedWebsiteId) {
+      //   throw new Error('No website selected. Please select a website and try again.');
+      // }
+
+      // const domain = await getDomainById(selectedWebsiteId);
+      // const domainData = domain?.data;
+
+      // if (!domainData) {
+      //   throw new Error('Unable to find website details. Please try again later.');
+      // }
+      console.log("client Data", clientData);
+      const payload = {
+        client_email: clientData.client_email,
+        client_id: clientData.client_id,
+        website: clientData.clientWebsite,
+        name: clientData.clientName || "Unknown",
+        industry: clientData.industry || "Unknown",
+        niche: clientData.niche || "Unknown",
+        description: clientData.clientDescription || "",
+        core_values: clientData.marketingStrategy?.core_values || [],
+        target_audience: clientData.marketingStrategy?.audience || [],
+        audience_pain_points: clientData.marketingStrategy?.audiencePains || [],
+        post_platform: "Facebook",
+      };
+
+      const response = await axios.post(
+        "https://social-api-107470285539.us-central1.run.app/generate-single-post",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resData = response.data;
+
+      const pubsubPayload = {
+        post_id: resData.post_id,
+        client_id: clientData.client_id,
+        domainId: clientData.id,
+        userId: user._id,
+        image: resData.image || "",
+        topic: resData.topic,
+        related_keywords: resData.related_keywords || [],
+        content: resData.content,
+        slogan: resData.slogan,
+        postDate: resData.date,
+        platform: resData.platform,
+      };
+
+      const pubsubApi = await createPostViaPubSub(pubsubPayload);
+
+      setPostData(pubsubApi);
+    } catch (error) {
+      console.error("Error generating post:", error);
+      toast.error(error.message || "Something went wrong. Please try again.");
     }
-
-    const domain = await getDomainById(selectedWebsiteId);
-    const domainData = domain?.data;
-
-    if (!domainData) {
-      throw new Error('Unable to find website details. Please try again later.');
-    }
-console.log("client Data",clientData)
-    const payload = {
-      client_email: clientData.client_email,
-      client_id: clientData.client_id,
-      website: clientData.clientWebsite,
-      name: clientData.clientName || 'Unknown',
-      industry: clientData.industry || 'Unknown',
-      niche: clientData.niche || 'Unknown',
-      description: clientData.clientDescription || '',
-      core_values: clientData.marketingStrategy?.core_values || [],
-      target_audience: clientData.marketingStrategy?.audience || [],
-      audience_pain_points: clientData.marketingStrategy?.audiencePains || [],
-      post_platform:"Facebook"
-    };
-
-    const response = await axios.post(
-      'https://social-api-107470285539.us-central1.run.app/generate-single-post',
-      payload,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const resData = response.data;
-
-    const pubsubPayload = {
-      post_id: resData.post_id,
-      client_id: clientData.client_id,
-      domainId: clientData.id,
-      userId: user._id,
-      image: resData.image || "",
-      topic: resData.topic,
-      related_keywords: resData.related_keywords || [],
-      content: resData.content,
-      slogan: resData.slogan,
-      postDate: resData.date,
-      platform: resData.platform,
-    };
-
-    const pubsubApi=await createPostViaPubSub(pubsubPayload);
-
-    setPostData(pubsubApi)
-  } catch (error) {
-    console.error("Error generating post:", error);
-    toast.error(error.message || "Something went wrong. Please try again.");
-  }
-};
-
+  };
 
   const handleColorChange = (index, value) => {
     const updatedColors = [...formData.colors];
-    console.log("updated COlors",updatedColors);
+    console.log("updated COlors", updatedColors);
     updatedColors[index] = value;
     setFormData({ ...formData, colors: updatedColors });
   };
@@ -211,9 +209,9 @@ console.log("client Data",clientData)
     console.log("Post Data in Business Dummy ", postData);
     console.log("Popup in the business dummy", PopUp);
     if (postData && PopUp) {
-      console.log('postdata',postData)
-        setComponentType("postDetails");
-        setPopup(false);
+      console.log("postdata", postData);
+      setComponentType("postDetails");
+      setPopup(false);
     }
   }, [postData, PopUp]);
 
@@ -255,14 +253,12 @@ console.log("client Data",clientData)
     setLogoFile(null);
   };
 
-  
-  
   const handleEdit = () => setEditing(true);
 
   const handleSave = async () => {
     try {
       const logoFileToUpload = logoFile || null;
-      console.log("colors in the handle Save",formData.colors)
+      console.log("colors in the handle Save", formData.colors);
       await updateDomainDetails.mutateAsync({
         domainId: clientData.id,
         formData: {
@@ -517,60 +513,57 @@ console.log("client Data",clientData)
           )}
         </div>
 
-       <div className="sticky bottom-0 mt-10 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200
+        <div
+          className="sticky bottom-0 mt-10 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200
         dark:border-gray-700 shadow-lg py-4 px-4 sm:px-6 flex flex-col  
-        items-center justify-between z-20">
-  <h2 className="text-sm md:pb-0 pb-2 md:pb-3 font-semibold text-blue-600 dark:text-white">
-    Your Business Profile
-  </h2>
-  {editing ? (
-    <div className="flex gap-2">
-      <button
-        onClick={handleCancel}
-        className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition shadow-sm"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={handleSave}
-        className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow"
-      >
-        Save
-      </button>
-    </div>
-  ) : (
-    <div className="flex flex-col gap-2">
-      <button
-        onClick={handleEdit}
-        className="flex items-center gap-1 bg-blue-600 text-white border-2 border-blue-700 
+        items-center justify-between z-20"
+        >
+          <h2 className="text-sm md:pb-0 pb-2 md:pb-3 font-semibold text-blue-600 dark:text-white">
+            Your Business Profile
+          </h2>
+          {editing ? (
+            <div className="flex gap-2">
+              <button
+                onClick={handleCancel}
+                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition shadow-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition shadow"
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-1 bg-blue-600 text-white border-2 border-blue-700 
         hover:bg-blue-700 hover:border-blue-800 dark:text-white 
         dark:hover:bg-blue-500 w-full sm:w-auto justify-center sm:justify-start 
         px-4 py-2 rounded shadow"
-      >
-        <Edit className="w-4 h-4" />
-        <span className="text-sm">Edit</span>
-      </button>
-      <button
-        onClick={
-handleGeneratePost
-        }
-        className="md:px-5 px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition shadow border-2 border-green-600"
-       
-        >
-        Looking Good! Let's Continue
-      </button>
-    </div>
-  )}
-</div>
-
+              >
+                <Edit className="w-4 h-4" />
+                <span className="text-sm">Edit</span>
+              </button>
+              <button
+                onClick={handleGeneratePost}
+                className="md:px-5 px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition shadow border-2 border-green-600"
+              >
+                Looking Good! Let's Continue
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {PopUp && (
         <div className="fixed  inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-lg">
           <FirstPostPopUp
             isOpen={PopUp}
-            onClose={() => {
-            }}
+            onClose={() => {}}
             title="Time to Create Compelling Content!"
             description="We’re generating dynamic posts and stunning visuals that will make your social media shine and captivate your followers"
             website={`${formData.clientWebsite}`}
