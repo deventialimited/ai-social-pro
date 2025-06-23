@@ -54,7 +54,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
   const { canvas, elements } = templateData;
   return `
       <html
-      style="width:400px; 
+      style="width:400px;" 
       >
     <body style="${convertStylesToString({
       ...(canvas?.styles || {}),
