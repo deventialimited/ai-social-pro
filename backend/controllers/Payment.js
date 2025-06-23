@@ -172,8 +172,7 @@ exports.verifySession = async (req, res) => {
       subscriptionId: subscription.id,
       plan: planType,
       billingCycle,
-      nextBillingDate: new Date(subscription.current_period_end * 1000),
-      lastPaymentDate: new Date(subscription.current_period_start * 1000)
+     
     };
 
     // Update user
