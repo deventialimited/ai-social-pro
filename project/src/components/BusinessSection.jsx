@@ -58,16 +58,23 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
 
       // Parse marketingStrategy nested arrays
       const marketingStrategy = {
-        audience: selectedWebsiteData?.marketingStrategy?.audience?.[0]
-          ? JSON.parse(selectedWebsiteData.marketingStrategy.audience[0])
+        audience: Array.isArray(
+          selectedWebsiteData?.marketingStrategy?.audience
+        )
+          ? selectedWebsiteData.marketingStrategy.audience
           : ["", "", ""],
-        audiencePains: selectedWebsiteData?.marketingStrategy?.audiencePains?.[0]
-          ? JSON.parse(selectedWebsiteData.marketingStrategy.audiencePains[0])
+        audiencePains: Array.isArray(
+          selectedWebsiteData?.marketingStrategy?.audiencePains
+        )
+          ? selectedWebsiteData.marketingStrategy.audiencePains
           : ["", "", ""],
-        core_values: selectedWebsiteData?.marketingStrategy?.core_values?.[0]
-          ? JSON.parse(selectedWebsiteData.marketingStrategy.core_values[0])
+        core_values: Array.isArray(
+          selectedWebsiteData?.marketingStrategy?.core_values
+        )
+          ? selectedWebsiteData.marketingStrategy.core_values
           : ["", "", ""],
       };
+      
 
       setFormData({
         ...selectedWebsiteData,
