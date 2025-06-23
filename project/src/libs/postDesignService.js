@@ -23,19 +23,12 @@ export const useSaveOrUpdatePostDesign = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      postId,
-      type,
-      postImage,
-      postDesignData,
-      allFiles,
-    }) => {
+    mutationFn: async ({ postId, type, postImage, postDesignData }) => {
       return await saveOrUpdatePostDesignFrontendController(
         postId,
         type,
         postImage,
-        postDesignData,
-        allFiles
+        postDesignData
       );
     },
     onSuccess: async ({ postDesign, latestPost }) => {
@@ -53,8 +46,7 @@ export const saveOrUpdatePostDesignFrontendController = async (
   postId,
   type,
   postImage,
-  postDesignData,
-  allFiles
+  postDesignData
 ) => {
   try {
     const formData = new FormData();
