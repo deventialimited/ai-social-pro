@@ -1,61 +1,76 @@
-import React, { useState } from 'react';
-import { X, Link2, FileText, Image as ImageIcon, Type, Globe, MessageSquare, Target, Sparkles, ArrowRight, Info } from 'lucide-react';
-import { getDomainById } from '../libs/domainService';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import { useCreatePostViaPubSub } from '../libs/postService';
+import React, { useState } from "react";
+import {
+  X,
+  Link2,
+  FileText,
+  Image as ImageIcon,
+  Type,
+  Globe,
+  MessageSquare,
+  Target,
+  Sparkles,
+  ArrowRight,
+  Info,
+} from "lucide-react";
+import { getDomainById } from "../libs/domainService";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { useCreatePostViaPubSub } from "../libs/postService";
 import { useQueryClient } from "@tanstack/react-query";
 
 const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
   const queryClient = useQueryClient();
-  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
+  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } =
+    useCreatePostViaPubSub();
 
-  const [activeTab, setActiveTab] = useState('text');
-  const [contentType, setContentType] = useState('post');
+  const [activeTab, setActiveTab] = useState("text");
+  const [contentType, setContentType] = useState("post");
   const [showTooltip, setShowTooltip] = useState(null);
   const [formData, setFormData] = useState({
-    platform: 'facebook',
-    topic: '',
-    text: '',
-    url: '',
-    callToAction: '',
-    tone: 'professional',
-    PostURL: '',
+    platform: "facebook",
+    topic: "",
+    text: "",
+    url: "",
+    callToAction: "",
+    tone: "professional",
+    PostURL: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const platforms = [
-    { value: 'facebook', label: 'Facebook' },
-    { value: 'instagram', label: 'Instagram' },
-    { value: 'x', label: 'X (Twitter)' },
-    { value: 'linkedin', label: 'LinkedIn' },
+    { value: "facebook", label: "Facebook" },
+    { value: "instagram", label: "Instagram" },
+    { value: "x", label: "X (Twitter)" },
+    { value: "linkedin", label: "LinkedIn" },
   ];
 
   const tones = [
-    { value: 'funny', label: 'Funny' },
-    { value: 'smart', label: 'Smart' },
-    { value: 'detailed', label: 'Detailed' },
-    { value: 'professional', label: 'Professional' },
-    { value: 'educational', label: 'Educational' },
-    { value: 'casual', label: 'Casual' },
-    { value: 'inspiring', label: 'Inspiring' },
+    { value: "funny", label: "Funny" },
+    { value: "smart", label: "Smart" },
+    { value: "detailed", label: "Detailed" },
+    { value: "professional", label: "Professional" },
+    { value: "educational", label: "Educational" },
+    { value: "casual", label: "Casual" },
+    { value: "inspiring", label: "Inspiring" },
   ];
 
   const tabs = [
     {
-      id: 'text',
-      label: 'Text to Post',
+      id: "text",
+      label: "Text to Post",
       icon: <Type className="w-4 h-4" />,
-      color: 'from-green-500 to-emerald-500',
-      tooltip: 'Transform your ideas and text content into engaging social media posts with AI-generated visuals',
+      color: "from-green-500 to-emerald-500",
+      tooltip:
+        "Transform your ideas and text content into engaging social media posts with AI-generated visuals",
     },
     {
-      id: 'url',
-      label: 'URL to Post',
+      id: "url",
+      label: "URL to Post",
       icon: <Link2 className="w-4 h-4" />,
-      color: 'from-blue-500 to-cyan-500',
-      tooltip: 'Convert any website URL into compelling social media content by extracting key information and creating posts',
+      color: "from-blue-500 to-cyan-500",
+      tooltip:
+        "Convert any website URL into compelling social media content by extracting key information and creating posts",
     },
   ];
 
@@ -63,17 +78,17 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
     e.preventDefault();
 
     // Validate required fields based on active tab
-    if (activeTab === 'text' && !formData.topic && !formData.text) {
-      toast.error('Please provide either a Topic or Description', {
-        position: 'top-right',
+    if (activeTab === "text" && !formData.topic && !formData.text) {
+      toast.error("Please provide either a Topic or Description", {
+        position: "top-right",
         duration: 4000,
       });
       return;
     }
 
-    if (activeTab === 'url' && !formData.url) {
-      toast.error('Please provide a URL', {
-        position: 'top-right',
+    if (activeTab === "url" && !formData.url) {
+      toast.error("Please provide a URL", {
+        position: "top-right",
         duration: 4000,
       });
       return;
@@ -84,20 +99,29 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
     setError(null);
     onLoadingChange?.(true);
     onClose();
-
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 100);
     try {
       // Fetch user and selectedWebsiteId from localStorage
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
       const selectedWebsiteId = user?.selectedWebsiteId;
 
       if (!selectedWebsiteId) {
-        throw new Error('No website selected. Please select a website and try again.');
+        throw new Error(
+          "No website selected. Please select a website and try again."
+        );
       }
 
       // Fetch domain details
       const domain = await getDomainById(selectedWebsiteId);
       if (!domain?.data) {
-        throw new Error('Unable to find website details. Please try again later.');
+        throw new Error(
+          "Unable to find website details. Please try again later."
+        );
       }
 
       // Prepare payload for the third-party API
@@ -105,29 +129,30 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         client_email: domain.data.client_email,
         client_id: domain.data.client_id,
         website: domain.data.clientWebsite,
-        name: domain.data.clientName || 'Unknown',
-        industry: domain.data.industry || 'Unknown',
-        niche: domain.data.niche || 'Unknown',
-        description: domain.data.clientDescription || '',
+        name: domain.data.clientName || "Unknown",
+        industry: domain.data.industry || "Unknown",
+        niche: domain.data.niche || "Unknown",
+        description: domain.data.clientDescription || "",
         core_values: domain.data.marketingStrategy?.core_values || [],
         target_audience: domain.data.marketingStrategy?.audience || [],
-        audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
-        post_topic: formData.topic || '',
+        audience_pain_points:
+          domain.data.marketingStrategy?.audiencePains || [],
+        post_topic: formData.topic || "",
         post_description: formData.text,
-        post_cta: formData.callToAction || '',
+        post_cta: formData.callToAction || "",
         post_based_url: formData.PostURL,
-        post_link_url: activeTab === 'url' ? formData.url : '',
-        post_tone: formData.tone || 'professional',
-        post_platform: formData.platform || 'facebook',
+        post_link_url: activeTab === "url" ? formData.url : "",
+        post_tone: formData.tone || "professional",
+        post_platform: formData.platform || "facebook",
       };
 
       // Make POST request to the third-party API
       const response = await axios.post(
-        'https://social-api-107470285539.us-central1.run.app/generate-single-post',
+        "https://social-api-107470285539.us-central1.run.app/generate-single-post",
         payload,
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
@@ -143,45 +168,48 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         content: response.data.content,
         slogan: response.data.slogan,
         postDate: response.data.date,
-        platform: response.data.platform
+        platform: response.data.platform,
       };
 
       await createPostViaPubSub(pubsubPayload);
-      toast.success('Post generated and saved successfully!', {
-        position: 'top-right',
+      toast.success("Post generated and saved successfully!", {
+        position: "top-right",
         duration: 4000,
       });
       onGenerate?.();
     } catch (err) {
-      let errorMessage = 'Something went wrong while generating your post. Please try again later.';
-      
+      let errorMessage =
+        "Something went wrong while generating your post. Please try again later.";
+
       if (err.response) {
         switch (err.response.status) {
           case 400:
-            errorMessage = 'Invalid input provided. Please check your inputs and try again.';
+            errorMessage =
+              "Invalid input provided. Please check your inputs and try again.";
             break;
           case 401:
-            errorMessage = 'Authentication failed. Please log in again.';
+            errorMessage = "Authentication failed. Please log in again.";
             break;
           case 429:
-            errorMessage = 'Too many requests. Please wait a moment and try again.';
+            errorMessage =
+              "Too many requests. Please wait a moment and try again.";
             break;
           case 500:
-            errorMessage = 'Server error occurred. Please try again later.';
+            errorMessage = "Server error occurred. Please try again later.";
             break;
           default:
             errorMessage = err.response.data?.message || errorMessage;
         }
       } else if (err.message) {
-        errorMessage = err.message.includes('No selected website')
+        errorMessage = err.message.includes("No selected website")
           ? err.message
-          : err.message.includes('Domain not found')
+          : err.message.includes("Domain not found")
           ? err.message
           : errorMessage;
       }
 
       toast.error(errorMessage, {
-        position: 'top-right',
+        position: "top-right",
         duration: 6000,
       });
     } finally {
@@ -201,7 +229,9 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
           </label>
           <select
             value={formData.platform}
-            onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, platform: e.target.value })
+            }
             className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select a platform</option>
@@ -217,19 +247,24 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <MessageSquare className="w-4 h-4 inline mr-2" />
-            Topic {activeTab === 'text' ? '(Required if no description)' : '(Optional)'}
+            Topic{" "}
+            {activeTab === "text"
+              ? "(Required if no description)"
+              : "(Optional)"}
           </label>
           <input
             type="text"
             value={formData.topic}
-            onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, topic: e.target.value })
+            }
             placeholder="What's the main topic of your post?"
             className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         {/* Conditional Fields Based on Tab */}
-        {activeTab === 'text' && (
+        {activeTab === "text" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <FileText className="w-4 h-4 inline mr-2" />
@@ -237,7 +272,9 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
             </label>
             <textarea
               value={formData.text}
-              onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, text: e.target.value })
+              }
               placeholder="Describe what you want to post about..."
               rows={4}
               className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
@@ -245,7 +282,7 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
           </div>
         )}
 
-        {activeTab === 'url' && (
+        {activeTab === "url" && (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -255,7 +292,9 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
               <input
                 type="url"
                 value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, url: e.target.value })
+                }
                 placeholder="https://example.com"
                 className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
               />
@@ -267,7 +306,9 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
               </label>
               <textarea
                 value={formData.text}
-                onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, text: e.target.value })
+                }
                 placeholder="Describe the content of the URL..."
                 rows={4}
                 className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
@@ -284,7 +325,9 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
           <input
             type="text"
             value={formData.PostURL}
-            onChange={(e) => setFormData({ ...formData, PostURL: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, PostURL: e.target.value })
+            }
             placeholder="e.g., Link you want to add to your post"
             className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
@@ -299,7 +342,9 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
           <input
             type="text"
             value={formData.callToAction}
-            onChange={(e) => setFormData({ ...formData, callToAction: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, callToAction: e.target.value })
+            }
             placeholder="e.g., Visit our website, Book now, Learn more..."
             className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
@@ -319,8 +364,8 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
                 onClick={() => setFormData({ ...formData, tone: tone.value })}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   formData.tone === tone.value
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 }`}
               >
                 {tone.label}
@@ -350,7 +395,10 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
               AI Smart Post Builder for Any Platform
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Use this tool to generate a high-quality post for your chosen platform. Just enter a topic or description, and optionally add a link, call to action, and tone. We’ll turn your input into an engaging post tailored for your audience.
+              Use this tool to generate a high-quality post for your chosen
+              platform. Just enter a topic or description, and optionally add a
+              link, call to action, and tone. We’ll turn your input into an
+              engaging post tailored for your audience.
             </p>
           </div>
         </div>
@@ -366,11 +414,17 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   onMouseLeave={() => setShowTooltip(null)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab.id
-                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? "bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  <div className={`${activeTab === tab.id ? `bg-gradient-to-r ${tab.color}` : ''} ${activeTab === tab.id ? 'text-white' : ''} p-1 rounded`}>
+                  <div
+                    className={`${
+                      activeTab === tab.id
+                        ? `bg-gradient-to-r ${tab.color}`
+                        : ""
+                    } ${activeTab === tab.id ? "text-white" : ""} p-1 rounded`}
+                  >
                     {tab.icon}
                   </div>
                   {tab.label}
@@ -415,10 +469,14 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   type="submit"
                   disabled={isLoading || isPubSubLoading}
                   className={`px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 flex items-center gap-2 ${
-                    isLoading || isPubSubLoading ? 'opacity-50 cursor-not-allowed' : ''
+                    isLoading || isPubSubLoading
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
                   }`}
                 >
-                  {isLoading || isPubSubLoading ? 'Generating...' : 'Generate Post'}
+                  {isLoading || isPubSubLoading
+                    ? "Generating..."
+                    : "Generate Post"}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
