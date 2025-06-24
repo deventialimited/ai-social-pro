@@ -17,6 +17,10 @@ const CanvasElement = ({
   isSelected,
   showSelectorOverlay,
   setShowSelectorOverlay,
+  getAlignmentGuides,
+  snapToGuides,
+  clearGuides,
+  guides,
 }) => {
   const {
     id,
@@ -234,6 +238,22 @@ const CanvasElement = ({
         img.style.pointerEvents = "none";
       }
     }
+    if (!locked && getAlignmentGuides) {
+      getAlignmentGuides(element);
+    }
+  };
+
+  const handleDrag = (e, d) => {
+    if (!element || element.locked) return;
+    // Simulate the new element position
+    const newElement = {
+      ...element,
+      position: { ...element.position, x: d.x, y: d.y },
+    };
+    if (getAlignmentGuides) {
+      getAlignmentGuides(newElement);
+    }
+    // Do not update position here for snapping, only show guides
   };
 
   const handleDragStop = (e, d) => {
@@ -249,8 +269,21 @@ const CanvasElement = ({
       }
     }
 
+    // Snap to guides on drop
+    let finalX = d.x;
+    let finalY = d.y;
+    if (getAlignmentGuides && snapToGuides) {
+      const newElement = {
+        ...element,
+        position: { ...element.position, x: d.x, y: d.y },
+      };
+      const currentGuides = getAlignmentGuides(newElement);
+      const snapped = snapToGuides(newElement, currentGuides);
+      finalX = snapped.position.x;
+      finalY = snapped.position.y;
+    }
     updateElement(id, {
-      position: { x: d.x, y: d.y },
+      position: { x: finalX, y: finalY },
       styles: {
         ...styles,
         position: "static",
@@ -260,6 +293,7 @@ const CanvasElement = ({
         bottom: null,
       },
     });
+    if (clearGuides) clearGuides();
   };
 
   const handleClick = (e) => {
@@ -305,6 +339,7 @@ const CanvasElement = ({
             cursor: isSelected ? "move" : "default",
           }}
           onDragStart={handleDragStart}
+          onDrag={handleDrag}
           onDragStop={handleDragStop}
           onClick={handleClick}
           enableResizing={false}
@@ -445,6 +480,7 @@ const CanvasElement = ({
             cursor: isSelected ? "move" : "default",
           }}
           onDragStart={handleDragStart}
+          onDrag={handleDrag}
           onDragStop={handleDragStop}
           onClick={handleClick}
           enableResizing={false}
