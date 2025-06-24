@@ -74,7 +74,6 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
           ? selectedWebsiteData.marketingStrategy.core_values
           : ["", "", ""],
       };
-      
 
       setFormData({
         ...selectedWebsiteData,
@@ -425,6 +424,8 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
             "Business",
             "business",
             <div className="space-y-4">
+              {renderField("Website", formData?.clientWebsite, "clientWebsite")}
+
               {renderField("Business Name", formData?.clientName, "clientName")}
               {renderField(
                 "Description",
@@ -433,7 +434,6 @@ export const BusinessSection = ({ selectedWebsiteId, userId, onEdit }) => {
               )}
               {renderField("Industry", formData?.industry, "industry")}
               {renderField("Niche", formData?.niche, "niche")}
-              {renderField("Website", formData?.clientWebsite, "clientWebsite")}
               {renderField("Language", formData?.language, "language")}
               {renderField("Country", formData?.country, "country")}
               {renderField("State/Region", formData?.state, "state")}
