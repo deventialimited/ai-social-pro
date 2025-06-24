@@ -22,6 +22,7 @@ import { createImageElement } from "../../sidebar/hooks/ImagesHooks";
 import CropButton from "../../common/popups/CropButton";
 import { setElementPosition } from "../../sidebar/hooks/CommonHooks";
 import Tooltip from "../../../common/Tooltip";
+import { blobToDataURL } from "../../canvas/helpers/generateReplacedPostDesignValues";
 
 function ImageToolbar({
   specialActiveTab,
@@ -138,10 +139,10 @@ function ImageToolbar({
   };
   const handlePositionChange = (action) => {
     if (!selectedElement || selectedElement.locked) return;
-    
+
     const newPosition = setElementPosition(selectedElement, action, canvas);
     updateElement(selectedElement.id, {
-      position: newPosition
+      position: newPosition,
     });
   };
 
@@ -258,7 +259,8 @@ function ImageToolbar({
     const blob = uploadedFile;
 
     // 2. Generate a local object URL for rendering in the frontend
-    const objectUrl = URL.createObjectURL(blob);
+    // const objectUrl = URL.createObjectURL(blob);
+    const objectUrl = await blobToDataURL(blob);
 
     // 3. Create and add the canvas element with local object URL
     const newElement = createImageElement(objectUrl); // includes a unique `id`
@@ -272,42 +274,56 @@ function ImageToolbar({
 
   const handlePopupOpen = (popupType, buttonRef) => {
     if (!buttonRef.current) return;
-    
+
     const rect = buttonRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     // Get the scroll position using the most reliable method
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    
+    const scrollLeft =
+      window.pageXOffset ||
+      document.documentElement.scrollLeft ||
+      document.body.scrollLeft ||
+      0;
+    const scrollTop =
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      document.body.scrollTop ||
+      0;
+
     // Calculate the absolute position of the button
     const buttonLeft = rect.left + scrollLeft;
     const buttonTop = rect.top + scrollTop;
     const buttonBottom = rect.bottom + scrollTop;
-    
+
     // Define popup dimensions
     const popupWidth = 200;
     const popupHeight = 200;
-    
+
     // Calculate initial position (below the button)
     let x = buttonLeft;
     let y = buttonBottom;
-    
+
     // Adjust position to keep popup within viewport
     if (x + popupWidth > viewportWidth + scrollLeft) {
       x = viewportWidth + scrollLeft - popupWidth;
     }
-    
+
     // If popup would go below viewport, position it above the button
     if (y + popupHeight > viewportHeight + scrollTop) {
       y = buttonTop - popupHeight;
     }
-    
+
     // Ensure minimum distance from viewport edges
-    x = Math.max(scrollLeft, Math.min(x, viewportWidth + scrollLeft - popupWidth));
-    y = Math.max(scrollTop, Math.min(y, viewportHeight + scrollTop - popupHeight));
-    
+    x = Math.max(
+      scrollLeft,
+      Math.min(x, viewportWidth + scrollLeft - popupWidth)
+    );
+    y = Math.max(
+      scrollTop,
+      Math.min(y, viewportHeight + scrollTop - popupHeight)
+    );
+
     setPopupPosition({ x, y });
     setActivePopup(popupType);
   };
@@ -319,24 +335,36 @@ function ImageToolbar({
   return (
     <>
       <div className="w-full overflow-x-auto">
-      <div ref={toolbarRef} className="flex items-center gap-2 px-2 overflow-x-auto w-[90vw] md:w-full scrollbar-hide sm:flex-wrap sm:justify-start">
-
-        {/* <div ref={toolbarRef} className="flex flex-nowrap items-center gap-2 w-[200px] px-2"> */}
-          <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
-            <button 
+        <div
+          ref={toolbarRef}
+          className="flex items-center gap-2 px-2 overflow-x-auto w-[90vw] md:w-full scrollbar-hide sm:flex-wrap sm:justify-start"
+        >
+          {/* <div ref={toolbarRef} className="flex flex-nowrap items-center gap-2 w-[200px] px-2"> */}
+          <Tooltip
+            id="undo-tooltip"
+            content={canUndo ? "Undo last action" : "Nothing to undo"}
+          >
+            <button
               onClick={undo}
               disabled={!canUndo}
-              className={`p-2 rounded-md hover:bg-gray-100 ${!canUndo ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`p-2 rounded-md hover:bg-gray-100 ${
+                !canUndo ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <RotateCcw className="h-5 w-5 text-gray-600" />
             </button>
           </Tooltip>
 
-          <Tooltip id="redo-tooltip" content={canRedo ? "Redo last action" : "Nothing to redo"}>
-            <button 
+          <Tooltip
+            id="redo-tooltip"
+            content={canRedo ? "Redo last action" : "Nothing to redo"}
+          >
+            <button
               onClick={redo}
               disabled={!canRedo}
-              className={`p-2 rounded-md hover:bg-gray-100 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`p-2 rounded-md hover:bg-gray-100 ${
+                !canRedo ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <RotateCw className="h-5 w-5 text-gray-600" />
             </button>
@@ -426,7 +454,7 @@ function ImageToolbar({
           <Tooltip id="position-tooltip" content="Adjust element position">
             <button
               ref={positionButtonRef}
-              onClick={() => handlePopupOpen('position', positionButtonRef)}
+              onClick={() => handlePopupOpen("position", positionButtonRef)}
               className="p-2 rounded-md hover:bg-gray-100"
             >
               <span className="w-max">Position</span>
@@ -436,14 +464,21 @@ function ImageToolbar({
           <Tooltip id="transparency-tooltip" content="Adjust transparency">
             <button
               ref={transparencyButtonRef}
-              onClick={() => handlePopupOpen('transparency', transparencyButtonRef)}
+              onClick={() =>
+                handlePopupOpen("transparency", transparencyButtonRef)
+              }
               className="p-2 rounded-md hover:bg-gray-100"
             >
               <Droplet className="h-5 w-5 text-gray-600" />
             </button>
           </Tooltip>
 
-          <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+          <Tooltip
+            id="lock-tooltip"
+            content={
+              selectedElement?.locked ? "Unlock element" : "Lock element"
+            }
+          >
             <button
               onClick={() => handleLock(selectedElement?.id)}
               className={`p-2 rounded-md hover:bg-gray-100 ${
@@ -478,39 +513,41 @@ function ImageToolbar({
         </div>
       </div>
 
-      {activePopup === 'position' && createPortal(
-        <div 
-          className="absolute z-[9999]"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-          }}
-        >
-          <PositionPopup
-            onLayerPositionChange={handleLayerPositionChange}
-            onPositionChange={handlePositionChange}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "position" &&
+        createPortal(
+          <div
+            className="absolute z-[9999]"
+            style={{
+              left: popupPosition.x,
+              top: popupPosition.y,
+            }}
+          >
+            <PositionPopup
+              onLayerPositionChange={handleLayerPositionChange}
+              onPositionChange={handlePositionChange}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
 
-      {activePopup === 'transparency' && createPortal(
-        <div 
-          className="absolute z-[9999]"
-          style={{
-            left: popupPosition.x-150,
-            top: popupPosition.y,
-          }}
-        >
-          <TransparencyPopup
-            transparency={selectedElement?.styles?.opacity}
-            onChange={handleTransparencyChange}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "transparency" &&
+        createPortal(
+          <div
+            className="absolute z-[9999]"
+            style={{
+              left: popupPosition.x - 150,
+              top: popupPosition.y,
+            }}
+          >
+            <TransparencyPopup
+              transparency={selectedElement?.styles?.opacity}
+              onChange={handleTransparencyChange}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
     </>
   );
 }
