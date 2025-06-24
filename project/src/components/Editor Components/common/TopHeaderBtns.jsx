@@ -47,8 +47,6 @@ const TopHeaderBtns = ({
     setCanvasLoading,
     setPostOtherValues,
     selectedTemplateId,
-    replacedPostDesignValues,
-    setReplacedPostDesignValues,
   } = useEditor();
   const [isSavePostLoading, setIsSavePostLoading] = useState(false);
   const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);
@@ -161,9 +159,6 @@ const TopHeaderBtns = ({
       const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-      const postDesign = selectedTemplateId
-        ? replacedPostDesignValues
-        : { ...postDesignData, allFiles };
 
       // Step 5: Send to API
       onSavePost.mutate(
@@ -171,7 +166,8 @@ const TopHeaderBtns = ({
           postId,
           type,
           postImage: file,
-          postDesignData: postDesign,
+          postDesignData,
+          allFiles,
         },
         {
           onSuccess: () => {

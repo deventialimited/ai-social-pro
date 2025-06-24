@@ -23,12 +23,19 @@ export const useSaveOrUpdatePostDesign = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ postId, type, postImage, postDesignData }) => {
+    mutationFn: async ({
+      postId,
+      type,
+      postImage,
+      postDesignData,
+      allFiles,
+    }) => {
       return await saveOrUpdatePostDesignFrontendController(
         postId,
         type,
         postImage,
-        postDesignData
+        postDesignData,
+        allFiles
       );
     },
     onSuccess: async ({ postDesign, latestPost }) => {
@@ -46,15 +53,14 @@ export const saveOrUpdatePostDesignFrontendController = async (
   postId,
   type,
   postImage,
-  postDesignData
+  postDesignData,
+  allFiles
 ) => {
   try {
     const formData = new FormData();
     const { elements, backgrounds } = postDesignData;
 
-    const { allFiles, ...designWithoutFiles } = postDesignData;
-
-    formData.append("data", JSON.stringify({ ...designWithoutFiles, type }));
+    formData.append("data", JSON.stringify({ ...postDesignData, type }));
     // Only include files for element types that require them
     const validElementIds = elements
       .filter((el) => ["image"].includes(el.type))
