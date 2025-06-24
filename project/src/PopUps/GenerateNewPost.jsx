@@ -18,6 +18,14 @@ import { toast } from "react-hot-toast";
 import { useCreatePostViaPubSub } from "../libs/postService";
 import { useQueryClient } from "@tanstack/react-query";
 
+export const GradientBorder = ({ children, className = "" }) => (
+  <div
+    className={`p-[1px] rounded-lg bg-gradient-to-br from-[#00FBFD] via-[#2F42FA] to-[#CB01E3]`}
+  >
+    <div className={` rounded-lg w-full h-full ${className} `}>{children}</div>
+  </div>
+);
+
 const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
   const queryClient = useQueryClient();
   const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } =
@@ -243,62 +251,46 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
           </select>
         </div>
 
-        {/* Topic */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <MessageSquare className="w-4 h-4 inline mr-2" />
-            Topic{" "}
-            {activeTab === "text"
-              ? "(Required if no description)"
-              : "(Optional)"}
-          </label>
-          <input
-            type="text"
-            value={formData.topic}
-            onChange={(e) =>
-              setFormData({ ...formData, topic: e.target.value })
-            }
-            placeholder="What's the main topic of your post?"
-            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
         {/* Conditional Fields Based on Tab */}
-        {activeTab === "text" && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <FileText className="w-4 h-4 inline mr-2" />
-              Description (Required if no topic)
-            </label>
-            <textarea
-              value={formData.text}
-              onChange={(e) =>
-                setFormData({ ...formData, text: e.target.value })
-              }
-              placeholder="Describe what you want to post about..."
-              rows={4}
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-        )}
-
         {activeTab === "url" && (
           <>
+            {/* URL Field comes first */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Link2 className="w-4 h-4 inline mr-2" />
                 URL (Required)
               </label>
+              <div className="p-[2px] rounded-xl bg-gradient-to-r from-blue-500 to-pink-500">
+                <input
+                  type="url"
+                  value={formData.url}
+                  onChange={(e) =>
+                    setFormData({ ...formData, url: e.target.value })
+                  }
+                  placeholder="https://example.com"
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Topic */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <MessageSquare className="w-4 h-4 inline mr-2" />
+                Topic (Optional)
+              </label>
               <input
-                type="url"
-                value={formData.url}
+                type="text"
+                value={formData.topic}
                 onChange={(e) =>
-                  setFormData({ ...formData, url: e.target.value })
+                  setFormData({ ...formData, topic: e.target.value })
                 }
-                placeholder="https://example.com"
+                placeholder="What's the main topic of your post?"
                 className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <FileText className="w-4 h-4 inline mr-2" />
@@ -317,6 +309,48 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
           </>
         )}
 
+        {/* If Text Tab, Topic then Description */}
+        {activeTab === "text" && (
+          <>
+            {/* Topic */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <MessageSquare className="w-4 h-4 inline mr-2" />
+                Topic (Required if no description)
+              </label>
+              <div className="p-[2px] rounded-xl bg-gradient-to-r from-blue-500 to-pink-500">
+                <input
+                  type="text"
+                  value={formData.topic}
+                  onChange={(e) =>
+                    setFormData({ ...formData, topic: e.target.value })
+                  }
+                  placeholder="What's the main topic of your post?"
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <FileText className="w-4 h-4 inline mr-2" />
+                Description (Required if no topic)
+              </label>
+              <textarea
+                value={formData.text}
+                onChange={(e) =>
+                  setFormData({ ...formData, text: e.target.value })
+                }
+                placeholder="Describe what you want to post about..."
+                rows={4}
+                className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Post URL */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Link2 className="w-4 h-4 inline mr-2" />
@@ -376,6 +410,8 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
       </div>
     );
   };
+  
+  
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
