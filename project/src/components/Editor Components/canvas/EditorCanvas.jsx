@@ -193,7 +193,7 @@ function EditorCanvas({
           maxScale={5}
           centerOnInit={true}
           wheel={{ step: 0.1 }}
-          panning={{ disabled: true, velocityDisabled: true }}
+          panning={{ disabled: false,velocityDisabled: false          }}
           doubleClick={{ disabled: true }}
           limitToBounds={true}
           ref={transformRef}
