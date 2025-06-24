@@ -26,8 +26,6 @@ function EditorCanvas({
     allFiles,
     layers,
     backgrounds,
-    replacedPostDesignValues,
-    setReplacedPostDesignValues,
   } = useEditor();
 
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
@@ -39,14 +37,13 @@ function EditorCanvas({
 
   const [isMobile, setIsMobile] = useState(false);
   const handleGenerate = useCallback(async () => {
-    const result = await generateReplacedPostDesignValues(postOtherValues, {
-      canvas,
-      elements,
-      layers,
-      backgrounds,
-    });
-
-    setReplacedPostDesignValues(result);
+    // const result = await generateReplacedPostDesignValues(postOtherValues, {
+    //   canvas,
+    //   elements,
+    //   layers,
+    //   backgrounds,
+    // });
+    // console.log(result);
   }, [postOtherValues, canvas, elements, layers, backgrounds]);
 
   useEffect(() => {
@@ -393,41 +390,6 @@ function EditorCanvas({
                     ))}
                   </div>
                 </div>
-                {/* Hidden canvas for PNG conversion */}
-                {selectedTemplateId && replacedPostDesignValues && (
-                  <div className="absolute left-0 right-0 z-[-5] top-0 bottom-0 flex items-center justify-center">
-                    <div
-                      id="hiddenCanvas"
-                      className="bg-white shadow-lg overflow-hidden relative z-0"
-                      style={{
-                        ...replacedPostDesignValues?.canvas.styles,
-                        width: `${Math.max(
-                          Math.min(
-                            replacedPostDesignValues?.canvas.width / 3,
-                            600
-                          )
-                        )}px`,
-                        height: `${Math.max(
-                          Math.min(
-                            replacedPostDesignValues?.canvas.height / 3,
-                            600
-                          )
-                        )}px`,
-                      }}
-                    >
-                      {replacedPostDesignValues?.elements?.map((el) => (
-                        <CanvasElement
-                          key={el.id}
-                          element={el}
-                          onSelect={handleSelectElement}
-                          isSelected={el.id === selectedElementId}
-                          showSelectorOverlay={showSelectorOverlay}
-                          setShowSelectorOverlay={setShowSelectorOverlay}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
               </TransformComponent>
             </>
           )}
