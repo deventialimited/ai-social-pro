@@ -310,9 +310,7 @@ const CanvasElement = ({
           enableResizing={false}
           disableDragging={locked}
           dragHandleClassName={isSelected ? "drag-handle" : ""}
-          className={`${styles?.padding > 0 && "my-box"} ${
-            isSelected ? "border-2 border-blue-500" : ""
-          }`}
+          className={`border-2 ${isSelected ? "border-blue-500" : "border-transparent"} ${styles?.padding > 0 && "my-box"}`}
         >
           <style>
             {`
@@ -456,9 +454,7 @@ const CanvasElement = ({
           {["image", "shape"].includes(type) && (
             <div
               ref={elementRef}
-              className={`${
-                isSelected ? "border-2 border-blue-500" : ""
-              } drag-handle`}
+              className={`border-2 ${isSelected ? "border-blue-500" : "border-transparent"} drag-handle`}
               style={{
                 position: "static",
                 height: "inherit",
