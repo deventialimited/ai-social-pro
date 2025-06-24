@@ -148,8 +148,8 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         post_topic: formData.topic || "",
         post_description: formData.text,
         post_cta: formData.callToAction || "",
-        post_based_url: formData.PostURL,
-        post_link_url: activeTab === "url" ? formData.url : "",
+        post_based_url: activeTab === "url" ? formData.url : "",
+        post_link_url: formData.PostURL,
         post_tone: formData.tone || "professional",
         post_platform: formData.platform || "facebook",
       };
@@ -410,8 +410,6 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
       </div>
     );
   };
-  
-  
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
