@@ -7,6 +7,7 @@ import {
   useUploadedImagesQuery,
 } from "../../../../libs/uploadedImageService";
 import { createImageElement } from "../hooks/ImagesHooks";
+import { blobToDataURL } from "../../canvas/helpers/generateReplacedPostDesignValues";
 
 function ImagesTab() {
   const [query, setQuery] = useState("");
@@ -102,8 +103,9 @@ function ImagesTab() {
       });
       const blob = await response.blob();
 
-      const objectUrl = URL.createObjectURL(blob);
-      const newElement = createImageElement(objectUrl, category,src); // includes a unique `id`
+      // const objectUrl = URL.createObjectURL(blob);
+      const objectUrl = await blobToDataURL(blob);
+      const newElement = createImageElement(objectUrl, category, src); // includes a unique `id`
       addElement(newElement);
 
       const file = new File([blob], newElement.id, { type: blob.type });

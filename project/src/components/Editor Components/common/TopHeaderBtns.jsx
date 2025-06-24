@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import Dropdown from "./Dropdown";
 import SaveDropdown from "./SaveDropdown";
 import pica from "pica";
+import { blobToDataURL } from "../canvas/helpers/generateReplacedPostDesignValues";
 const TopHeaderBtns = ({
   setActiveElement,
   setSelectedElementId,
@@ -299,7 +300,8 @@ const TopHeaderBtns = ({
         },
       });
       const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      // const objectUrl = URL.createObjectURL(blob);
+      const objectUrl = await blobToDataURL(blob);
       const newElement = createImageElement(objectUrl, "other", src);
       addElement(newElement);
 
@@ -370,7 +372,7 @@ const TopHeaderBtns = ({
       console.log(error);
     }
   };
-
+  console.log(postDesignData, allFiles);
   useEffect(() => {
     if (postDetails) {
       setPostOtherValues({

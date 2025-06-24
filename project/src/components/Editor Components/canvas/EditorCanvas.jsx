@@ -22,10 +22,16 @@ function EditorCanvas({
     postOtherValues,
     selectedTemplateId,
     setSelectedTemplateId,
+    setCanvasLoading,
     removeElement,
     allFiles,
+    setElements,
+    setCanvas,
+    setLayers,
+    setAllFiles,
     layers,
     backgrounds,
+    setBackgrounds,
   } = useEditor();
 
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
@@ -37,15 +43,23 @@ function EditorCanvas({
 
   const [isMobile, setIsMobile] = useState(false);
   const handleGenerate = useCallback(async () => {
-    // const result = await generateReplacedPostDesignValues(postOtherValues, {
-    //   canvas,
-    //   elements,
-    //   layers,
-    //   backgrounds,
-    // });
-    // console.log(result);
+    setCanvasLoading(true);
+    const result = await generateReplacedPostDesignValues(postOtherValues, {
+      canvas,
+      elements,
+      layers,
+      backgrounds,
+    });
+    setCanvas(result?.canvas);
+    setElements(result?.elements);
+    setLayers(result?.layers);
+    setAllFiles(result?.allFiles);
+    setBackgrounds(result?.backgrounds);
+    setSelectedTemplateId(null);
+    setCanvasLoading(false);
   }, [postOtherValues, canvas, elements, layers, backgrounds]);
-
+  // console.log(postOtherValues);
+  console.log(elements);
   useEffect(() => {
     const shouldGenerate =
       selectedTemplateId &&
@@ -58,7 +72,7 @@ function EditorCanvas({
       handleGenerate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTemplateId, canvas, elements, layers, backgrounds]);
+  }, [selectedTemplateId]);
 
   useEffect(() => {
     function handleResize() {
