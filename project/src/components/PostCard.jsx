@@ -9,6 +9,7 @@ import {
   Type,
   Download,
   Save,
+  Copy,
   Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -18,7 +19,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { useReschedulePost, useApproveAndSchedulePost } from "../libs/postService";
+import {
+  useReschedulePost,
+  useApproveAndSchedulePost,
+} from "../libs/postService";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   // Validate post.date, default to current date if invalid
@@ -236,6 +240,16 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       setLoadingMessage(null);
     }
   };
+  const handleCopyToClipboard = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        toast.success("Post content copied to clipboard!");
+      })
+      .catch(() => {
+        toast.error("Failed to copy post content.");
+      });
+  };
 
   const handleReschedule = (newDate) => {
     if (newDate && !isNaN(newDate.getTime())) {
@@ -322,12 +336,21 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               {post.content}
             </p>
             {isClamped && (
-              <button
-                onClick={() => setShowFullText(!showFullText)}
-                className="mt-1 text-blue-600 dark:text-blue-400 text-sm underline hover:text-blue-800"
-              >
-                {showFullText ? "Show less" : "Show more"}
-              </button>
+              <div className="mt-1 flex items-center gap-3">
+                <button
+                  onClick={() => setShowFullText(!showFullText)}
+                  className="text-blue-600 dark:text-blue-400 text-sm underline hover:text-blue-800"
+                >
+                  {showFullText ? "Show less" : "Show more"}
+                </button>
+                <button
+                  onClick={() => handleCopyToClipboard(post.content)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
+                  title="Copy post content"
+                >
+                  <Copy/>
+                </button>
+              </div>
             )}
           </div>
           <div
