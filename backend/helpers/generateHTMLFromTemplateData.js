@@ -57,6 +57,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
       style="${convertStylesToString({
         width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
         height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+        overflow: "hidden",
       })}" 
       >
     <body style="${convertStylesToString({
@@ -64,6 +65,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
       width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
       height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
       position: "relative",
+      overflow: "hidden",
       margin: "0 ",
     })}">
         ${elements
