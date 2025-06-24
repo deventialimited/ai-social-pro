@@ -5,6 +5,8 @@ import CanvasElement from "./CanvasElement";
 import LoadingOverlay from "../common/LoadingOverlay";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { generateReplacedPostDesignValues } from "./helpers/generateReplacedPostDesignValues";
+import useAlignmentGuides from "./helpers/useAlignmentGuides";
+import AlignmentGuides from "./AlignmentGuides";
 
 function EditorCanvas({
   canvasContainerRef,
@@ -167,6 +169,9 @@ function EditorCanvas({
     return () => window.removeEventListener("mousedown", handleClick);
   }, [showZoomDropdown]);
 
+  // Alignment guides integration
+  const { guides, getAlignmentGuides, snapToGuides, clearGuides } = useAlignmentGuides(elements);
+
   return (
     <div
       ref={containerRef}
@@ -204,7 +209,7 @@ function EditorCanvas({
           maxScale={5}
           centerOnInit={true}
           wheel={{ step: 0.1 }}
-          panning={{ disabled: true, velocityDisabled: true }}
+          panning={{ disabled: false,velocityDisabled: false          }}
           doubleClick={{ disabled: true }}
           limitToBounds={true}
           ref={transformRef}
@@ -400,8 +405,18 @@ function EditorCanvas({
                         isSelected={el.id === selectedElementId}
                         showSelectorOverlay={showSelectorOverlay}
                         setShowSelectorOverlay={setShowSelectorOverlay}
+                        getAlignmentGuides={getAlignmentGuides}
+                        snapToGuides={snapToGuides}
+                        clearGuides={clearGuides}
+                        guides={guides}
                       />
                     ))}
+                    {/* Alignment Guides Overlay (should be last for stacking) */}
+                    <AlignmentGuides
+                      guides={guides}
+                      containerWidth={`${Math.max(Math.min(canvas.width / 3, 600))}px`}
+                      containerHeight={`${Math.max(Math.min(canvas.height / 3, 600))}px`}
+                    />
                   </div>
                 </div>
               </TransformComponent>
