@@ -624,28 +624,28 @@ const CanvasElement = ({
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="nw"
-                    className="absolute z-10 top-0 left-0"
+                    className="absolute z-10 top-0 left-0 -translate-x-1/2 -translate-y-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="ne"
-                    className="absolute z-10 top-0 right-0"
+                    className="absolute z-10 top-0 right-0 translate-x-1/2 -translate-y-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="sw"
-                    className="absolute z-10 bottom-0 left-0"
+                    className="absolute z-10 bottom-0 left-0 -translate-x-1/2 translate-y-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="se"
-                    className="absolute z-10 bottom-0 right-0"
+                    className="absolute z-10 bottom-0 right-0 translate-x-1/2 translate-y-1/2"
                   />
                   {/* Edges */}
                   <ResizeHandle
@@ -653,28 +653,28 @@ const CanvasElement = ({
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="n"
-                    className="absolute z-10 top-0 left-1/2 -translate-x-1/2"
+                    className="absolute z-10 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="s"
-                    className="absolute z-10 bottom-0 left-1/2 -translate-x-1/2"
+                    className="absolute z-10 bottom-[-3px] left-1/2 -translate-x-1/2 translate-y-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="w"
-                    className="absolute z-10 left-0 top-1/2 -translate-y-1/2"
+                    className="absolute z-10 left-0 top-1/2 -translate-y-1/2 -translate-x-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
                     onResizeStop={onResizeStop}
                     position="e"
-                    className="absolute z-10 right-0 top-1/2 -translate-y-1/2"
+                    className="absolute z-10 right-0 top-1/2 -translate-y-1/2 translate-x-1/2"
                   />
                   {/* Rotate Handle */}
                   <div
