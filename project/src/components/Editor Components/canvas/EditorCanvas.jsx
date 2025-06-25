@@ -420,8 +420,8 @@ function EditorCanvas({
                     {/* Alignment Guides Overlay (should be last for stacking) */}
                     <AlignmentGuides
                       guides={guides}
-                      containerWidth={`${Math.max(Math.min(canvas.width / 3, 600))}px`}
-                      containerHeight={`${Math.max(Math.min(canvas.height / 3, 600))}px`}
+                      containerWidth="100%"
+                      containerHeight="100%"
                     />
                   </div>
                 </div>
