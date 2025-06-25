@@ -83,12 +83,61 @@ const CanvasElement = ({
     styles.height,
   ]);
 
+  // --- Alignment Guides Integration ---
+  const handleDragStart = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (type === "image" && elementRef.current) {
+      elementRef.current.style.willChange = "transform";
+      const img = elementRef.current.querySelector("img");
+      if (img) {
+        img.style.pointerEvents = "none";
+      }
+    }
+    if (getAlignmentGuides) getAlignmentGuides({ ...element });
+  };
+
+  const handleDrag = (e, d) => {
+    if (!element || element.locked) return;
+    if (getAlignmentGuides) getAlignmentGuides({ ...element, position: { x: d.x, y: d.y } });
+  };
+
+  const handleDragStop = (e, d) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!element || element.locked) return;
+
+    if (type === "image" && elementRef.current) {
+      elementRef.current.style.willChange = "auto";
+      const img = elementRef.current.querySelector("img");
+      if (img) {
+        img.style.pointerEvents = "auto";
+      }
+    }
+
+    if (clearGuides) clearGuides();
+
+    updateElement(id, {
+      position: { x: d.x, y: d.y },
+      styles: {
+        ...styles,
+        position: "static",
+        left: null,
+        right: null,
+        top: null,
+        bottom: null,
+      },
+    });
+  };
+
+  // For resizing, call getAlignmentGuides and clearGuides as well
   const onResizeStart = () => {
     startSizeRef.current = {
       width: styles.width || 100,
       height: styles.height || 30,
       fontSize: styles.fontSize || "16px",
     };
+    if (getAlignmentGuides) getAlignmentGuides({ ...element });
   };
 
   const onResize = ({ deltaX, deltaY }, direction) => {
@@ -205,7 +254,11 @@ const CanvasElement = ({
       const scale = Math.max(newWidth / width, newHeight / height);
       newFontSize = Math.max(fontSize * scale, 8);
     }
-
+    if (getAlignmentGuides) getAlignmentGuides({
+      ...element,
+      position: { x: newX, y: newY },
+      styles: { ...styles, width: newWidth, height: newHeight, fontSize: `${newFontSize}px` },
+    });
     updateElement(id, {
       position: { x: newX, y: newY },
       styles: {
@@ -217,6 +270,11 @@ const CanvasElement = ({
     });
   };
 
+  // On resize stop, clear guides
+  const onResizeStop = () => {
+    if (clearGuides) clearGuides();
+  };
+
   const { handleRotateMouseDown } = useElementRotate((angle) => {
     if (!element || element.locked) return;
     updateElement(id, {
@@ -226,75 +284,6 @@ const CanvasElement = ({
       },
     });
   });
-
-  // Handle image drag optimization - ADDED CODE
-  const handleDragStart = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (type === "image" && elementRef.current) {
-      elementRef.current.style.willChange = "transform";
-      const img = elementRef.current.querySelector("img");
-      if (img) {
-        img.style.pointerEvents = "none";
-      }
-    }
-    if (!locked && getAlignmentGuides) {
-      getAlignmentGuides(element);
-    }
-  };
-
-  const handleDrag = (e, d) => {
-    if (!element || element.locked) return;
-    // Simulate the new element position
-    const newElement = {
-      ...element,
-      position: { ...element.position, x: d.x, y: d.y },
-    };
-    if (getAlignmentGuides) {
-      getAlignmentGuides(newElement);
-    }
-    // Do not update position here for snapping, only show guides
-  };
-
-  const handleDragStop = (e, d) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (!element || element.locked) return;
-
-    if (type === "image" && elementRef.current) {
-      elementRef.current.style.willChange = "auto";
-      const img = elementRef.current.querySelector("img");
-      if (img) {
-        img.style.pointerEvents = "auto";
-      }
-    }
-
-    // Snap to guides on drop
-    let finalX = d.x;
-    let finalY = d.y;
-    if (getAlignmentGuides && snapToGuides) {
-      const newElement = {
-        ...element,
-        position: { ...element.position, x: d.x, y: d.y },
-      };
-      const currentGuides = getAlignmentGuides(newElement);
-      const snapped = snapToGuides(newElement, currentGuides);
-      finalX = snapped.position.x;
-      finalY = snapped.position.y;
-    }
-    updateElement(id, {
-      position: { x: finalX, y: finalY },
-      styles: {
-        ...styles,
-        position: "static",
-        left: null,
-        right: null,
-        top: null,
-        bottom: null,
-      },
-    });
-    if (clearGuides) clearGuides();
-  };
 
   const handleClick = (e) => {
     e.stopPropagation();
@@ -490,7 +479,9 @@ const CanvasElement = ({
           {["image", "shape"].includes(type) && (
             <div
               ref={elementRef}
+            
               className={`border-2 ${isSelected ? "border-blue-500" : "border-transparent"} drag-handle`}
+
               style={{
                 position: "static",
                 height: "inherit",
@@ -631,51 +622,59 @@ const CanvasElement = ({
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="nw"
-                    className="absolute z-10 top-0 left-0 -translate-x-1/2 -translate-y-1/2"
+                    className="absolute z-10 top-0 left-0"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="ne"
-                    className="absolute z-10 top-0 right-0 translate-x-1/2 -translate-y-1/2"
+                    className="absolute z-10 top-0 right-0"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="sw"
-                    className="absolute z-10 bottom-0 left-0 -translate-x-1/2 translate-y-1/2"
+                    className="absolute z-10 bottom-0 left-0"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="se"
-                    className="absolute z-10 bottom-0 right-0 translate-x-1/2 translate-y-1/2"
+                    className="absolute z-10 bottom-0 right-0"
                   />
                   {/* Edges */}
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="n"
-                    className="absolute z-10 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                    className="absolute z-10 top-0 left-1/2 -translate-x-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="s"
-                    className="absolute z-10 bottom-[-3px] left-1/2 -translate-x-1/2 translate-y-1/2"
+                    className="absolute z-10 bottom-0 left-1/2 -translate-x-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="w"
-                    className="absolute z-10 left-0 top-1/2 -translate-y-1/2 -translate-x-1/2"
+                    className="absolute z-10 left-0 top-1/2 -translate-y-1/2"
                   />
                   <ResizeHandle
                     onResize={onResize}
                     onResizeStart={onResizeStart}
+                    onResizeStop={onResizeStop}
                     position="e"
-                    className="absolute z-10 right-0 top-1/2 -translate-y-1/2 translate-x-1/2"
+                    className="absolute z-10 right-0 top-1/2 -translate-y-1/2"
                   />
                   {/* Rotate Handle */}
                   <div
