@@ -31,10 +31,10 @@ const CanvasElement = ({
     visible,
     locked,
   } = element;
-  const { updateElement, canvas } = useEditor();
+  const { updateElement, canvas, elements } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef();
-
+  console.log(elements);
   // Add keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -315,12 +315,12 @@ const CanvasElement = ({
 
     return () => el.removeEventListener("pointerdown", handler);
   }, [id, type, onSelect]);
-  console.log("props", props);
+  console.log("props", props, position);
   return (
     <>
       {type === "text" ? (
         <Rnd
-          key={id}
+          key={`${id}-${position.x}-${position.y}`} // ⬅️ force remount
           id={id}
           size={{ width: styles.width, height: styles.height }}
           position={{ x: position.x, y: position.y }}
@@ -343,6 +343,7 @@ const CanvasElement = ({
           onDragStop={handleDragStop}
           onClick={handleClick}
           enableResizing={false}
+          // enableUserSelectHack={false}
           disableDragging={locked}
           dragHandleClassName={isSelected ? "drag-handle" : ""}
           className={`border-2 ${
@@ -467,7 +468,8 @@ const CanvasElement = ({
         </Rnd>
       ) : (
         <Rnd
-          key={id}
+          key={`${id}-${position.x}-${position.y}`} // ⬅️ force remount
+          id={id}
           size={{ width: styles.width, height: styles.height }}
           position={{ x: position.x, y: position.y }}
           style={{
@@ -486,6 +488,7 @@ const CanvasElement = ({
           onDragStop={handleDragStop}
           onClick={handleClick}
           enableResizing={false}
+          // enableUserSelectHack={false}
           disableDragging={locked}
           dragHandleClassName={isSelected ? "drag-handle" : ""}
         >
