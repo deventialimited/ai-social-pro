@@ -159,7 +159,11 @@ function EditorCanvas({
   }, [showZoomDropdown]);
 
   // Alignment guides integration
-  const { guides, getAlignmentGuides, snapToGuides, clearGuides } = useAlignmentGuides(elements);
+  const { guides, getAlignmentGuides, snapToGuides, clearGuides } = useAlignmentGuides(
+    elements,
+    canvas?.width || 0,
+    canvas?.height || 0
+  );
 
   return (
     <div
