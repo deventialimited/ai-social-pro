@@ -60,9 +60,7 @@ export const saveOrUpdatePostDesignFrontendController = async (
     const formData = new FormData();
     const { elements, backgrounds } = postDesignData;
 
-    const { allFiles, ...designWithoutFiles } = postDesignData;
-
-    formData.append("data", JSON.stringify({ ...designWithoutFiles, type }));
+    formData.append("data", JSON.stringify({ ...postDesignData, type }));
     // Only include files for element types that require them
     const validElementIds = elements
       .filter((el) => ["image"].includes(el.type))

@@ -1,5 +1,13 @@
 import axios from "axios";
 
+export const blobToDataURL = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 const getSafeUnsplashImageBlob = async (
   keywords = [],
   width = 600,
@@ -31,8 +39,9 @@ const getSafeUnsplashImageBlob = async (
     // ✅ Download image as blob safely (from CORS-allowed URL)
     const imageResponse = await axios.get(imageUrl, { responseType: "blob" });
     const blob = imageResponse.data;
-    const objectUrl = URL.createObjectURL(blob);
-
+    // const objectUrl = URL.createObjectURL(blob);
+    const objectUrl = await blobToDataURL(blob);
+    console.log("other", objectUrl);
     return { blob, objectUrl, imageUrl };
   } catch (error) {
     console.error("Failed to fetch Unsplash image:", error);
@@ -68,7 +77,8 @@ export async function generateReplacedPostDesignValues(
           const response = await axios.get(siteLogo, { responseType: "blob" });
           const blob = response.data;
 
-          const objectUrl = URL.createObjectURL(blob);
+          // const objectUrl = URL.createObjectURL(blob);
+          const objectUrl = await blobToDataURL(blob);
           updated.props = {
             ...el.props,
             src: objectUrl,
@@ -96,7 +106,7 @@ export async function generateReplacedPostDesignValues(
           const image = await getSafeUnsplashImageBlob(keywords);
           if (image) {
             const { blob, objectUrl, imageUrl } = image;
-
+            console.log(imageUrl);
             updated.props = {
               ...el.props,
               originalSrc: imageUrl,

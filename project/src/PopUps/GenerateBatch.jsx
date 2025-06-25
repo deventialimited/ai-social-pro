@@ -1,69 +1,73 @@
-import React, { useState } from 'react';
-import { X, Check, ArrowRight, Sparkles } from 'lucide-react';
-import { getDomainById } from '../libs/domainService';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
-import { useCreatePostViaPubSub } from '../libs/postService';
+// GenerateBatchModal.jsx
+import React, { useState } from "react";
+import { X, Check, ArrowRight, Sparkles } from "lucide-react";
+import { getDomainById } from "../libs/domainService";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { useCreatePostViaPubSub } from "../libs/postService";
 import { useQueryClient } from "@tanstack/react-query";
 
 const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
   const queryClient = useQueryClient();
-  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } = useCreatePostViaPubSub();
+  const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } =
+    useCreatePostViaPubSub();
   const [isLoading, setIsLoading] = useState(false);
 
   const [platforms, setPlatforms] = useState([
     {
-      id: 'facebook',
-      name: 'Facebook',
-      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/facebook.svg',
+      id: "facebook",
+      name: "Facebook",
+      icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/facebook.svg",
       enabled: true,
-      postCount: 1
+      postCount: 1,
     },
     {
-      id: 'instagram',
-      name: 'Instagram',
-      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/instagram.svg',
+      id: "instagram",
+      name: "Instagram",
+      icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/instagram.svg",
       enabled: true,
-      postCount: 1
+      postCount: 1,
     },
     {
-      id: 'x',
-      name: 'X (Twitter)',
-      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/twitter.svg',
+      id: "x",
+      name: "X (Twitter)",
+      icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/twitter.svg",
       enabled: true,
-      postCount: 1
+      postCount: 1,
     },
     {
-      id: 'linkedin',
-      name: 'LinkedIn',
-      icon: 'https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/linkedin.svg',
+      id: "linkedin",
+      name: "LinkedIn",
+      icon: "https://raw.githubusercontent.com/danielcranney/profileme-dev/main/public/icons/socials/linkedin.svg",
       enabled: true,
-      postCount: 1
-    }
+      postCount: 1,
+    },
   ]);
 
   const togglePlatform = (id) => {
-    setPlatforms(platforms.map(platform => 
-      platform.id === id 
-        ? { ...platform, enabled: !platform.enabled }
-        : platform
-    ));
+    setPlatforms(
+      platforms.map((platform) =>
+        platform.id === id
+          ? { ...platform, enabled: !platform.enabled }
+          : platform
+      )
+    );
   };
 
   const updatePostCount = (id, count) => {
-    setPlatforms(platforms.map(platform => 
-      platform.id === id 
-        ? { ...platform, postCount: count }
-        : platform
-    ));
+    setPlatforms(
+      platforms.map((platform) =>
+        platform.id === id ? { ...platform, postCount: count } : platform
+      )
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const enabledPlatforms = platforms.filter(p => p.enabled);
+    const enabledPlatforms = platforms.filter((p) => p.enabled);
     if (enabledPlatforms.length === 0) {
-      toast.error('Please select at least one platform.', {
-        position: 'top-right',
+      toast.error("Please select at least one platform.", {
+        position: "top-right",
         duration: 4000,
       });
       return;
@@ -73,42 +77,49 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     onLoadingChange?.(true);
     onClose();
 
+    // Trigger smooth scroll to top immediately after modal closes
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 100); // Slight delay to ensure modal is closed
+
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
       const selectedWebsiteId = user?.selectedWebsiteId;
 
       if (!selectedWebsiteId) {
-        throw new Error('No website selected. Please select a website and try again.');
+        throw new Error(
+          "No website selected. Please select a website and try again."
+        );
       }
 
       const domain = await getDomainById(selectedWebsiteId);
       if (!domain?.data) {
-        throw new Error('Unable to find website details. Please try again later.');
+        throw new Error(
+          "Unable to find website details. Please try again later."
+        );
       }
 
       const basePayload = {
         client_email: domain.data.client_email,
         client_id: domain.data.client_id,
         website: domain.data.clientWebsite,
-        name: domain.data.clientName || 'Unknown',
-        industry: domain.data.industry || 'Unknown',
-        niche: domain.data.niche || 'Unknown',
-        description: domain.data.clientDescription || '',
+        name: domain.data.clientName || "Unknown",
+        industry: domain.data.industry || "Unknown",
+        niche: domain.data.niche || "Unknown",
+        description: domain.data.clientDescription || "",
         core_values: domain.data.marketingStrategy?.core_values || [],
         target_audience: domain.data.marketingStrategy?.audience || [],
-        audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
-        // post_topic: '',
-        // post_description: '',
-        // post_cta: '',
-        // post_based_url: '',
-        // post_link_url: '',
-        // post_tone: 'professional',
+        audience_pain_points:
+          domain.data.marketingStrategy?.audiencePains || [],
       };
 
       const postPromises = [];
       const postPlatforms = [];
 
-      enabledPlatforms.forEach(platform => {
+      enabledPlatforms.forEach((platform) => {
         for (let i = 0; i < platform.postCount; i++) {
           const payload = {
             ...basePayload,
@@ -117,11 +128,11 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
           postPromises.push(
             axios.post(
-              'https://social-api-107470285539.us-central1.run.app/generate-single-post',
+              "https://social-api-107470285539.us-central1.run.app/generate-single-post",
               payload,
               {
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
               }
             )
@@ -147,48 +158,56 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
           content: response.data.content,
           slogan: response.data.slogan,
           postDate: response.data.date,
-          platform: response.data.platform
+          platform: response.data.platform,
         };
 
         await createPostViaPubSub(pubsubPayload);
       }
 
-      toast.success(`Successfully generated ${responses.length} post${responses.length !== 1 ? 's' : ''}!`, {
-        position: 'top-right',
-        duration: 4000,
-      });
-      onGenerate();
-      queryClient.invalidateQueries(['posts', selectedWebsiteId]);
+      toast.success(
+        `Successfully generated ${responses.length} post${
+          responses.length !== 1 ? "s" : ""
+        }!`,
+        {
+          position: "top-right",
+          duration: 4000,
+        }
+      );
+      onGenerate(); // Call onGenerate without a callback
+      queryClient.invalidateQueries(["posts", selectedWebsiteId]);
     } catch (err) {
-      let errorMessage = 'Something went wrong while generating your posts. Please try again later.';
-      
+      let errorMessage =
+        "Something went wrong while generating your posts. Please try again later.";
+
       if (err.response) {
         switch (err.response.status) {
           case 400:
-            errorMessage = 'Invalid input provided. Please check your inputs and try again.';
+            errorMessage =
+              "Invalid input provided. Please check your inputs and try again.";
             break;
           case 401:
-            errorMessage = 'Authentication failed. Please log in again.';
+            errorMessage = "Authentication failed. Please log in again.";
             break;
           case 429:
-            errorMessage = 'Too many requests. Please wait a moment and try again.';
+            errorMessage =
+              "Too many requests. Please wait a moment and try again.";
             break;
           case 500:
-            errorMessage = 'Server error occurred. Please try again later.';
+            errorMessage = "Server error occurred. Please try again later.";
             break;
           default:
             errorMessage = err.response.data?.message || errorMessage;
         }
       } else if (err.message) {
-        errorMessage = err.message.includes('No selected website')
+        errorMessage = err.message.includes("No selected website")
           ? err.message
-          : err.message.includes('Domain not found')
+          : err.message.includes("Domain not found")
           ? err.message
           : errorMessage;
       }
 
       toast.error(errorMessage, {
-        position: 'top-right',
+        position: "top-right",
         duration: 6000,
       });
     } finally {
@@ -197,7 +216,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     }
   };
 
-  const enabledPlatforms = platforms.filter(p => p.enabled);
+  const enabledPlatforms = platforms.filter((p) => p.enabled);
   const totalPosts = enabledPlatforms.reduce((sum, p) => sum + p.postCount, 0);
 
   return (
@@ -232,15 +251,19 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   Create Multiple Posts at Once
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Use this tool to generate a batch of social media posts across multiple platforms in one click. Simply select the platforms you want to post to and choose how many posts you’d like for each. We’ll generate custom content tailored to each platform’s style.
+                  Use this tool to generate a batch of social media posts across
+                  multiple platforms in one click. Simply select the platforms
+                  you want to post to and choose how many posts you’d like for
+                  each. We’ll generate custom content tailored to each
+                  platform’s style.
                 </p>
                 {platforms.map((platform) => (
                   <div
                     key={platform.id}
                     className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
                       platform.enabled
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600"
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -249,8 +272,8 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                         onClick={() => togglePlatform(platform.id)}
                         className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
                           platform.enabled
-                            ? 'border-blue-500 bg-blue-500'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-300 dark:border-gray-600 hover:border-blue-500"
                         }`}
                       >
                         {platform.enabled && (
@@ -277,7 +300,12 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                         </span>
                         <select
                           value={platform.postCount}
-                          onChange={(e) => updatePostCount(platform.id, parseInt(e.target.value))}
+                          onChange={(e) =>
+                            updatePostCount(
+                              platform.id,
+                              parseInt(e.target.value)
+                            )
+                          }
                           className="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                         >
                           <option value={1}>1</option>
@@ -298,7 +326,9 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                         Batch Summary
                       </h4>
                       <p className="text-sm text-blue-700 dark:text-blue-300">
-                        {enabledPlatforms.length} platform{enabledPlatforms.length !== 1 ? 's' : ''} • {totalPosts} total post{totalPosts !== 1 ? 's' : ''}
+                        {enabledPlatforms.length} platform
+                        {enabledPlatforms.length !== 1 ? "s" : ""} •{" "}
+                        {totalPosts} total post{totalPosts !== 1 ? "s" : ""}
                       </p>
                     </div>
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
@@ -318,15 +348,24 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   Cancel
                 </button>
                 <button
+                  id="generate-batch-button" // Added ID
                   type="submit"
-                  disabled={enabledPlatforms.length === 0 || isLoading || isPubSubLoading}
+                  disabled={
+                    enabledPlatforms.length === 0 ||
+                    isLoading ||
+                    isPubSubLoading
+                  }
                   className={`px-6 py-2.5 rounded-lg flex items-center gap-2 transition-opacity ${
-                    enabledPlatforms.length > 0 && !isLoading && !isPubSubLoading
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90'
-                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    enabledPlatforms.length > 0 &&
+                    !isLoading &&
+                    !isPubSubLoading
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90"
+                      : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  {isLoading || isPubSubLoading ? 'Generating...' : 'Generate Batch'}
+                  {isLoading || isPubSubLoading
+                    ? "Generating..."
+                    : "Generate Batch"}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

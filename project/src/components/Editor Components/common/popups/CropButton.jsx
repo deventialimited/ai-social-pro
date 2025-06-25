@@ -6,6 +6,7 @@ import "react-image-crop/dist/ReactCrop.css";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
+import { blobToDataURL } from "../../canvas/helpers/generateReplacedPostDesignValues";
 
 function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
   const [crop, setCrop] = useState();
@@ -99,7 +100,7 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
       previewCanvasRef.current
     ) {
       // Convert canvas to Blob
-      previewCanvasRef.current.toBlob((blob) => {
+      previewCanvasRef.current.toBlob(async (blob) => {
         if (blob) {
           const file = new File([blob], selectedElement?.id, {
             type: "image/png",
@@ -107,7 +108,8 @@ function CropModal({ selectedElement, updateElement, isOpen, closeModal }) {
           console.log("Cropped Image File:", file);
 
           // OPTIONAL: Create a temporary URL if you want to preview or download
-          const src = URL.createObjectURL(file);
+          // const src = URL.createObjectURL(file);
+          const src = await blobToDataURL(file);
           console.log("Cropped Image URL:", src);
 
           updateElement(selectedElement?.id, {

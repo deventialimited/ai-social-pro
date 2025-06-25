@@ -4,12 +4,14 @@ import {
   Edit,
   Trash2,
   Check,
-  Image,
+  Image as ImageLucide, // Renamed to avoid conflict with global Image constructor
   Palette,
   Type,
   Download,
   Save,
+  Copy,
   Loader2,
+  Image as ImageIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { PostEditModal } from "./PostEditModal";
@@ -18,7 +20,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { useReschedulePost, useApproveAndSchedulePost } from "../libs/postService";
+import {
+  useReschedulePost,
+  useApproveAndSchedulePost,
+} from "../libs/postService";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   // Validate post.date, default to current date if invalid
@@ -145,7 +150,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       link.href = url;
 
       // Set download filename based on selected button
-
       const filename = `${selectedButton}_${post.postId}.png`;
       link.setAttribute("download", filename);
 
@@ -161,17 +165,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
-  const handleDateChange = (date) => {
-    if (date && !isNaN(date.getTime())) {
-      setSelectedDate(date);
-      if (onReschedule) {
-        onReschedule(post._id, date);
-      }
-    } else {
-      toast.error("Invalid date selected");
-    }
-  };
-
   const getSelectedImageUrl = () => {
     switch (selectedButton) {
       case "brandingImage":
@@ -182,6 +175,51 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return post.image?.imageUrl || post.brandingImage?.imageUrl;
       default:
         return "";
+    }
+  };
+
+  const handleCopyImageToClipboard = async () => {
+    const imageUrl = getSelectedImageUrl();
+    if (!imageUrl) {
+      toast.error("Image not found");
+      return;
+    }
+
+    try {
+      const img = new Image(); // Uses global Image constructor
+      img.crossOrigin = "anonymous"; // Required to avoid tainted canvas
+      img.src = imageUrl;
+
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            toast.error("Failed to convert image.");
+            return;
+          }
+
+          try {
+            const item = new ClipboardItem({ "image/png": blob });
+            await navigator.clipboard.write([item]);
+            toast.success("Image copied to clipboard!");
+          } catch (error) {
+            console.error(error);
+            toast.error("Clipboard write failed.");
+          }
+        }, "image/png");
+      };
+
+      img.onerror = () => {
+        toast.error("Failed to load image.");
+      };
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to copy image.");
     }
   };
 
@@ -237,6 +275,17 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
+  const handleCopyToClipboard = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        toast.success("Post content copied to clipboard!");
+      })
+      .catch(() => {
+        toast.error("Failed to copy post content.");
+      });
+  };
+
   const handleReschedule = (newDate) => {
     if (newDate && !isNaN(newDate.getTime())) {
       reschedule(
@@ -255,6 +304,17 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       );
     } else {
       toast.error("Invalid reschedule date");
+    }
+  };
+
+  const handleDateChange = (date) => {
+    if (date && !isNaN(date.getTime())) {
+      setSelectedDate(date);
+      if (onReschedule) {
+        onReschedule(post._id, date);
+      }
+    } else {
+      toast.error("Invalid date selected");
     }
   };
 
@@ -290,7 +350,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             {["image", "brandingImage", "sloganImage"].map((type) => {
               const Icon =
                 type === "image"
-                  ? Image
+                  ? ImageLucide // Updated to ImageLucide
                   : type === "brandingImage"
                   ? Palette
                   : Type;
@@ -322,12 +382,28 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               {post.content}
             </p>
             {isClamped && (
-              <button
-                onClick={() => setShowFullText(!showFullText)}
-                className="mt-1 text-blue-600 dark:text-blue-400 text-sm underline hover:text-blue-800"
-              >
-                {showFullText ? "Show less" : "Show more"}
-              </button>
+              <div className="mt-1 flex items-center gap-3">
+                <button
+                  onClick={() => setShowFullText(!showFullText)}
+                  className="text-blue-600 dark:text-blue-400 text-sm underline hover:text-blue-800"
+                >
+                  {showFullText ? "Show less" : "Show more"}
+                </button>
+                <button
+                  onClick={() => handleCopyToClipboard(post.content)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
+                  title="Copy post content"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleCopyImageToClipboard}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
+                  title="Copy post image"
+                >
+                  <ImageLucide className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </div>
           <div

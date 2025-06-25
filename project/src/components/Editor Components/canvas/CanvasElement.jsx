@@ -31,10 +31,10 @@ const CanvasElement = ({
     visible,
     locked,
   } = element;
-  const { updateElement, canvas } = useEditor();
+  const { updateElement, canvas, elements } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef();
-
+  console.log(elements);
   // Add keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -294,22 +294,22 @@ const CanvasElement = ({
   useEffect(() => {
     const el = elementRef.current;
     if (!el) return;
-  
+
     const handler = (e) => {
       e.stopPropagation();
       onSelect(id, type);
     };
-  
+
     el.addEventListener("pointerdown", handler);
-  
+
     return () => el.removeEventListener("pointerdown", handler);
   }, [id, type, onSelect]);
-  
+  console.log("props", props, position);
   return (
     <>
       {type === "text" ? (
         <Rnd
-          key={id}
+          key={`${id}-${position.x}-${position.y}`} // ⬅️ force remount
           id={id}
           size={{ width: styles.width, height: styles.height }}
           position={{ x: position.x, y: position.y }}
@@ -332,9 +332,12 @@ const CanvasElement = ({
           onDragStop={handleDragStop}
           onClick={handleClick}
           enableResizing={false}
+          // enableUserSelectHack={false}
           disableDragging={locked}
           dragHandleClassName={isSelected ? "drag-handle" : ""}
-          className={`border-2 ${isSelected ? "border-blue-500" : "border-transparent"} ${styles?.padding > 0 && "my-box"}`}
+          className={`border-2 ${
+            isSelected ? "border-blue-500" : "border-transparent"
+          } ${styles?.padding > 0 && "my-box"}`}
         >
           <style>
             {`
@@ -454,7 +457,8 @@ const CanvasElement = ({
         </Rnd>
       ) : (
         <Rnd
-          key={id}
+          key={`${id}-${position.x}-${position.y}`} // ⬅️ force remount
+          id={id}
           size={{ width: styles.width, height: styles.height }}
           position={{ x: position.x, y: position.y }}
           style={{
@@ -473,12 +477,14 @@ const CanvasElement = ({
           onDragStop={handleDragStop}
           onClick={handleClick}
           enableResizing={false}
+          // enableUserSelectHack={false}
           disableDragging={locked}
           dragHandleClassName={isSelected ? "drag-handle" : ""}
         >
           {["image", "shape"].includes(type) && (
             <div
               ref={elementRef}
+
             
               className={`border-2 ${isSelected ? "border-blue-500" : "border-transparent"} drag-handle`}
 
@@ -495,65 +501,97 @@ const CanvasElement = ({
                 msUserSelect: "none",
               }}
             >
-              {type === "image" && (
-                props.mask ? (
+              {type === "image" &&
+                (props.mask ? (
                   (() => {
-                    const maskShape = hardCodedShapes.find(s => s.id === props.mask);
-                    if (!maskShape) return (
-                      <img
-                        id={element.id}
-                        src={props.src}
-                        style={{
-                          ...styles,
-                          position: "static",
-                          transform: "rotate(0deg)",
-                        }}
-                        alt="Canvas"
-                        className="w-full h-full object-cover"
-                        draggable={false}
-                      />
+                    const maskShape = hardCodedShapes.find(
+                      (s) => s.id === props.mask
                     );
+                    if (!maskShape)
+                      return (
+                        <img
+                          id={element.id}
+                          src={props.src}
+                          style={{
+                            ...styles,
+                            position: "static",
+                            transform: "rotate(0deg)",
+                          }}
+                          alt="Canvas"
+                          className="w-full h-full object-cover"
+                          draggable={false}
+                        />
+                      );
                     // Try to extract path or polygon
-                    const innerSVG = maskShape.svg.replace(/<svg[^>]*>/i, "")   // Remove opening <svg> tag
-  .replace(/<\/svg>/i, "")      // Remove closing </svg> tag
-  .trim();
-                    const pathMatch = innerSVG.match(/<path[^>]*d="([^"]+)"[^>]*>/);
-                    const polygonMatch = innerSVG.match(/<polygon[^>]*points="([^"]+)"[^>]*>/);
-                    const rectMatch = innerSVG.match(/<rect[^>]*?(?:x="([^"]*)")?[^>]*?(?:y="([^"]*)")?[^>]*?width="([^"]+)"[^>]*?height="([^"]+)"[^>]*>/);
+                    const innerSVG = maskShape.svg
+                      .replace(/<svg[^>]*>/i, "") // Remove opening <svg> tag
+                      .replace(/<\/svg>/i, "") // Remove closing </svg> tag
+                      .trim();
+                    const pathMatch = innerSVG.match(
+                      /<path[^>]*d="([^"]+)"[^>]*>/
+                    );
+                    const polygonMatch = innerSVG.match(
+                      /<polygon[^>]*points="([^"]+)"[^>]*>/
+                    );
+                    const rectMatch = innerSVG.match(
+                      /<rect[^>]*?(?:x="([^"]*)")?[^>]*?(?:y="([^"]*)")?[^>]*?width="([^"]+)"[^>]*?height="([^"]+)"[^>]*>/
+                    );
                     const rxMatch = innerSVG.match(/rx="([^"]+)"/);
                     const ryMatch = innerSVG.match(/ry="([^"]+)"/);
-                    const circleMatch = innerSVG.match(/<circle[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*r="([^"]+)"[^>]*>/);
-                    const ellipseMatch = innerSVG.match(/<ellipse[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*rx="([^"]+)"[^>]*ry="([^"]+)"[^>]*>/);
-                    const lineMatch = innerSVG.match(/<line[^>]*x1="([^"]+)"[^>]*y1="([^"]+)"[^>]*x2="([^"]+)"[^>]*y2="([^"]+)"[^>]*>/);
-                    
-                
-                         
-                    return (
-                      <svg width="100%" height="100%" viewBox="0 0 100 100" style={{ display: "block" }}>
-                        <defs>
-                        <clipPath id={`clip-${element.id}`}>
-        {pathMatch ? (
-          <path d={pathMatch[1]} />
-        ) : polygonMatch ? (
-          <polygon points={polygonMatch[1]} />
-        ) : rectMatch ? (
-          <rect
-            x={rectMatch[1] || "0"}
-            y={rectMatch[2] || "0"}
-            width={rectMatch[3]}
-            height={rectMatch[4]}
-            rx={rxMatch ? rxMatch[1] : undefined}
-            ry={ryMatch ? ryMatch[1] : undefined}
-          />
-        ) : circleMatch ? (
-          <circle cx={circleMatch[1]} cy={circleMatch[2]} r={circleMatch[3]} />
-        ) : ellipseMatch ? (
-          <ellipse cx={ellipseMatch[1]} cy={ellipseMatch[2]} rx={ellipseMatch[3]} ry={ellipseMatch[4]} />
-        ) : lineMatch ? (
-          <line x1={lineMatch[1]} y1={lineMatch[2]} x2={lineMatch[3]} y2={lineMatch[4]} />
-        ) : null}
-      </clipPath>
+                    const circleMatch = innerSVG.match(
+                      /<circle[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*r="([^"]+)"[^>]*>/
+                    );
+                    const ellipseMatch = innerSVG.match(
+                      /<ellipse[^>]*cx="([^"]+)"[^>]*cy="([^"]+)"[^>]*rx="([^"]+)"[^>]*ry="([^"]+)"[^>]*>/
+                    );
+                    const lineMatch = innerSVG.match(
+                      /<line[^>]*x1="([^"]+)"[^>]*y1="([^"]+)"[^>]*x2="([^"]+)"[^>]*y2="([^"]+)"[^>]*>/
+                    );
 
+                    return (
+                      <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 100 100"
+                        style={{ display: "block" }}
+                      >
+                        <defs>
+                          <clipPath id={`clip-${element.id}`}>
+                            {pathMatch ? (
+                              <path d={pathMatch[1]} />
+                            ) : polygonMatch ? (
+                              <polygon points={polygonMatch[1]} />
+                            ) : rectMatch ? (
+                              <rect
+                                x={rectMatch[1] || "0"}
+                                y={rectMatch[2] || "0"}
+                                width={rectMatch[3]}
+                                height={rectMatch[4]}
+                                rx={rxMatch ? rxMatch[1] : undefined}
+                                ry={ryMatch ? ryMatch[1] : undefined}
+                              />
+                            ) : circleMatch ? (
+                              <circle
+                                cx={circleMatch[1]}
+                                cy={circleMatch[2]}
+                                r={circleMatch[3]}
+                              />
+                            ) : ellipseMatch ? (
+                              <ellipse
+                                cx={ellipseMatch[1]}
+                                cy={ellipseMatch[2]}
+                                rx={ellipseMatch[3]}
+                                ry={ellipseMatch[4]}
+                              />
+                            ) : lineMatch ? (
+                              <line
+                                x1={lineMatch[1]}
+                                y1={lineMatch[2]}
+                                x2={lineMatch[3]}
+                                y2={lineMatch[4]}
+                              />
+                            ) : null}
+                          </clipPath>
                         </defs>
                         <image
                           href={props.src}
@@ -579,8 +617,7 @@ const CanvasElement = ({
                     className="w-full h-full object-cover"
                     draggable={false}
                   />
-                )
-              )}
+                ))}
 
               {type === "shape" && (
                 <div

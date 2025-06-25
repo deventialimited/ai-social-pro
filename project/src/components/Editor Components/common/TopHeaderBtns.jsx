@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import Dropdown from "./Dropdown";
 import SaveDropdown from "./SaveDropdown";
 import pica from "pica";
+import { blobToDataURL } from "../canvas/helpers/generateReplacedPostDesignValues";
 const TopHeaderBtns = ({
   setActiveElement,
   setSelectedElementId,
@@ -47,8 +48,6 @@ const TopHeaderBtns = ({
     setCanvasLoading,
     setPostOtherValues,
     selectedTemplateId,
-    replacedPostDesignValues,
-    setReplacedPostDesignValues,
   } = useEditor();
   const [isSavePostLoading, setIsSavePostLoading] = useState(false);
   const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);
@@ -161,17 +160,15 @@ const TopHeaderBtns = ({
       const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
         type: "image/webp",
       });
-      const postDesign = selectedTemplateId
-        ? replacedPostDesignValues
-        : postDesignData;
+
       // Step 5: Send to API
       onSavePost.mutate(
         {
           postId,
           type,
           postImage: file,
-          postDesignData: postDesign,
-          allFiles: selectedTemplateId ? postDesign?.allFiles : allFiles,
+          postDesignData,
+          allFiles,
         },
         {
           onSuccess: () => {
@@ -303,7 +300,8 @@ const TopHeaderBtns = ({
         },
       });
       const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+      // const objectUrl = URL.createObjectURL(blob);
+      const objectUrl = await blobToDataURL(blob);
       const newElement = createImageElement(objectUrl, "other", src);
       addElement(newElement);
 
@@ -374,7 +372,7 @@ const TopHeaderBtns = ({
       console.log(error);
     }
   };
-
+  console.log(postDesignData, allFiles);
   useEffect(() => {
     if (postDetails) {
       setPostOtherValues({

@@ -15,8 +15,6 @@ export const EditorProvider = ({ children }) => {
   const [isCanvasLoading, setCanvasLoading] = useState(false);
   const [postOtherValues, setPostOtherValues] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
-  const [replacedPostDesignValues, setReplacedPostDesignValues] =
-    useState(null);
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
@@ -401,8 +399,6 @@ export const EditorProvider = ({ children }) => {
     // Files
     allFiles,
     setAllFiles,
-    replacedPostDesignValues,
-    setReplacedPostDesignValues,
 
     // Composite
     postDesignData,

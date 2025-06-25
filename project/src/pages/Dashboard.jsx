@@ -50,16 +50,7 @@ export const Dashboard = () => {
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const [isGeneratingBatchPost, setIsGeneratingBatchPost] = useState(false);
 
- useEffect(() => {
-    if (isGeneratingPost || isGeneratingBatchPost) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isGeneratingPost, isGeneratingBatchPost]);
+
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);

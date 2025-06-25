@@ -24,12 +24,16 @@ function EditorCanvas({
     postOtherValues,
     selectedTemplateId,
     setSelectedTemplateId,
+    setCanvasLoading,
     removeElement,
     allFiles,
+    setElements,
+    setCanvas,
+    setLayers,
+    setAllFiles,
     layers,
     backgrounds,
-    replacedPostDesignValues,
-    setReplacedPostDesignValues,
+    setBackgrounds,
   } = useEditor();
 
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
@@ -42,16 +46,23 @@ function EditorCanvas({
 
   const [isMobile, setIsMobile] = useState(false);
   const handleGenerate = useCallback(async () => {
+    setCanvasLoading(true);
     const result = await generateReplacedPostDesignValues(postOtherValues, {
       canvas,
       elements,
       layers,
       backgrounds,
     });
-
-    setReplacedPostDesignValues(result);
+    setCanvas(result?.canvas);
+    setElements(result?.elements);
+    setLayers(result?.layers);
+    setAllFiles(result?.allFiles);
+    setBackgrounds(result?.backgrounds);
+    setSelectedTemplateId(null);
+    setCanvasLoading(false);
   }, [postOtherValues, canvas, elements, layers, backgrounds]);
-
+  // console.log(postOtherValues);
+  console.log(elements);
   useEffect(() => {
     const shouldGenerate =
       selectedTemplateId &&
@@ -64,7 +75,7 @@ function EditorCanvas({
       handleGenerate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTemplateId, canvas, elements, layers, backgrounds]);
+  }, [selectedTemplateId]);
 
   useEffect(() => {
     function handleResize() {
@@ -414,41 +425,6 @@ function EditorCanvas({
                     />
                   </div>
                 </div>
-                {/* Hidden canvas for PNG conversion */}
-                {selectedTemplateId && replacedPostDesignValues && (
-                  <div className="absolute left-0 right-0 z-[-5] top-0 bottom-0 flex items-center justify-center">
-                    <div
-                      id="hiddenCanvas"
-                      className="bg-white shadow-lg overflow-hidden relative z-0"
-                      style={{
-                        ...replacedPostDesignValues?.canvas.styles,
-                        width: `${Math.max(
-                          Math.min(
-                            replacedPostDesignValues?.canvas.width / 3,
-                            600
-                          )
-                        )}px`,
-                        height: `${Math.max(
-                          Math.min(
-                            replacedPostDesignValues?.canvas.height / 3,
-                            600
-                          )
-                        )}px`,
-                      }}
-                    >
-                      {replacedPostDesignValues?.elements?.map((el) => (
-                        <CanvasElement
-                          key={el.id}
-                          element={el}
-                          onSelect={handleSelectElement}
-                          isSelected={el.id === selectedElementId}
-                          showSelectorOverlay={showSelectorOverlay}
-                          setShowSelectorOverlay={setShowSelectorOverlay}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
               </TransformComponent>
             </>
           )}
