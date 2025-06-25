@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 
 // Custom hook for alignment guides (snap guides)
-const useAlignmentGuides = (elements, snapThreshold = 8) => {
+const useAlignmentGuides = (elements, canvasWidth, canvasHeight, snapThreshold = 8) => {
   const [guides, setGuides] = useState([]);
 
   // Helper to get width/height from element
@@ -17,6 +17,47 @@ const useAlignmentGuides = (elements, snapThreshold = 8) => {
     const draggedDims = getDims(draggedElement);
     const otherElements = elements.filter(el => el.id !== draggedElement.id);
 
+    // --- Canvas guides (center, edges) ---
+    if (canvasWidth && canvasHeight) {
+      // Vertical: left, center, right
+      const canvasVerticals = [
+        { pos: 0, type: 'canvas-left' },
+        { pos: canvasWidth / 2, type: 'canvas-center' },
+        { pos: canvasWidth, type: 'canvas-right' },
+      ];
+      canvasVerticals.forEach(({ pos, type }) => {
+        const draggedPositions = [
+          draggedDims.x,
+          draggedDims.x + draggedDims.width / 2,
+          draggedDims.x + draggedDims.width
+        ];
+        draggedPositions.forEach(dragPos => {
+          if (Math.abs(dragPos - pos) < snapThreshold) {
+            newGuides.push({ type: 'vertical', x: pos, id: `v-canvas-${type}` });
+          }
+        });
+      });
+      // Horizontal: top, center, bottom
+      const canvasHorizontals = [
+        { pos: 0, type: 'canvas-top' },
+        { pos: canvasHeight / 2, type: 'canvas-center' },
+        { pos: canvasHeight, type: 'canvas-bottom' },
+      ];
+      canvasHorizontals.forEach(({ pos, type }) => {
+        const draggedPositions = [
+          draggedDims.y,
+          draggedDims.y + draggedDims.height / 2,
+          draggedDims.y + draggedDims.height
+        ];
+        draggedPositions.forEach(dragPos => {
+          if (Math.abs(dragPos - pos) < snapThreshold) {
+            newGuides.push({ type: 'horizontal', y: pos, id: `h-canvas-${type}` });
+          }
+        });
+      });
+    }
+
+    // --- Other elements guides ---
     otherElements.forEach(element => {
       const dims = getDims(element);
       // Vertical guides (left, center, right)
@@ -62,7 +103,7 @@ const useAlignmentGuides = (elements, snapThreshold = 8) => {
     );
     setGuides(uniqueGuides);
     return uniqueGuides;
-  }, [elements, snapThreshold]);
+  }, [elements, canvasWidth, canvasHeight, snapThreshold]);
 
   const snapToGuides = useCallback((element, currentGuides) => {
     let { x, y } = element.position;
