@@ -34,6 +34,7 @@ function EditorCanvas({
 
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [scale, setScale] = useState(1);
   const [showZoomDropdown, setShowZoomDropdown] = useState(false);
   const zoomLevels = [50, 75, 100, 150, 200, 300];
   const containerRef = useRef(null);
@@ -210,6 +211,7 @@ function EditorCanvas({
             if (state && state.scale) {
               const newZoom = Math.round(state.scale * 100);
               setZoomLevel(newZoom);
+              setScale(state.scale);
             }
           }}
         >
