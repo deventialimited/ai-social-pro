@@ -188,7 +188,26 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return "";
     }
   };
+  const handleCopyImageToClipboard = async () => {
+    const imageUrl = getSelectedImageUrl();
+    if (!imageUrl) {
+      toast.error("Image not found");
+      return;
+    }
 
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const item = new ClipboardItem({ [blob.type]: blob });
+
+      await navigator.clipboard.write([item]);
+      toast.success("Image copied to clipboard!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to copy image.");
+    }
+  };
+  
   const handleApprove = async () => {
     const now = new Date();
     if (postDate < now) {
@@ -348,7 +367,14 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
                   title="Copy post content"
                 >
-                  <Copy/>
+                  <Copy />
+                </button>
+                <button
+                  onClick={handleCopyImageToClipboard}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
+                  title="Copy post image"
+                >
+                  <Image className="w-4 h-4" />
                 </button>
               </div>
             )}
