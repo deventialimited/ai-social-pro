@@ -4,13 +4,14 @@ import {
   Edit,
   Trash2,
   Check,
-  Image,
+  Image as ImageLucide, // Renamed to avoid conflict with global Image constructor
   Palette,
   Type,
   Download,
   Save,
   Copy,
   Loader2,
+  Image as ImageIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { PostEditModal } from "./PostEditModal";
@@ -149,7 +150,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       link.href = url;
 
       // Set download filename based on selected button
-
       const filename = `${selectedButton}_${post.postId}.png`;
       link.setAttribute("download", filename);
 
@@ -165,17 +165,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
-  const handleDateChange = (date) => {
-    if (date && !isNaN(date.getTime())) {
-      setSelectedDate(date);
-      if (onReschedule) {
-        onReschedule(post._id, date);
-      }
-    } else {
-      toast.error("Invalid date selected");
-    }
-  };
-
   const getSelectedImageUrl = () => {
     switch (selectedButton) {
       case "brandingImage":
@@ -188,6 +177,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return "";
     }
   };
+
   const handleCopyImageToClipboard = async () => {
     const imageUrl = getSelectedImageUrl();
     if (!imageUrl) {
@@ -196,18 +186,43 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
 
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const item = new ClipboardItem({ [blob.type]: blob });
+      const img = new Image(); // Uses global Image constructor
+      img.crossOrigin = "anonymous"; // Required to avoid tainted canvas
+      img.src = imageUrl;
 
-      await navigator.clipboard.write([item]);
-      toast.success("Image copied to clipboard!");
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            toast.error("Failed to convert image.");
+            return;
+          }
+
+          try {
+            const item = new ClipboardItem({ "image/png": blob });
+            await navigator.clipboard.write([item]);
+            toast.success("Image copied to clipboard!");
+          } catch (error) {
+            console.error(error);
+            toast.error("Clipboard write failed.");
+          }
+        }, "image/png");
+      };
+
+      img.onerror = () => {
+        toast.error("Failed to load image.");
+      };
     } catch (err) {
       console.error(err);
       toast.error("Failed to copy image.");
     }
   };
-  
+
   const handleApprove = async () => {
     const now = new Date();
     if (postDate < now) {
@@ -259,6 +274,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       setLoadingMessage(null);
     }
   };
+
   const handleCopyToClipboard = (text) => {
     navigator.clipboard
       .writeText(text)
@@ -288,6 +304,17 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       );
     } else {
       toast.error("Invalid reschedule date");
+    }
+  };
+
+  const handleDateChange = (date) => {
+    if (date && !isNaN(date.getTime())) {
+      setSelectedDate(date);
+      if (onReschedule) {
+        onReschedule(post._id, date);
+      }
+    } else {
+      toast.error("Invalid date selected");
     }
   };
 
@@ -323,7 +350,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             {["image", "brandingImage", "sloganImage"].map((type) => {
               const Icon =
                 type === "image"
-                  ? Image
+                  ? ImageLucide // Updated to ImageLucide
                   : type === "brandingImage"
                   ? Palette
                   : Type;
@@ -374,7 +401,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
                   title="Copy post image"
                 >
-                  <Image className="w-4 h-4" />
+                  <ImageLucide className="w-4 h-4" />{" "}
+                  {/* Updated to ImageLucide */}
                 </button>
               </div>
             )}
