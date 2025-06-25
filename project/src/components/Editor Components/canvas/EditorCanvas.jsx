@@ -38,6 +38,7 @@ function EditorCanvas({
 
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [scale, setScale] = useState(1);
   const [showZoomDropdown, setShowZoomDropdown] = useState(false);
   const zoomLevels = [50, 75, 100, 150, 200, 300];
   const containerRef = useRef(null);
@@ -170,7 +171,11 @@ function EditorCanvas({
   }, [showZoomDropdown]);
 
   // Alignment guides integration
-  const { guides, getAlignmentGuides, snapToGuides, clearGuides } = useAlignmentGuides(elements);
+  const { guides, getAlignmentGuides, snapToGuides, clearGuides } = useAlignmentGuides(
+    elements,
+    canvas?.width || 0,
+    canvas?.height || 0
+  );
 
   return (
     <div
@@ -217,6 +222,7 @@ function EditorCanvas({
             if (state && state.scale) {
               const newZoom = Math.round(state.scale * 100);
               setZoomLevel(newZoom);
+              setScale(state.scale);
             }
           }}
         >
