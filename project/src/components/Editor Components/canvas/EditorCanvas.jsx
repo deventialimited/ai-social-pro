@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useLayoutEffect } from "react";
 import { Copy, ChevronUp, ChevronDown, Trash } from "lucide-react";
 import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
@@ -39,6 +39,8 @@ function EditorCanvas({
   const [showSelectorOverlay, setShowSelectorOverlay] = useState(true);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [canvasRect, setCanvasRect] = useState(null);
   const [showZoomDropdown, setShowZoomDropdown] = useState(false);
   const zoomLevels = [50, 75, 100, 150, 200, 300];
   const containerRef = useRef(null);
@@ -177,6 +179,17 @@ function EditorCanvas({
     canvas?.height || 0
   );
 
+  useLayoutEffect(() => {
+    if (canvasContainerRef.current) {
+      const updateRect = () => {
+        setCanvasRect(canvasContainerRef.current.getBoundingClientRect());
+      };
+      updateRect();
+      window.addEventListener('resize', updateRect);
+      return () => window.removeEventListener('resize', updateRect);
+    }
+  }, [canvasContainerRef, scale, position]);
+
   return (
     <div
       ref={containerRef}
@@ -223,6 +236,7 @@ function EditorCanvas({
               const newZoom = Math.round(state.scale * 100);
               setZoomLevel(newZoom);
               setScale(state.scale);
+              setPosition({ x: state.positionX, y: state.positionY });
             }
           }}
         >
@@ -420,8 +434,11 @@ function EditorCanvas({
                     {/* Alignment Guides Overlay (should be last for stacking) */}
                     <AlignmentGuides
                       guides={guides}
-                      containerWidth="100%"
-                      containerHeight="100%"
+                      containerWidth={canvas?.width || 0}
+                      containerHeight={canvas?.height || 0}
+                      scale={scale}
+                      position={position}
+                      canvasRect={canvasRect}
                     />
                   </div>
                 </div>
