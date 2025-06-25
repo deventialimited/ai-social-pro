@@ -1,6 +1,6 @@
 import React from 'react';
 
-const AlignmentGuides = ({ guides, containerWidth = '100%', containerHeight = '100%', scale = 1 }) => (
+const AlignmentGuides = ({ guides, containerWidth = '100%', containerHeight = '100%' }) => (
   <div
     style={{
       position: 'absolute',
@@ -10,8 +10,6 @@ const AlignmentGuides = ({ guides, containerWidth = '100%', containerHeight = '1
       height: containerHeight,
       pointerEvents: 'none',
       zIndex: 50,
-      transform: `scale(${scale})`,
-      transformOrigin: 'top left',
     }}
   >
     {guides.map(guide => (
