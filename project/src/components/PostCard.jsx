@@ -394,15 +394,14 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
                   title="Copy post content"
                 >
-                  <Copy />
+                  <Copy className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleCopyImageToClipboard}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 text-sm"
                   title="Copy post image"
                 >
-                  <ImageLucide className="w-4 h-4" />{" "}
-                  {/* Updated to ImageLucide */}
+                  <ImageLucide className="w-4 h-4" />
                 </button>
               </div>
             )}
