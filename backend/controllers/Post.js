@@ -189,7 +189,12 @@ exports.updatePost = async (req, res) => {
 exports.updatePostImage = async (req, res) => {
   try {
     const { postId, imageUrl } = req.body;
-
+    console.log(
+      "Updating post image for postId:",
+      postId,
+      "with imageUrl:",
+      imageUrl
+    );
     if (!postId || !imageUrl) {
       return res
         .status(400)
@@ -280,6 +285,7 @@ exports.processPubSub = async (req, res) => {
       related_keywords: jsonData.related_keywords || [],
       content: jsonData.content || "",
       slogan: jsonData.slogan || "",
+      imageIdeas: jsonData.imageIdeas || [], // Store imageIdeas from the response
       postDate: jsonData.date ? new Date(jsonData.date) : Date.now(),
       platform: jsonData.platform?.toLowerCase(),
     });

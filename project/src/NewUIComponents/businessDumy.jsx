@@ -165,6 +165,8 @@ export const BusinessSectionDummy = ({
         content: facebookData.content,
         slogan: facebookData.slogan,
         postDate: facebookData.date,
+        imageIdeas: facebookData.imageIdeas || [], // Include imageIdeas from the response
+
         platform: facebookData.platform,
       };
 
@@ -189,6 +191,7 @@ export const BusinessSectionDummy = ({
             related_keywords: data.related_keywords || [],
             content: data.content,
             slogan: data.slogan,
+            imageIdeas: data.imageIdeas || [], // Include imageIdeas from the response
             postDate: data.date,
             platform: data.platform,
           };
