@@ -15,6 +15,7 @@ function BackgroundTab() {
 
   const [gradientsToShow, setGradientsToShow] = useState(12); // Show 12 gradients initially
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null); // Add ref for scrollable container
 
   // Helper to normalize color response
   const normalizeColors = (data) =>
@@ -183,7 +184,10 @@ function BackgroundTab() {
           });
         }
       },
-      { threshold: 1 }
+      {
+        threshold: 1,
+        root: scrollContainerRef.current || null, // Use the scrollable container as root
+      }
     );
     if (bottomRef.current) {
       observer.observe(bottomRef.current);
@@ -199,7 +203,7 @@ function BackgroundTab() {
   }, [filteredGradients, searchQuery]);
 
   return (
-    <div className="p-4 h-full overflow-y-auto">
+    <div className="p-4 h-full overflow-y-auto" ref={scrollContainerRef}>
       {/* Search Field */}
       <div className="relative mb-4">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
