@@ -226,11 +226,34 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const updateElement = useCallback((id, newProps) => {
-    setElements((prev) => {
-      const newElements = prev.map((el) =>
-        el.id === id ? { ...el, ...newProps } : el
-      );
-      return newElements;
+    setElements((prevElements) => {
+      return prevElements.map((el) => {
+        if (el.id !== id) return el;
+
+        const mergedElement = { ...el }; // Shallow clone
+
+        for (const key in newProps) {
+          const newVal = newProps[key];
+          const oldVal = el[key];
+
+          // If value is an object (deep merge), not primitive
+          if (
+            typeof newVal === "object" &&
+            newVal !== null &&
+            !Array.isArray(newVal)
+          ) {
+            mergedElement[key] = {
+              ...(oldVal || {}),
+              ...newVal,
+            };
+          } else {
+            // Direct replace for primitives
+            mergedElement[key] = newVal;
+          }
+        }
+
+        return mergedElement;
+      });
     });
   }, []);
 
@@ -272,15 +295,32 @@ export const EditorProvider = ({ children }) => {
   }, []);
 
   const updateLayer = useCallback((id, newProps) => {
-    setLayers((prev) =>
-      prev.map((layer) =>
-        layer.id === id
-          ? {
-              ...layer,
-              ...newProps,
-            }
-          : layer
-      )
+    setLayers((prevLayers) =>
+      prevLayers.map((layer) => {
+        if (layer.id !== id) return layer;
+
+        const mergedLayer = { ...layer };
+
+        for (const key in newProps) {
+          const newVal = newProps[key];
+          const oldVal = layer[key];
+
+          if (
+            typeof newVal === "object" &&
+            newVal !== null &&
+            !Array.isArray(newVal)
+          ) {
+            mergedLayer[key] = {
+              ...(oldVal || {}),
+              ...newVal,
+            };
+          } else {
+            mergedLayer[key] = newVal;
+          }
+        }
+
+        return mergedLayer;
+      })
     );
   }, []);
 

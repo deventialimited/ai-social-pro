@@ -227,7 +227,7 @@ function EditorCanvas({
           maxScale={5}
           centerOnInit={true}
           wheel={{ step: 0.1 }}
-          panning={{ disabled: false,velocityDisabled: false          }}
+          panning={{ disabled: false, velocityDisabled: false }}
           doubleClick={{ disabled: true }}
           limitToBounds={true}
           ref={transformRef}
@@ -408,11 +408,12 @@ function EditorCanvas({
                   <div
                     ref={canvasContainerRef}
                     id="#canvas"
-                    className="bg-white shadow-lg overflow-hidden relative z-0"
+                    className="bg-white border-2 border-blue-500 shadow-lg overflow-hidden relative z-0"
                     style={{
                       ...canvas.styles,
                       width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
                       height: `${Math.max(Math.min(canvas.height / 3, 600))}px`,
+                      boxSizing: "border-box", // 🟢 Add this line
                     }}
                     onClick={handleCanvasClick}
                   >
@@ -434,11 +435,12 @@ function EditorCanvas({
                     {/* Alignment Guides Overlay (should be last for stacking) */}
                     <AlignmentGuides
                       guides={guides}
-                      containerWidth={canvas?.width || 0}
-                      containerHeight={canvas?.height || 0}
-                      scale={scale}
-                      position={position}
-                      canvasRect={canvasRect}
+                      containerWidth={`${Math.max(
+                        Math.min(canvas.width / 3, 600)
+                      )}px`}
+                      containerHeight={`${Math.max(
+                        Math.min(canvas.height / 3, 600)
+                      )}px`}
                     />
                   </div>
                 </div>
