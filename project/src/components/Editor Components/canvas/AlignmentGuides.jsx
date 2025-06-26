@@ -1,12 +1,24 @@
 import React from 'react';
 
 const AlignmentGuides = ({ guides, containerWidth = '100%', containerHeight = '100%' }) => (
-  <>
+  <div
+    style={{
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: containerWidth,
+      height: containerHeight,
+      pointerEvents: 'none',
+      zIndex: 50,
+    }}
+  >
     {guides.map(guide => (
       <div
         key={guide.id}
-        className="absolute pointer-events-none z-50"
         style={{
+          position: 'absolute',
+          pointerEvents: 'none',
+          zIndex: 50,
           ...(guide.type === 'vertical'
             ? {
                 left: guide.x,
@@ -28,7 +40,7 @@ const AlignmentGuides = ({ guides, containerWidth = '100%', containerHeight = '1
         }}
       />
     ))}
-  </>
+  </div>
 );
 
 export default AlignmentGuides; 
