@@ -561,7 +561,7 @@ export const createShapeElement = (svgString) => {
     position: { x: 100, y: 100 },
     styles: {
       width: 200,
-      height: 200,
+      height: 30,
       color: "#D3D3D3",
       fill: "#D3D3D3",
     },
