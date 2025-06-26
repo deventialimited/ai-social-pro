@@ -495,8 +495,10 @@ const CanvasElement = ({
           {["image", "shape"].includes(type) && (
             <div
               ref={elementRef}
-              className={`border-2 ${
-                isSelected ? "border-blue-500" : "border-transparent"
+              className={`${
+                isSelected
+                  ? "border-2 border-blue-500"
+                  : "border-transparent border-none"
               } drag-handle`}
               style={{
                 position: "static",
