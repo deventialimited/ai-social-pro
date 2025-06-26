@@ -8,7 +8,7 @@ export const blobToDataURL = (blob) => {
     reader.readAsDataURL(blob);
   });
 };
-const getSafeUnsplashImageBlob = async (
+export const getSafeUnsplashImageBlob = async (
   keywords = [],
   width = 600,
   height = 600
@@ -21,33 +21,30 @@ const getSafeUnsplashImageBlob = async (
     .join(" ");
 
   try {
-    const { data } = await axios.get("https://api.unsplash.com/photos", {
+    const { data } = await axios.get("https://api.unsplash.com/photos/random", {
       params: {
-        page: 1,
-        per_page: 10,
         query,
         orientation: "landscape",
+        content_filter: "high", // optional, but good quality
         client_id: accessKey,
       },
     });
 
-    const first = data[0];
-    if (!first?.urls?.regular) throw new Error("No image found from Unsplash");
+    if (!data?.urls?.raw) throw new Error("No image found from Unsplash");
 
-    const imageUrl = `${first.urls.raw}&w=${width}&h=${height}&fit=crop&q=80&fm=jpg`;
+    const imageUrl = `${data.urls.raw}&w=${width}&h=${height}&fit=crop&q=80&fm=jpg`;
 
-    // ✅ Download image as blob safely (from CORS-allowed URL)
     const imageResponse = await axios.get(imageUrl, { responseType: "blob" });
     const blob = imageResponse.data;
-    // const objectUrl = URL.createObjectURL(blob);
     const objectUrl = await blobToDataURL(blob);
-    console.log("other", objectUrl);
+
     return { blob, objectUrl, imageUrl };
   } catch (error) {
     console.error("Failed to fetch Unsplash image:", error);
     return null;
   }
 };
+
 
 export async function generateReplacedPostDesignValues(
   postOtherValues,

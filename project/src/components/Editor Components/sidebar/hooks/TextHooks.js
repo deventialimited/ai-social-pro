@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 
-export const createTextElement = (category = "body") => {
+export const createTextElement = (category = "body", text) => {
   const defaultStyles = {
     color: "#000000",
     fontSize: "24px",
@@ -67,9 +67,9 @@ export const createTextElement = (category = "body") => {
           : category === "sub-header"
           ? "Sub Header Text"
           : category === "slogan"
-          ? "Your Slogan Here"
+          ? text
           : category === "brandName"
-          ? "Your Business Name Here"
+          ? text
           : "Body Text",
     },
   };

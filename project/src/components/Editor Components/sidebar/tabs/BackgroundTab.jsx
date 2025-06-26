@@ -158,12 +158,21 @@ function BackgroundTab() {
   };
 
   const handleGradientClick = (gradient) => {
+    const isBrandColors = gradient.id === "brand-colors";
+    const backgroundColor = isBrandColors
+      ? postOtherValues?.siteColors?.[0] || "#ffffff"
+      : "";
+
     updateCanvasStyles({
       backgroundType: gradient.id,
-      backgroundImage: gradient.css,
-      backgroundColor: "",
+      backgroundImage: isBrandColors ? "" : gradient.css,
+      backgroundColor,
     });
-    updateBackground("gradient", gradient.css);
+
+    updateBackground(
+      "gradient",
+      isBrandColors ? backgroundColor : gradient.css
+    );
   };
 
   return (
