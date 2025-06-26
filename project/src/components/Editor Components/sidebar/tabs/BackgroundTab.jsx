@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 
@@ -12,6 +12,9 @@ function BackgroundTab() {
   const { postOtherValues } = useEditor();
 
   const { updateCanvasStyles, updateBackground } = useEditor();
+
+  const [gradientsToShow, setGradientsToShow] = useState(12); // Show 12 gradients initially
+  const bottomRef = useRef(null);
 
   // Helper to normalize color response
   const normalizeColors = (data) =>
@@ -166,6 +169,35 @@ function BackgroundTab() {
     updateBackground("gradient", gradient.css);
   };
 
+  // Infinite scroll for gradients
+  useEffect(() => {
+    if (isLoadingGradients) return;
+    if (searchQuery) return; // Disable infinite scroll when searching
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setGradientsToShow((prev) => {
+            // Show 12 more, but not more than available
+            if (prev >= filteredGradients.length) return prev;
+            return Math.min(prev + 12, filteredGradients.length);
+          });
+        }
+      },
+      { threshold: 1 }
+    );
+    if (bottomRef.current) {
+      observer.observe(bottomRef.current);
+    }
+    return () => {
+      if (bottomRef.current) observer.unobserve(bottomRef.current);
+    };
+  }, [isLoadingGradients, filteredGradients.length, searchQuery]);
+
+  // Reset gradientsToShow when gradients or search changes
+  useEffect(() => {
+    setGradientsToShow(12);
+  }, [filteredGradients, searchQuery]);
+
   return (
     <div className="p-4 h-full overflow-y-auto">
       {/* Search Field */}
@@ -217,7 +249,7 @@ function BackgroundTab() {
           </div>
         ) : (
           <div className="grid grid-cols-2 pb-10 gap-2">
-            {filteredGradients.slice(0, 12).map((gradient, index) => (
+            {filteredGradients.slice(0, gradientsToShow).map((gradient, index) => (
               <div
                 key={gradient.id}
                 className="relative aspect-video rounded-md overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
@@ -234,6 +266,10 @@ function BackgroundTab() {
                 )}
               </div>
             ))}
+            {/* Sentinel div for intersection observer */}
+            {gradientsToShow < filteredGradients.length && !searchQuery && (
+              <div ref={bottomRef} style={{ height: 1 }} />
+            )}
           </div>
         )}
       </div>
