@@ -1,16 +1,24 @@
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { createTextElement } from "../hooks/TextHooks";
 function TextTab() {
-  const { addElement } = useEditor();
+  const { addElement, postOtherValues } = useEditor();
 
   const handleAddText = (category) => {
-    const newElement = createTextElement(category);
+    const defaultText = "Add a Text";
+    const text =
+      category === "slogan"
+        ? postOtherValues?.slogan || defaultText
+        : category === "brandName"
+        ? postOtherValues?.brandName || defaultText
+        : defaultText;
+
+    const newElement = createTextElement(category, text);
     addElement(newElement);
   };
 
   return (
-<div className="p-4 overflow-auto max-h-[30vh] sm:overflow-visible sm:max-h-none">
-<h2
+    <div className="p-4 overflow-auto max-h-[30vh] sm:overflow-visible sm:max-h-none">
+      <h2
         onClick={() => handleAddText("header")}
         className="text-xl font-bold cursor-pointer mb-4"
       >

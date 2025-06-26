@@ -7,7 +7,10 @@ import {
   useUploadedImagesQuery,
 } from "../../../../libs/uploadedImageService";
 import { createImageElement } from "../hooks/ImagesHooks";
-import { blobToDataURL } from "../../canvas/helpers/generateReplacedPostDesignValues";
+import {
+  blobToDataURL,
+  getSafeUnsplashImageBlob,
+} from "../../canvas/helpers/generateReplacedPostDesignValues";
 
 function ImagesTab() {
   const [query, setQuery] = useState("");
@@ -94,18 +97,29 @@ function ImagesTab() {
     try {
       setCanvasLoading(true);
 
-      const response = await fetch(src, {
-        method: "GET",
-        headers: {
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-      });
-      const blob = await response.blob();
+      let blob, objectUrl, originalSrc;
 
-      // const objectUrl = URL.createObjectURL(blob);
-      const objectUrl = await blobToDataURL(blob);
-      const newElement = createImageElement(objectUrl, category, src); // includes a unique `id`
+      if (category === "other" && postOtherValues?.keywords?.length > 0) {
+        const image = await getSafeUnsplashImageBlob(postOtherValues.keywords);
+        if (!image) throw new Error("Unsplash image not found");
+
+        blob = image.blob;
+        objectUrl = image.objectUrl;
+        originalSrc = image.imageUrl;
+      } else {
+        const response = await fetch(src, {
+          method: "GET",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
+        blob = await response.blob();
+        objectUrl = await blobToDataURL(blob);
+        originalSrc = src;
+      }
+
+      const newElement = createImageElement(objectUrl, category, originalSrc);
       addElement(newElement);
 
       const file = new File([blob], newElement.id, { type: blob.type });
