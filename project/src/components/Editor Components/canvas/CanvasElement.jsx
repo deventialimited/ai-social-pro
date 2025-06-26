@@ -309,7 +309,7 @@ const CanvasElement = ({
     <>
       {type === "text" ? (
         <Rnd
-          key={`${id}-${position.x}-${position.y}`} // ⬅️ force remount
+          key={id}
           id={id}
           size={{ width: styles.width, height: styles.height }}
           position={{ x: position.x, y: position.y }}
@@ -457,7 +457,7 @@ const CanvasElement = ({
         </Rnd>
       ) : (
         <Rnd
-          key={`${id}-${position.x}-${position.y}`} // ⬅️ force remount
+          key={id}
           id={id}
           size={{ width: styles.width, height: styles.height }}
           position={{ x: position.x, y: position.y }}
