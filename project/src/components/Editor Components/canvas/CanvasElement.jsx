@@ -99,7 +99,8 @@ const CanvasElement = ({
 
   const handleDrag = (e, d) => {
     if (!element || element.locked) return;
-    if (getAlignmentGuides) getAlignmentGuides({ ...element, position: { x: d.x, y: d.y } });
+    if (getAlignmentGuides)
+      getAlignmentGuides({ ...element, position: { x: d.x, y: d.y } });
   };
 
   const handleDragStop = (e, d) => {
@@ -254,11 +255,17 @@ const CanvasElement = ({
       const scale = Math.max(newWidth / width, newHeight / height);
       newFontSize = Math.max(fontSize * scale, 8);
     }
-    if (getAlignmentGuides) getAlignmentGuides({
-      ...element,
-      position: { x: newX, y: newY },
-      styles: { ...styles, width: newWidth, height: newHeight, fontSize: `${newFontSize}px` },
-    });
+    if (getAlignmentGuides)
+      getAlignmentGuides({
+        ...element,
+        position: { x: newX, y: newY },
+        styles: {
+          ...styles,
+          width: newWidth,
+          height: newHeight,
+          fontSize: `${newFontSize}px`,
+        },
+      });
     updateElement(id, {
       position: { x: newX, y: newY },
       styles: {
@@ -430,6 +437,8 @@ const CanvasElement = ({
           >
             <EditableTextElement
               text={props.text}
+              updateElement={updateElement}
+              selectedElement={element}
               styles={{
                 ...styles,
                 position: "static",

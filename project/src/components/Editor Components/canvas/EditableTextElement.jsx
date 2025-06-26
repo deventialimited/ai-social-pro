@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 
-const EditableTextElement = ({ text, styles = {}, onChange }) => {
+const EditableTextElement = ({
+  selectedElement,
+  updateElement,
+  text,
+  styles = {},
+  onChange,
+}) => {
   const [currentText, setCurrentText] = useState(text || "");
   const [isEditing, setIsEditing] = useState(false);
   const [verticalOffset, setVerticalOffset] = useState(0);
@@ -121,7 +127,9 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
     const containerWidth = inputRef.current.clientWidth;
 
     // Use current font size from computed style
-    const computedFontSize = parseFloat(window.getComputedStyle(textRef.current).fontSize);
+    const computedFontSize = parseFloat(
+      window.getComputedStyle(textRef.current).fontSize
+    );
     let size = computedFontSize;
 
     // Only decrease font size if overflow
@@ -134,9 +142,22 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
       textRef.current.style.fontSize = size + "px";
     }
 
-    setFontSize(size); // Update font size for textarea
-  };
+    if (!selectedElement || selectedElement.locked) return;
 
+    const currentStyleFontSize = parseFloat(
+      selectedElement?.styles?.fontSize?.toString().replace("px", "")
+    );
+
+    // ✅ Only update if changed
+    if (currentStyleFontSize !== size) {
+      updateElement(selectedElement.id, {
+        styles: {
+          ...selectedElement.styles,
+          fontSize: `${size}px`,
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     adjustFontSizeToFit();
@@ -176,7 +197,7 @@ const EditableTextElement = ({ text, styles = {}, onChange }) => {
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
           fontFamily: styles.fontFamily || "inherit",
-          fontSize: fontSize + "px",
+          fontSize: styles.fontSize,
           lineHeight: styles.lineHeight || "normal",
           margin: styles.margin || "0",
           position: "absolute",
