@@ -235,10 +235,10 @@ function ImageToolbar({
       console.log("Canvas element not found.");
       return;
     }
-
+    const borderWidth = 2; // 2px on each side
     // 2. Get the width and height of the canvas element
-    const canvasWidth = canvasElement.offsetWidth;
-    const canvasHeight = canvasElement.offsetHeight;
+    const canvasWidth = canvasElement.offsetWidth + borderWidth;
+    const canvasHeight = canvasElement.offsetHeight + borderWidth;
     // Update the selected element with the new z-index
     updateElement(selectedElement.id, {
       position: { x: 0, y: 0 },

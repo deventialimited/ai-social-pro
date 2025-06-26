@@ -88,7 +88,6 @@ const TopHeaderBtns = ({
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
-
     try {
       let node;
       if (selectedTemplateId) {
@@ -115,6 +114,11 @@ const TopHeaderBtns = ({
           img.src = dataURL;
         }
       });
+      // Before Step 2: Temporarily remove canvas border/shadow
+      const originalBorder = node.style.border;
+      const originalBoxShadow = node.style.boxShadow;
+      node.style.border = "none";
+      node.style.boxShadow = "none";
 
       // Step 2: Convert canvas to PNG
       const dataUrl = await toPng(node, {
@@ -126,6 +130,9 @@ const TopHeaderBtns = ({
         },
         pixelRatio: 2,
       });
+      // // After Step 2: Restore canvas styles
+      // node.style.border = originalBorder;
+      // node.style.boxShadow = originalBoxShadow;
 
       // Step 3: Restore original image srcs
       imageTags.forEach((img) => {
@@ -207,6 +214,11 @@ const TopHeaderBtns = ({
       const scale = 5;
       const width = node.offsetWidth * scale;
       const height = node.offsetHeight * scale;
+      // Before Step 2: Temporarily remove canvas border/shadow
+      const originalBorder = node.style.border;
+      const originalBoxShadow = node.style.boxShadow;
+      node.style.border = "none";
+      node.style.boxShadow = "none";
 
       const blob = await htmlToImage.toBlob(node, {
         skipFonts: true,
@@ -220,6 +232,9 @@ const TopHeaderBtns = ({
         },
         type: "image/webp",
       });
+      // // After Step 2: Restore canvas styles
+      // node.style.border = originalBorder;
+      // node.style.boxShadow = originalBoxShadow;
 
       if (!blob) {
         throw new Error("Failed to convert canvas to image.");
