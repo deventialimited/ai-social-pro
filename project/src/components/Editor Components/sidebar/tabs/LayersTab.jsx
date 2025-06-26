@@ -36,7 +36,19 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
     })
   );
 
-  const layerIds = useMemo(() => layers.map((layer) => layer.id), [layers]);
+  const sortedLayers = useMemo(() => {
+    // Attach element info to each layer
+    return [...layers]
+      .map(layer => {
+        const element = elements.find(el => el.id === layer.elementId);
+        return {
+          ...layer,
+          zIndex: element?.styles?.zIndex ?? 0,
+          position: element?.position ?? { x: 0, y: 0 },
+        };
+      })
+      .sort((a, b) => b.zIndex - a.zIndex); // Highest zIndex first
+  }, [layers, elements]);
 
   function handleDragEnd(event) {
     const { active, over } = event;
@@ -92,10 +104,10 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
           modifiers={[restrictToVerticalAxis]}
         >
           <SortableContext
-            items={layerIds}
+            items={sortedLayers.map((layer) => layer.id)}
             strategy={verticalListSortingStrategy}
           >
-            {layers.map((layer, index) => (
+            {sortedLayers.map((layer, index) => (
               <SortableItem
                 key={layer.id}
                 layer={layer}
@@ -172,6 +184,9 @@ function SortableItem({
       {/* Element ID */}
       <div className="flex-1 truncate text-sm">
         {layer.elementId}
+        <span className="ml-2 text-xs text-gray-400">
+          ({layer.position.x}, {layer.position.y})
+        </span>
       </div>
 
       <button
