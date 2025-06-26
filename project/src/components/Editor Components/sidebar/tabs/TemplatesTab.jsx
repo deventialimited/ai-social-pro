@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { Fragment, use } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   useDeleteTemplateDesignById,
@@ -52,9 +52,10 @@ function TemplatesTab() {
       setUserId(storedUser._id);
     }
   }, []);
-
+  console.log(userId);
   const { data, isLoading, isError, error, refetch } =
     useGetAllTemplatesByUserId(userId);
+  console.log(data);
   const templates = (Array.isArray(data) ? data : data?.templates ?? []).filter(
     (t) => t.templatePlatform?.toLowerCase() === postOtherValues?.platform
   );
