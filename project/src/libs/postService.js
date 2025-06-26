@@ -3,8 +3,8 @@ import axios from "axios";
 // Custom hook for fetching posts
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-// const baseURL = "https://api.oneyearsocial.com";
-const baseURL = "http://localhost:5000";
+const baseURL = "https://api.oneyearsocial.com";
+// const baseURL = "http://localhost:5000";
 
 const API_URL = `${baseURL}/api/v1/posts`;
 
@@ -253,7 +253,6 @@ export const useCreatePostViaPubSub = () => {
   });
 };
 
-
 // Function to update a post image
 export const updatePostImage = async (postData) => {
   try {
@@ -285,7 +284,12 @@ export const useUpdatePostImage = () => {
       queryClient.setQueryData(["posts", variables.domainId], (oldData) => {
         if (!oldData) return [];
         return oldData.map((post) =>
-          post.postId === variables.postId ? { ...post, image: { imageUrl: data.imageUrl, editorStatus: "not_edited" } } : post
+          post.postId === variables.postId
+            ? {
+                ...post,
+                image: { imageUrl: data.imageUrl, editorStatus: "not_edited" },
+              }
+            : post
         );
       });
       // Invalidate queries to refetch the latest posts
