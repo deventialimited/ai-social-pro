@@ -91,7 +91,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
-  useEffect(() => {
+ useEffect(() => {
     if (post?.imageIdeas) {
       console.log("Image Ideas fetched:", post.imageIdeas);
     }
