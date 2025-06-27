@@ -195,15 +195,15 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   };
 
   const getSelectedImageUrl = () => {
-    if (selectedButton === "image" && generatedImageUrl)
+    if (selectedButton === "aiImage" && generatedImageUrl)
       return generatedImageUrl;
     switch (selectedButton) {
       case "brandingImage":
         return post.brandingImage?.imageUrl || "";
       case "sloganImage":
         return post.sloganImage?.imageUrl || "";
-      case "image":
-        return post.image?.imageUrl || post.brandingImage?.imageUrl;
+      case "aiImage":
+        return post.image?.imageUrl || post.brandingImage?.imageUrl || "";
       default:
         return "";
     }
@@ -436,12 +436,173 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   };
 
   const renderImageLayout = () => {
-    if (post.image?.imageUrl) {
+    if (
+      selectedButton === "aiImage" &&
+      !post.image?.imageUrl &&
+      !generatedImageUrl
+    ) {
+      return (
+        <div className="w-full aspect-video bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg overflow-hidden">
+          {aiImageStep === "select" && (
+            <div className="h-full flex flex-col p-6">
+              <div className="text-center mb-4 flex-shrink-0">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400 text-sm font-medium mb-3">
+                  <Sparkles className="w-4 h-4" />
+                  AI Image Generator
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                  Generate Scroll-Stopping AI Image
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Choose your AI image concept and watch it come to life
+                </p>
+              </div>
+              <div className="flex-1 overflow-y-auto min-h-0">
+                <div className="grid grid-cols-3 gap-3 h-full">
+                  {post.imageIdeas.map((idea, index) => (
+                    <div
+                      key={index}
+                      className="group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-3 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-lg flex flex-col h-full"
+                    >
+                      <div className="flex items-start gap-2 mb-2 flex-shrink-0">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white flex-shrink-0 font-bold text-xs shadow-md">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide">
+                            Concept #{index + 1}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 mb-3 overflow-y-auto min-h-0">
+                        <div className="pr-1">
+                          <p
+                            className={`text-xs text-gray-600 dark:text-gray-400 leading-relaxed ${
+                              expandedDescriptions[index] ? "" : "line-clamp-3"
+                            }`}
+                          >
+                            {expandedDescriptions[index]
+                              ? idea
+                              : truncateText(idea, 60)}
+                          </p>
+                          {idea.length > 60 && (
+                            <button
+                              onClick={(e) => toggleDescription(index, e)}
+                              className="mt-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md transition-colors"
+                            >
+                              {expandedDescriptions[index] ? (
+                                <>
+                                  Show less <ChevronUp className="w-3 h-3" />
+                                </>
+                              ) : (
+                                <>
+                                  Show more <ChevronDown className="w-3 h-3" />
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleSelectIdea({ title: idea })}
+                        className="w-full px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 font-semibold text-xs group-hover:scale-[1.02] transform flex-shrink-0"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        Generate AI Image
+                      </button>
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {aiImageStep === "generating" && (
+            <div className="h-full flex flex-col items-center justify-center p-6">
+              <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center animate-pulse shadow-lg">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                Generating AI Image
+              </h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-6 text-center">
+                Creating:{" "}
+                <span className="font-semibold">{selectedIdea?.title}</span>
+              </p>
+              <div className="w-full max-w-xs mb-4">
+                <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden shadow-inner">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <span>Processing...</span>
+                  <span className="font-semibold">{progress}%</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                <span>This may take a few moments</span>
+              </div>
+            </div>
+          )}
+          {aiImageStep === "preview" && generatedImageUrl && (
+            <div className="h-full flex flex-col p-6">
+              <div className="text-center mb-3 flex-shrink-0">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400 text-sm font-medium mb-2">
+                  <Check className="w-4 h-4" />
+                  Image Generated
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                  Your AI Generated Image
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  {selectedIdea?.title}
+                </p>
+              </div>
+              <div className="flex-1 relative mb-3 rounded-lg overflow-hidden shadow-lg">
+                <img
+                  src={generatedImageUrl}
+                  alt="AI Generated"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-md">
+                  <Check className="w-3 h-3" />
+                  Generated
+                </div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <button
+                  onClick={handleRegenerateImage}
+                  className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors font-medium flex items-center justify-center gap-1.5 text-xs"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Regenerate
+                </button>
+                <button
+                  onClick={handleUseImage}
+                  className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold flex items-center justify-center gap-1.5 shadow-md text-xs"
+                >
+                  <Check className="w-3 h-3" />
+                  Use This Image
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (
+      selectedButton === "aiImage" &&
+      (post.image?.imageUrl || generatedImageUrl)
+    ) {
       return (
         <div className="relative" style={getImageStyle(primaryPlatform)}>
           <img
-            src={post.image.imageUrl}
-            alt="Post content"
+            src={post.image?.imageUrl || generatedImageUrl}
+            alt="AI Generated"
             className="w-full h-full object-cover rounded-lg"
             onLoad={() => setImageLoaded(true)}
             style={{
@@ -451,24 +612,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               cursor: "pointer",
             }}
             onClick={() => setShowEditModal(true)}
-          />
-        </div>
-      );
-    }
-
-    if (generatedImageUrl) {
-      return (
-        <div className="relative" style={getImageStyle(primaryPlatform)}>
-          <img
-            src={generatedImageUrl}
-            alt="AI Generated"
-            className="w-full h-full object-cover rounded-lg"
-            onLoad={() => setImageLoaded(true)}
-            style={{
-              filter: imageBlurred ? "blur(20px)" : "none",
-              transition: "filter 0.3s ease",
-              display: imageLoaded ? "block" : "none",
-            }}
           />
           <button
             onClick={() => setAiImageStep("select")}
@@ -482,154 +625,32 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
 
     return (
-      <div className="w-full aspect-video bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg overflow-hidden">
-        {aiImageStep === "select" && (
-          <div className="h-full flex flex-col p-6">
-            <div className="text-center mb-4 flex-shrink-0">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400 text-sm font-medium mb-3">
-                <Sparkles className="w-4 h-4" />
-                AI Image Generator
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                Generate Scroll-Stopping AI Image
-              </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Choose your AI image concept and watch it come to life
-              </p>
-            </div>
-            <div className="flex-1 overflow-y-auto min-h-0">
-              <div className="grid grid-cols-3 gap-3 h-full">
-                {post.imageIdeas.map((idea, index) => (
-                  <div
-                    key={index}
-                    className="group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-3 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-lg flex flex-col h-full"
-                  >
-                    <div className="flex items-start gap-2 mb-2 flex-shrink-0">
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white flex-shrink-0 font-bold text-xs shadow-md">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide">
-                          Concept #{index + 1}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-1 mb-3 overflow-y-auto min-h-0">
-                      <div className="pr-1">
-                        <p
-                          className={`text-xs text-gray-600 dark:text-gray-400 leading-relaxed ${
-                            expandedDescriptions[index] ? "" : "line-clamp-3"
-                          }`}
-                        >
-                          {expandedDescriptions[index]
-                            ? idea
-                            : truncateText(idea, 60)}
-                        </p>
-                        {idea.length > 60 && (
-                          <button
-                            onClick={(e) => toggleDescription(index, e)}
-                            className="mt-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md transition-colors"
-                          >
-                            {expandedDescriptions[index] ? (
-                              <>
-                                Show less <ChevronUp className="w-3 h-3" />
-                              </>
-                            ) : (
-                              <>
-                                Show more <ChevronDown className="w-3 h-3" />
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleSelectIdea({ title: idea })}
-                      className="w-full px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 font-semibold text-xs group-hover:scale-[1.02] transform flex-shrink-0"
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      Generate AI Image
-                    </button>
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
-                  </div>
-                ))}
-              </div>
-            </div>
+      <div className="relative" style={getImageStyle(primaryPlatform)}>
+        {!imageLoaded && (
+          <div
+            style={{
+              ...getImageStyle(primaryPlatform),
+              borderRadius: "0.5rem",
+              overflow: "hidden",
+            }}
+          >
+            <Skeleton width="100%" height="100%" />
           </div>
         )}
-        {aiImageStep === "generating" && (
-          <div className="h-full flex flex-col items-center justify-center p-6">
-            <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center animate-pulse shadow-lg">
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-              Generating AI Image
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-6 text-center">
-              Creating:{" "}
-              <span className="font-semibold">{selectedIdea?.title}</span>
-            </p>
-            <div className="w-full max-w-xs mb-4">
-              <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden shadow-inner">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 rounded-full"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span>Processing...</span>
-                <span className="font-semibold">{progress}%</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-              <span>This may take a few moments</span>
-            </div>
-          </div>
-        )}
-        {aiImageStep === "preview" && generatedImageUrl && (
-          <div className="h-full flex flex-col p-6">
-            <div className="text-center mb-3 flex-shrink-0">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400 text-sm font-medium mb-2">
-                <Check className="w-4 h-4" />
-                Image Generated
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                Your AI Generated Image
-              </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                {selectedIdea?.title}
-              </p>
-            </div>
-            <div className="flex-1 relative mb-3 rounded-lg overflow-hidden shadow-lg">
-              <img
-                src={generatedImageUrl}
-                alt="AI Generated"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-md">
-                <Check className="w-3 h-3" />
-                Generated
-              </div>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <button
-                onClick={handleRegenerateImage}
-                className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors font-medium flex items-center justify-center gap-1.5 text-xs"
-              >
-                <Sparkles className="w-3 h-3" />
-                Regenerate
-              </button>
-              <button
-                onClick={handleUseImage}
-                className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold flex items-center justify-center gap-1.5 shadow-md text-xs"
-              >
-                <Check className="w-3 h-3" />
-                Use This Image
-              </button>
-            </div>
-          </div>
-        )}
+        <img
+          src={post[selectedButton]?.imageUrl}
+          alt="Post content"
+          onLoad={() => setImageLoaded(true)}
+          style={{
+            ...getImageStyle(primaryPlatform),
+            filter: imageBlurred ? "blur(20px)" : "none",
+            transition: "filter 0.3s ease",
+            display: imageLoaded ? "block" : "none",
+            cursor: "pointer",
+          }}
+          onClick={() => setShowEditModal(true)}
+          className="object-cover w-full h-full"
+        />
       </div>
     );
   };
@@ -733,9 +754,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             </div>
           </div>
           <div className="flex items-center space-x-2 p-2">
-            {["image", "brandingImage", "sloganImage"].map((type) => {
+            {["aiImage", "brandingImage", "sloganImage"].map((type) => {
               const Icon =
-                type === "image"
+                type === "aiImage"
                   ? ImageLucide
                   : type === "brandingImage"
                   ? Palette
@@ -753,7 +774,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                       ? "branding"
                       : type === "sloganImage"
                       ? "slogan"
-                      : type}
+                      : "AI Image"}
                   </span>
                   <Icon className="w-4 h-4" />
                 </button>
@@ -793,36 +814,12 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
           </div>
           <div className="flex items-center justify-center rounded-lg w-full">
-            {selectedButton === "image" ? (
+            {selectedButton === "aiImage" ? (
               renderImageLayout()
-            ) : post[selectedButton]?.imageUrl ? (
-              <>
-                {!imageLoaded && (
-                  <div
-                    style={{
-                      ...getImageStyle(primaryPlatform),
-                      borderRadius: "0.5rem",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <Skeleton width="100%" height="100%" />
-                  </div>
-                )}
-                <img
-                  src={post[selectedButton]?.imageUrl}
-                  alt="Post content"
-                  onLoad={() => setImageLoaded(true)}
-                  style={{
-                    ...getImageStyle(primaryPlatform),
-                    filter: imageBlurred ? "blur(20px)" : "none",
-                    transition: "filter 0.3s ease",
-                    display: imageLoaded ? "block" : "none",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setShowEditModal(true)}
-                  className="object-cover w-full h-full"
-                />
-              </>
+            ) : selectedButton === "brandingImage" ? (
+              renderBrandingLayout()
+            ) : selectedButton === "sloganImage" ? (
+              renderSloganLayout()
             ) : (
               <div
                 style={{
@@ -1012,7 +1009,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setDeletePost(false)}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                className="px-4 py-2 text-gray-7
+00 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                 disabled={isDeleting}
               >
                 Cancel
