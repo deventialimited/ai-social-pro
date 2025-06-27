@@ -639,6 +639,40 @@ exports.updatePostStatusToPublished = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
+
+exports.updatePostTab = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { selectedTab } = req.body;
+    const userId = req.user.id; // From authMiddleware
+
+    // Validate selectedTab
+    const validTabs = ["aiImage", "brandingImage", "sloganImage"];
+    if (!selectedTab || !validTabs.includes(selectedTab)) {
+      return res.status(400).json({ error: "Invalid tab value" });
+    }
+
+    // Find post and verify user authorization
+    const post = await Post.findOne({ postId });
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    if (post.userId.toString() !== userId) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    // Update selectedTab
+    post.selectedTab = selectedTab;
+    post.updatedAt = new Date();
+    await post.save();
+
+    res.json({ success: true, selectedTab: post.selectedTab });
+  } catch (error) {
+    console.error("Error updating post tab:", error);
+    res.status(500).json({ error: "Failed to update post tab" });
+  }
+};
+
 function getS3KeyFromUrl(url) {
   try {
     const urlObj = new URL(url);

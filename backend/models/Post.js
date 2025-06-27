@@ -33,7 +33,7 @@ const PostSchema = new Schema({
   topic: { type: String, default: "" },
   content: { type: String, default: "" },
   slogan: { type: String, default: "" },
-
+  selectedTab: String, 
   date: { type: Date, default: Date.now },
   platform: { type: String, default: "" },
   related_keywords: { type: [String], default: [] },

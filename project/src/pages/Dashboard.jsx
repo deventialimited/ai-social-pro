@@ -24,6 +24,9 @@ import { getUserInformation } from "../libs/authService";
 import { useSocket } from "../store/useSocket";
 import GeneratePostModal from "../PopUps/GenerateNewPost";
 import GenerateBatchModal from "../PopUps/GenerateBatch";
+import { TrendingUp } from "lucide-react";
+import { TrendsInputModal } from "../PopUps/TrendsToPost";
+import { TrendsResultModal } from "../PopUps/TrendingTopics";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
@@ -41,6 +44,9 @@ export const Dashboard = () => {
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGenerateBatchModalOpen, setIsGenerateBatchModalOpen] =
     useState(false);
+  const [isTrendsModalOpen, setIsTrendsModalOpen] = useState(false);
+  const [isTrendsResultModalOpen, setIsTrendsResultModalOpen] = useState(false);
+  const [trendInputData, setTrendInputData] = useState(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -194,6 +200,18 @@ export const Dashboard = () => {
     setPostsTab("generated");
   };
 
+  const handleGenerateTrendPost = (trend) => {
+    console.log("Generating post for trend:", trend);
+    queryClient.invalidateQueries(["posts", selectedWebsite]);
+    setIsTrendsResultModalOpen(false);
+  };
+
+  const handleAnalyzeTrends = (formData) => {
+    setTrendInputData(formData);
+    setIsTrendsModalOpen(false);
+    setIsTrendsResultModalOpen(true);
+  };
+
   const updatePostMutation = useUpdatePostById();
   const deletePostMutation = useDeletePostById();
 
@@ -281,18 +299,38 @@ export const Dashboard = () => {
                     {isGeneratingPost ? "Generating..." : "Generate Post"}
                   </button>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Create a single customized post <br></br> with specific
-                    settings and content{" "}
+                    Create a single customized post <br /> with specific
+                    settings and content
+                  </p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <button
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md"
+                    onClick={() => {
+                      setIsTrendsModalOpen(true);
+                      setIsTrendsResultModalOpen(false);
+                    }}
+                  >
+                    <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-transparent rounded-sm">
+                      <span className="flex items-center justify-center bg-white/30 border-2 border-white rounded">
+                        <TrendingUp className="text-white w-5 h-5" />
+                      </span>
+                    </span>
+                    Trends To Post
+                  </button>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Generate posts from current <br /> trending topics and viral{" "}
+                    <br /> content
                   </p>
                 </div>
                 <div className="flex flex-col items-center">
                   <button
                     className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-pink-600 text-white rounded-lg hover:from-blue-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md ${
-                      isGeneratingPost ? "opacity-75 cursor-not-allowed" : ""
+                      isGeneratingBatchPost
+                        ? "opacity-75 cursor-not-allowed"
+                        : ""
                     }`}
-                    onClick={() => {
-                      setIsGenerateBatchModalOpen(true);
-                    }}
+                    onClick={() => setIsGenerateBatchModalOpen(true)}
                     disabled={isGeneratingBatchPost}
                   >
                     <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
@@ -305,8 +343,8 @@ export const Dashboard = () => {
                     {isGeneratingBatchPost ? "Generating..." : "Generate Batch"}
                   </button>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Generate multiple posts across <br></br> different platforms
-                    at once{" "}
+                    Generate multiple posts across <br /> different platforms at
+                    once
                   </p>
                 </div>
               </div>
@@ -408,7 +446,6 @@ export const Dashboard = () => {
             onLoadingChange={setIsGeneratingPost}
           />
         )}
-
         {isGenerateBatchModalOpen && !isGeneratingBatchPost && (
           <GenerateBatchModal
             onClose={() => setIsGenerateBatchModalOpen(false)}
@@ -416,6 +453,19 @@ export const Dashboard = () => {
               queryClient.invalidateQueries(["posts", selectedWebsite]);
             }}
             onLoadingChange={setIsGeneratingBatchPost}
+          />
+        )}
+        {isTrendsModalOpen && (
+          <TrendsInputModal
+            onClose={() => setIsTrendsModalOpen(false)}
+            onContinue={handleAnalyzeTrends}
+          />
+        )}
+        {isTrendsResultModalOpen && trendInputData && (
+          <TrendsResultModal
+            inputData={trendInputData}
+            onClose={() => setIsTrendsResultModalOpen(false)}
+            onGeneratePost={handleGenerateTrendPost}
           />
         )}
       </div>

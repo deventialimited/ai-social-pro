@@ -300,3 +300,51 @@ export const useUpdatePostImage = () => {
     },
   });
 };
+
+export const updatePostTab = async (postId) => {
+  try {
+    console.log("updatePostTab payload", postData);
+    const response = await axios.post(
+      `${API_URL}/api/posts/${postId}`,
+      { selectedTab: postData.selectedTab },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("response in the service man", response?.data);
+    return response.data; // Return the full response data
+  } catch (error) {
+    console.error(
+      "Error updating post tab:",
+      error.response?.data?.message || error.message
+    );
+    throw error.response?.data?.message || error.message;
+  }
+};
+
+// Hook to update the selectedTab using React Query
+export const useUpdatePostTab = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updatePostTab,
+    onSuccess: (data, variables) => {
+      // Update the cache with the updated post
+      queryClient.setQueryData(["posts", variables.domainId], (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((post) =>
+          post.postId === variables.postId
+            ? { ...post, selectedTab: data.selectedTab }
+            : post
+        );
+      });
+      // Invalidate queries to refetch the latest posts
+      queryClient.invalidateQueries(["posts", variables.domainId]);
+    },
+    onError: (error) => {
+      console.error("Failed to update post tab:", error);
+    },
+  });
+};
