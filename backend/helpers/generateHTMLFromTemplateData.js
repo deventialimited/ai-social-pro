@@ -137,7 +137,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 overflow: hidden;
                 ${layoutStyleString}
               ">
-                <div style="position: static; width:100%; ${fontStyleString}">
+                <div class="adjustable-text" style="position: static; width:100%; ${fontStyleString}">
                   ${el.props?.text || ""}
                 </div>
               </div>`;
@@ -284,7 +284,32 @@ exports.generateHTMLFromTemplateData = (templateData) => {
             return "";
           })
           .join("\n")}
+      <script>
+(function adjustAllTextFontSizes() {
+  const textElements = document.querySelectorAll('.adjustable-text');
+  textElements.forEach(textarea => {
+    const container = textarea.parentElement;
+    if (!container) return;
+
+    const containerHeight = container.clientHeight;
+    const containerWidth = container.clientWidth;
+
+    const computedStyle = window.getComputedStyle(textarea);
+    let size = parseFloat(computedStyle.fontSize);
+    const minFontSize = 0.1;
+
+    while (
+      (textarea.scrollHeight > containerHeight || textarea.scrollWidth > containerWidth) &&
+      size > minFontSize
+    ) {
+      size--;
+      textarea.style.fontSize = size + 'px';
+    }
+  });
+})();
+</script>
       </body>
+
       </html>
     `;
 };
