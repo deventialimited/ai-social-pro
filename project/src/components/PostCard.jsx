@@ -91,7 +91,11 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
-
+  useEffect(() => {
+    if (post?.imageIdeas) {
+      console.log("Image Ideas fetched:", post.imageIdeas);
+    }
+  }, [post]);
   const platformDimensions = {
     facebook: [1200, 630],
     x: [1200, 675],
@@ -472,16 +476,14 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                         <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide">
                           Concept #{index + 1}
                         </div>
-                        <h4 className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-                          Idea Preview
-                        </h4>
+                       
                       </div>
                     </div>
                     <div className="flex-1 mb-3 overflow-y-auto min-h-0">
                       <div className="pr-1">
                         <p
                           className={`text-xs text-gray-600 dark:text-gray-400 leading-relaxed ${
-                            expandedDescriptions[index] ? "" : "line-clamp-3"
+                              [index] ? "" : "line-clamp-3"
                           }`}
                         >
                           {expandedDescriptions[index]
