@@ -169,7 +169,6 @@ export const Dashboard = () => {
         return prev;
       });
     }, 100);
-    console.log("posts", posts);
     try {
       await new Promise((resolve) => setTimeout(resolve, 4000));
       clearInterval(interval);

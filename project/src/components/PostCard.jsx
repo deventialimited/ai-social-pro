@@ -60,7 +60,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const { mutate: approveAndSchedule, isLoading: isApproving } =
     useApproveAndSchedulePost();
 
-  // Function to get the platform URL
   const getPlatformUrl = (platform) => {
     switch (platform?.toLowerCase()) {
       case "facebook":
@@ -72,7 +71,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       case "instagram":
         return "https://www.instagram.com";
       default:
-        return "#"; // Fallback for unknown platforms
+        return "#";
     }
   };
 
@@ -107,11 +106,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
+
   useEffect(() => {
     if (post?.imageIdeas) {
       console.log("Image Ideas fetched:", post.imageIdeas);
     }
   }, [post]);
+
   const platformDimensions = {
     facebook: [1200, 630],
     x: [1200, 675],
@@ -390,7 +391,6 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       setProgress(100);
       toast.success("Image generated successfully!");
 
-      // Update the post image using the correct payload structure
       updatePostMutation.mutate(
         { postId: post.postId, imageUrl: data.imageUrl },
         {
@@ -436,6 +436,26 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   };
 
   const renderImageLayout = () => {
+    if (post.image?.imageUrl) {
+      return (
+        <div className="relative" style={getImageStyle(primaryPlatform)}>
+          <img
+            src={post.image.imageUrl}
+            alt="Post content"
+            className="w-full h-full object-cover rounded-lg"
+            onLoad={() => setImageLoaded(true)}
+            style={{
+              filter: imageBlurred ? "blur(20px)" : "none",
+              transition: "filter 0.3s ease",
+              display: imageLoaded ? "block" : "none",
+              cursor: "pointer",
+            }}
+            onClick={() => setShowEditModal(true)}
+          />
+        </div>
+      );
+    }
+
     if (generatedImageUrl) {
       return (
         <div className="relative" style={getImageStyle(primaryPlatform)}>
@@ -498,7 +518,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                       <div className="pr-1">
                         <p
                           className={`text-xs text-gray-600 dark:text-gray-400 leading-relaxed ${
-                            [index] ? "" : "line-clamp-3"
+                            expandedDescriptions[index] ? "" : "line-clamp-3"
                           }`}
                         >
                           {expandedDescriptions[index]
@@ -846,7 +866,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </div>
               <span className="text-xs ml-6 hidden md:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
                 {(
-                  <span >
+                  <span>
                     <a
                       href={getPlatformUrl(primaryPlatform)}
                       target="_blank"
