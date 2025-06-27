@@ -709,7 +709,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         <div className="w-full aspect-video bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center p-8">
           <div className="w-1/2 bg-white rounded-xl shadow-2xl p-8">
             <h2 className="text-3xl font-bold text-purple-600 text-center">
-              {post.sloganImage?.slogan ||
+              {post.sloganImage?.imageUrl ||
                 "Your Gateway to Authentic Kazakhstan"}
             </h2>
           </div>
@@ -720,7 +720,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     return (
       <div className="w-full aspect-video bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center p-8">
         <h2 className="w-2/3 text-5xl font-bold text-white text-center leading-tight">
-          {post.sloganImage?.slogan || "Your Gateway to Authentic Kazakhstan"}
+          {post.sloganImage?.imageUrl || "Your Gateway to Authentic Kazakhstan"}
         </h2>
       </div>
     );
