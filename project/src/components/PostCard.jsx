@@ -753,7 +753,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                       ? "branding"
                       : type === "sloganImage"
                       ? "slogan"
-                      : type}
+                      : "AI Image"}{" "}
+                    {/* Changed from "image" to "AI Image" */}
                   </span>
                   <Icon className="w-4 h-4" />
                 </button>
