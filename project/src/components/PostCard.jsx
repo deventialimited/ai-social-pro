@@ -60,6 +60,22 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const { mutate: approveAndSchedule, isLoading: isApproving } =
     useApproveAndSchedulePost();
 
+  // Function to get the platform URL
+  const getPlatformUrl = (platform) => {
+    switch (platform?.toLowerCase()) {
+      case "facebook":
+        return "https://www.facebook.com";
+      case "x":
+        return "https://www.x.com";
+      case "linkedin":
+        return "https://www.linkedin.com";
+      case "instagram":
+        return "https://www.instagram.com";
+      default:
+        return "#"; // Fallback for unknown platforms
+    }
+  };
+
   useEffect(() => {
     if (imageLoaded) {
       const timer = setTimeout(() => setImageBlurred(false), 1500);
@@ -91,7 +107,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
- useEffect(() => {
+  useEffect(() => {
     if (post?.imageIdeas) {
       console.log("Image Ideas fetched:", post.imageIdeas);
     }
@@ -476,14 +492,13 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                         <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide">
                           Concept #{index + 1}
                         </div>
-                       
                       </div>
                     </div>
                     <div className="flex-1 mb-3 overflow-y-auto min-h-0">
                       <div className="pr-1">
                         <p
                           className={`text-xs text-gray-600 dark:text-gray-400 leading-relaxed ${
-                              [index] ? "" : "line-clamp-3"
+                            [index] ? "" : "line-clamp-3"
                           }`}
                         >
                           {expandedDescriptions[index]
@@ -830,7 +845,18 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 </span>
               </div>
               <span className="text-xs ml-6 hidden md:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-                {primaryPlatform}
+                {(
+                  <span >
+                    <a
+                      href={getPlatformUrl(primaryPlatform)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {primaryPlatform}
+                    </a>
+                  </span>
+                ) || "Platform not set"}
               </span>
             </div>
           </div>
