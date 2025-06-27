@@ -21,7 +21,7 @@ exports.renderImageFromHTML = async (canvas, htmlString, outputPath) => {
 
   // Load HTML
   await page.setContent(htmlString, { waitUntil: "networkidle0" });
-
+  await new Promise((resolve) => setTimeout(resolve, 200));
   // 👇 High-quality screenshot
   await page.screenshot({
     path: outputPath,
