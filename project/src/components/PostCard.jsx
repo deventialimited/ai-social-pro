@@ -25,40 +25,16 @@ import "react-loading-skeleton/dist/skeleton.css";
 import {
   useReschedulePost,
   useApproveAndSchedulePost,
+  useUpdatePostImage,
 } from "../libs/postService";
-
-const imageIdeas = [
-  {
-    id: "idea-1",
-    title: "AI Search Spotlight",
-    description:
-      "A stylized spotlight beam focusing on a website address bar where 'getbool.ai' is prominently displayed. The background is a blurred cityscape representing the vastness of the internet. The AI platforms are subtly represented as glowing icons in the background.",
-    prompt:
-      "A stylized spotlight beam focusing on a website address bar, blurred cityscape background representing the internet, glowing AI platform icons in the background, digital art style, high quality, professional lighting",
-  },
-  {
-    id: "idea-2",
-    title: "Digital Discovery Journey",
-    description:
-      "A modern explorer with a digital compass navigating through a landscape of floating search results and AI-powered recommendations. The path leads to a glowing destination marked with your brand.",
-    prompt:
-      "Modern explorer with digital compass navigating floating search results and AI recommendations, glowing brand destination, futuristic landscape, digital art, vibrant colors, professional quality",
-  },
-  {
-    id: "idea-3",
-    title: "Innovation Network Hub",
-    description:
-      "An interconnected network of glowing nodes representing different AI platforms, with your brand at the center as the connecting hub. Clean, minimalist design with subtle tech elements.",
-    prompt:
-      "Interconnected network of glowing nodes representing AI platforms, brand at center as connecting hub, clean minimalist design, subtle tech elements, modern digital art, high quality",
-  },
-];
+import AIImageCustomizationModal from "../PopUps/AIImageCustomizationModal";
 
 export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const getValidDate = (date) => {
     const parsedDate = new Date(date);
     return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
   };
+  const updatePostMutation = useUpdatePostImage();
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedButton, setSelectedButton] = useState("brandingImage");
@@ -77,11 +53,27 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
   const [progress, setProgress] = useState(0);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [showCustomizationModal, setShowCustomizationModal] = useState(false);
   const contentRef = useRef(null);
   const primaryPlatform = post?.platform;
   const { mutate: reschedule, isLoading: isRescheduling } = useReschedulePost();
   const { mutate: approveAndSchedule, isLoading: isApproving } =
     useApproveAndSchedulePost();
+
+  const getPlatformUrl = (platform) => {
+    switch (platform?.toLowerCase()) {
+      case "facebook":
+        return "https://www.facebook.com";
+      case "x":
+        return "https://www.x.com";
+      case "linkedin":
+        return "https://www.linkedin.com";
+      case "instagram":
+        return "https://www.instagram.com";
+      default:
+        return "#";
+    }
+  };
 
   useEffect(() => {
     if (imageLoaded) {
@@ -114,6 +106,12 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         return 16 / 9;
     }
   };
+
+  useEffect(() => {
+    if (post?.imageIdeas) {
+      console.log("Image Ideas fetched:", post.imageIdeas);
+    }
+  }, [post]);
 
   const platformDimensions = {
     facebook: [1200, 630],
@@ -351,26 +349,66 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     }
   };
 
-  const handleSelectIdea = async (idea) => {
+  const handleSelectIdea = (idea) => {
     setSelectedIdea(idea);
+    setShowCustomizationModal(true);
+  };
+
+  const handleGenerateWithInputs = async ({ text, style }) => {
+    setShowCustomizationModal(false);
     setAiImageStep("generating");
     setProgress(0);
 
-    for (let i = 0; i <= 100; i += 2) {
-      setProgress(i);
-      await new Promise((resolve) => setTimeout(resolve, 50));
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev < 90 ? prev + 1 : prev));
+    }, 100);
+
+    try {
+      const payload = {
+        postId: post.postId,
+        platform: primaryPlatform,
+        imageIdea: selectedIdea.title,
+        postTopic: post.topic || "",
+        imageTheme: style || "None",
+        textToAdd: text || "My Slogan will be here",
+      };
+
+      const response = await fetch(
+        "https://social-api-107470285539.us-central1.run.app/generate-image-for-post",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
+      }
+
+      const data = await response.json();
+      setGeneratedImageUrl(data.imageUrl);
+      setProgress(100);
+      toast.success("Image generated successfully!");
+
+      updatePostMutation.mutate(
+        { postId: post.postId, imageUrl: data.imageUrl },
+        {
+          onSuccess: () => toast.success("Post image updated successfully!"),
+          onError: (error) =>
+            toast.error(`Failed to update post image: ${error.message}`),
+        }
+      );
+
+      setAiImageStep("preview");
+    } catch (error) {
+      console.error("Error generating image:", error);
+      setProgress(100);
+      toast.error("Failed to generate image. Please try again.");
+      setAiImageStep("select");
+    } finally {
+      clearInterval(interval);
     }
-
-    const sampleImages = [
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1000",
-      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1000",
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1000",
-    ];
-
-    const randomImage =
-      sampleImages[Math.floor(Math.random() * sampleImages.length)];
-    setGeneratedImageUrl(randomImage);
-    setAiImageStep("preview");
   };
 
   const handleUseImage = () => {
@@ -379,7 +417,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
 
   const handleRegenerateImage = () => {
     if (selectedIdea) {
-      handleSelectIdea(selectedIdea);
+      setShowCustomizationModal(true);
     }
   };
 
@@ -398,6 +436,26 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
   };
 
   const renderImageLayout = () => {
+    if (post.image?.imageUrl) {
+      return (
+        <div className="relative" style={getImageStyle(primaryPlatform)}>
+          <img
+            src={post.image.imageUrl}
+            alt="Post content"
+            className="w-full h-full object-cover rounded-lg"
+            onLoad={() => setImageLoaded(true)}
+            style={{
+              filter: imageBlurred ? "blur(20px)" : "none",
+              transition: "filter 0.3s ease",
+              display: imageLoaded ? "block" : "none",
+              cursor: "pointer",
+            }}
+            onClick={() => setShowEditModal(true)}
+          />
+        </div>
+      );
+    }
+
     if (generatedImageUrl) {
       return (
         <div className="relative" style={getImageStyle(primaryPlatform)}>
@@ -415,8 +473,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
           <button
             onClick={() => setAiImageStep("select")}
             className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-sm text-white rounded-lg hover:bg-black/70 transition-colors"
-            title
-            ám4title="Generate new AI image"
+            title="Generate new AI image"
           >
             <Sparkles className="w-4 h-4" />
           </button>
@@ -442,9 +499,9 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               <div className="grid grid-cols-3 gap-3 h-full">
-                {imageIdeas.map((idea, index) => (
+                {post.imageIdeas.map((idea, index) => (
                   <div
-                    key={idea.id}
+                    key={index}
                     className="group relative bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl p-3 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 hover:shadow-lg flex flex-col h-full"
                   >
                     <div className="flex items-start gap-2 mb-2 flex-shrink-0">
@@ -455,28 +512,25 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                         <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1 uppercase tracking-wide">
                           Concept #{index + 1}
                         </div>
-                        <h4 className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
-                          {idea.title}
-                        </h4>
                       </div>
                     </div>
                     <div className="flex-1 mb-3 overflow-y-auto min-h-0">
                       <div className="pr-1">
                         <p
                           className={`text-xs text-gray-600 dark:text-gray-400 leading-relaxed ${
-                            expandedDescriptions[idea.id] ? "" : "line-clamp-3"
+                            expandedDescriptions[index] ? "" : "line-clamp-3"
                           }`}
                         >
-                          {expandedDescriptions[idea.id]
-                            ? idea.description
-                            : truncateText(idea.description, 60)}
+                          {expandedDescriptions[index]
+                            ? idea
+                            : truncateText(idea, 60)}
                         </p>
-                        {idea.description.length > 60 && (
+                        {idea.length > 60 && (
                           <button
-                            onClick={(e) => toggleDescription(idea.id, e)}
+                            onClick={(e) => toggleDescription(index, e)}
                             className="mt-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md transition-colors"
                           >
-                            {expandedDescriptions[idea.id] ? (
+                            {expandedDescriptions[index] ? (
                               <>
                                 Show less <ChevronUp className="w-3 h-3" />
                               </>
@@ -490,7 +544,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleSelectIdea(idea)}
+                      onClick={() => handleSelectIdea({ title: idea })}
                       className="w-full px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 font-semibold text-xs group-hover:scale-[1.02] transform flex-shrink-0"
                     >
                       <Sparkles className="w-3 h-3" />
@@ -634,7 +688,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
         <div className="w-full aspect-video bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center p-8">
           <div className="w-1/2 bg-white rounded-xl shadow-2xl p-8">
             <h2 className="text-3xl font-bold text-purple-600 text-center">
-              {post.sloganImage?.slogan ||
+              {post.sloganImage?.imageUrl ||
                 "Your Gateway to Authentic Kazakhstan"}
             </h2>
           </div>
@@ -645,7 +699,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     return (
       <div className="w-full aspect-video bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center p-8">
         <h2 className="w-2/3 text-5xl font-bold text-white text-center leading-tight">
-          {post.sloganImage?.slogan || "Your Gateway to Authentic Kazakhstan"}
+          {post.sloganImage?.imageUrl || "Your Gateway to Authentic Kazakhstan"}
         </h2>
       </div>
     );
@@ -699,7 +753,8 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                       ? "branding"
                       : type === "sloganImage"
                       ? "slogan"
-                      : type}
+                      : "AI Image"}{" "}
+                    {/* Changed from "image" to "AI Image" */}
                   </span>
                   <Icon className="w-4 h-4" />
                 </button>
@@ -811,7 +866,18 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
                 </span>
               </div>
               <span className="text-xs ml-6 hidden md:inline bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded capitalize">
-                {primaryPlatform}
+                {(
+                  <span>
+                    <a
+                      href={getPlatformUrl(primaryPlatform)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {primaryPlatform}
+                    </a>
+                  </span>
+                ) || "Platform not set"}
               </span>
             </div>
           </div>
@@ -837,7 +903,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
             )}
             <button
               onClick={handleDownload}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
               title="Download"
             >
               <Download className="w-4 h-4" />
@@ -879,7 +945,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       )}
 
       {showDatePicker && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -939,7 +1005,7 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
       )}
 
       {deletePost && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-md">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Are you sure you want to delete this post?
@@ -993,6 +1059,16 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {showCustomizationModal && selectedIdea && (
+        <div className="fixed z-[10000] bg-black bg-opacity-0">
+          <AIImageCustomizationModal
+            selectedIdea={selectedIdea}
+            onClose={() => setShowCustomizationModal(false)}
+            onGenerate={handleGenerateWithInputs}
+          />
         </div>
       )}
     </>

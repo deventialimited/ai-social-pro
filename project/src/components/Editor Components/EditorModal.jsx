@@ -6,14 +6,24 @@ import EditorCanvas from "./canvas/EditorCanvas";
 import { Dialog, Transition } from "@headlessui/react";
 import { EditorProvider, useEditor } from "./EditorStoreHooks/FullEditorHooks";
 import TopHeaderBtns from "./common/TopHeaderBtns";
+import { useGetAllTemplatesByUserId } from "../../libs/templateDesignService";
 
 function EditorModalContent({ post, selectedType, onClose, isEditorOpen }) {
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?._id) {
+      setUserId(storedUser._id);
+    }
+  }, []);
+  const { data } = useGetAllTemplatesByUserId(userId);
   const [activeTab, setActiveTab] = useState("text");
   const [specialActiveTab, setSpecialActiveTab] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [activeElement, setActiveElement] = useState("canvas"); // Default to canvas toolbar
   const canvasContainerRef = useRef(null);
-  const { postDesignData, undo, redo, canUndo, canRedo, elements } = useEditor();
+  const { postDesignData, undo, redo, canUndo, canRedo, elements } =
+    useEditor();
   const [canvasContent, setCanvasContent] = useState({
     backgroundColor: "#87CEEB",
     elements: [

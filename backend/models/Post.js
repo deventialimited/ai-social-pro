@@ -33,7 +33,7 @@ const PostSchema = new Schema({
   topic: { type: String, default: "" },
   content: { type: String, default: "" },
   slogan: { type: String, default: "" },
-
+  selectedTab: String, 
   date: { type: Date, default: Date.now },
   platform: { type: String, default: "" },
   related_keywords: { type: [String], default: [] },
@@ -49,7 +49,7 @@ const PostSchema = new Schema({
     },
   ],
   followers: { type: Number, default: 0, min: 0 },
-
+  imageIdeas: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

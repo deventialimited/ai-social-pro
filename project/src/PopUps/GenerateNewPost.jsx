@@ -175,6 +175,8 @@ const GeneratePostModal = ({ onClose, onGenerate, onLoadingChange }) => {
         related_keywords: response.data.related_keywords || [],
         content: response.data.content,
         slogan: response.data.slogan,
+        imageIdeas: response.data.imageIdeas || [], // Include imageIdeas from the response
+
         postDate: response.data.date,
         platform: response.data.platform,
       };

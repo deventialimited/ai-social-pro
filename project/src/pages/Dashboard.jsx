@@ -21,9 +21,12 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
 import { getUserInformation } from "../libs/authService";
-import { useSocket } from '../store/useSocket';
+import { useSocket } from "../store/useSocket";
 import GeneratePostModal from "../PopUps/GenerateNewPost";
 import GenerateBatchModal from "../PopUps/GenerateBatch";
+import { TrendingUp } from "lucide-react";
+import { TrendsInputModal } from "../PopUps/TrendsToPost";
+import { TrendsResultModal } from "../PopUps/TrendingTopics";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
@@ -39,7 +42,11 @@ export const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
-  const [isGenerateBatchModalOpen, setIsGenerateBatchModalOpen] = useState(false);
+  const [isGenerateBatchModalOpen, setIsGenerateBatchModalOpen] =
+    useState(false);
+  const [isTrendsModalOpen, setIsTrendsModalOpen] = useState(false);
+  const [isTrendsResultModalOpen, setIsTrendsResultModalOpen] = useState(false);
+  const [trendInputData, setTrendInputData] = useState(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -49,8 +56,6 @@ export const Dashboard = () => {
   const socket = useSocket();
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const [isGeneratingBatchPost, setIsGeneratingBatchPost] = useState(false);
-
-
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -72,26 +77,26 @@ export const Dashboard = () => {
 
   useEffect(() => {
     if (!socket) {
-      console.log('socket not connected in the dashboard');
+      console.log("socket not connected in the dashboard");
       return;
     }
-    socket.on('postStatusUpdated', (updatedPost) => {
+    socket.on("postStatusUpdated", (updatedPost) => {
       console.log("updated post in the dashboard", updatedPost);
       if (updatedPost.domainId === selectedWebsite) {
-        queryClient.invalidateQueries(['posts', updatedPost.domainId]);
+        queryClient.invalidateQueries(["posts", updatedPost.domainId]);
       }
     });
   }, [socket, queryClient, selectedWebsite]);
 
   useEffect(() => {
-    console.log('into the new useEffect to check the returnFromPortal');
+    console.log("into the new useEffect to check the returnFromPortal");
     const returnFromPortal = searchParams.get("returnFromPortal");
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (returnFromPortal && storedUser._id) {
       setIsFetchingUserInfo(true);
       getUserInformation(storedUser._id)
         .then((updatedUser) => {
-          console.log('new updated user', updatedUser);
+          console.log("new updated user", updatedUser);
           localStorage.setItem("user", JSON.stringify(updatedUser));
           setUser(updatedUser);
         })
@@ -129,7 +134,9 @@ export const Dashboard = () => {
   } = useGetAllPostsByDomainId(selectedWebsite);
 
   useEffect(() => {
-    const selectedWebsiteId = JSON.parse(localStorage.getItem("user"))?.selectedWebsiteId;
+    const selectedWebsiteId = JSON.parse(
+      localStorage.getItem("user")
+    )?.selectedWebsiteId;
     if (domains?.length > 0) {
       const domainId = searchParams.get("domainId");
       if (domainId) {
@@ -168,7 +175,6 @@ export const Dashboard = () => {
         return prev;
       });
     }, 100);
-
     try {
       await new Promise((resolve) => setTimeout(resolve, 4000));
       clearInterval(interval);
@@ -192,6 +198,18 @@ export const Dashboard = () => {
   const handleNewPost = (post) => {
     setCurrentTab("posts");
     setPostsTab("generated");
+  };
+
+  const handleGenerateTrendPost = (trend) => {
+    console.log("Generating post for trend:", trend);
+    queryClient.invalidateQueries(["posts", selectedWebsite]);
+    setIsTrendsResultModalOpen(false);
+  };
+
+  const handleAnalyzeTrends = (formData) => {
+    setTrendInputData(formData);
+    setIsTrendsModalOpen(false);
+    setIsTrendsResultModalOpen(true);
   };
 
   const updatePostMutation = useUpdatePostById();
@@ -238,11 +256,11 @@ export const Dashboard = () => {
   };
 
   const filteredPosts = posts?.filter((post) => {
-  const platform = post?.platform?.toLowerCase();
-  const matchesFilter = filter === "all" || platform === filter.toLowerCase();
-  const matchesTab = post.status === postsTab;
-  return matchesFilter && matchesTab;
-});
+    const platform = post?.platform?.toLowerCase();
+    const matchesFilter = filter === "all" || platform === filter.toLowerCase();
+    const matchesTab = post.status === postsTab;
+    return matchesFilter && matchesTab;
+  });
 
   const renderContent = () => {
     switch (currentTab) {
@@ -266,7 +284,7 @@ export const Dashboard = () => {
                 <div className="flex flex-col items-center">
                   <button
                     className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md ${
-                      isGeneratingPost ? 'opacity-75 cursor-not-allowed' : ''
+                      isGeneratingPost ? "opacity-75 cursor-not-allowed" : ""
                     }`}
                     onClick={() => setIsGenerateModalOpen(true)}
                     disabled={isGeneratingPost}
@@ -275,33 +293,59 @@ export const Dashboard = () => {
                       {isGeneratingPost ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        '+'
+                        "+"
                       )}
                     </span>
-                    {isGeneratingPost ? 'Generating...' : 'Generate Post'}
+                    {isGeneratingPost ? "Generating..." : "Generate Post"}
                   </button>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
-Create a single customized post <br></br> with specific settings and content                  </p>
+                    Create a single customized post <br /> with specific
+                    settings and content
+                  </p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <button
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md"
+                    onClick={() => {
+                      setIsTrendsModalOpen(true);
+                      setIsTrendsResultModalOpen(false);
+                    }}
+                  >
+                    <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-transparent rounded-sm">
+                      <span className="flex items-center justify-center bg-white/30 border-2 border-white rounded">
+                        <TrendingUp className="text-white w-5 h-5" />
+                      </span>
+                    </span>
+                    Trends To Post
+                  </button>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Generate posts from current <br /> trending topics and viral{" "}
+                    <br /> content
+                  </p>
                 </div>
                 <div className="flex flex-col items-center">
                   <button
                     className={`flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-pink-600 text-white rounded-lg hover:from-blue-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md ${
-                      isGeneratingPost ? 'opacity-75 cursor-not-allowed' : ''
+                      isGeneratingBatchPost
+                        ? "opacity-75 cursor-not-allowed"
+                        : ""
                     }`}
-                    onClick={()=>{setIsGenerateBatchModalOpen(true)}}
+                    onClick={() => setIsGenerateBatchModalOpen(true)}
                     disabled={isGeneratingBatchPost}
                   >
                     <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-blue-500 rounded-sm">
                       {isGeneratingBatchPost ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        '+'
+                        "+"
                       )}
                     </span>
-                    {isGeneratingBatchPost ? 'Generating...' : 'Generate Batch'}
+                    {isGeneratingBatchPost ? "Generating..." : "Generate Batch"}
                   </button>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
-Generate multiple posts across <br></br> different platforms at once                  </p>
+                    Generate multiple posts across <br /> different platforms at
+                    once
+                  </p>
                 </div>
               </div>
             )}
@@ -312,22 +356,25 @@ Generate multiple posts across <br></br> different platforms at once            
                   : "flex flex-col items-center space-y-6"
               }`}
             >
-              {filteredPosts?.slice().reverse().map((post) => (
-                <div
-                  key={post._id}
-                  className={
-                    view === "list" ? "w-full max-w-[680px]" : "w-full"
-                  }
-                >
-                  <PostCard
-                    post={post}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onReschedule={handleReschedule}
-                    view={view}
-                  />
-                </div>
-              ))}
+              {filteredPosts
+                ?.slice()
+                .reverse()
+                .map((post) => (
+                  <div
+                    key={post._id}
+                    className={
+                      view === "list" ? "w-full max-w-[680px]" : "w-full"
+                    }
+                  >
+                    <PostCard
+                      post={post}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onReschedule={handleReschedule}
+                      view={view}
+                    />
+                  </div>
+                ))}
             </div>
           </div>
         );
@@ -385,26 +432,40 @@ Generate multiple posts across <br></br> different platforms at once            
         )}
         {isFetchingUserInfo && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg shadow-md z-50">
-            <p className="text-sm text-gray-800 dark:text-gray-200">Fetching your updated subscription...</p>
+            <p className="text-sm text-gray-800 dark:text-gray-200">
+              Fetching your updated subscription...
+            </p>
           </div>
         )}
         {isGenerateModalOpen && !isGeneratingPost && (
           <GeneratePostModal
             onClose={() => setIsGenerateModalOpen(false)}
             onGenerate={() => {
-              queryClient.invalidateQueries(['posts', selectedWebsite]);
+              queryClient.invalidateQueries(["posts", selectedWebsite]);
             }}
             onLoadingChange={setIsGeneratingPost}
           />
         )}
-
         {isGenerateBatchModalOpen && !isGeneratingBatchPost && (
           <GenerateBatchModal
             onClose={() => setIsGenerateBatchModalOpen(false)}
             onGenerate={() => {
-              queryClient.invalidateQueries(['posts', selectedWebsite]);
+              queryClient.invalidateQueries(["posts", selectedWebsite]);
             }}
             onLoadingChange={setIsGeneratingBatchPost}
+          />
+        )}
+        {isTrendsModalOpen && (
+          <TrendsInputModal
+            onClose={() => setIsTrendsModalOpen(false)}
+            onContinue={handleAnalyzeTrends}
+          />
+        )}
+        {isTrendsResultModalOpen && trendInputData && (
+          <TrendsResultModal
+            inputData={trendInputData}
+            onClose={() => setIsTrendsResultModalOpen(false)}
+            onGeneratePost={handleGenerateTrendPost}
           />
         )}
       </div>
