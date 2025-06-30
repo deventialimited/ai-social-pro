@@ -136,13 +136,37 @@ function TextEffectsTab({ onClose, selectedElementId }) {
     if (selectedElement?.effects.background.enabled) {
       const baseWidth = parseFloat(selectedElement.styles?.width) || 0;
       const baseHeight = parseFloat(selectedElement.styles?.height) || 0;
+      let padding = selectedElement?.styles?.padding || "0px";
+      if (property === "padding") {
+        const paddingValue = parseFloat(value) || 0;
+        const paddingTopBottom = Math.round(paddingValue * 0.15);
+        const paddingLeftRight = Math.round(paddingValue * 0.05);
+        console.log(prev.background.padding);
+        const prevPaddingValue = parseFloat(prev?.background?.padding) || 0;
+        const prevPaddingTopBottom = Math.round(prevPaddingValue * 0.15);
+        const prevPaddingLeftRight = Math.round(prevPaddingValue * 0.05);
+        padding = `${paddingTopBottom}px ${paddingLeftRight}px`;
+        console.log(paddingTopBottom, paddingLeftRight);
+        console.log(prevPaddingTopBottom, prevPaddingLeftRight);
+        const deltaHorizontal = paddingLeftRight * 2 - prevPaddingLeftRight * 2;
+        const deltaVertical = paddingTopBottom * 2 - prevPaddingTopBottom * 2;
+        console.log(deltaHorizontal, deltaVertical);
+        const { x, y } = selectedElement?.position || { x: 0, y: 0 };
+        // Adjust position to keep center fixed
+        const newX = x - deltaHorizontal / 2;
+        const newY = y - deltaVertical / 2;
+
+        updateElement(selectedElement.id, {
+          position: { x: newX, y: newY },
+        });
+      }
       updateStyle({
         backgroundColor: `rgba(${hexToRgb(updated.color)}, ${
           updated.opacity / 100
         })`,
         borderRadius: `${updated.cornerRadius}px`,
         position: "relative",
-        padding: updated.padding,
+        padding: padding,
         boxSizing: "content-box",
       });
     }
