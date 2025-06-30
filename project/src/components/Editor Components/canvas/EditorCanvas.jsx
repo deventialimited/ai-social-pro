@@ -181,7 +181,11 @@ function EditorCanvas({
 
   // Alignment guides integration
   const { guides, getAlignmentGuides, snapToGuides, clearGuides } =
-    useAlignmentGuides(elements, canvas?.width || 0, canvas?.height || 0);
+    useAlignmentGuides(
+      elements,
+      Math.max(Math.min(canvas?.width / 3, 600)) || 0,
+      Math.max(Math.min(canvas?.height / 3, 600)) || 0
+    );
 
   useLayoutEffect(() => {
     if (canvasContainerRef.current) {
