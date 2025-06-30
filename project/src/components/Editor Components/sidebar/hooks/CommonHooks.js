@@ -138,25 +138,31 @@ export const setElementPosition = (element, action, canvas) => {
 
   let newX = element.position.x || 0;
   let newY = element.position.y || 0;
-
+  let prevPaddingLeftRight = 0;
+  let prevPaddingTopBottom = 0;
+  if (element?.effects?.background?.padding) {
+    const padding = parseFloat(element.effects.background.padding) || 0;
+    prevPaddingTopBottom = Math.round(padding * 0.15);
+    prevPaddingLeftRight = Math.round(padding * 0.05);
+  }
   switch (action) {
     case "left":
       newX = 0;
       break;
     case "right":
-      newX = canvasWidth - elementWidth;
+      newX = canvasWidth - (elementWidth + prevPaddingLeftRight);
       break;
     case "center":
-      newX = (canvasWidth - elementWidth) / 2;
+      newX = (canvasWidth - (elementWidth + prevPaddingLeftRight)) / 2;
       break;
     case "top":
       newY = 0;
       break;
     case "bottom":
-      newY = canvasHeight - elementHeight;
+      newY = canvasHeight - (elementHeight + prevPaddingTopBottom);
       break;
     case "middle":
-      newY = (canvasHeight - elementHeight) / 2;
+      newY = (canvasHeight - (elementHeight + prevPaddingTopBottom)) / 2;
       break;
     default:
       break;

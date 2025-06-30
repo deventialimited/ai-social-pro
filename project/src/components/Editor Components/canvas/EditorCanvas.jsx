@@ -147,13 +147,13 @@ function EditorCanvas({
   // Prevent default text selection behavior
   useEffect(() => {
     const handleSelectStart = (e) => {
-      if (e.target.closest("#canvas")) {
+      if (e.target.closest("canvas")) {
         e.preventDefault();
       }
     };
 
     const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === "a" && e.target.closest("#canvas")) {
+      if (e.ctrlKey && e.key === "a" && e.target.closest("canvas")) {
         e.preventDefault();
       }
     };
@@ -181,7 +181,11 @@ function EditorCanvas({
 
   // Alignment guides integration
   const { guides, getAlignmentGuides, snapToGuides, clearGuides } =
-    useAlignmentGuides(elements, canvas?.width || 0, canvas?.height || 0);
+    useAlignmentGuides(
+      elements,
+      Math.max(Math.min(canvas?.width / 3, 600)) || 0,
+      Math.max(Math.min(canvas?.height / 3, 600)) || 0
+    );
 
   useLayoutEffect(() => {
     if (canvasContainerRef.current) {

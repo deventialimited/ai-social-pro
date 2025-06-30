@@ -960,8 +960,8 @@ const FullEditor: React.FC<{
 
     // Get the currently selected image element in the editor
     const selectedImageElement =
-      document.querySelector("#canvas img.selected") ||
-      document.querySelector("#canvas img");
+      document.querySelector("canvas img.selected") ||
+      document.querySelector("canvas img");
     if (!selectedImageElement) return;
 
     const img = new Image();

@@ -34,7 +34,7 @@ const CanvasElement = ({
   const { updateElement, canvas, elements } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef();
-  console.log(elements);
+  // console.log(guides);
   // Add keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -342,9 +342,7 @@ const CanvasElement = ({
           // enableUserSelectHack={false}
           disableDragging={locked}
           dragHandleClassName={isSelected ? "drag-handle" : ""}
-          className={`border-2 ${
-            isSelected ? "border-blue-500" : "border-transparent"
-          } ${styles?.padding > 0 && "my-box"}`}
+          className={`${styles?.padding && "my-box"}`}
         >
           <style>
             {`
@@ -353,74 +351,14 @@ const CanvasElement = ({
     }
   `}
           </style>
-          {isSelected && (
-            <>
-              {/* Resize Handles */}
-              {/* Corners */}
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="nw"
-                className="absolute z-10 top-0 left-0 -translate-x-1/2 -translate-y-1/2"
-              />
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="ne"
-                className="absolute z-10 top-0 right-0 translate-x-1/2 -translate-y-1/2"
-              />
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="sw"
-                className="absolute z-10 bottom-0 left-0 -translate-x-1/2 translate-y-1/2"
-              />
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="se"
-                className="absolute z-10 bottom-0 right-0 translate-x-1/2 translate-y-1/2"
-              />
-              {/* Edges */}
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="n"
-                className="absolute z-10 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"
-              />
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="s"
-                className="absolute z-10 bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
-              />
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="w"
-                className="absolute z-10 left-0 top-1/2 -translate-y-1/2 -translate-x-1/2"
-              />
-              <ResizeHandle
-                onResize={onResize}
-                onResizeStart={onResizeStart}
-                position="e"
-                className="absolute z-10 right-0 top-1/2 -translate-y-1/2 translate-x-1/2"
-              />
-              {/* Rotate Handle */}
-              <div
-                onMouseDown={(e) => handleRotateMouseDown(e, elementRef)}
-                className="absolute -top-5 left-1/2 flex flex-col justify-center items-center -translate-x-1/2 -translate-y-1/2"
-              >
-                <div className="bg-white rounded-full shadow cursor-crosshair flex items-center justify-center border border-gray-300 h-5 w-5">
-                  <RotateCcw size={14} />
-                </div>
-                <span className="border-l-4 h-5 border-blue-500"></span>
-              </div>
-            </>
-          )}
+
           <div
             ref={elementRef}
-            className={` drag-handle`}
+            className={` ${
+              isSelected
+                ? "border-2 border-blue-500"
+                : "border-transparent border-none"
+            } drag-handle`}
             style={{
               position: "static",
               height: "100%",
@@ -435,6 +373,71 @@ const CanvasElement = ({
               msUserSelect: "none",
             }}
           >
+            {isSelected && (
+              <>
+                {/* Resize Handles */}
+                {/* Corners */}
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="nw"
+                  className="absolute z-10 top-0 left-0 -translate-x-1/2 -translate-y-1/2"
+                />
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="ne"
+                  className="absolute z-10 top-0 right-0 translate-x-1/2 -translate-y-1/2"
+                />
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="sw"
+                  className="absolute z-10 bottom-0 left-0 -translate-x-1/2 translate-y-1/2"
+                />
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="se"
+                  className="absolute z-10 bottom-0 right-0 translate-x-1/2 translate-y-1/2"
+                />
+                {/* Edges */}
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="n"
+                  className="absolute z-10 top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                />
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="s"
+                  className="absolute z-10 bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
+                />
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="w"
+                  className="absolute z-10 left-0 top-1/2 -translate-y-1/2 -translate-x-1/2"
+                />
+                <ResizeHandle
+                  onResize={onResize}
+                  onResizeStart={onResizeStart}
+                  position="e"
+                  className="absolute z-10 right-0 top-1/2 -translate-y-1/2 translate-x-1/2"
+                />
+                {/* Rotate Handle */}
+                <div
+                  onMouseDown={(e) => handleRotateMouseDown(e, elementRef)}
+                  className="absolute -top-5 left-1/2 flex flex-col justify-center items-center -translate-x-1/2 -translate-y-1/2"
+                >
+                  <div className="bg-white rounded-full shadow cursor-crosshair flex items-center justify-center border border-gray-300 h-5 w-5">
+                    <RotateCcw size={14} />
+                  </div>
+                  <span className="border-l-4 h-5 border-blue-500"></span>
+                </div>
+              </>
+            )}
             <EditableTextElement
               text={props.text}
               updateElement={updateElement}
