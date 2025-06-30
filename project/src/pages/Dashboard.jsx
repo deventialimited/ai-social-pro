@@ -47,7 +47,7 @@ export const Dashboard = () => {
   const [isTrendsModalOpen, setIsTrendsModalOpen] = useState(false);
   const [isTrendsResultModalOpen, setIsTrendsResultModalOpen] = useState(false);
   const [trendInputData, setTrendInputData] = useState(null);
-  const [trendsData, setTrendsData] = useState(null); // Store API response data
+  const [trendsData, setTrendsData] = useState(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -209,13 +209,12 @@ export const Dashboard = () => {
 
   const handleAnalyzeTrends = (formData) => {
     setTrendInputData(formData);
-    setIsTrendsModalOpen(false); // Close TrendsInputModal
-    // No immediate opening of TrendsResultModal; wait for API response
+    setIsTrendsModalOpen(false);
   };
 
   const handleApiResponse = (responseData) => {
-    setTrendsData(responseData.data); // Store the API response
-    setIsTrendsResultModalOpen(true); // Open TrendsResultModal with the data
+    setTrendsData(responseData.data);
+    setIsTrendsResultModalOpen(true);
   };
 
   const updatePostMutation = useUpdatePostById();
@@ -401,6 +400,12 @@ export const Dashboard = () => {
     }
   };
 
+  const selectedDomain = domains?.find(
+    (domain) => domain._id === selectedWebsite
+  );
+  const initialLanguage = selectedDomain?.language || "";
+  const initialLocation = selectedDomain?.country || "";
+
   return (
     <div className={isDark ? "dark" : ""}>
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
@@ -465,13 +470,15 @@ export const Dashboard = () => {
           <TrendsInputModal
             onClose={() => setIsTrendsModalOpen(false)}
             onContinue={handleAnalyzeTrends}
-            onApiResponse={handleApiResponse} // Pass the callback to handle API response
+            onApiResponse={handleApiResponse}
+            initialLanguage={initialLanguage}
+            initialLocation={initialLocation}
           />
         )}
         {isTrendsResultModalOpen && trendsData && (
           <TrendsResultModal
             inputData={trendInputData}
-            trendsData={trendsData} // Pass the API response data
+            trendsData={trendsData}
             onClose={() => setIsTrendsResultModalOpen(false)}
             onGeneratePost={handleGenerateTrendPost}
           />

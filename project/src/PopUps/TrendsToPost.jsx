@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   TrendingUp,
@@ -7,15 +7,31 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
-export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
+export const TrendsInputModal = ({
+  onClose,
+  onContinue,
+  onApiResponse,
+  initialLanguage,
+  initialLocation,
+}) => {
   const [formData, setFormData] = useState({
     platform: "",
     location: "",
     specificAreas: "",
     postLanguage: "",
   });
-  const [isLoading, setIsLoading] = useState(false); // New loading state
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Set initial values from domain data when component mounts
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      postLanguage: initialLanguage || prev.postLanguage,
+      location: initialLocation || prev.location,
+    }));
+  }, [initialLanguage, initialLocation]);
 
   const platforms = [
     {
@@ -42,40 +58,42 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.platform) {
-      setIsLoading(true); // Start loading
-      try {
-        const response = await fetch(
-          "https://social-api-107470285539.us-central1.run.app/trends-to-post",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              platform: formData.platform.toLowerCase(),
-              language: formData.postLanguage,
-              location: formData.location,
-              focus_areas: formData.specificAreas,
-            }),
-          }
-        );
-        const result = await response.json();
-        if (result.status === "success") {
-          onApiResponse(result); // Call the callback with the API response
-          onContinue(formData); // Optionally call onContinue if needed
-        } else {
-          console.error("API error:", result);
+    if (!formData.platform) {
+      toast.error("Please select a platform to analyze trends.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        "https://social-api-107470285539.us-central1.run.app/trends-to-post",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            platform: formData.platform.toLowerCase(),
+            language: formData.postLanguage,
+            location: formData.location,
+            focus_areas: formData.specificAreas,
+          }),
         }
-      } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setIsLoading(false); // Stop loading regardless of success or failure
+      );
+      const result = await response.json();
+      if (result.status === "success") {
+        onApiResponse(result);
+        onContinue(formData);
+      } else {
+        console.error("API error:", result);
       }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const isFormValid = formData.platform;
+  const isFormValid = formData.platform; // Only platform is required
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -109,7 +127,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
             <button
               onClick={onClose}
               className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
-              disabled={isLoading} // Disable close button while loading
+              disabled={isLoading}
             >
               <X className="w-5 h-5" />
             </button>
@@ -152,7 +170,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
                         ? "border-green-500 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 shadow-lg shadow-green-500/25"
                         : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-green-300 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
                     }`}
-                    disabled={isLoading} // Disable platform buttons while loading
+                    disabled={isLoading}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-600 p-1.5 flex items-center justify-center shadow-sm">
@@ -204,7 +222,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
                     Post Language
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Enter the language for generated posts
+                    (Optional)
                   </p>
                 </div>
               </div>
@@ -222,7 +240,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
                   }
                   placeholder="e.g., English, Spanish, French..."
                   className="w-full px-4 py-4 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
-                  disabled={isLoading} // Disable input while loading
+                  disabled={isLoading}
                 />
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                   <Languages className="w-5 h-5 text-gray-400" />
@@ -241,7 +259,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
                     Location
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Specify the geographic area for trend analysis
+                    (Optional)
                   </p>
                 </div>
               </div>
@@ -259,7 +277,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
                   }
                   placeholder="e.g., United States, London, Global, Brazil, India, New York City..."
                   className="w-full px-4 py-4 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
-                  disabled={isLoading} // Disable input while loading
+                  disabled={isLoading}
                 />
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                   <MapPin className="w-5 h-5 text-gray-400" />
@@ -299,7 +317,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
                   placeholder="e.g., Technology, Business, Entertainment, Sports, Health, Politics, Gaming..."
                   className="w-full px-4 py-4 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 resize-none"
                   rows={3}
-                  disabled={isLoading} // Disable textarea while loading
+                  disabled={isLoading}
                 />
                 <div className="absolute bottom-3 right-3 text-xs text-gray-400">
                   {formData.specificAreas.length}/200
@@ -368,7 +386,7 @@ export const TrendsInputModal = ({ onClose, onContinue, onApiResponse }) => {
             <button
               onClick={onClose}
               className="px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition-colors font-medium"
-              disabled={isLoading} // Disable cancel button while loading
+              disabled={isLoading}
             >
               Cancel
             </button>

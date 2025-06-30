@@ -131,7 +131,7 @@ export const TrendsResultModal = ({
           <div className="space-y-4">
             {trendsData?.map((trend, index) => (
               <div
-                key={trend.topic} // Use a unique identifier from the API data
+                key={trend.topic}
                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:border-green-500 dark:hover:border-green-400 transition-all duration-300 hover:shadow-lg"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -227,22 +227,6 @@ export const TrendsResultModal = ({
 
                   {expandedTrend === trend.topic && (
                     <div className="mt-4 space-y-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Marketing Insight
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {trend.insights}
-                        </p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Target Audience
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {trend.audience}
-                        </p>
-                      </div>
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                           Related Keywords
