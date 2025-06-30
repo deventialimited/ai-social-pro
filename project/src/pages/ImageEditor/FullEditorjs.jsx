@@ -793,8 +793,8 @@ const FullEditor = ({
     if (!backgroundImage) return;
 
     const selectedImageElement =
-      document.querySelector("#canvas img.selected") ||
-      document.querySelector("#canvas img");
+      document.querySelector("canvas img.selected") ||
+      document.querySelector("canvas img");
     if (!selectedImageElement) return;
 
     const img = new Image();
