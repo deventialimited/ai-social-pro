@@ -3,7 +3,7 @@ import {
   X,
   TrendingUp,
   MapPin,
-  Globe,
+  Languages,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
@@ -13,6 +13,7 @@ export const TrendsInputModal = ({ onClose, onContinue }) => {
     platform: "",
     location: "",
     specificAreas: "",
+    postLanguage: "", // Changed to empty string for text input
   });
 
   const platforms = [
@@ -92,7 +93,7 @@ export const TrendsInputModal = ({ onClose, onContinue }) => {
             <div className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-white" />
+                  <Languages className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -158,6 +159,41 @@ export const TrendsInputModal = ({ onClose, onContinue }) => {
                   Platform selection is required
                 </p>
               )}
+            </div>
+
+            {/* Post Language */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-indigo-500 flex items-center justify-center">
+                  <Languages className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Post Language
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Enter the language for generated posts
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.postLanguage}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      postLanguage: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g., English, Spanish, French..."
+                  className="w-full px-4 py-4 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                />
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <Languages className="w-5 h-5 text-gray-400" />
+                </div>
+              </div>
             </div>
 
             {/* Location Input */}
@@ -246,6 +282,14 @@ export const TrendsInputModal = ({ onClose, onContinue }) => {
                   </span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {formData.platform || "Not selected"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Post Language:
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {formData.postLanguage || "Not specified"}
                   </span>
                 </div>
                 <div className="flex justify-between">
