@@ -1,19 +1,47 @@
+import { useRef } from "react";
 import { useEditor } from "../../EditorStoreHooks/FullEditorHooks";
 import { createTextElement } from "../hooks/TextHooks";
 function TextTab() {
-  const { addElement, postOtherValues } = useEditor();
+  const {
+    addElement,
+    postOtherValues,
+    setCanvasLoading,
+    zoomLevel,
+    setZoomLevel,
+  } = useEditor();
 
   const handleAddText = (category) => {
-    const defaultText = "Add a Text";
-    const text =
-      category === "slogan"
-        ? postOtherValues?.slogan || defaultText
-        : category === "brandName"
-        ? postOtherValues?.brandName || defaultText
-        : defaultText;
+    if (zoomLevel !== 100) {
+      setCanvasLoading(true);
+      let previousZoomLevel = zoomLevel;
+      // Switch to 100% zoom
+      setZoomLevel(100);
+      setTimeout(() => {
+        const defaultText = "Add a Text";
+        const text =
+          category === "slogan"
+            ? postOtherValues?.slogan || defaultText
+            : category === "brandName"
+            ? postOtherValues?.brandName || defaultText
+            : defaultText;
 
-    const newElement = createTextElement(category, text);
-    addElement(newElement);
+        const newElement = createTextElement(category, text);
+        addElement(newElement);
+        setZoomLevel(previousZoomLevel);
+        setCanvasLoading(false);
+      }, 1000); // Simulate loading time
+    } else {
+      const defaultText = "Add a Text";
+      const text =
+        category === "slogan"
+          ? postOtherValues?.slogan || defaultText
+          : category === "brandName"
+          ? postOtherValues?.brandName || defaultText
+          : defaultText;
+
+      const newElement = createTextElement(category, text);
+      addElement(newElement);
+    }
   };
 
   return (

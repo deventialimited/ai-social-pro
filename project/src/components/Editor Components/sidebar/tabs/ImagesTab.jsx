@@ -17,7 +17,8 @@ function ImagesTab() {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const fileInputRef = useRef(null);
-  const { addElement, addFile, setCanvasLoading } = useEditor();
+  const { addElement, addFile, setCanvasLoading, zoomLevel, setZoomLevel } =
+    useEditor();
   const { mutate: uploadImage } = useUploadUserImageMutation(); // For image upload
   const [userId, setUserId] = useState(null);
   const { postOtherValues } = useEditor();
@@ -120,11 +121,25 @@ function ImagesTab() {
       }
 
       const newElement = createImageElement(objectUrl, category, originalSrc);
-      addElement(newElement);
+      if (zoomLevel !== 100) {
+        let previousZoomLevel = zoomLevel;
+        // Switch to 100% zoom
+        setZoomLevel(100);
+        setTimeout(() => {
+          addElement(newElement);
 
-      const file = new File([blob], newElement.id, { type: blob.type });
-      addFile(file);
-      setCanvasLoading(false);
+          const file = new File([blob], newElement.id, { type: blob.type });
+          addFile(file);
+          setZoomLevel(previousZoomLevel);
+          setCanvasLoading(false);
+        }, 1000); // Simulate loading time
+      } else {
+        addElement(newElement);
+
+        const file = new File([blob], newElement.id, { type: blob.type });
+        addFile(file);
+        setCanvasLoading(false);
+      }
     } catch (error) {
       setCanvasLoading(false);
       console.error("Failed to add image:", error);
