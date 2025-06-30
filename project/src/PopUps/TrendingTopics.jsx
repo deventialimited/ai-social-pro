@@ -12,161 +12,13 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
+export const TrendsResultModal = ({
+  inputData,
+  trendsData,
+  onClose,
+  onGeneratePost,
+}) => {
   const [expandedTrend, setExpandedTrend] = useState(null);
-
-  const trendingTopics = [
-    {
-      id: "trend-1",
-      name: "#AIRevolution2024",
-      description:
-        "Major breakthrough in artificial intelligence with new GPT models and autonomous systems gaining massive attention across tech communities.",
-      category: "Business & Technology",
-      engagement: "High",
-      audience: "Tech professionals, Business leaders",
-      longevity: "1 week+",
-      insight:
-        "Perfect opportunity for tech companies to showcase AI integration and thought leadership content.",
-      keywords: [
-        "#AI",
-        "#Technology",
-        "#Innovation",
-        "#GPT",
-        "#MachineLearning",
-      ],
-    },
-    {
-      id: "trend-2",
-      name: "Remote Work Evolution",
-      description:
-        "Companies announcing permanent remote work policies and new digital collaboration tools trending as workplace transformation accelerates.",
-      category: "Business & Technology",
-      engagement: "Rising",
-      audience: "Business professionals, HR leaders",
-      longevity: "3 days",
-      insight:
-        "Great for B2B companies to share remote work solutions and productivity tips.",
-      keywords: [
-        "#RemoteWork",
-        "#DigitalTransformation",
-        "#Productivity",
-        "#WorkFromHome",
-      ],
-    },
-    {
-      id: "trend-3",
-      name: "#SustainableFuture",
-      description:
-        "Climate action initiatives and green technology solutions gaining viral momentum as environmental awareness peaks.",
-      category: "Social & Cultural",
-      engagement: "High",
-      audience: "Millennials, Gen Z, Environmental advocates",
-      longevity: "1 week+",
-      insight:
-        "Ideal for brands to showcase sustainability efforts and eco-friendly practices.",
-      keywords: [
-        "#Sustainability",
-        "#ClimateAction",
-        "#GreenTech",
-        "#EcoFriendly",
-        "#Environment",
-      ],
-    },
-    {
-      id: "trend-4",
-      name: "Viral Productivity Hack",
-      description:
-        'New time management technique called "Focus Blocks" spreading rapidly among entrepreneurs and students for enhanced productivity.',
-      category: "Lifestyle & Wellness",
-      engagement: "Rising",
-      audience: "Entrepreneurs, Students, Professionals",
-      longevity: "24 hours",
-      insight:
-        "Perfect for productivity apps, coaching services, and educational content creators.",
-      keywords: [
-        "#ProductivityHack",
-        "#TimeManagement",
-        "#FocusBlocks",
-        "#Efficiency",
-      ],
-    },
-    {
-      id: "trend-5",
-      name: "#TechEarnings2024",
-      description:
-        "Major tech companies reporting record earnings with AI investments showing significant returns, driving market optimism.",
-      category: "Business & Technology",
-      engagement: "High",
-      audience: "Investors, Business professionals, Tech enthusiasts",
-      longevity: "3 days",
-      insight:
-        "Excellent for financial services and investment platforms to share market insights.",
-      keywords: [
-        "#TechEarnings",
-        "#StockMarket",
-        "#Investment",
-        "#AI",
-        "#TechStocks",
-      ],
-    },
-    {
-      id: "trend-6",
-      name: "Viral Dance Challenge",
-      description:
-        "New dance trend #MoveItMonday taking over social platforms with millions of participants and celebrity endorsements.",
-      category: "Entertainment & Pop Culture",
-      engagement: "High",
-      audience: "Gen Z, Millennials, Content creators",
-      longevity: "1 week+",
-      insight:
-        "Great for lifestyle brands and entertainment companies to create engaging content.",
-      keywords: [
-        "#MoveItMonday",
-        "#DanceChallenge",
-        "#Viral",
-        "#Entertainment",
-        "#SocialMedia",
-      ],
-    },
-    {
-      id: "trend-7",
-      name: "Mental Health Awareness",
-      description:
-        "Workplace mental health initiatives trending as companies prioritize employee wellbeing and stress management programs.",
-      category: "Lifestyle & Wellness",
-      engagement: "Medium",
-      audience: "HR professionals, Healthcare workers, General public",
-      longevity: "1 week+",
-      insight:
-        "Perfect for healthcare brands and wellness companies to share valuable resources.",
-      keywords: [
-        "#MentalHealth",
-        "#Wellness",
-        "#WorkplaceWellbeing",
-        "#SelfCare",
-        "#HealthyWorkplace",
-      ],
-    },
-    {
-      id: "trend-8",
-      name: "#CryptoComeback",
-      description:
-        "Cryptocurrency markets showing strong recovery with new institutional adoption and regulatory clarity driving investor confidence.",
-      category: "Business & Technology",
-      engagement: "Rising",
-      audience: "Crypto enthusiasts, Investors, Tech professionals",
-      longevity: "3 days",
-      insight:
-        "Opportunity for fintech companies to educate about crypto investments and blockchain technology.",
-      keywords: [
-        "#Cryptocurrency",
-        "#Bitcoin",
-        "#Blockchain",
-        "#Investment",
-        "#FinTech",
-      ],
-    },
-  ];
 
   const getEngagementColor = (engagement) => {
     switch (engagement) {
@@ -183,11 +35,13 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
 
   const getCategoryIcon = (category) => {
     switch (category) {
+      case "Fitness":
       case "Business & Technology":
         return "💼";
       case "Entertainment & Pop Culture":
         return "🎭";
       case "Social & Cultural":
+      case "Wellness":
         return "🌍";
       case "Lifestyle & Wellness":
         return "🌱";
@@ -237,7 +91,7 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
           <div className="grid grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {trendingTopics.length}
+                {trendsData?.length || 0}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 Trending Topics
@@ -245,7 +99,7 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {trendingTopics.filter((t) => t.engagement === "High").length}
+                {trendsData?.filter((t) => t.engagement === "High").length || 0}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 High Engagement
@@ -253,7 +107,7 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
-                {trendingTopics.filter((t) => t.longevity === "1 week+").length}
+                {trendsData?.filter((t) => t.longevity === "High").length || 0}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 Long-term Trends
@@ -261,7 +115,7 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
-                {new Set(trendingTopics.map((t) => t.category)).size}
+                {new Set(trendsData?.map((t) => t.category)).size || 0}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 Categories
@@ -275,9 +129,9 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
           style={{ maxHeight: "calc(90vh - 280px)" }}
         >
           <div className="space-y-4">
-            {trendingTopics.map((trend, index) => (
+            {trendsData?.map((trend, index) => (
               <div
-                key={trend.id}
+                key={trend.topic} // Use a unique identifier from the API data
                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:border-green-500 dark:hover:border-green-400 transition-all duration-300 hover:shadow-lg"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -288,7 +142,7 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                          {trend.name}
+                          {trend.topic}
                         </h3>
                         <span className="text-lg">
                           {getCategoryIcon(trend.category)}
@@ -350,17 +204,17 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
                       Keywords:
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {trend.keywords.length}
+                      {trend.related_keywords.length}
                     </span>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                   <button
-                    onClick={() => toggleExpanded(trend.id)}
+                    onClick={() => toggleExpanded(trend.topic)}
                     className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
                   >
-                    {expandedTrend === trend.id ? (
+                    {expandedTrend === trend.topic ? (
                       <>
                         Hide Details <ChevronUp className="w-4 h-4" />
                       </>
@@ -371,14 +225,14 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
                     )}
                   </button>
 
-                  {expandedTrend === trend.id && (
+                  {expandedTrend === trend.topic && (
                     <div className="mt-4 space-y-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                           Marketing Insight
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {trend.insight}
+                          {trend.insights}
                         </p>
                       </div>
                       <div>
@@ -394,7 +248,7 @@ export const TrendsResultModal = ({ inputData, onClose, onGeneratePost }) => {
                           Related Keywords
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          {trend.keywords.map((keyword, i) => (
+                          {trend.related_keywords.map((keyword, i) => (
                             <span
                               key={i}
                               className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md text-xs font-medium"

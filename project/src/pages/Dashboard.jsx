@@ -47,6 +47,7 @@ export const Dashboard = () => {
   const [isTrendsModalOpen, setIsTrendsModalOpen] = useState(false);
   const [isTrendsResultModalOpen, setIsTrendsResultModalOpen] = useState(false);
   const [trendInputData, setTrendInputData] = useState(null);
+  const [trendsData, setTrendsData] = useState(null); // Store API response data
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationError, setGenerationError] = useState("");
   const [isFetchingUserInfo, setIsFetchingUserInfo] = useState(false);
@@ -208,8 +209,13 @@ export const Dashboard = () => {
 
   const handleAnalyzeTrends = (formData) => {
     setTrendInputData(formData);
-    setIsTrendsModalOpen(false);
-    setIsTrendsResultModalOpen(true);
+    setIsTrendsModalOpen(false); // Close TrendsInputModal
+    // No immediate opening of TrendsResultModal; wait for API response
+  };
+
+  const handleApiResponse = (responseData) => {
+    setTrendsData(responseData.data); // Store the API response
+    setIsTrendsResultModalOpen(true); // Open TrendsResultModal with the data
   };
 
   const updatePostMutation = useUpdatePostById();
@@ -459,11 +465,13 @@ export const Dashboard = () => {
           <TrendsInputModal
             onClose={() => setIsTrendsModalOpen(false)}
             onContinue={handleAnalyzeTrends}
+            onApiResponse={handleApiResponse} // Pass the callback to handle API response
           />
         )}
-        {isTrendsResultModalOpen && trendInputData && (
+        {isTrendsResultModalOpen && trendsData && (
           <TrendsResultModal
             inputData={trendInputData}
+            trendsData={trendsData} // Pass the API response data
             onClose={() => setIsTrendsResultModalOpen(false)}
             onGeneratePost={handleGenerateTrendPost}
           />
