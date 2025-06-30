@@ -34,7 +34,7 @@ const CanvasElement = ({
   const { updateElement, canvas, elements } = useEditor();
   const elementRef = useRef(null);
   const startSizeRef = useRef();
-  console.log(elements);
+  // console.log(guides);
   // Add keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
