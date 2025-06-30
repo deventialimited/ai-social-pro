@@ -285,28 +285,34 @@ exports.generateHTMLFromTemplateData = (templateData) => {
           })
           .join("\n")}
       <script>
-(function adjustAllTextFontSizes() {
-  const textElements = document.querySelectorAll('.adjustable-text');
-  textElements.forEach(textarea => {
-    const container = textarea.parentElement;
-    if (!container) return;
+  document.addEventListener("DOMContentLoaded", function () {
+    const textElements = document.querySelectorAll('.adjustable-text');
+    textElements.forEach(textarea => {
+      const container = textarea.parentElement;
+      if (!container) return;
 
-    const containerHeight = container.clientHeight;
-    const containerWidth = container.clientWidth;
+      const computedContainerStyle = window.getComputedStyle(container);
+      const minHeight = parseFloat(computedContainerStyle.minHeight);
 
-    const computedStyle = window.getComputedStyle(textarea);
-    let size = parseFloat(computedStyle.fontSize);
-    const minFontSize = 0.1;
+      const containerWidth = container.clientWidth;
 
-    while (
-      (textarea.scrollHeight > containerHeight || textarea.scrollWidth > containerWidth) &&
-      size > minFontSize
-    ) {
-      size--;
-      textarea.style.fontSize = size + 'px';
-    }
+      const computedTextStyle = window.getComputedStyle(textarea);
+      let size = parseFloat(computedTextStyle.fontSize);
+      const minFontSize = 0.1;
+
+      while (
+        (textarea.scrollHeight > minHeight ||
+         textarea.scrollWidth > containerWidth) &&
+        size > minFontSize
+      ) {
+        size--;
+        textarea.style.fontSize = size + 'px';
+      }
+
+      console.log("Container min-height:", minHeight);
+      console.log("Final font size:", textarea.style.fontSize);
+    });
   });
-})();
 </script>
       </body>
 
