@@ -560,10 +560,11 @@ export const lineShapes = [
     </svg>`,
   },
 ];
-export const createShapeElement = (svgString) => {
+export const createShapeElement = (svgString,type) => {
   return {
     id: `shape-${uuidv4()}`,
     type: "shape",
+    category:type,
     position: { x: 100, y: 100 },
     styles: {
       width: 200,
