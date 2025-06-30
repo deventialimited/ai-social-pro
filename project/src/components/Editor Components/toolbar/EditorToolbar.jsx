@@ -11,12 +11,14 @@ function EditorToolbar({
   selectedElementId,
   setSelectedElementId,
   setActiveElement,
+  activeElementCategory,
 }) {
   // This would be determined by what's selected in the canvas
   // For now we'll use a prop to control it
 
   // Render the appropriate toolbar based on the active element
   const renderToolbar = () => {
+
     switch (activeElement) {
       case "text":
         return (
@@ -39,25 +41,23 @@ function EditorToolbar({
           />
         );
       case "shape":
-        return (
-          <ShapeToolbar
+     
+      return activeElementCategory ==="shape"
+      ?<ShapeToolbar
             specialActiveTab={specialActiveTab}
             setSpecialActiveTab={setSpecialActiveTab}
             selectedElementId={selectedElementId}
             setSelectedElementId={setSelectedElementId}
             setActiveElement={setActiveElement}
-          />
-        );
-      case "line":
-        return (
-          <LinesToolbar
-            specialActiveTab={specialActiveTab}
-            setSpecialActiveTab={setSpecialActiveTab}
-            selectedElementId={selectedElementId}
-            setSelectedElementId={setSelectedElementId}
-            setActiveElement={setActiveElement}
-          />
-        );
+          />:<LinesToolbar
+          specialActiveTab={specialActiveTab}
+          setSpecialActiveTab={setSpecialActiveTab}
+          selectedElementId={selectedElementId}
+          setSelectedElementId={setSelectedElementId}
+          setActiveElement={setActiveElement}
+        />;
+
+        
       case "canvas":
       default:
         return <CanvasToolbar />;
