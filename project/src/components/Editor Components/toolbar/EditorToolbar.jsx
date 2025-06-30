@@ -2,6 +2,7 @@ import TextToolbar from "./toolbars/TextToolbar";
 import ImageToolbar from "./toolbars/ImageToolbar";
 import ShapeToolbar from "./toolbars/ShapeToolbar";
 import CanvasToolbar from "./toolbars/CanvasToolbar";
+import LinesToolbar from "./toolbars/LinesToolbar";
 
 function EditorToolbar({
   activeElement = "canvas",
@@ -40,6 +41,16 @@ function EditorToolbar({
       case "shape":
         return (
           <ShapeToolbar
+            specialActiveTab={specialActiveTab}
+            setSpecialActiveTab={setSpecialActiveTab}
+            selectedElementId={selectedElementId}
+            setSelectedElementId={setSelectedElementId}
+            setActiveElement={setActiveElement}
+          />
+        );
+      case "line":
+        return (
+          <LinesToolbar
             specialActiveTab={specialActiveTab}
             setSpecialActiveTab={setSpecialActiveTab}
             selectedElementId={selectedElementId}
