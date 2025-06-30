@@ -147,13 +147,13 @@ function EditorCanvas({
   // Prevent default text selection behavior
   useEffect(() => {
     const handleSelectStart = (e) => {
-      if (e.target.closest("#canvas")) {
+      if (e.target.closest("canvas")) {
         e.preventDefault();
       }
     };
 
     const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === "a" && e.target.closest("#canvas")) {
+      if (e.ctrlKey && e.key === "a" && e.target.closest("canvas")) {
         e.preventDefault();
       }
     };

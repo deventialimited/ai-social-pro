@@ -89,12 +89,7 @@ const TopHeaderBtns = ({
     setSelectedElementId(null);
     setIsSavePostLoading(true);
     try {
-      let node;
-      if (selectedTemplateId) {
-        node = document.getElementById("hiddenCanvas");
-      } else {
-        node = document.getElementById("#canvas");
-      }
+      const node = document.getElementById("canvas");
 
       const scale = 5;
       const width = node.offsetWidth * scale;
@@ -324,7 +319,7 @@ const TopHeaderBtns = ({
 
       addFile(file);
 
-      const canvasElement = document.getElementById("#canvas");
+      const canvasElement = document.getElementById("canvas");
       if (!canvasElement) return;
 
       const canvasWidth = canvasElement.offsetWidth;

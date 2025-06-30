@@ -229,7 +229,7 @@ function ImageToolbar({
   const handleFitToPage = () => {
     if (!selectedElement || selectedElement.locked) return;
     // 1. Get the canvas element by its id
-    const canvasElement = document.getElementById("#canvas");
+    const canvasElement = document.getElementById("canvas");
 
     if (!canvasElement) {
       console.log("Canvas element not found.");
