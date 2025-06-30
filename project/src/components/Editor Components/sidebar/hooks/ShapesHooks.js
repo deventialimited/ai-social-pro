@@ -510,6 +510,7 @@ export const lineShapes = [
   {
     id: "solid-line",
     name: "Solid Line",
+    type: "line",
     svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
       <line x1="10" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" />
     </svg>`,
@@ -517,6 +518,7 @@ export const lineShapes = [
   {
     id: "dashed-line",
     name: "Dashed Line",
+    type: "line",
     svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
       <line x1="10" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" stroke-dasharray="20,12" />
     </svg>`,
@@ -524,6 +526,7 @@ export const lineShapes = [
   {
     id: "dotted-line",
     name: "Dotted Line",
+    type: "line",
     svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
       <line x1="10" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" stroke-dasharray="6,10" />
     </svg>`,
@@ -531,6 +534,7 @@ export const lineShapes = [
   {
     id: "arrow-line",
     name: "Arrow Line",
+    type: "line",
     svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
       <line x1="10" y1="20" x2="165" y2="20" stroke="currentColor" stroke-width="8" />
       <polygon points="165,6 195,20 165,34" fill="currentColor" />
@@ -539,6 +543,7 @@ export const lineShapes = [
   {
     id: "circle-arrow-line",
     name: "Circle Arrow Line",
+    type: "line",
     svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
       <circle cx="20" cy="20" r="12" fill="currentColor" />
       <line x1="32" y1="20" x2="165" y2="20" stroke="currentColor" stroke-width="8" />
@@ -548,6 +553,7 @@ export const lineShapes = [
   {
     id: "square-dashed-line",
     name: "Square Dashed Line",
+    type: "line",
     svg: `<svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
       <rect x="8" y="8" width="24" height="24" fill="currentColor" />
       <line x1="32" y1="20" x2="190" y2="20" stroke="currentColor" stroke-width="8" stroke-dasharray="20,12" />
@@ -561,7 +567,7 @@ export const createShapeElement = (svgString) => {
     position: { x: 100, y: 100 },
     styles: {
       width: 200,
-      height: 30,
+      height: svgString.type === "line" ? 30 : 200,
       color: "#D3D3D3",
       fill: "#D3D3D3",
     },
