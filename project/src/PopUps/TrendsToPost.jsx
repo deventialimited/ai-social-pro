@@ -14,6 +14,7 @@ export const TrendsInputModal = ({
   onContinue,
   onApiResponse,
   initialLanguage,
+  setPlatform,
   initialLocation,
 }) => {
   const [formData, setFormData] = useState({
@@ -62,6 +63,7 @@ export const TrendsInputModal = ({
       toast.error("Please select a platform to analyze trends.");
       return;
     }
+    setPlatform(formData.platform);
     setIsLoading(true);
     try {
       const response = await fetch(

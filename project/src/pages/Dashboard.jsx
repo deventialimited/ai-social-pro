@@ -16,7 +16,9 @@ import {
   useGetAllPostsByDomainId,
   useUpdatePostById,
   useDeletePostById,
+  useCreatePostViaPubSub,
 } from "../libs/postService";
+import { getDomainById } from "../libs/domainService";
 import toast from "react-hot-toast";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
@@ -33,7 +35,7 @@ export const Dashboard = () => {
   const { isDark } = useThemeStore();
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState({ username: "" });
-  const [selectedWebsite, setSelectedWebsite] = useState(null);
+  const [selectedWebsiteId, setSelectedWebsiteId] = useState(null);
   const [currentTab, setCurrentTab] = useState("posts");
   const [view, setView] = useState("list");
   const [filter, setFilter] = useState("all");
@@ -57,13 +59,25 @@ export const Dashboard = () => {
   const socket = useSocket();
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const [isGeneratingBatchPost, setIsGeneratingBatchPost] = useState(false);
+  const [isGeneratingTrendPost, setIsGeneratingTrendPost] = useState(false);
+  const [platform, setPlatform] = useState("Twitter");
+
+  const { mutateAsync: createPostViaPubSub } = useCreatePostViaPubSub();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const domainId = searchParams.get("domainId");
 
     if (domainId) {
+      setSelectedWebsiteId(domainId);
       navigate("/dashboard", { replace: true });
+    } else {
+      const storedWebsiteId = JSON.parse(
+        localStorage.getItem("user")
+      )?.selectedWebsiteId;
+      if (storedWebsiteId) {
+        setSelectedWebsiteId(storedWebsiteId);
+      }
     }
   }, [location.search, navigate]);
 
@@ -83,11 +97,11 @@ export const Dashboard = () => {
     }
     socket.on("postStatusUpdated", (updatedPost) => {
       console.log("updated post in the dashboard", updatedPost);
-      if (updatedPost.domainId === selectedWebsite) {
+      if (updatedPost.domainId === selectedWebsiteId) {
         queryClient.invalidateQueries(["posts", updatedPost.domainId]);
       }
     });
-  }, [socket, queryClient, selectedWebsite]);
+  }, [socket, queryClient, selectedWebsiteId]);
 
   useEffect(() => {
     console.log("into the new useEffect to check the returnFromPortal");
@@ -132,26 +146,23 @@ export const Dashboard = () => {
     isPostsLoading,
     isPostsError,
     postsError,
-  } = useGetAllPostsByDomainId(selectedWebsite);
+  } = useGetAllPostsByDomainId(selectedWebsiteId);
 
   useEffect(() => {
-    const selectedWebsiteId = JSON.parse(
-      localStorage.getItem("user")
-    )?.selectedWebsiteId;
-    if (domains?.length > 0) {
-      const domainId = searchParams.get("domainId");
-      if (domainId) {
-        setSelectedWebsite(domainId);
-      } else if (selectedWebsiteId) {
-        setSelectedWebsite(selectedWebsiteId);
+    if (domains?.length > 0 && !selectedWebsiteId) {
+      const storedWebsiteId = JSON.parse(
+        localStorage.getItem("user")
+      )?.selectedWebsiteId;
+      if (storedWebsiteId) {
+        setSelectedWebsiteId(storedWebsiteId);
       } else {
-        setSelectedWebsite(domains[0]?._id);
+        setSelectedWebsiteId(domains[0]?._id);
       }
     }
-  }, [domains, searchParams]);
+  }, [domains, selectedWebsiteId]);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.className = isDark ? "dark" : "";
   }, [isDark]);
 
   useEffect(() => {
@@ -201,13 +212,87 @@ export const Dashboard = () => {
     setPostsTab("generated");
   };
 
-  const handleGenerateTrendPost = (trend) => {
-    console.log("Generating post for trend:", trend);
-    queryClient.invalidateQueries(["posts", selectedWebsite]);
-    setIsTrendsResultModalOpen(false);
+  const handleGenerateTrendPost = async (trend) => {
+    console.log("trend data to generate post:", trend);
+    console.log("trendInputData:", trendInputData);
+    setIsGeneratingTrendPost(true); // Start loading state for Trends To Post
+    setIsTrendsResultModalOpen(false); // Close the modal immediately
+    const domain = await getDomainById(selectedWebsiteId);
+    if (!domain?.data) {
+      throw new Error(
+        "Unable to find website details. Please try again later."
+      );
+    }
+    console.log("domain data:", domain.data);
+
+    const clientData = {
+      client_email: domain.data.client_email || "",
+      client_id: domain.data.client_id,
+      Website: domain.data.clientWebsite || "",
+      Name: domain.data.clientName || "Unknown",
+      industry: domain.data.industry || "Unknown",
+      niche: trend.category || "Unknown",
+      description: trend.description || "",
+      core_values: domain.data.marketingStrategy?.core_values || [],
+      target_audience: trend.audience  || [],
+      audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
+    };
+
+    const payload = {
+      client_email: clientData.client_email,
+      client_id: clientData.client_id,
+      Website: clientData.Website,
+      Name: clientData.Name,
+      industry: clientData.industry,
+      niche: clientData.niche,
+      description: clientData.description,
+      core_values: clientData.core_values,
+      target_audience: clientData.target_audience,
+      audience_pain_points: clientData.audience_pain_points,
+      post_platform: platform || "Twitter",
+    };
+
+    console.log("Payload:", payload);
+
+    try {
+      const response = await axios.post(
+        "https://social-api-107470285539.us-central1.run.app/generate-single-post",
+        payload
+      );
+      if (response.status === 200) {
+        const pubsubPayload = {
+          post_id: response.data.post_id,
+          client_id: domain.data.client_id,
+          domainId: selectedWebsiteId,
+          userId: userId,
+          image: response.data.image || "",
+          topic: response.data.topic,
+          related_keywords: response.data.related_keywords || [],
+          content: response.data.content,
+          slogan: response.data.slogan,
+          imageIdeas: response.data.imageIdeas || [],
+          postDate: response.data.date,
+          platform: response.data.platform,
+        };
+
+        await createPostViaPubSub(pubsubPayload); // Save via PubSub
+        queryClient.invalidateQueries(["posts", selectedWebsiteId]);
+        toast.success("Post generated and saved successfully!");
+      } else {
+        console.error("Error generating post:", response);
+        toast.error("Failed to generate post: " + response.data.message);
+      }
+    } catch (error) {
+      toast.error(
+        "An error occurred while generating the post: " + error.message
+      );
+    } finally {
+      setIsGeneratingTrendPost(false); // Stop loading state after completion
+    }
   };
 
   const handleAnalyzeTrends = (formData) => {
+    console.log("Form data received in handleAnalyzeTrends:", formData);
     setTrendInputData(formData);
     setIsTrendsModalOpen(false);
   };
@@ -310,18 +395,24 @@ export const Dashboard = () => {
                 </div>
                 <div className="flex flex-col items-center">
                   <button
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md"
+                    className={`flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transform transition-transform hover:scale-105 active:scale-95 shadow-md ${
+                      isGeneratingTrendPost
+                        ? "opacity-75 cursor-not-allowed"
+                        : ""
+                    }`}
                     onClick={() => {
                       setIsTrendsModalOpen(true);
                       setIsTrendsResultModalOpen(false);
                     }}
+                    disabled={isGeneratingTrendPost}
                   >
-                    <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-transparent rounded-sm">
-                      <span className="flex items-center justify-center bg-white/30 border-2 border-white rounded">
-                        <TrendingUp className="text-white w-5 h-5" />
-                      </span>
+                    <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
+                      {" "}
+                      {/* Updated to match rounded style */}
+                      <TrendingUp className="text-white w-5 h-5" />{" "}
+                      {/* Centered icon */}
                     </span>
-                    Trends To Post
+                    {isGeneratingTrendPost ? "Generating..." : "Trends To Post"}
                   </button>
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
                     Generate posts from current <br /> trending topics and viral{" "}
@@ -386,7 +477,7 @@ export const Dashboard = () => {
       case "business":
         return (
           <BusinessSection
-            selectedWebsiteId={selectedWebsite}
+            selectedWebsiteId={selectedWebsiteId}
             userId={userId}
             onEdit={handleBusinessEdit}
           />
@@ -401,7 +492,7 @@ export const Dashboard = () => {
   };
 
   const selectedDomain = domains?.find(
-    (domain) => domain._id === selectedWebsite
+    (domain) => domain._id === selectedWebsiteId
   );
   const initialLanguage = selectedDomain?.language || "";
   const initialLocation = selectedDomain?.country || "";
@@ -411,8 +502,8 @@ export const Dashboard = () => {
       <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
         <LeftMenu
           userId={userId}
-          selectedWebsite={selectedWebsite}
-          onWebsiteChange={setSelectedWebsite}
+          selectedWebsite={selectedWebsiteId}
+          onWebsiteChange={setSelectedWebsiteId}
           currentTab={currentTab}
           onTabChange={setCurrentTab}
           onAddBusiness={handleGeneratePosts}
@@ -452,7 +543,7 @@ export const Dashboard = () => {
           <GeneratePostModal
             onClose={() => setIsGenerateModalOpen(false)}
             onGenerate={() => {
-              queryClient.invalidateQueries(["posts", selectedWebsite]);
+              queryClient.invalidateQueries(["posts", selectedWebsiteId]);
             }}
             onLoadingChange={setIsGeneratingPost}
           />
@@ -461,7 +552,7 @@ export const Dashboard = () => {
           <GenerateBatchModal
             onClose={() => setIsGenerateBatchModalOpen(false)}
             onGenerate={() => {
-              queryClient.invalidateQueries(["posts", selectedWebsite]);
+              queryClient.invalidateQueries(["posts", selectedWebsiteId]);
             }}
             onLoadingChange={setIsGeneratingBatchPost}
           />
@@ -473,14 +564,30 @@ export const Dashboard = () => {
             onApiResponse={handleApiResponse}
             initialLanguage={initialLanguage}
             initialLocation={initialLocation}
+            setPlatform={setPlatform}
           />
         )}
         {isTrendsResultModalOpen && trendsData && (
           <TrendsResultModal
             inputData={trendInputData}
             trendsData={trendsData}
+            platform={platform}
             onClose={() => setIsTrendsResultModalOpen(false)}
             onGeneratePost={handleGenerateTrendPost}
+            clientData={{
+              client_email: selectedDomain?.client_email || "",
+              client_id: selectedDomain?.client_id || "",
+              clientWebsite: selectedDomain?.website || "",
+              clientName: selectedDomain?.name || "Unknown",
+              industry: selectedDomain?.industry || "Unknown",
+              niche: selectedDomain?.niche || "Unknown",
+              clientDescription: selectedDomain?.description || "",
+              marketingStrategy: {
+                core_values: selectedDomain?.core_values || [],
+                audience: selectedDomain?.target_audience || [],
+                audiencePains: selectedDomain?.audience_pain_points || [],
+              },
+            }}
           />
         )}
       </div>

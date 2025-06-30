@@ -15,8 +15,10 @@ import {
 export const TrendsResultModal = ({
   inputData,
   trendsData,
+  platform,
   onClose,
   onGeneratePost,
+  clientData,
 }) => {
   const [expandedTrend, setExpandedTrend] = useState(null);
 
@@ -53,6 +55,9 @@ export const TrendsResultModal = ({
   const toggleExpanded = (trendId) => {
     setExpandedTrend(expandedTrend === trendId ? null : trendId);
   };
+
+  // Debug log to inspect trend.audience
+  console.log("Trends Data:", trendsData);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -136,9 +141,9 @@ export const TrendsResultModal = ({
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 text-white flex items-center justify-center font-bold text-sm">
+                    <span className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 text-white flex items-center justify-center font-bold text-base">
                       #{index + 1}
-                    </div>
+                    </span>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -164,9 +169,11 @@ export const TrendsResultModal = ({
                     onClick={() => onGeneratePost(trend)}
                     className="ml-4 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </span>
                     Generate Post
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </button>
                 </div>
 
@@ -186,7 +193,9 @@ export const TrendsResultModal = ({
                       Audience:
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {trend.audience.split(",")[0]}
+                      {typeof trend.audience === "string"
+                        ? trend.audience.split(",")[0] || "Unknown"
+                        : "Unknown"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
