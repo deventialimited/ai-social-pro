@@ -132,10 +132,7 @@ export function setTransparency(element, percentage) {
 export const setElementPosition = (element, action, canvas) => {
   const elementWidth = element.styles.width || 100;
   const elementHeight = element.styles.height || 30;
-  console.log("Setting element position:", {
-    elementHeight,
-    elementWidth,
-  });
+
   const canvasWidth = Math.max(Math.min(canvas.width / 3, 600));
   const canvasHeight = Math.max(Math.min(canvas.height / 3, 600));
 

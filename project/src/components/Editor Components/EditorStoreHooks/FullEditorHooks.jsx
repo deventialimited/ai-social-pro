@@ -47,6 +47,8 @@ export const EditorProvider = ({ children }) => {
     },
     future: [],
   });
+  // -------------Zoom -----------------//
+  const [zoomLevel, setZoomLevel] = useState(100);
   const getEditorSnapshot = useCallback(
     () => ({
       canvas,
@@ -439,6 +441,8 @@ export const EditorProvider = ({ children }) => {
     // Files
     allFiles,
     setAllFiles,
+    zoomLevel,
+    setZoomLevel,
 
     // Composite
     postDesignData,
