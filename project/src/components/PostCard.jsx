@@ -166,33 +166,24 @@ export const PostCard = ({ post, onEdit, onDelete, onReschedule, view }) => {
     setShowEditModal(false);
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     const imageUrl = getSelectedImageUrl();
     if (!imageUrl) {
       toast.error("Image not found");
       return;
     }
 
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const filename = `${selectedButton}_${post.postId}.png`;
-      link.setAttribute("download", filename);
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.setAttribute("download", `${selectedButton}_${post.postId}.png`);
+    link.setAttribute("target", "_blank"); // Optional: open in new tab if needed
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Image downloaded successfully!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to download image");
-    }
+    toast.success("Download initiated!");
   };
+  
 
   const getSelectedImageUrl = () => {
     if (selectedButton === "image" && generatedImageUrl)
