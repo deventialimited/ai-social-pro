@@ -17,11 +17,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useMemo } from "react";
 
-function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }) {
+function LayersTab({
+  selectedElementId,
+  setSelectedElementId,
+  setActiveElement,
+}) {
   const {
     layers,
     setLayers,
     removeElement,
+    removeFileByName,
     handleLock,
     handleVisible,
     updateElement,
@@ -39,8 +44,8 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
   const sortedLayers = useMemo(() => {
     // Attach element info to each layer
     return [...layers]
-      .map(layer => {
-        const element = elements.find(el => el.id === layer.elementId);
+      .map((layer) => {
+        const element = elements.find((el) => el.id === layer.elementId);
         return {
           ...layer,
           zIndex: element?.styles?.zIndex ?? 0,
@@ -113,6 +118,7 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
                 layer={layer}
                 index={index}
                 removeElement={removeElement}
+                removeFileByName={removeFileByName}
                 handleLock={handleLock}
                 handleVisible={handleVisible}
                 selectedElementId={selectedElementId}
@@ -131,6 +137,7 @@ function SortableItem({
   layer,
   index,
   removeElement,
+  removeFileByName,
   handleLock,
   handleVisible,
   selectedElementId,
@@ -154,7 +161,7 @@ function SortableItem({
   };
 
   const handleClick = (e) => {
-    if (e.target.closest('button') || e.target.closest('.drag-handle')) return;
+    if (e.target.closest("button") || e.target.closest(".drag-handle")) return;
     setSelectedElementId(layer.elementId);
     setActiveElement(layer.type);
   };
@@ -166,12 +173,14 @@ function SortableItem({
       className={`flex items-center gap-2 p-2 rounded-md border hover:bg-gray-50 bg-white transition-shadow ${
         isDragging ? "shadow-lg" : ""
       }  ${
-        selectedElementId === layer?.elementId ? "border-2 border-blue-500" : "border-gray-200"
+        selectedElementId === layer?.elementId
+          ? "border-2 border-blue-500"
+          : "border-gray-200"
       }`}
       onClick={handleClick}
     >
       {/* Drag Handle */}
-      <div 
+      <div
         className="drag-handle cursor-grab hover:bg-gray-100 p-1 rounded"
         {...listeners}
         {...attributes}
@@ -223,6 +232,10 @@ function SortableItem({
         onClick={(e) => {
           e.stopPropagation();
           removeElement(layer.elementId);
+          if (layer.type === "image") {
+            // If it's a file, remove the associated file as well
+            removeFileByName(layer.elementId);
+          }
         }}
         className="text-gray-500 hover:text-gray-700"
       >

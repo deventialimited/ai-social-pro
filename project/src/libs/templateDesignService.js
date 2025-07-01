@@ -130,11 +130,14 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
     );
     const formData = new FormData();
     const { elements, backgrounds } = templateDesignData;
-
+    const cleanedElements = elements.map((el) =>
+      el.type === "image" ? { ...el, props: { ...el.props, src: null } } : el
+    );
     formData.append(
       "data",
       JSON.stringify({
         ...templateDesignData,
+        elements: cleanedElements,
         templateId,
         templateType,
         templatePlatform,

@@ -35,6 +35,7 @@ function ImageToolbar({
     updateElement,
     addElement,
     removeElement,
+    removeFileByName,
     updateCanvasStyles,
     updateBackground,
     elements,
@@ -222,6 +223,7 @@ function ImageToolbar({
     if (!selectedElement) return;
 
     removeElement(selectedElement.id);
+    removeFileByName(selectedElement.id); // Remove the file associated with the element\
     setSelectedElement(null); // Optional: Clear selection after deletion
     setSelectedElementId(null);
     setActiveElement("canvas");
