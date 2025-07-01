@@ -234,7 +234,7 @@ export const Dashboard = () => {
       niche: trend.category || "Unknown",
       description: trend.description || "",
       core_values: domain.data.marketingStrategy?.core_values || [],
-      target_audience: trend.audience  || [],
+      target_audience: trend.audience || [],
       audience_pain_points: domain.data.marketingStrategy?.audiencePains || [],
     };
 
@@ -408,9 +408,12 @@ export const Dashboard = () => {
                   >
                     <span className="mr-2 text-xl flex items-center justify-center w-6 h-6 bg-green-500 rounded-full">
                       {" "}
+                      {isGeneratingTrendPost ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <TrendingUp className="text-white w-5 h-5" />
+                      )}
                       {/* Updated to match rounded style */}
-                      <TrendingUp className="text-white w-5 h-5" />{" "}
-                      {/* Centered icon */}
                     </span>
                     {isGeneratingTrendPost ? "Generating..." : "Trends To Post"}
                   </button>

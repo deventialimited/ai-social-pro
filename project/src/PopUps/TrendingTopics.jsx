@@ -19,6 +19,7 @@ export const TrendsResultModal = ({
   onClose,
   onGeneratePost,
   clientData,
+  isGeneratingTrendPost,
 }) => {
   const [expandedTrend, setExpandedTrend] = useState(null);
 
@@ -55,9 +56,6 @@ export const TrendsResultModal = ({
   const toggleExpanded = (trendId) => {
     setExpandedTrend(expandedTrend === trendId ? null : trendId);
   };
-
-  // Debug log to inspect trend.audience
-  console.log("Trends Data:", trendsData);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -167,112 +165,28 @@ export const TrendsResultModal = ({
                   </div>
                   <button
                     onClick={() => onGeneratePost(trend)}
-                    className="ml-4 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                    disabled={isGeneratingTrendPost}
+                    className={`ml-4 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl transition-all duration-300 font-semibold flex items-center gap-2 shadow-lg transform ${
+                      isGeneratingTrendPost
+                        ? "opacity-60 cursor-not-allowed"
+                        : "hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:scale-[1.02]"
+                    }`}
                   >
                     <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-white" />
+                      {isGeneratingTrendPost ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 text-white" />
+                      )}
                     </span>
-                    Generate Post
-                    <ArrowRight className="w-4 h-4 text-white" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Category:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {trend.category}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Audience:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {typeof trend.audience === "string"
-                        ? trend.audience.split(",")[0] || "Unknown"
-                        : "Unknown"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Duration:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {trend.longevity}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Hash className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Keywords:
-                    </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {trend.related_keywords.length}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <button
-                    onClick={() => toggleExpanded(trend.topic)}
-                    className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
-                  >
-                    {expandedTrend === trend.topic ? (
-                      <>
-                        Hide Details <ChevronUp className="w-4 h-4" />
-                      </>
-                    ) : (
-                      <>
-                        Show Details <ChevronDown className="w-4 h-4" />
-                      </>
+                    {isGeneratingTrendPost ? "Generating..." : "Generate Post"}
+                    {!isGeneratingTrendPost && (
+                      <ArrowRight className="w-4 h-4 text-white" />
                     )}
                   </button>
-
-                  {expandedTrend === trend.topic && (
-                    <div className="mt-4 space-y-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                      <div>
-                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Related Keywords
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {trend.related_keywords.map((keyword, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md text-xs font-medium"
-                            >
-                              {keyword}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        <div className="px-8 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Analysis generated for {inputData.platform} •{" "}
-              {inputData.location || "Global"}
-              {inputData.specificAreas &&
-                ` • Focus: ${inputData.specificAreas}`}
-            </div>
-            <button
-              onClick={onClose}
-              className="px-6 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium"
-            >
-              Close
-            </button>
           </div>
         </div>
       </div>
