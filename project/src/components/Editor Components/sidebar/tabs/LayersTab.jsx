@@ -83,13 +83,13 @@ function LayersTab({
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full overflow-y-auto">
       <h3 className="text-sm font-medium mb-2">
         Elements on your active page:
       </h3>
 
       <div
-        className="space-y-2 max-h-96 overflow-y-auto rounded-md bg-white hide-scrollbar"
+        className="space-y-2 h-max rounded-md bg-white"
         style={{ minHeight: 0 }}
       >
         <style>{`
