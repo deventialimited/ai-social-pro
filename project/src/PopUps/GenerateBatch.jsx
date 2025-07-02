@@ -1,6 +1,5 @@
-// GenerateBatchModal.jsx
 import React, { useState } from "react";
-import { X, Check, ArrowRight, Sparkles } from "lucide-react";
+import { X, Check, ArrowRight, Sparkles ,ClipboardList} from "lucide-react";
 import { getDomainById } from "../libs/domainService";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -12,7 +11,8 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
   const { mutateAsync: createPostViaPubSub, isLoading: isPubSubLoading } =
     useCreatePostViaPubSub();
   const [isLoading, setIsLoading] = useState(false);
-  const [topicDescription, setTopicDescription] = useState("");
+
+  const [topicDescription, setTopicDescription] = useState(""); // NEW
 
   const [platforms, setPlatforms] = useState([
     {
@@ -79,7 +79,10 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     onClose();
 
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }, 100);
 
     try {
@@ -106,7 +109,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         name: domain.data.clientName || "Unknown",
         industry: domain.data.industry || "Unknown",
         niche: domain.data.niche || "Unknown",
-        description: topicDescription || "", // ✅ Use topic input
+        description: topicDescription || "", // REPLACED HERE
         core_values: domain.data.marketingStrategy?.core_values || [],
         target_audience: domain.data.marketingStrategy?.audience || [],
         audience_pain_points:
@@ -142,6 +145,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
       for (let i = 0; i < responses.length; i++) {
         const response = responses[i];
+        const platform = postPlatforms[i];
 
         const pubsubPayload = {
           post_id: response.data.post_id,
@@ -170,33 +174,33 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
           duration: 4000,
         }
       );
-
       onGenerate();
       queryClient.invalidateQueries(["posts", selectedWebsiteId]);
     } catch (err) {
       let errorMessage =
         "Something went wrong while generating your posts. Please try again later.";
+
       if (err.response) {
         switch (err.response.status) {
           case 400:
-            errorMessage = "Invalid input provided.";
+            errorMessage =
+              "Invalid input provided. Please check your inputs and try again.";
             break;
           case 401:
             errorMessage = "Authentication failed. Please log in again.";
             break;
           case 429:
-            errorMessage = "Too many requests. Please wait.";
+            errorMessage =
+              "Too many requests. Please wait a moment and try again.";
             break;
           case 500:
-            errorMessage = "Server error occurred.";
+            errorMessage = "Server error occurred. Please try again later.";
             break;
           default:
             errorMessage = err.response.data?.message || errorMessage;
         }
       } else if (err.message) {
-        errorMessage = err.message.includes("No selected website")
-          ? err.message
-          : errorMessage;
+        errorMessage = err.message;
       }
 
       toast.error(errorMessage, {
@@ -221,6 +225,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         >
           <X className="w-5 h-5" />
         </button>
+
         <div className="px-8 pt-12 pb-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
@@ -240,24 +245,27 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         <div className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className="flex flex-col h-full">
             <div className="p-8 space-y-6">
-              {/* Topic Input Field */}
+              {/* TEXTAREA INPUT */}
               <div>
                 <label
                   htmlFor="topic-description"
-                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
-                  Topic Description
+                  <ClipboardList className="w-4 h-4" />
+                  Description (Required if no topic)
                 </label>
-                <input
-                  type="text"
+
+                <textarea
                   id="topic-description"
+                  rows={4}
                   value={topicDescription}
                   onChange={(e) => setTopicDescription(e.target.value)}
-                  placeholder="Describe what you want to post about"
-                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  placeholder="Describe what you want to post about..."
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none transition-all"
                 />
               </div>
 
+              {/* PLATFORM SELECTION */}
               {platforms.map((platform) => (
                 <div
                   key={platform.id}
@@ -317,7 +325,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
               ))}
 
               {enabledPlatforms.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium text-blue-900 dark:text-blue-100">
@@ -338,6 +346,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
               )}
             </div>
 
+            {/* FOOTER */}
             <div className="p-8 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
               <div className="flex items-center justify-end gap-3">
                 <button
@@ -348,6 +357,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   Cancel
                 </button>
                 <button
+                  id="generate-batch-button"
                   type="submit"
                   disabled={
                     enabledPlatforms.length === 0 ||
