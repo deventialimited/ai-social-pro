@@ -402,18 +402,18 @@ export const TrendsInputModal = ({
                   : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
               }`}
             >
-              {isLoading && (
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 opacity-20 rounded-xl" />
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin relative z-10" />
+                  <span className="relative z-10">Analyzing Trends...</span>
+                </>
+              ) : (
+                <>
+                  <TrendingUp className="w-5 h-5 relative z-10" />
+                  <span className="relative z-10">Analyze Trends</span>
+                  <ArrowRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
+                </>
               )}
-              <TrendingUp className="w-5 h-5 relative z-10" />
-              <span className="relative z-10">
-                {isLoading ? "Analyzing Trends..." : "Analyze Trends"}
-              </span>
-              <ArrowRight
-                className={`w-5 h-5 relative z-10 transition-transform ${
-                  isFormValid && !isLoading ? "group-hover:translate-x-1" : ""
-                }`}
-              />
             </button>
           </div>
         </div>
