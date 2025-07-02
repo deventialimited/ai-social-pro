@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, User, Edit, Trash2, Image } from "lucide-react";
 // import { CharacterModal } from "./CharacterModal";
-// import { DeleteCharacterModal } from "./DeleteCharacterModal";
+import { DeleteCharacterModal } from "../PopUps/DeleteCharacter";
 
 export const CharactersTab = () => {
   const [characters, setCharacters] = useState([
@@ -253,8 +253,8 @@ export const CharactersTab = () => {
           )}
         </div>
       </div>
-      {/* 
-      {showModal && (
+
+      {/* {showModal && (
         <CharacterModal
           character={editingCharacter}
           onClose={() => {
@@ -263,7 +263,7 @@ export const CharactersTab = () => {
           }}
           onSave={handleSaveCharacter}
         />
-      )}
+      )} */}
 
       {showDeleteModal && deletingCharacter && (
         <DeleteCharacterModal
@@ -271,7 +271,7 @@ export const CharactersTab = () => {
           onClose={handleCancelDelete}
           onConfirm={handleConfirmDelete}
         />
-      )} */}
+      )}
     </div>
   );
 };
