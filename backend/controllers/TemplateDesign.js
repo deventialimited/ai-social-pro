@@ -1,3 +1,4 @@
+const { processImage } = require("../helpers/generatePostImages");
 const {
   uploadToS3,
   uploadToS3ForPostDesign,
@@ -52,9 +53,7 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
       backgrounds,
     } = JSON.parse(req.body.data);
     let files = req.files?.files || [];
-    let templateImage = null;
     let existingTemplate = null;
-    let oldTemplateImageKey = null;
     // Usage before saving
     if (!hasUniqueElementIds(elements)) {
       throw new Error("Duplicate element IDs found in this template.");
@@ -66,27 +65,6 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
         return res.status(404).json({ message: "Template not found" });
       }
     }
-
-    // Step 1: Handle templateImage separately
-    const templateImageFileIndex = files.findIndex(
-      (file) => file.originalname === "templateImage"
-    );
-
-    if (templateImageFileIndex !== -1) {
-      const [templateImageFile] = files.splice(templateImageFileIndex, 1);
-      // Delete old template image if exists
-      if (existingTemplate?.templateImage) {
-        oldTemplateImageKey = existingTemplate.templateImage.split("/").pop();
-        await deleteFromS3([oldTemplateImageKey]);
-      }
-
-      // Upload new template image
-      templateImage = await uploadToS3(templateImageFile);
-    } else {
-      // Reuse old templateImage if not updated
-      templateImage = existingTemplate?.templateImage || null;
-    }
-
     // Step 2: Upload remaining files (elements/background assets)
     let newFileUrls;
     if (files?.length > 0) {
@@ -156,13 +134,18 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
     if (existingTemplate) {
       existingTemplate.templateType = templateType;
       existingTemplate.templatePlatform = templatePlatform;
-      existingTemplate.templateType = templateCategory;
-      existingTemplate.templateImage = templateImage;
+      existingTemplate.templateCategory = templateCategory;
       existingTemplate.canvas = canvas;
       existingTemplate.elements = elements;
       existingTemplate.layers = layers;
       existingTemplate.backgrounds = backgrounds;
       existingTemplate.updatedAt = new Date();
+      await existingTemplate.save();
+      const generatedImageUrl = await processImage({
+        type: templateCategory, // e.g., "image", "brandingImage", "sloganImage"
+        modifiedData: existingTemplate, // Pass saved design as modifiedData
+      });
+      existingTemplate.templateImage = generatedImageUrl;
       await existingTemplate.save();
       templateDesign = existingTemplate;
     } else {
@@ -172,12 +155,17 @@ exports.saveOrUpdateTemplateDesign = async (req, res) => {
         templateType,
         templatePlatform,
         templateCategory,
-        templateImage,
         canvas,
         elements,
         layers,
         backgrounds,
       });
+      await newTemplate.save();
+      const generatedImageUrl = await processImage({
+        type: templateCategory, // e.g., "image", "branding", "slogan"
+        modifiedData: newTemplate, // Pass saved design as modifiedData
+      });
+      newTemplate.templateImage = generatedImageUrl;
       await newTemplate.save();
       templateDesign = newTemplate;
     }

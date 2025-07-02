@@ -60,6 +60,9 @@ exports.generateHTMLFromTemplateData = (templateData) => {
         overflow: "hidden",
       })}" 
       >
+       <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+  </head>
     <body style="${convertStylesToString({
       ...(canvas?.styles || {}),
       width: `${Math.max(Math.min(canvas.width / 3, 600))}px`,
@@ -122,6 +125,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               const left = parseInt(el.position?.x) || 0;
 
               return `<div style="
+                ${layoutStyleString};
                 position: absolute;
                 top: ${top}px;
                 left: ${left}px;
@@ -135,7 +139,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                 };
                 justify-content: flex-start;
                 overflow: hidden;
-                ${layoutStyleString}
+              
               ">
                 <div class="adjustable-text" style="position: static; width:100%; ${fontStyleString}">
                   ${el.props?.text || ""}
@@ -284,36 +288,50 @@ exports.generateHTMLFromTemplateData = (templateData) => {
             return "";
           })
           .join("\n")}
-      <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const textElements = document.querySelectorAll('.adjustable-text');
-    textElements.forEach(textarea => {
-      const container = textarea.parentElement;
-      if (!container) return;
+     <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const textElements = document.querySelectorAll('.adjustable-text');
+  const fontsToLoad = new Set();
 
-      const computedContainerStyle = window.getComputedStyle(container);
-      const minHeight = parseFloat(computedContainerStyle.minHeight);
+  textElements.forEach(textarea => {
+    const computed = window.getComputedStyle(textarea);
+    const fontFamily = computed.fontFamily
+      .split(",")[0]  // Only the first family in case there's fallback
+      .replace(/['"]/g, '') // Remove quotes
+      .trim();
+    if (fontFamily) fontsToLoad.add(fontFamily);
 
-      const containerWidth = container.clientWidth;
+    const container = textarea.parentElement;
+    if (!container) return;
 
-      const computedTextStyle = window.getComputedStyle(textarea);
-      let size = parseFloat(computedTextStyle.fontSize);
-      const minFontSize = 0.1;
+    const minHeight = parseFloat(window.getComputedStyle(container).minHeight);
+    const containerWidth = container.clientWidth;
 
-      while (
-        (textarea.scrollHeight > minHeight ||
-         textarea.scrollWidth > containerWidth) &&
-        size > minFontSize
-      ) {
-        size--;
-        textarea.style.fontSize = size + 'px';
-      }
+    let size = parseFloat(computed.fontSize);
+    const minFontSize = 0.1;
 
-      console.log("Container min-height:", minHeight);
-      console.log("Final font size:", textarea.style.fontSize);
-    });
+    while (
+      (textarea.scrollHeight > minHeight ||
+      textarea.scrollWidth > containerWidth) &&
+      size > minFontSize
+    ) {
+      size--;
+      textarea.style.fontSize = size + 'px';
+    }
   });
+
+  console.log("Fonts to load:", Array.from(fontsToLoad));
+
+  if (fontsToLoad.size > 0 && window.WebFont) {
+    WebFont.load({
+      google: {
+        families: Array.from(fontsToLoad)
+      }
+    });
+  }
+});
 </script>
+
       </body>
 
       </html>

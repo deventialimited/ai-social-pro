@@ -6,6 +6,7 @@ const {
 const Post = require("../models/Post");
 const PostDesign = require("../models/PostDesign");
 const path = require("path");
+const { processImage } = require("../helpers/generatePostImages");
 exports.getPostDesignById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -129,20 +130,33 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       existingDesign.updatedAt = new Date();
 
       await existingDesign.save();
+      const generatedImageUrl = await processImage({
+        type: postType, // e.g., "image", "branding", "slogan"
+        modifiedData: existingDesign, // Pass saved design as modifiedData
+      });
       const statusFieldMap = {
         image: "image.editorStatus",
         branding: "brandingImage.editorStatus",
         slogan: "sloganImage.editorStatus",
       };
 
+      const imageUrlFieldMap = {
+        image: "image.imageUrl",
+        branding: "brandingImage.imageUrl",
+        slogan: "sloganImage.imageUrl",
+      };
+
       const editorStatusField =
         statusFieldMap[postType] || "image.editorStatus";
+      const imageUrlField = imageUrlFieldMap[postType] || "image.imageUrl";
+      const updateObj = {
+        [editorStatusField]: "edited",
+        [imageUrlField]: generatedImageUrl,
+      };
 
-      const latestPost = await Post.findByIdAndUpdate(
-        postId,
-        { [editorStatusField]: "edited" },
-        { new: true }
-      );
+      const latestPost = await Post.findByIdAndUpdate(postId, updateObj, {
+        new: true,
+      });
 
       return res.status(200).json({
         message: "PostDesign updated successfully",
@@ -160,21 +174,32 @@ exports.saveOrUpdatePostDesign = async (req, res) => {
       });
 
       await newPostDesign.save();
+      const generatedImageUrl = await processImage({
+        type: postType, // e.g., "image", "branding", "slogan"
+        modifiedData: newPostDesign, // Pass saved design as modifiedData
+      });
       const statusFieldMap = {
         image: "image.editorStatus",
         branding: "brandingImage.editorStatus",
         slogan: "sloganImage.editorStatus",
       };
+      const imageUrlFieldMap = {
+        image: "image.imageUrl",
+        branding: "brandingImage.imageUrl",
+        slogan: "sloganImage.imageUrl",
+      };
 
       const editorStatusField =
         statusFieldMap[postType] || "image.editorStatus";
+      const imageUrlField = imageUrlFieldMap[postType] || "image.imageUrl";
+      const updateObj = {
+        [editorStatusField]: "edited",
+        [imageUrlField]: generatedImageUrl,
+      };
 
-      const latestPost = await Post.findByIdAndUpdate(
-        postId,
-        { [editorStatusField]: "edited" },
-        { new: true }
-      );
-
+      const latestPost = await Post.findByIdAndUpdate(postId, updateObj, {
+        new: true,
+      });
       return res.status(201).json({
         message: "PostDesign created successfully",
         postDesign: newPostDesign,
