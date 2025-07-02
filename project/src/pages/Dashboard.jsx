@@ -29,7 +29,7 @@ import GenerateBatchModal from "../PopUps/GenerateBatch";
 import { TrendingUp } from "lucide-react";
 import { TrendsInputModal } from "../PopUps/TrendsToPost";
 import { TrendsResultModal } from "../PopUps/TrendingTopics";
-import CharactersTab from "./CharacterPage";
+import { CharactersTab } from "./CharacterPage";
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
