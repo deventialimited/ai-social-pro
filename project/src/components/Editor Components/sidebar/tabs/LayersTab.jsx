@@ -37,7 +37,6 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
   );
 
   const sortedLayers = useMemo(() => {
-    // Attach element info to each layer
     return [...layers]
       .map(layer => {
         const element = elements.find(el => el.id === layer.elementId);
@@ -47,35 +46,39 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
           position: element?.position ?? { x: 0, y: 0 },
         };
       })
-      .sort((a, b) => b.zIndex - a.zIndex); // Highest zIndex first
+      .sort((a, b) => b.zIndex - a.zIndex); // Higher zIndex = top of list
   }, [layers, elements]);
-
+  
   function handleDragEnd(event) {
     const { active, over } = event;
-
-    if (active.id !== over.id) {
-      setLayers((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-
-        // Update z-index of elements based on new layer order
-        newItems.forEach((layer, index) => {
-          const element = elements.find((el) => el.id === layer.elementId);
-          if (element) {
-            updateElement(element.id, {
-              styles: {
-                ...element.styles,
-                zIndex: newItems.length - index, // Higher index = higher z-index
-              },
-            });
-          }
+    if (!over || active.id === over.id) return;
+  
+    const oldIndex = sortedLayers.findIndex(item => item.id === active.id);
+    const newIndex = sortedLayers.findIndex(item => item.id === over.id);
+  
+    const newSorted = arrayMove(sortedLayers, oldIndex, newIndex);
+  
+    // Update zIndex based on new visual order
+    newSorted.forEach((layer, index) => {
+      const element = elements.find(el => el.id === layer.elementId);
+      if (element) {
+        updateElement(element.id, {
+          styles: {
+            ...element.styles,
+            zIndex: newSorted.length - index,
+          },
         });
-
-        return newItems;
-      });
-    }
+      }
+    });
+  
+    // Update layers order (though technically zIndex now drives render order)
+    setLayers(newSorted.map(layer => {
+      const { zIndex, position, ...cleanLayer } = layer; // remove injected props
+      return cleanLayer;
+    }));
   }
+  
+  
 
   return (
     <div className="p-4">
@@ -103,24 +106,25 @@ function LayersTab({ selectedElementId, setSelectedElementId, setActiveElement }
           onDragEnd={handleDragEnd}
           modifiers={[restrictToVerticalAxis]}
         >
-          <SortableContext
-            items={sortedLayers.map((layer) => layer.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {sortedLayers.map((layer, index) => (
-              <SortableItem
-                key={layer.id}
-                layer={layer}
-                index={index}
-                removeElement={removeElement}
-                handleLock={handleLock}
-                handleVisible={handleVisible}
-                selectedElementId={selectedElementId}
-                setSelectedElementId={setSelectedElementId}
-                setActiveElement={setActiveElement}
-              />
-            ))}
-          </SortableContext>
+      <SortableContext
+  items={sortedLayers.map(layer => layer.id)}
+  strategy={verticalListSortingStrategy}
+>
+  {sortedLayers.map((layer, index) => (
+    <SortableItem
+      key={layer.id}
+      layer={layer}
+      index={index}
+      removeElement={removeElement}
+      handleLock={handleLock}
+      handleVisible={handleVisible}
+      selectedElementId={selectedElementId}
+      setSelectedElementId={setSelectedElementId}
+      setActiveElement={setActiveElement}
+    />
+  ))}
+</SortableContext>
+
         </DndContext>
       </div>
     </div>
@@ -147,11 +151,13 @@ function SortableItem({
   } = useSortable({ id: layer.id });
 
   const style = {
+    position: "relative", // ✅ This makes transform work
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 1 : "auto",
-    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : "auto", // Optional: makes it show above other elements
+    opacity: isDragging ? 0.5 : 1,      // Optional: visual feedback
   };
+  
 
   const handleClick = (e) => {
     if (e.target.closest('button') || e.target.closest('.drag-handle')) return;
