@@ -23,17 +23,10 @@ export const useSaveOrUpdatePostDesign = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      postId,
-      type,
-      postImage,
-      postDesignData,
-      allFiles,
-    }) => {
+    mutationFn: async ({ postId, type, postDesignData, allFiles }) => {
       return await saveOrUpdatePostDesignFrontendController(
         postId,
         type,
-        postImage,
         postDesignData,
         allFiles
       );
@@ -52,7 +45,6 @@ export const useSaveOrUpdatePostDesign = () => {
 export const saveOrUpdatePostDesignFrontendController = async (
   postId,
   type,
-  postImage,
   postDesignData,
   allFiles
 ) => {
@@ -85,19 +77,7 @@ export const saveOrUpdatePostDesignFrontendController = async (
         formData.append("files", file, file.name);
       }
     });
-    // If postImage is provided, update the post image separately
-    if (postImage) {
-      const imageFormData = new FormData();
-      imageFormData.append("image", postImage);
 
-      await axios.patch(
-        `${API_URL}/api/v1/posts/updatePostImageFile/${postId}?type=${type}`,
-        imageFormData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-    }
     const response = await axios.post(
       `${API_URL}/api/v1/postsDesign/saveOrUpdatePostDesign/${postId}`,
       formData,

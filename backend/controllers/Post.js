@@ -3,7 +3,7 @@ const Post = require("../models/Post");
 const axios = require("axios");
 const { uploadToS3, deleteFromS3 } = require("../libs/s3Controllers"); // or wherever your S3 logic lives
 const socket = require("../utils/socket");
-const generateDomainVisualAssets = require("../helpers/generatePostImages");
+const { generateDomainVisualAssets } = require("../helpers/generatePostImages");
 const PostDesign = require("../models/PostDesign");
 exports.getAllPostsBydomainId = async (req, res) => {
   try {

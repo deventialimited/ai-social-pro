@@ -3,29 +3,44 @@ import { ChevronDown, Search } from "lucide-react"
 import WebFont from 'webfontloader';
 import axios from "axios"
 function FontSelector({ font = "Poppins", onChange }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [fonts, setFonts] = useState([]);
-  const [selectedFont, setSelectedFont] = useState('');
+  const [selectedFont, setSelectedFont] = useState("");
 
-
-  const selectorRef = useRef(null)
-  const API_KEY = "AIzaSyC26vJC8yUlX5URokX7mZPvJW7Sg-wom-g"
-
+  const selectorRef = useRef(null);
+  const API_KEY = "AIzaSyC26vJC8yUlX5URokX7mZPvJW7Sg-wom-g";
 
   useEffect(() => {
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    const googleFontsApiUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`;
+
     axios
-      .get(`https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`)
+      .get(proxyUrl + googleFontsApiUrl)
       .then((response) => {
         const fontList = response.data.items.map((item) => item.family);
-        console.log(fontList)
+        console.log(fontList);
         setFonts(fontList);
-        const defaultFont = fontList.includes("Roboto") ? "Roboto" : fontList[0];
 
-        setSelectedFont(defaultFont); 
+        const defaultFont = fontList.includes("Roboto")
+          ? "Roboto"
+          : fontList[0];
+        setSelectedFont(defaultFont);
+
+        // Dynamically load the selected font through a proxied @import
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        // Use Google Fonts CSS through the proxy:
+        link.href =
+          proxyUrl +
+          `https://fonts.googleapis.com/css2?family=${defaultFont.replace(
+            / /g,
+            "+"
+          )}&display=swap`;
+        document.head.appendChild(link);
       })
       .catch((error) => {
-        console.error('Error fetching fonts:', error);
+        console.error("Error fetching fonts:", error);
       });
   }, []);
 
@@ -39,28 +54,30 @@ function FontSelector({ font = "Poppins", onChange }) {
     }
   }, [selectedFont]);
 
-  const filteredFonts = searchQuery ? fonts.filter((f) => f.toLowerCase().includes(searchQuery.toLowerCase())) : fonts
+  const filteredFonts = searchQuery
+    ? fonts.filter((f) => f.toLowerCase().includes(searchQuery.toLowerCase()))
+    : fonts;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectorRef.current && !selectorRef.current.contains(event.target)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleFontSelect = (font) => {
-    setSelectedFont(font)
-    setIsOpen(false)
+    setSelectedFont(font);
+    setIsOpen(false);
     if (onChange) {
-      onChange(font)
+      onChange(font);
     }
-  }
+  };
 
   return (
     <div className=" relative " ref={selectorRef}>
@@ -73,35 +90,37 @@ function FontSelector({ font = "Poppins", onChange }) {
       </button> */}
 
       {/* {isOpen && ( */}
-        <div className="absolute z-50 mt-1 md:w-64 w-44 bg-white rounded-md shadow-lg border">
-          <div className="p-2 border-b">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search fonts..."
-                className="w-full pl-8 pr-3 py-2 border rounded-md text-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="max-h-64 overflow-y-auto">
-            {filteredFonts.map((font) => (
-              <button
-                key={font}
-                className={`w-full text-left px-4 py-3 hover:bg-gray-50 ${selectedFont === font ? "bg-purple-50" : ""}`}
-                onClick={() => handleFontSelect(font)}
-                style={{ fontFamily: font }}
-              >
-                {font}
-              </button>
-            ))}
+      <div className="absolute z-50 mt-1 md:w-64 w-44 bg-white rounded-md shadow-lg border">
+        <div className="p-2 border-b">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search fonts..."
+              className="w-full pl-8 pr-3 py-2 border rounded-md text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
+        <div className="max-h-64 overflow-y-auto">
+          {filteredFonts.map((font) => (
+            <button
+              key={font}
+              className={`w-full text-left px-4 py-3 hover:bg-gray-50 ${
+                selectedFont === font ? "bg-purple-50" : ""
+              }`}
+              onClick={() => handleFontSelect(font)}
+              style={{ fontFamily: font }}
+            >
+              {font}
+            </button>
+          ))}
+        </div>
+      </div>
       {/* )} */}
     </div>
-  )
+  );
 }
 
 export default FontSelector

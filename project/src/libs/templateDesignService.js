@@ -79,7 +79,7 @@ export const useSaveOrUpdateTemplateDesign = () => {
       templateType,
       templatePlatform,
       templateCategory,
-      templateImage,
+
       templateDesignData,
       allFiles,
     }) => {
@@ -89,7 +89,7 @@ export const useSaveOrUpdateTemplateDesign = () => {
         templateType,
         templatePlatform,
         templateCategory,
-        templateImage,
+
         templateDesignData,
         allFiles
       );
@@ -113,7 +113,6 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
   templateType,
   templatePlatform,
   templateCategory,
-  templateImage,
   templateDesignData,
   allFiles
 ) => {
@@ -124,7 +123,6 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
       templateType,
       templatePlatform,
       templateCategory,
-      templateImage,
       templateDesignData,
       allFiles
     );
@@ -165,9 +163,6 @@ export const saveOrUpdateTemplateDesignFrontendController = async (
         formData.append("files", file, file.name);
       }
     });
-    if (templateImage) {
-      formData.append("files", templateImage, "templateImage"); // send with correct field name
-    }
     console.log(formData);
 
     const response = await axios.post(

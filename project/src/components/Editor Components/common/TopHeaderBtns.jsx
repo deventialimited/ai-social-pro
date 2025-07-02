@@ -57,118 +57,18 @@ const TopHeaderBtns = ({
   const [templateType, setTemplateType] = useState("private");
   const [templateCategory, setTemplateCategory] = useState("branding");
 
-  // Helper: Converts image URL to a base64 data URL
-  const convertImageToBase64 = (img) => {
-    return new Promise((resolve, reject) => {
-      const originalSrc = img.src;
-      const image = new Image();
-      image.crossOrigin = "anonymous";
-      image.src = originalSrc;
-
-      image.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = image.width;
-        canvas.height = image.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(image, 0, 0);
-        try {
-          const dataURL = canvas.toDataURL();
-          resolve({ img, dataURL });
-        } catch (e) {
-          reject(e);
-        }
-      };
-
-      image.onerror = () => reject(`Failed to load image: ${originalSrc}`);
-    });
-  };
-
   const handleSavePostAndClose = async () => {
     setActiveElement("canvas");
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSavePostLoading(true);
+    setCanvasLoading(true);
     try {
-      const node = document.getElementById("canvas");
-
-      const scale = 5;
-      const width = node.offsetWidth * scale;
-      const height = node.offsetHeight * scale;
-      if (!node) throw new Error("Canvas element not found");
-
-      // Step 1: Convert all <img> in canvas to base64
-      const imageTags = [...node.querySelectorAll("img")];
-      const base64Conversions = await Promise.allSettled(
-        imageTags.map(convertImageToBase64)
-      );
-
-      base64Conversions.forEach((res) => {
-        if (res.status === "fulfilled") {
-          const { img, dataURL } = res.value;
-          img.setAttribute("data-original-src", img.src);
-          img.src = dataURL;
-        }
-      });
-      // Before Step 2: Temporarily remove canvas border/shadow
-      const originalBorder = node.style.border;
-      const originalBoxShadow = node.style.boxShadow;
-      node.style.border = "none";
-      node.style.boxShadow = "none";
-
-      // Step 2: Convert canvas to PNG
-      const dataUrl = await toPng(node, {
-        cacheBust: true,
-        skipFonts: true, // avoids trying to embed them
-        style: {
-          transform: "scale(1)",
-          transformOrigin: "top left",
-        },
-        pixelRatio: 2,
-      });
-      // // After Step 2: Restore canvas styles
-      // node.style.border = originalBorder;
-      // node.style.boxShadow = originalBoxShadow;
-
-      // Step 3: Restore original image srcs
-      imageTags.forEach((img) => {
-        const originalSrc = img.getAttribute("data-original-src");
-        if (originalSrc) img.src = originalSrc;
-      });
-
-      // Step 4: Convert to Blob/File for backend upload
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
-      // Create image bitmap from the original blob
-      const inputImage = await createImageBitmap(blob);
-
-      // Create an offscreen canvas
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      // Resize and apply unsharp mask using Pica
-      await pica().resize(inputImage, canvas, {
-        unsharpAmount: 100,
-        unsharpRadius: 0.6,
-        unsharpThreshold: 2,
-      });
-
-      // Convert sharpened canvas to blob
-      const enhancedBlob = await new Promise((resolve) => {
-        canvas.toBlob((b) => resolve(b), "image/webp");
-      });
-
-      // Create the final File object with enhanced sharpness
-      const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
-        type: "image/webp",
-      });
-
-      // Step 5: Send to API
+      // Step 1: Send to API
       onSavePost.mutate(
         {
           postId,
           type,
-          postImage: file,
           postDesignData,
           allFiles,
         },
@@ -176,6 +76,7 @@ const TopHeaderBtns = ({
           onSuccess: () => {
             setTimeout(() => {
               setIsSavePostLoading(false);
+              setCanvasLoading(false);
               onClose();
               clearEditor();
               toast.success("Post saved successfully");
@@ -186,6 +87,7 @@ const TopHeaderBtns = ({
               error?.response?.data?.message || "Failed to save post"
             );
             setIsSavePostLoading(false);
+            setCanvasLoading(false);
             console.error("Error saving design:", error);
           },
         }
@@ -194,6 +96,7 @@ const TopHeaderBtns = ({
       // setIsSavePostLoading(false);
     } catch (error) {
       setIsSavePostLoading(false);
+      setCanvasLoading(false);
       toast.error("An error occurred while saving");
       console.error("Error saving design:", error);
     }
@@ -203,62 +106,8 @@ const TopHeaderBtns = ({
     setSpecialActiveTab(null);
     setSelectedElementId(null);
     setIsSaveTemplateLoading(true);
+    setCanvasLoading(true);
     try {
-      const node = canvasContainerRef.current;
-
-      const scale = 5;
-      const width = node.offsetWidth * scale;
-      const height = node.offsetHeight * scale;
-      // Before Step 2: Temporarily remove canvas border/shadow
-      const originalBorder = node.style.border;
-      const originalBoxShadow = node.style.boxShadow;
-      node.style.border = "none";
-      node.style.boxShadow = "none";
-
-      const blob = await htmlToImage.toBlob(node, {
-        skipFonts: true,
-        width,
-        height,
-        style: {
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          width: `${node.offsetWidth}px`,
-          height: `${node.offsetHeight}px`,
-        },
-        type: "image/webp",
-      });
-      // // After Step 2: Restore canvas styles
-      // node.style.border = originalBorder;
-      // node.style.boxShadow = originalBoxShadow;
-
-      if (!blob) {
-        throw new Error("Failed to convert canvas to image.");
-      }
-
-      // Create image bitmap from the original blob
-      const inputImage = await createImageBitmap(blob);
-
-      // Create an offscreen canvas
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      // Resize and apply unsharp mask using Pica
-      await pica().resize(inputImage, canvas, {
-        unsharpAmount: 100,
-        unsharpRadius: 0.6,
-        unsharpThreshold: 2,
-      });
-
-      // Convert sharpened canvas to blob
-      const enhancedBlob = await new Promise((resolve) => {
-        canvas.toBlob((b) => resolve(b), "image/webp");
-      });
-
-      // Create the final File object with enhanced sharpness
-      const file = new File([enhancedBlob], `canvas_${Date.now()}.webp`, {
-        type: "image/webp",
-      });
       const platform = getPlatformIdBySize(
         postDesignData.canvas.width,
         postDesignData.canvas.height
@@ -270,7 +119,6 @@ const TopHeaderBtns = ({
           templateType,
           templatePlatform: platform?.toLowerCase(),
           templateCategory,
-          templateImage: file,
           templateDesignData: postDesignData,
           allFiles,
         },
@@ -278,6 +126,7 @@ const TopHeaderBtns = ({
           onSuccess: () => {
             setTimeout(() => {
               setIsSaveTemplateLoading(false);
+              setCanvasLoading(false);
               // onClose();
               setActiveTab("templates");
               // clearEditor();
@@ -289,12 +138,14 @@ const TopHeaderBtns = ({
               error?.response?.data?.message || "Failed to save template"
             );
             setIsSaveTemplateLoading(false);
+            setCanvasLoading(false);
             console.error("Error saving template design:", error);
           },
         }
       );
     } catch (error) {
       setIsSaveTemplateLoading(false);
+      setCanvasLoading(false);
       toast.error("An error occurred while saving");
       console.error("Error saving design:", error);
     }
