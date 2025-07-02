@@ -16,7 +16,7 @@ const templateDesignSchema = new mongoose.Schema({
   },
   templateImage: {
     type: String, // URL to show preview of the template
-    required: true, // Marked as required
+    // required: true, // Marked as required
   },
   templatePlatform: {
     type: String, // URL to show preview of the template

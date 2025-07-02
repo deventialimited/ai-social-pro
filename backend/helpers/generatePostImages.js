@@ -115,6 +115,30 @@ const modifyTemplate = async (
   return template;
 };
 
+async function processImage({
+  type,
+  modifiedData, // For branding/slogan/image: object with canvas/template
+}) {
+  const generatedDir = path.join(__dirname, "../public/generated");
+  await fsp.mkdir(generatedDir, { recursive: true });
+  let imageUrl = "";
+
+  if (type === "branding" || type === "slogan" || type === "image") {
+    // For canvas-based images: generate HTML → render → upload
+    const html = generateHTMLFromTemplateData(modifiedData);
+    console.log(html);
+    const imagePath = path.join(generatedDir, `${type}-${uuidv4()}.png`);
+
+    await renderImageFromHTML(modifiedData?.canvas, html, imagePath);
+
+    const fileObj = await prepareFileObject(imagePath);
+    imageUrl = await uploadToS3(fileObj);
+    await fsp.unlink(imagePath);
+  }
+
+  return imageUrl;
+}
+
 const generateDomainVisualAssets = async ({
   postId,
   platform,
@@ -152,9 +176,6 @@ const generateDomainVisualAssets = async ({
       { $sample: { size: 1 } },
     ]);
 
-    const generatedDir = path.join(__dirname, "../public/generated");
-    await fsp.mkdir(generatedDir, { recursive: true });
-
     const [imageWidth, imageHeight] = platformDimensions[
       (platform || "")?.toLowerCase()
     ] || [600, 600];
@@ -180,20 +201,10 @@ const generateDomainVisualAssets = async ({
           keywords,
         }
       );
-
-      const sloganHTML = generateHTMLFromTemplateData(modifiedSlogan);
-      console.log(sloganHTML);
-      const sloganImagePath = path.join(generatedDir, `slogan-${uuidv4()}.png`);
-
-      await renderImageFromHTML(
-        modifiedSlogan?.canvas,
-        sloganHTML,
-        sloganImagePath
-      );
-
-      const sloganFile = await prepareFileObject(sloganImagePath);
-      sloganImage = await uploadToS3(sloganFile);
-      await fsp.unlink(sloganImagePath);
+      sloganImage = await processImage({
+        type: "slogan",
+        modifiedData: modifiedSlogan,
+      });
 
       await PostDesign.create({
         postId,
@@ -228,23 +239,10 @@ const generateDomainVisualAssets = async ({
           keywords,
         }
       );
-
-      const brandingHTML = generateHTMLFromTemplateData(modifiedBranding);
-      // console.log(brandingHTML);
-      const brandingImagePath = path.join(
-        generatedDir,
-        `branding-${uuidv4()}.png`
-      );
-
-      await renderImageFromHTML(
-        modifiedBranding?.canvas,
-        brandingHTML,
-        brandingImagePath
-      );
-
-      const brandingFile = await prepareFileObject(brandingImagePath);
-      brandingImage = await uploadToS3(brandingFile);
-      await fsp.unlink(brandingImagePath);
+      brandingImage = await processImage({
+        type: "branding",
+        modifiedData: modifiedBranding,
+      });
 
       await PostDesign.create({
         postId,
@@ -280,4 +278,4 @@ const generateDomainVisualAssets = async ({
   };
 };
 
-module.exports = generateDomainVisualAssets;
+module.exports = { processImage, generateDomainVisualAssets };
