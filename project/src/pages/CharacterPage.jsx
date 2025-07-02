@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus, User, Edit, Trash2, Image } from "lucide-react";
-// import { CharacterModal } from "./CharacterModal";
+import { CharacterModal } from "../PopUps/UpdatePopup";
 import { DeleteCharacterModal } from "../PopUps/DeleteCharacter";
 
 export const CharactersTab = () => {
@@ -254,7 +254,7 @@ export const CharactersTab = () => {
         </div>
       </div>
 
-      {/* {showModal && (
+      {showModal && (
         <CharacterModal
           character={editingCharacter}
           onClose={() => {
@@ -263,7 +263,7 @@ export const CharactersTab = () => {
           }}
           onSave={handleSaveCharacter}
         />
-      )} */}
+      )}
 
       {showDeleteModal && deletingCharacter && (
         <DeleteCharacterModal
