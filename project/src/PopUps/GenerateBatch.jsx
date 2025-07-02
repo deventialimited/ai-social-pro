@@ -12,7 +12,8 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     useCreatePostViaPubSub();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [topicDescription, setTopicDescription] = useState(""); // NEW
+  const [postTopic, setPostTopic] = useState(""); // New: Topic Field
+  const [topicDescription, setTopicDescription] = useState("");
 
   const [platforms, setPlatforms] = useState([
     {
@@ -79,10 +80,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     onClose();
 
     setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }, 100);
 
     try {
@@ -109,7 +107,9 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         name: domain.data.clientName || "Unknown",
         industry: domain.data.industry || "Unknown",
         niche: domain.data.niche || "Unknown",
-        description: topicDescription || "", // REPLACED HERE
+        description: domain.data.clientDescription || "",
+        post_topic: postTopic || "",
+        post_description: topicDescription || "",
         core_values: domain.data.marketingStrategy?.core_values || [],
         target_audience: domain.data.marketingStrategy?.audience || [],
         audience_pain_points:
@@ -131,9 +131,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
               "https://social-api-107470285539.us-central1.run.app/generate-single-post",
               payload,
               {
-                headers: {
-                  "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
               }
             )
           );
@@ -169,17 +167,13 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         `Successfully generated ${responses.length} post${
           responses.length !== 1 ? "s" : ""
         }!`,
-        {
-          position: "top-right",
-          duration: 4000,
-        }
+        { position: "top-right", duration: 4000 }
       );
       onGenerate();
       queryClient.invalidateQueries(["posts", selectedWebsiteId]);
     } catch (err) {
       let errorMessage =
         "Something went wrong while generating your posts. Please try again later.";
-
       if (err.response) {
         switch (err.response.status) {
           case 400:
@@ -203,10 +197,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         errorMessage = err.message;
       }
 
-      toast.error(errorMessage, {
-        position: "top-right",
-        duration: 6000,
-      });
+      toast.error(errorMessage, { position: "top-right", duration: 6000 });
     } finally {
       setIsLoading(false);
       onLoadingChange?.(false);
@@ -245,7 +236,26 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         <div className="flex-1 overflow-y-auto">
           <form onSubmit={handleSubmit} className="flex flex-col h-full">
             <div className="p-8 space-y-6">
-              {/* TEXTAREA INPUT */}
+              {/* TOPIC INPUT */}
+              <div>
+                <label
+                  htmlFor="post-topic"
+                  className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Topic (Optional)
+                </label>
+                <input
+                  id="post-topic"
+                  type="text"
+                  value={postTopic}
+                  onChange={(e) => setPostTopic(e.target.value)}
+                  placeholder="Enter the topic you want to generate posts about..."
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                />
+              </div>
+
+              {/* DESCRIPTION INPUT */}
               <div>
                 <label
                   htmlFor="topic-description"
@@ -254,7 +264,6 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   <ClipboardList className="w-4 h-4" />
                   Description (Optional)
                 </label>
-
                 <textarea
                   id="topic-description"
                   rows={4}
@@ -334,8 +343,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                       <p className="text-sm text-blue-700 dark:text-blue-300">
                         {enabledPlatforms.length} platform
                         {enabledPlatforms.length !== 1 ? "s" : ""} •{" "}
-                        {totalPosts} total post
-                        {totalPosts !== 1 ? "s" : ""}
+                        {totalPosts} total post{totalPosts !== 1 ? "s" : ""}
                       </p>
                     </div>
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
