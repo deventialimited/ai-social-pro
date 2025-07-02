@@ -53,6 +53,7 @@ export const SocialsTab = () => {
         console.error("Invalid user in localStorage");
         return { PlatformConnected: [] };
       }
+      
     };
 
     const storedUser = getUserFromStorage();

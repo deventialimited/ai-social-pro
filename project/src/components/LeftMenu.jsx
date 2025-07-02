@@ -7,6 +7,7 @@ import {
   Plus,
   ChevronDown,
   Share2,
+  User,
   X,
 } from "lucide-react";
 import { Listbox } from "@headlessui/react";
@@ -209,6 +210,14 @@ export const LeftMenu = ({
             icon={<Share2 className="w-5 h-5" />}
           >
             Socials
+          </Link>
+          <Link
+            href="#"
+            active={currentTab === "character"}
+            onClick={() => onTabChange("character")}
+            icon={<User className="w-5 h-5" />}
+          >
+            Character
           </Link>
           <Link href="#" onClick={openModalhandler}>
             Claim 50% Off Anually
