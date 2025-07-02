@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Check, ArrowRight, Sparkles ,ClipboardList} from "lucide-react";
+import { X, Check, ArrowRight, Sparkles, ClipboardList } from "lucide-react";
 import { getDomainById } from "../libs/domainService";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -252,7 +252,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   <ClipboardList className="w-4 h-4" />
-                  Description (Required if no topic)
+                  Description
                 </label>
 
                 <textarea
