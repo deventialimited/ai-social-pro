@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useCreatePostViaPubSub } from "../libs/postService";
 import { useQueryClient } from "@tanstack/react-query";
+import Tooltip from "@mui/material/Tooltip"; // ✅ MUI Tooltip
 
 const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     useCreatePostViaPubSub();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [postTopic, setPostTopic] = useState(""); // New: Topic Field
+  const [postTopic, setPostTopic] = useState("");
   const [topicDescription, setTopicDescription] = useState("");
 
   const [platforms, setPlatforms] = useState([
@@ -79,9 +80,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
     onLoadingChange?.(true);
     onClose();
 
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 100);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
 
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -121,18 +120,12 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
       enabledPlatforms.forEach((platform) => {
         for (let i = 0; i < platform.postCount; i++) {
-          const payload = {
-            ...basePayload,
-            post_platform: platform.id,
-          };
-
+          const payload = { ...basePayload, post_platform: platform.id };
           postPromises.push(
             axios.post(
               "https://social-api-107470285539.us-central1.run.app/generate-single-post",
               payload,
-              {
-                headers: { "Content-Type": "application/json" },
-              }
+              { headers: { "Content-Type": "application/json" } }
             )
           );
           postPlatforms.push(platform.id);
@@ -143,7 +136,6 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
 
       for (let i = 0; i < responses.length; i++) {
         const response = responses[i];
-        const platform = postPlatforms[i];
 
         const pubsubPayload = {
           post_id: response.data.post_id,
@@ -167,7 +159,10 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
         `Successfully generated ${responses.length} post${
           responses.length !== 1 ? "s" : ""
         }!`,
-        { position: "top-right", duration: 4000 }
+        {
+          position: "top-right",
+          duration: 4000,
+        }
       );
       onGenerate();
       queryClient.invalidateQueries(["posts", selectedWebsiteId]);
@@ -196,7 +191,6 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-
       toast.error(errorMessage, { position: "top-right", duration: 6000 });
     } finally {
       setIsLoading(false);
@@ -238,40 +232,51 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
             <div className="p-8 space-y-6">
               {/* TOPIC INPUT */}
               <div>
-                <label
-                  htmlFor="post-topic"
-                  className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >
-                  <ClipboardList className="w-4 h-4" />
-                  Topic (Optional)
-                </label>
-                <input
-                  id="post-topic"
-                  type="text"
-                  value={postTopic}
-                  onChange={(e) => setPostTopic(e.target.value)}
-                  placeholder="Enter the topic you want to generate posts about..."
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                />
+                <Tooltip title="Add your own topic to the posts" arrow>
+                  <label
+                    htmlFor="post-topic"
+                    className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    <ClipboardList className="w-4 h-4" />
+                    <span title="Add your own topic to the posts">
+                      Topic (Optional)
+                    </span>
+                  </label>
+                  <input
+                    id="post-topic"
+                    type="text"
+                    value={postTopic}
+                    onChange={(e) => setPostTopic(e.target.value)}
+                    placeholder="Enter the topic you want to generate posts about..."
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  />
+                </Tooltip>
               </div>
 
               {/* DESCRIPTION INPUT */}
               <div>
-                <label
-                  htmlFor="topic-description"
-                  className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                <Tooltip
+                  title="You can use your own custom description to help tailor the posts"
+                  arrow
                 >
-                  <ClipboardList className="w-4 h-4" />
-                  Description (Optional)
-                </label>
-                <textarea
-                  id="topic-description"
-                  rows={4}
-                  value={topicDescription}
-                  onChange={(e) => setTopicDescription(e.target.value)}
-                  placeholder="Describe what you want to post about..."
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none transition-all"
-                />
+                  <label
+                    htmlFor="topic-description"
+                    className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    <ClipboardList className="w-4 h-4" />
+                    <span title="You can use your own custom description to help tailor the posts">
+                      Description (Optional)
+                    </span>
+                  </label>
+                  <textarea
+                    id="topic-description"
+                    rows={4}
+                    value={topicDescription}
+                    onChange={(e) => setTopicDescription(e.target.value)}
+                    placeholder="Describe what you want to post about..."
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none transition-all"
+                  />
+                </Tooltip>
               </div>
 
               {/* PLATFORM SELECTION */}
@@ -323,10 +328,11 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                         }
                         className="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value={1}>1</option>
-                        <option value={2}>2</option>
-                        <option value={3}>3</option>
-                        <option value={4}>4</option>
+                        {[1, 2, 3, 4].map((val) => (
+                          <option key={val} value={val}>
+                            {val}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   )}
