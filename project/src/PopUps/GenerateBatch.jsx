@@ -252,7 +252,7 @@ const GenerateBatchModal = ({ onClose, onGenerate, onLoadingChange }) => {
                   className="flex items-center gap-2 mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   <ClipboardList className="w-4 h-4" />
-                  Description
+                  Description (Optional)
                 </label>
 
                 <textarea
