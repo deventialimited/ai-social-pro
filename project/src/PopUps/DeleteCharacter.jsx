@@ -58,7 +58,7 @@ export const DeleteCharacterModal = ({ character, onClose, onConfirm }) => {
               <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
                 {character.bio}
               </p>
-              {character.moreImages.length > 0 && (
+              {character.moreImages?.length > 0 && (
                 <div className="mt-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {character.moreImages.length} additional images will also be
@@ -79,7 +79,7 @@ export const DeleteCharacterModal = ({ character, onClose, onConfirm }) => {
                 <p className="text-sm text-red-700 dark:text-red-300">
                   Once you delete this character, all associated data including
                   the profile image, bio, and additional images will be
-                  permanently removed. This action cannot be undone.
+                  permanently removed.
                 </p>
               </div>
             </div>

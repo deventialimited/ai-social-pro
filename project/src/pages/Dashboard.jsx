@@ -17,7 +17,6 @@ import {
   useUpdatePostById,
   useDeletePostById,
   useCreatePostViaPubSub,
-  
 } from "../libs/postService";
 import { getDomainById, useCharacters } from "../libs/domainService";
 import toast from "react-hot-toast";
@@ -497,7 +496,12 @@ export const Dashboard = () => {
       case "subscription":
         return <SubscriptionManagement />;
       case "character":
-        return <CharactersTab characters={characters || []} />;
+        return (
+          <CharactersTab
+            selectedWebsiteId={selectedWebsiteId}
+            characters={characters?.characters || []}
+          />
+        );
 
       case "socials":
         return <SocialsTab />;

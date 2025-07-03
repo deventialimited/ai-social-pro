@@ -2,28 +2,71 @@ import React, { useState, useEffect } from "react";
 import { Plus, User, Edit, Trash2, Image } from "lucide-react";
 import { CharacterModal } from "../PopUps/UpdatePopup";
 import { DeleteCharacterModal } from "../PopUps/DeleteCharacter";
-import { useAddCharacterMutation } from "../libs/domainService";
+import {
+  useAddCharacterMutation,
+  useDeleteCharacterMutation,
+  useUpdateCharacterMutation,
+} from "../libs/domainService";
 
 export const CharactersTab = ({
   characters = [],
   isLoading = false,
   error = null,
-  selectedDomainId,
+  selectedWebsiteId,
 }) => {
   const [localCharacters, setLocalCharacters] = useState([]);
-
   const [showModal, setShowModal] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState(undefined);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingCharacter, setDeletingCharacter] = useState(undefined);
-
+  console.log("CharactersTab - characters:", characters);
   useEffect(() => {
-    // 🛡️ Safely set only if characters is a valid array
-    setLocalCharacters(Array.isArray(characters) ? characters : []);
+    if (Array.isArray(characters)) {
+      const mapped = characters
+        .filter(
+          (char) => char.characterName && char.characterName !== "undefined"
+        )
+        .map((char, idx) => ({
+          id: char._id,
+          name: char.characterName || "Unnamed",
+          bio: char.bio || "",
+          profileImage: char.profilePicture || "",
+          moreImages: char.images || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+      setLocalCharacters(mapped);
+    } else {
+      setLocalCharacters([]);
+    }
   }, [characters]);
 
-  const { mutate: addCharacter } = useAddCharacterMutation(selectedDomainId);
+  const { mutate: addCharacter } = useAddCharacterMutation(selectedWebsiteId);
+  const { mutate: deleteCharacter } =
+    useDeleteCharacterMutation(selectedWebsiteId);
+  const { mutate: updateCharacter } =
+    useUpdateCharacterMutation(selectedWebsiteId);
 
+  const handleConfirmDelete = () => {
+    if (!deletingCharacter) return;
+
+    deleteCharacter(
+      { characterId: deletingCharacter.id },
+      {
+        onSuccess: () => {
+          setLocalCharacters((prev) =>
+            prev.filter((char) => char.id !== deletingCharacter.id)
+          );
+          setShowDeleteModal(false);
+          setDeletingCharacter(undefined);
+        },
+        onError: (err) => {
+          console.error("Failed to delete character:", err);
+          alert("Failed to delete character");
+        },
+      }
+    );
+  };
   const handleCreateCharacter = () => {
     setEditingCharacter(undefined);
     setShowModal(true);
@@ -39,15 +82,15 @@ export const CharactersTab = ({
     setShowDeleteModal(true);
   };
 
-  const handleConfirmDelete = () => {
-    if (deletingCharacter) {
-      setLocalCharacters((prev) =>
-        prev.filter((char) => char.id !== deletingCharacter.id)
-      );
-      setShowDeleteModal(false);
-      setDeletingCharacter(undefined);
-    }
-  };
+  // const handleConfirmDelete = () => {
+  //   if (deletingCharacter) {
+  //     setLocalCharacters((prev) =>
+  //       prev.filter((char) => char.id !== deletingCharacter.id)
+  //     );
+  //     setShowDeleteModal(false);
+  //     setDeletingCharacter(undefined);
+  //   }
+  // };
 
   const handleCancelDelete = () => {
     setShowDeleteModal(false);
@@ -55,41 +98,85 @@ export const CharactersTab = ({
   };
 
   const handleSaveCharacter = (characterData) => {
-    if (!selectedDomainId) {
+    if (!selectedWebsiteId) {
       alert("No domain selected.");
       return;
     }
 
-    const formData = {
-      characterName: characterData.name,
-      bio: characterData.bio,
-      profilePicture: characterData.profileImage,
-      images: characterData.moreImages || [],
-    };
+    const formdata = new FormData();
+    formdata.append("characterName", characterData.name);
+    formdata.append("bio", characterData.bio || "");
+    if (characterData.profileImage) {
+      formdata.append("profilePicture", characterData.profileImage);
+    }
+    if (characterData.moreImages && characterData.moreImages.length > 0) {
+      characterData.moreImages.forEach((img) => {
+        formdata.append("images", img);
+      });
+    }
 
-    addCharacter(formData, {
-      onSuccess: (updatedDomain) => {
-        const newChar = updatedDomain.characters.at(-1);
-        setLocalCharacters((prev) => [
-          {
-            id: newChar._id,
-            name: newChar.characterName,
-            bio: newChar.bio,
-            profileImage: newChar.profilePicture,
-            moreImages: newChar.images,
-            createdAt: newChar.createdAt,
-            updatedAt: newChar.updatedAt,
+    // ✅ If editing, call update mutation
+    if (editingCharacter) {
+      updateCharacter(
+        { characterId: editingCharacter.id, formdata },
+        {
+          onSuccess: (updatedChar) => {
+            setLocalCharacters((prev) =>
+              prev.map((char) =>
+                char.id === updatedChar._id
+                  ? {
+                      id: updatedChar._id,
+                      name: updatedChar.characterName,
+                      bio: updatedChar.bio,
+                      profileImage: updatedChar.profilePicture,
+                      moreImages: updatedChar.images || [],
+                      createdAt:
+                        updatedChar.createdAt || new Date().toISOString(),
+                      updatedAt:
+                        updatedChar.updatedAt || new Date().toISOString(),
+                    }
+                  : char
+              )
+            );
+            setShowModal(false);
+            setEditingCharacter(undefined);
           },
-          ...prev,
-        ]);
-        setShowModal(false);
-        setEditingCharacter(undefined);
-      },
-      onError: (err) => {
-        console.error("Add character failed:", err);
-        alert("Failed to add character: " + err.message);
-      },
-    });
+          onError: (err) => {
+            console.error("Update character failed:", err);
+            alert("Failed to update character: " + err.message);
+          },
+        }
+      );
+    } else {
+      // 🆕 If creating, call add mutation
+      addCharacter(formdata, {
+        onSuccess: (newChar) => {
+          if (!newChar) {
+            alert("Character added but response was empty");
+            return;
+          }
+
+          setLocalCharacters((prev) => [
+            {
+              id: newChar._id || Date.now(),
+              name: newChar.characterName,
+              bio: newChar.bio,
+              profileImage: newChar.profilePicture,
+              moreImages: newChar.images || [],
+              createdAt: newChar.createdAt || new Date().toISOString(),
+              updatedAt: newChar.updatedAt || new Date().toISOString(),
+            },
+            ...prev,
+          ]);
+          setShowModal(false);
+          setEditingCharacter(undefined);
+        },
+        onError: (err) => {
+          console.error("Add character failed:", err);
+          alert("Failed to add character: " + err.message);
+        },
+      });
+    }
   };
 
   if (isLoading) {
