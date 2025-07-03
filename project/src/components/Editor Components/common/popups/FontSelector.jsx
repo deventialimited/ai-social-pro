@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react"
-import { ChevronDown, Search } from "lucide-react"
-import WebFont from 'webfontloader';
-import axios from "axios"
+import { useState, useRef, useEffect } from "react";
+import { ChevronDown, Search } from "lucide-react";
+import WebFont from "webfontloader";
+import axios from "axios";
 function FontSelector({ font = "Poppins", onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,11 +12,11 @@ function FontSelector({ font = "Poppins", onChange }) {
   const API_KEY = "AIzaSyC26vJC8yUlX5URokX7mZPvJW7Sg-wom-g";
 
   useEffect(() => {
-    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    // const proxyUrl = "https://cors-anywhere.herokuapp.com/";
     const googleFontsApiUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`;
 
     axios
-      .get(proxyUrl + googleFontsApiUrl)
+      .get(googleFontsApiUrl)
       .then((response) => {
         const fontList = response.data.items.map((item) => item.family);
         console.log(fontList);
@@ -31,12 +31,10 @@ function FontSelector({ font = "Poppins", onChange }) {
         const link = document.createElement("link");
         link.rel = "stylesheet";
         // Use Google Fonts CSS through the proxy:
-        link.href =
-          proxyUrl +
-          `https://fonts.googleapis.com/css2?family=${defaultFont.replace(
-            / /g,
-            "+"
-          )}&display=swap`;
+        link.href = `https://fonts.googleapis.com/css2?family=${defaultFont.replace(
+          / /g,
+          "+"
+        )}&display=swap`;
         document.head.appendChild(link);
       })
       .catch((error) => {
@@ -123,4 +121,4 @@ function FontSelector({ font = "Poppins", onChange }) {
   );
 }
 
-export default FontSelector
+export default FontSelector;

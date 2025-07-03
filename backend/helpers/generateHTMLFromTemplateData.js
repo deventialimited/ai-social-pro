@@ -161,11 +161,11 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               });
 
               const styleString = `
+               ${convertStylesToString(adjustedStyles)};
                 position: absolute;
                 object-fit: cover;
                 top: ${top}px;
                 left: ${left}px;
-                ${convertStylesToString(adjustedStyles)}
               `
                 .trim()
                 .replace(/\s+/g, " ");
