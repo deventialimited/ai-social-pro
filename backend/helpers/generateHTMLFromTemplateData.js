@@ -151,6 +151,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               const left = parseInt(el.position?.x) || 0;
               const adjustedStyles = { ...el.styles };
 
+              // Make sure width/height are in px
               ["width", "height"].forEach((dim) => {
                 if (
                   adjustedStyles[dim] &&
@@ -161,7 +162,7 @@ exports.generateHTMLFromTemplateData = (templateData) => {
               });
 
               const styleString = `
-               ${convertStylesToString(adjustedStyles)};
+                ${convertStylesToString(adjustedStyles)};
                 position: absolute;
                 object-fit: cover;
                 top: ${top}px;
@@ -172,6 +173,23 @@ exports.generateHTMLFromTemplateData = (templateData) => {
 
               const id = el.id;
               const maskId = el.props?.mask;
+
+              // Compute mapped blur string
+              const blurFilterString = (() => {
+                if (
+                  adjustedStyles.filter &&
+                  adjustedStyles.filter.startsWith("blur(")
+                ) {
+                  const match =
+                    adjustedStyles.filter.match(/blur\(([\d.]+)px\)/);
+                  if (match) {
+                    const rawValue = parseFloat(match[1]);
+                    const mapped = (rawValue / 50) * 2.0;
+                    return `backdrop-filter: blur(${mapped}px);`;
+                  }
+                }
+                return "backdrop-filter: none;";
+              })();
 
               if (maskId) {
                 const shape = hardCodedShapes?.find((s) => s.id === maskId);
@@ -222,23 +240,46 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                   }
 
                   return `
-                    <svg style="${styleString};" width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <defs>
-                        <clipPath id="clip-${id}">
-                          ${clipElement}
-                        </clipPath>
-                      </defs>
-                      <image href="${
-                        el.props?.src || ""
-                      }" width="100" height="100" clip-path="url(#clip-${id})" preserveAspectRatio="none" />
-                    </svg>
+                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                      <svg style="${styleString}; filter:none" width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <defs>
+                          <clipPath id="clip-${id}">
+                            ${clipElement}
+                          </clipPath>
+                        </defs>
+                        <image href="${
+                          el.props?.src || ""
+                        }" width="100" height="100" clip-path="url(#clip-${id})" preserveAspectRatio="none" />
+                      </svg>
+                      <div style="
+                        position: absolute;
+                        inset: 0;
+                        width: ${adjustedStyles.width || "100%"};
+                        height: ${adjustedStyles.height || "100%"};
+                        z-index: ${(adjustedStyles.zIndex || 0) + 1};
+                        ${blurFilterString}
+                      "></div>
+                    </div>
                   `;
                 }
               }
 
-              return `<img src="${
-                el.props?.src || ""
-              }" style="${styleString}" />`;
+              // Non-masked image case
+              return `
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                  <img src="${
+                    el.props?.src || ""
+                  }" style="${styleString}; filter:none" />
+                  <div style="
+                    position: absolute;
+                    inset: 0;
+                    width: ${adjustedStyles.width || "100%"};
+                    height: ${adjustedStyles.height || "100%"};
+                    z-index: ${(adjustedStyles.zIndex || 0) + 1};
+                    ${blurFilterString}
+                  "></div>
+                </div>
+              `;
             }
 
             if (el.type === "shape") {

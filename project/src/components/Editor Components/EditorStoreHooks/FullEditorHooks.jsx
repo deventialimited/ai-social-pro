@@ -398,6 +398,30 @@ export const EditorProvider = ({ children }) => {
     setElements([]);
     setLayers([]);
     setAllFiles([]);
+    setZoomLevel(100);
+    setPostOtherValues(null);
+    setSelectedTemplateId(null);
+    historyRef.current = {
+      past: [],
+      present: {
+        canvas: {
+          width: 1080,
+          height: 1080,
+          ratio: "1.91:1",
+          styles: {
+            boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+          },
+        },
+        backgrounds: null,
+        elements: [],
+        layers: [],
+        allFiles: [],
+      },
+      future: [],
+    };
+    lastSnapshot.current = null;
+    setCanUndo(false);
+    setCanRedo(false);
   }, []);
 
   const lastSnapshot = useRef(null);
