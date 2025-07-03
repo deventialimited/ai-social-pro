@@ -522,18 +522,46 @@ const CanvasElement = ({
                     );
                     if (!maskShape)
                       return (
-                        <img
-                          id={element.id}
-                          src={props.src}
-                          style={{
-                            ...styles,
-                            position: "static",
-                            transform: "rotate(0deg)",
-                          }}
-                          alt="Canvas"
-                          className="w-full h-full object-cover"
-                          draggable={false}
-                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img
+                            id={element.id}
+                            src={props.src}
+                            style={{
+                              ...styles,
+                              position: "static",
+                              filter: "none",
+                              transform: "rotate(0deg)",
+                            }}
+                            alt="Canvas"
+                            className="w-full h-full object-cover"
+                            draggable={false}
+                          />
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              width: styles.width || "100%",
+                              height: styles.height || "100%",
+                              zIndex: styles.zIndex + 1 || 1,
+                              backdropFilter: (() => {
+                                if (
+                                  styles.filter &&
+                                  styles.filter.startsWith("blur(")
+                                ) {
+                                  // Extract number from e.g., "blur(5px)"
+                                  const match =
+                                    styles.filter.match(/blur\(([\d.]+)px\)/);
+                                  if (match) {
+                                    const rawValue = parseFloat(match[1]); // gets the numeric part: 5
+                                    // Map 0–50 → 0–1
+                                    const mapped = (rawValue / 50) * 2.0;
+                                    return `blur(${mapped}px)`;
+                                  }
+                                }
+                                return "none"; // fallback if filter not set or invalid
+                              })(),
+                            }}
+                          ></div>
+                        </div>
                       );
                     // Try to extract path or polygon
                     const innerSVG = maskShape.svg
@@ -562,74 +590,127 @@ const CanvasElement = ({
                     );
 
                     return (
-                      <svg
-                        width="100%"
-                        height="100%"
-                        viewBox="0 0 100 100"
-                        style={{ display: "block" }}
-                      >
-                        <defs>
-                          <clipPath id={`clip-${element.id}`}>
-                            {pathMatch ? (
-                              <path d={pathMatch[1]} />
-                            ) : polygonMatch ? (
-                              <polygon points={polygonMatch[1]} />
-                            ) : rectMatch ? (
-                              <rect
-                                x={rectMatch[1] || "0"}
-                                y={rectMatch[2] || "0"}
-                                width={rectMatch[3]}
-                                height={rectMatch[4]}
-                                rx={rxMatch ? rxMatch[1] : undefined}
-                                ry={ryMatch ? ryMatch[1] : undefined}
-                              />
-                            ) : circleMatch ? (
-                              <circle
-                                cx={circleMatch[1]}
-                                cy={circleMatch[2]}
-                                r={circleMatch[3]}
-                              />
-                            ) : ellipseMatch ? (
-                              <ellipse
-                                cx={ellipseMatch[1]}
-                                cy={ellipseMatch[2]}
-                                rx={ellipseMatch[3]}
-                                ry={ellipseMatch[4]}
-                              />
-                            ) : lineMatch ? (
-                              <line
-                                x1={lineMatch[1]}
-                                y1={lineMatch[2]}
-                                x2={lineMatch[3]}
-                                y2={lineMatch[4]}
-                              />
-                            ) : null}
-                          </clipPath>
-                        </defs>
-                        <image
-                          href={props.src}
-                          width="100"
-                          height="100"
-                          clipPath={`url(#clip-${element.id})`}
-                          preserveAspectRatio="none"
-                          style={{ width: "100%", height: "100%" }}
-                        />
-                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg
+                          width="100%"
+                          height="100%"
+                          viewBox="0 0 100 100"
+                          style={{ display: "block" }}
+                        >
+                          <defs>
+                            <clipPath id={`clip-${element.id}`}>
+                              {pathMatch ? (
+                                <path d={pathMatch[1]} />
+                              ) : polygonMatch ? (
+                                <polygon points={polygonMatch[1]} />
+                              ) : rectMatch ? (
+                                <rect
+                                  x={rectMatch[1] || "0"}
+                                  y={rectMatch[2] || "0"}
+                                  width={rectMatch[3]}
+                                  height={rectMatch[4]}
+                                  rx={rxMatch ? rxMatch[1] : undefined}
+                                  ry={ryMatch ? ryMatch[1] : undefined}
+                                />
+                              ) : circleMatch ? (
+                                <circle
+                                  cx={circleMatch[1]}
+                                  cy={circleMatch[2]}
+                                  r={circleMatch[3]}
+                                />
+                              ) : ellipseMatch ? (
+                                <ellipse
+                                  cx={ellipseMatch[1]}
+                                  cy={ellipseMatch[2]}
+                                  rx={ellipseMatch[3]}
+                                  ry={ellipseMatch[4]}
+                                />
+                              ) : lineMatch ? (
+                                <line
+                                  x1={lineMatch[1]}
+                                  y1={lineMatch[2]}
+                                  x2={lineMatch[3]}
+                                  y2={lineMatch[4]}
+                                />
+                              ) : null}
+                            </clipPath>
+                          </defs>
+                          <image
+                            href={props.src}
+                            width="100"
+                            height="100"
+                            clipPath={`url(#clip-${element.id})`}
+                            preserveAspectRatio="none"
+                            style={{ width: "100%", height: "100%" }}
+                          />
+                        </svg>
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            width: styles.width || "100%",
+                            height: styles.height || "100%",
+                            zIndex: styles.zIndex + 1 || 1,
+                            backdropFilter: (() => {
+                              if (
+                                styles.filter &&
+                                styles.filter.startsWith("blur(")
+                              ) {
+                                const match =
+                                  styles.filter.match(/blur\(([\d.]+)px\)/);
+                                if (match) {
+                                  const rawValue = parseFloat(match[1]);
+                                  const mapped = (rawValue / 50) * 2.0;
+                                  return `blur(${mapped}px)`;
+                                }
+                              }
+                              return "none";
+                            })(),
+                          }}
+                        ></div>
+                      </div>
                     );
                   })()
                 ) : (
-                  <img
-                    id={element.id}
-                    src={props.src}
-                    style={{
-                      ...styles,
-                      position: "static",
-                      transform: "rotate(0deg)",
-                    }}
-                    alt="Canvas"
-                    className="w-full h-full object-cover"
-                    draggable={false}
-                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <img
+                      id={element.id}
+                      src={props.src}
+                      style={{
+                        ...styles,
+                        position: "static",
+                        filter: "none",
+                        transform: "rotate(0deg)",
+                      }}
+                      alt="Canvas"
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        width: styles.width || "100%",
+                        height: styles.height || "100%",
+                        zIndex: styles.zIndex + 1 || 1,
+                        backdropFilter: (() => {
+                          if (
+                            styles.filter &&
+                            styles.filter.startsWith("blur(")
+                          ) {
+                            // Extract number from e.g., "blur(5px)"
+                            const match =
+                              styles.filter.match(/blur\(([\d.]+)px\)/);
+                            if (match) {
+                              const rawValue = parseFloat(match[1]); // gets the numeric part: 5
+                              // Map 0–50 → 0–1
+                              const mapped = (rawValue / 50) * 2.0;
+                              return `blur(${mapped}px)`;
+                            }
+                          }
+                          return "none"; // fallback if filter not set or invalid
+                        })(),
+                      }}
+                    ></div>
+                  </div>
                 ))}
 
               {type === "shape" && (
