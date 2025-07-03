@@ -196,7 +196,7 @@ export const useUpdateDomainDetails = () => {
 
 export const updateDomainDetails = async ({ domainId, formData, logoFile }) => {
   const formDataToSend = new FormData();
-console.log('FORM DATA',formData)
+  console.log("FORM DATA", formData);
   // Append all regular fields
   Object.entries(formData).forEach(([key, value]) => {
     // Skip marketingStrategy and siteLogo (handled separately)
@@ -237,4 +237,77 @@ console.log('FORM DATA',formData)
   );
 
   return response.data;
+};
+
+export const useAddCharacterMutation = (domainId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (character) => addCharacterToDomain({ domainId, character }),
+    onSuccess: (updatedDomain) => {
+      // Update domain list or invalidate cache as needed
+      queryClient.setQueryData(
+        ["domains", updatedDomain.userId],
+        (oldDomains) => {
+          if (!oldDomains) return [updatedDomain];
+          return oldDomains.map((d) =>
+            d._id === updatedDomain._id ? updatedDomain : d
+          );
+        }
+      );
+    },
+  });
+};
+
+export const addCharacterToDomain = async ({ domainId, character }) => {
+  try {
+    const formData = new FormData();
+    formData.append("characterName", character.characterName);
+    formData.append("bio", character.bio || "");
+
+    if (character.profilePicture) {
+      formData.append("profilePicture", character.profilePicture); // single File
+    }
+
+    if (character.images && character.images.length > 0) {
+      character.images.forEach((img) => {
+        formData.append("images", img); // multiple images
+      });
+    }
+
+    const response = await axios.post(
+      `${API_URL}/${domainId}/add-character`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    console.log("Character added successfully:", response.data);
+    return response.data?.data;
+  } catch (error) {
+    console.error("Character upload error:", error);
+    throw error.response?.data?.error || "Failed to add character";
+  }
+};
+
+
+
+export const useCharacters = (domainId) => {
+  return useQuery({
+    queryKey: ["characters", domainId], // ✅ MUST include domainId
+    queryFn: async () => {
+      if (!domainId) throw new Error("No domainId provided");
+      const res = await axios.get(`/api/domains/${domainId}/characters`);
+      return res.data; // ✅ Must return character array
+    },
+    enabled: !!domainId, // ✅ Don't run query until domainId is available
+    staleTime: 0, // Optional: always fetch fresh
+  });
+};
+
+export const getCharacters = async (domainId) => {
+  console.log("Fetching characters for domain:", domainId);
+  const response = await axios.get(`${API_URL}/${domainId}/characters`);
+  return response.data.characters;
 };

@@ -35,6 +35,8 @@ export const LeftMenu = ({
   const selectedWebsiteData = domains?.find((w) => w?._id === selectedWebsite);
   const [openModal, setopenModal] = useState(false);
   const { setUser, clearUser } = useAuthStore();
+  console.log("Selected website data: ", selectedWebsiteData);
+
   const openModalhandler = () => {
     setopenModal(true);
   };

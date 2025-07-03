@@ -11,6 +11,34 @@ const marketingStrategySchema = new mongoose.Schema(
   { _id: false }
 ); // Prevents auto-generating _id for subdocument
 // Define the Domain schema with user reference
+
+const characterSchema = new mongoose.Schema(
+  {
+    profilePicture: {
+      type: String, // URL
+      trim: true,
+    },
+    characterName: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    bio: {
+      type: String,
+      trim: true,
+    },
+    images: {
+      type: [String],
+      validate: [arrayLimit, "{PATH} exceeds the limit of 20"],
+    },
+  },
+  { _id: false }
+);
+
+function arrayLimit(val) {
+  return val.length <= 20;
+}
+
 const domainSchema = new mongoose.Schema(
   {
     client_email: {
@@ -63,7 +91,8 @@ const domainSchema = new mongoose.Schema(
       type: String,
     },
     marketingStrategy: marketingStrategySchema, // Embedded marketing strategy
-  },
+    characters: [characterSchema],
+    },
   {
     timestamps: true,
   }

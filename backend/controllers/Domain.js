@@ -563,3 +563,90 @@ console.log("COLORS",updates.colors)
     });
   }
 };
+
+exports.addCharacterWithUpload = async (req, res) => {
+  const { domainId } = req.params;
+  const { characterName, bio } = req.body;
+  const files = req.files;
+
+  if (!characterName) {
+    return res
+      .status(400)
+      .json({ success: false, error: "Character name is required" });
+  }
+
+  try {
+    const domain = await Domain.findById(domainId);
+    if (!domain) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Domain not found" });
+    }
+
+    // Upload profile picture
+    let profilePictureUrl = "";
+    if (files.profilePicture && files.profilePicture.length > 0) {
+      profilePictureUrl = await uploadToS3({
+        originalname: files.profilePicture[0].originalname,
+        mimetype: files.profilePicture[0].mimetype,
+        buffer: files.profilePicture[0].buffer,
+      });
+    }
+
+    // Upload images
+    const uploadedImages = [];
+    if (files.images) {
+      for (const file of files.images) {
+        const imageUrl = await uploadToS3({
+          originalname: file.originalname,
+          mimetype: file.mimetype,
+          buffer: file.buffer,
+        });
+        uploadedImages.push(imageUrl);
+      }
+    }
+
+    // Add character
+    domain.characters.push({
+      profilePicture: profilePictureUrl,
+      characterName,
+      bio,
+      images: uploadedImages,
+    });
+
+    await domain.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Character added with images",
+      data: domain,
+    });
+  } catch (err) {
+    console.error("Add character error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+};
+
+
+exports.getDomainCharacters = async (req, res) => {
+  try {
+    const { domainId } = req.params;
+
+    const domain = await Domain.findById(domainId);
+
+    if (!domain) {
+      return res.status(404).json({ error: "Domain not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      characters: domain.characters || [],
+    });
+  } catch (error) {
+    console.error("getDomainCharacters error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Internal server error",
+    });
+  }
+};

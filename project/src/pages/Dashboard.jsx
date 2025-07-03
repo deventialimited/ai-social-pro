@@ -17,8 +17,9 @@ import {
   useUpdatePostById,
   useDeletePostById,
   useCreatePostViaPubSub,
+  
 } from "../libs/postService";
-import { getDomainById } from "../libs/domainService";
+import { getDomainById, useCharacters } from "../libs/domainService";
 import toast from "react-hot-toast";
 import axios from "axios";
 import SubscriptionManagement from "./SubscriptionManagement";
@@ -148,6 +149,13 @@ export const Dashboard = () => {
     isPostsError,
     postsError,
   } = useGetAllPostsByDomainId(selectedWebsiteId);
+
+  const {
+    data: characters,
+    isCharactersLoading,
+    isCharactersError,
+    charactersError,
+  } = useCharacters(selectedWebsiteId);
 
   useEffect(() => {
     if (domains?.length > 0 && !selectedWebsiteId) {
@@ -489,7 +497,8 @@ export const Dashboard = () => {
       case "subscription":
         return <SubscriptionManagement />;
       case "character":
-        return <CharactersTab />;
+        return <CharactersTab characters={characters || []} />;
+
       case "socials":
         return <SocialsTab />;
       default:
