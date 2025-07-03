@@ -1,5 +1,5 @@
-const baseURL = "https://api.oneyearsocial.com";
-// const baseURL = "http://localhost:5000";
+// const baseURL = "https://api.oneyearsocial.com";
+const baseURL = "http://localhost:5000";
 const API_URL = `${baseURL}/api/v1/domains`;
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
@@ -243,9 +243,12 @@ export const useAddCharacterMutation = (domainId) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (character) => addCharacterToDomain({ domainId, character }),
+    mutationFn: (formdata) => addCharacterToDomain({ domainId, formdata }),
     onSuccess: (updatedDomain) => {
-      // Update domain list or invalidate cache as needed
+      console.log("Character added successfully:");
+      console.log("updated ddomain", updatedDomain);
+      queryClient.invalidateQueries(["characters", domainId]);
+
       queryClient.setQueryData(
         ["domains", updatedDomain.userId],
         (oldDomains) => {
@@ -259,46 +262,34 @@ export const useAddCharacterMutation = (domainId) => {
   });
 };
 
-export const addCharacterToDomain = async ({ domainId, character }) => {
+export const addCharacterToDomain = async ({ domainId, formdata }) => {
   try {
-    const formData = new FormData();
-    formData.append("characterName", character.characterName);
-    formData.append("bio", character.bio || "");
-
-    if (character.profilePicture) {
-      formData.append("profilePicture", character.profilePicture); // single File
-    }
-
-    if (character.images && character.images.length > 0) {
-      character.images.forEach((img) => {
-        formData.append("images", img); // multiple images
-      });
-    }
+    formdata.forEach((value, key) => {
+      console.log(
+        `FormData key in add characyer service: ${key}, value: ${value}`
+      );
+    });
 
     const response = await axios.post(
       `${API_URL}/${domainId}/add-character`,
-      formData,
+      formdata,
       {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
 
-    console.log("Character added successfully:", response.data);
-    return response.data?.data;
+    return response.data?.data; // <-- CHECK HERE
   } catch (error) {
-    console.error("Character upload error:", error);
     throw error.response?.data?.error || "Failed to add character";
   }
 };
-
-
 
 export const useCharacters = (domainId) => {
   return useQuery({
     queryKey: ["characters", domainId], // ✅ MUST include domainId
     queryFn: async () => {
       if (!domainId) throw new Error("No domainId provided");
-      const res = await axios.get(`/api/domains/${domainId}/characters`);
+      const res = await axios.get(`${API_URL}/${domainId}/characters`);
       return res.data; // ✅ Must return character array
     },
     enabled: !!domainId, // ✅ Don't run query until domainId is available
@@ -310,4 +301,76 @@ export const getCharacters = async (domainId) => {
   console.log("Fetching characters for domain:", domainId);
   const response = await axios.get(`${API_URL}/${domainId}/characters`);
   return response.data.characters;
+};
+
+// Update Hook
+export const useUpdateCharacterMutation = (domainId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ characterId, formdata }) =>
+      updateCharacterInDomain({ domainId, characterId, formdata }),
+    onSuccess: (updatedDomain) => {
+      queryClient.invalidateQueries(["characters", domainId]);
+
+      queryClient.setQueryData(
+        ["domains", updatedDomain.userId],
+        (oldDomains) =>
+          oldDomains?.map((d) =>
+            d._id === updatedDomain._id ? updatedDomain : d
+          )
+      );
+    },
+  });
+};
+
+// Delete Hook
+export const useDeleteCharacterMutation = (domainId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ characterId }) =>
+      deleteCharacterFromDomain({ domainId, characterId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["characters", domainId]);
+    },
+  });
+};
+
+export const updateCharacterInDomain = async ({
+  domainId,
+  characterId,
+  formdata,
+}) => {
+  try {
+    console.log("Updating character with ID:", characterId);
+    formdata.forEach((value, key) => {
+      console.log(
+        `FormData key in update character service: ${key}, value: ${value}`
+      );
+    });
+    console.log("domainId:", domainId);
+    const response = await axios.patch(
+      `${API_URL}/${domainId}/characters/${characterId}`,
+      formdata,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    console.log("Character updated successfully:", response);
+    return response.data.data;
+  } catch (error) {
+    throw error.response?.data?.error || "Failed to update character";
+  }
+};
+
+export const deleteCharacterFromDomain = async ({ domainId, characterId }) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/${domainId}/characters/${characterId}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || "Failed to delete character";
+  }
 };

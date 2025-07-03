@@ -10,6 +10,8 @@ const {
   updateDomainDetails,
   addCharacterWithUpload,
   getDomainCharacters,
+  updateCharacterWithUpload,
+  deleteCharacter,
 } = require("../controllers/Domain");
 const router = express.Router();
 const multer = require("multer");
@@ -17,7 +19,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 // Add a new domain
 router.post("/addDomain", addDomain);
-
 
 router.get("/:domainId/characters", getDomainCharacters);
 
@@ -50,4 +51,15 @@ router.post(
   addCharacterWithUpload
 );
 
+router.patch(
+  "/:domainId/characters/:characterId",
+  upload.fields([
+    { name: "profilePicture", maxCount: 1 },
+    { name: "images", maxCount: 20 },
+  ]),
+  updateCharacterWithUpload
+);
+
+// Delete character
+router.delete("/:domainId/characters/:characterId", deleteCharacter);
 module.exports = router;
