@@ -238,102 +238,102 @@ exports.deleteDomain = async (req, res) => {
 };
 
 // Update domain business data only if values are changed
-  exports.updateDomain = async (req, res) => {
-    console.log('into the update Domain Controller')
-    try {
-      const { id } = req.params;
-      const updates = req.body; // Fields sent in the request
-console.log("updates",updates)
-      if (!id) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Domain ID is required" });
+exports.updateDomain = async (req, res) => {
+  console.log("into the update Domain Controller");
+  try {
+    const { id } = req.params;
+    const updates = req.body; // Fields sent in the request
+    console.log("updates", updates);
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Domain ID is required" });
+    }
+
+    // Find the existing domain
+    const existingDomain = await Domain.findById(id);
+    if (!existingDomain) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Domain not found" });
+    }
+
+    let updateFields = {};
+
+    // Helper function to check and update fields only if they changed
+    const checkAndUpdate = (field, newValue) => {
+      if (newValue !== undefined && newValue !== existingDomain[field]) {
+        updateFields[field] = newValue;
       }
+    };
 
-      // Find the existing domain
-      const existingDomain = await Domain.findById(id);
-      if (!existingDomain) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Domain not found" });
-      }
+    // Check and update basic fields
+    checkAndUpdate("clientName", updates.clientName);
+    checkAndUpdate("clientDescription", updates.clientDescription);
+    checkAndUpdate("industry", updates.industry);
+    checkAndUpdate("niche", updates.niche);
+    checkAndUpdate("clientWebsite", updates.clientWebsite);
+    checkAndUpdate("language", updates.language);
+    checkAndUpdate("country", updates.country);
+    checkAndUpdate("state", updates.state);
+    // Handle colors update (convert array to string if provided)
+    if (Array.isArray(updates.colors)) {
+      const newColors = updates.colors.join(", ");
+      checkAndUpdate("colors", newColors);
+    }
+    // Handle marketing strategy updates
+    if (updates.marketingStrategy) {
+      updateFields.marketingStrategy = {
+        core_values:
+          JSON.stringify(updates.marketingStrategy.core_values) !==
+          JSON.stringify(existingDomain.marketingStrategy?.core_values)
+            ? updates.marketingStrategy.core_values
+            : existingDomain.marketingStrategy?.core_values,
 
-      let updateFields = {};
+        audiencePains:
+          JSON.stringify(updates.marketingStrategy.audiencePains) !==
+          JSON.stringify(existingDomain.marketingStrategy?.audiencePains)
+            ? updates.marketingStrategy.audiencePains
+            : existingDomain.marketingStrategy?.audiencePains,
 
-      // Helper function to check and update fields only if they changed
-      const checkAndUpdate = (field, newValue) => {
-        if (newValue !== undefined && newValue !== existingDomain[field]) {
-          updateFields[field] = newValue;
-        }
+        audience:
+          JSON.stringify(updates.marketingStrategy.audience) !==
+          JSON.stringify(existingDomain.marketingStrategy?.audience)
+            ? updates.marketingStrategy.audience
+            : existingDomain.marketingStrategy?.audience,
       };
+    }
 
-      // Check and update basic fields
-      checkAndUpdate("clientName", updates.clientName);
-      checkAndUpdate("clientDescription", updates.clientDescription);
-      checkAndUpdate("industry", updates.industry);
-      checkAndUpdate("niche", updates.niche);
-      checkAndUpdate("clientWebsite", updates.clientWebsite);
-      checkAndUpdate("language", updates.language);
-      checkAndUpdate("country", updates.country);
-      checkAndUpdate("state", updates.state);
-      // Handle colors update (convert array to string if provided)
-      if (Array.isArray(updates.colors)) {
-        const newColors = updates.colors.join(", ");
-        checkAndUpdate("colors", newColors);
-      }
-      // Handle marketing strategy updates
-      if (updates.marketingStrategy) {
-        updateFields.marketingStrategy = {
-          core_values:
-            JSON.stringify(updates.marketingStrategy.core_values) !==
-            JSON.stringify(existingDomain.marketingStrategy?.core_values)
-              ? updates.marketingStrategy.core_values
-              : existingDomain.marketingStrategy?.core_values,
-
-          audiencePains:
-            JSON.stringify(updates.marketingStrategy.audiencePains) !==
-            JSON.stringify(existingDomain.marketingStrategy?.audiencePains)
-              ? updates.marketingStrategy.audiencePains
-              : existingDomain.marketingStrategy?.audiencePains,
-
-          audience:
-            JSON.stringify(updates.marketingStrategy.audience) !==
-            JSON.stringify(existingDomain.marketingStrategy?.audience)
-              ? updates.marketingStrategy.audience
-              : existingDomain.marketingStrategy?.audience,
-        };
-      }
-
-      // If no changes, return without updating
-      if (Object.keys(updateFields).length === 0) {
-        return res.status(200).json({
-          success: true,
-          message: "No changes detected",
-          data: existingDomain,
-        });
-      }
-
-      // Update the document only with changed fields
-      const updatedDomain = await Domain.findByIdAndUpdate(
-        id,
-        { $set: updateFields },
-        { new: true, runValidators: true }
-      );
-
-      res.status(200).json({
+    // If no changes, return without updating
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(200).json({
         success: true,
-        message: "Domain updated successfully",
-        data: updatedDomain,
-      });
-    } catch (error) {
-      console.error("Error updating domain:", error.message);
-      res.status(500).json({
-        success: false,
-        message: "Server error",
-        error: error.message,
+        message: "No changes detected",
+        data: existingDomain,
       });
     }
-  };
+
+    // Update the document only with changed fields
+    const updatedDomain = await Domain.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Domain updated successfully",
+      data: updatedDomain,
+    });
+  } catch (error) {
+    console.error("Error updating domain:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
 
 // exports.uploadBrand = async (req, res) => {
 //   const domainId = req.params.id;
@@ -474,12 +474,12 @@ exports.updateDomainDetails = async (req, res) => {
       const newLogoUrl = await uploadToS3(file);
       updateFields.siteLogo = newLogoUrl;
     }
-console.log("COLORS",updates.colors)
+    console.log("COLORS", updates.colors);
     // 3. Handle color updates
     if (updates.colors) {
       updateFields.colors = Array.isArray(JSON.parse(updates.colors))
         ? JSON.parse(updates.colors)
-        :  updates.colors.join(", ");
+        : updates.colors.join(", ");
     }
 
     // 4. Handle regular field updates
@@ -615,18 +615,17 @@ exports.addCharacterWithUpload = async (req, res) => {
     });
 
     await domain.save();
-
+    console.log("Character added successfully:", domain.characters);
     res.status(200).json({
       success: true,
       message: "Character added with images",
-      data: domain,
+      data: domain.characters,
     });
   } catch (err) {
     console.error("Add character error:", err);
     res.status(500).json({ success: false, error: "Server error" });
   }
 };
-
 
 exports.getDomainCharacters = async (req, res) => {
   try {
@@ -648,5 +647,110 @@ exports.getDomainCharacters = async (req, res) => {
       success: false,
       error: error.message || "Internal server error",
     });
+  }
+};
+
+exports.deleteCharacter = async (req, res) => {
+  console.log("into the delete character controller");
+  const { domainId, characterId } = req.params;
+
+  try {
+    const domain = await Domain.findById(domainId);
+    if (!domain) {
+      return res.status(404).json({ error: "Domain not found" });
+    }
+
+    const character = domain.characters.id(characterId);
+    if (!character) {
+      return res.status(404).json({ error: "Character not found" });
+    }
+
+    // Delete images from S3
+    if (character.profilePicture) {
+      await deleteFromS3(character.profilePicture);
+    }
+
+    if (character.images && character.images.length > 0) {
+      for (const imgUrl of character.images) {
+        await deleteFromS3(imgUrl);
+      }
+    }
+
+    // Remove character from DB
+    character.remove();
+    await domain.save();
+    console.log("Character deleted successfully:", characterId);
+    res.status(200).json({ message: "Character deleted", success: true });
+  } catch (err) {
+    console.error("Delete character error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.updateCharacterWithUpload = async (req, res) => {
+  const { domainId, characterId } = req.params;
+  const { characterName, bio } = req.body;
+  const files = req.files;
+  console.log("into the update character controller");
+  console.log("domainId:", domainId);
+  console.log("characterId:", characterId);
+  try {
+    const domain = await Domain.findById(domainId);
+    if (!domain) {
+      return res.status(404).json({ error: "Domain not found" });
+    }
+
+    const character = domain.characters.id(characterId);
+    if (!character) {
+      return res.status(404).json({ error: "Character not found" });
+    }
+
+    // Update fields
+    character.characterName = characterName || character.characterName;
+    character.bio = bio || character.bio;
+
+    // Replace profile picture
+    if (files.profilePicture?.[0]) {
+      if (character.profilePicture) {
+        await deleteFromS3(character.profilePicture);
+      }
+
+      const uploaded = await uploadToS3({
+        originalname: files.profilePicture[0].originalname,
+        mimetype: files.profilePicture[0].mimetype,
+        buffer: files.profilePicture[0].buffer,
+      });
+
+      character.profilePicture = uploaded;
+    }
+
+    // Replace more images
+    if (files.images) {
+      for (const imgUrl of character.images) {
+        await deleteFromS3(imgUrl);
+      }
+
+      const uploadedImages = [];
+      for (const file of files.images) {
+        const imageUrl = await uploadToS3({
+          originalname: file.originalname,
+          mimetype: file.mimetype,
+          buffer: file.buffer,
+        });
+        uploadedImages.push(imageUrl);
+      }
+
+      character.images = uploadedImages;
+    }
+
+    await domain.save();
+    res.status(200).json({
+      success: true,
+      message: "Character updated successfully",
+      data: domain,
+    });
+  } catch (err) {
+    console.error("Update character error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
