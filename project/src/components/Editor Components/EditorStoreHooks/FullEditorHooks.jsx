@@ -14,7 +14,6 @@ export const EditorProvider = ({ children }) => {
   // ===================== 🌟 Design Data States =====================
   const [isCanvasLoading, setCanvasLoading] = useState(false);
   const [postOtherValues, setPostOtherValues] = useState(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [canvas, setCanvas] = useState({
     width: 1080,
     height: 1080,
@@ -400,7 +399,6 @@ export const EditorProvider = ({ children }) => {
     setAllFiles([]);
     setZoomLevel(100);
     setPostOtherValues(null);
-    setSelectedTemplateId(null);
     historyRef.current = {
       past: [],
       present: {
@@ -460,8 +458,6 @@ export const EditorProvider = ({ children }) => {
     setCanvasLoading,
     postOtherValues,
     setPostOtherValues,
-    setSelectedTemplateId,
-    selectedTemplateId,
     // Files
     allFiles,
     setAllFiles,

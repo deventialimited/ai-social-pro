@@ -47,7 +47,6 @@ const TopHeaderBtns = ({
     updateCanvasSize,
     setCanvasLoading,
     setPostOtherValues,
-    selectedTemplateId,
   } = useEditor();
   const [isSavePostLoading, setIsSavePostLoading] = useState(false);
   const [isSaveTemplateLoading, setIsSaveTemplateLoading] = useState(false);

@@ -36,7 +36,9 @@ import Tooltip from "../../../common/Tooltip";
 
 // Utility to convert hex + opacity to rgba
 function hexToRgba(hex, opacity) {
-  let r = 0, g = 0, b = 0;
+  let r = 0,
+    g = 0,
+    b = 0;
   if (hex.length === 4) {
     r = "0x" + hex[1] + hex[1];
     g = "0x" + hex[2] + hex[2];
@@ -56,7 +58,18 @@ function TextToolbar({
   setSelectedElementId,
   setActiveElement,
 }) {
-  const { updateElement, handleLock, elements, addElement, removeElement, canvas, undo, redo, canUndo, canRedo } = useEditor();
+  const {
+    updateElement,
+    handleLock,
+    elements,
+    addElement,
+    removeElement,
+    canvas,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useEditor();
   const [selectedElement, setSelectedElement] = useState(null);
   const [transparency, setTransparency] = useState(100);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -79,15 +92,23 @@ function TextToolbar({
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Check if click is outside any of the popup buttons and the popup itself
-      const popupElements = [colorButtonRef, fontButtonRef, positionButtonRef, transparencyButtonRef, textStyleButtonRef];
-      const clickedOnButton = popupElements.some(ref => ref.current && ref.current.contains(event.target));
-  
+      const popupElements = [
+        colorButtonRef,
+        fontButtonRef,
+        positionButtonRef,
+        transparencyButtonRef,
+        textStyleButtonRef,
+      ];
+      const clickedOnButton = popupElements.some(
+        (ref) => ref.current && ref.current.contains(event.target)
+      );
+
       // If it's not on any popup button or popup content, close it
       if (!clickedOnButton && !event.target.closest(".popup-content")) {
         setActivePopup(null);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -210,7 +231,6 @@ function TextToolbar({
     });
   };
 
-
   const handleTextStyleChange = ({ lineHeight, letterSpacing }) => {
     if (!selectedElement || selectedElement.locked) return;
     updateElement(selectedElement?.id, {
@@ -269,42 +289,56 @@ function TextToolbar({
 
   const handlePopupOpen = (popupType, buttonRef) => {
     if (!buttonRef.current) return;
-    
+
     const rect = buttonRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     // Get the scroll position using the most reliable method
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    
+    const scrollLeft =
+      window.pageXOffset ||
+      document.documentElement.scrollLeft ||
+      document.body.scrollLeft ||
+      0;
+    const scrollTop =
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      document.body.scrollTop ||
+      0;
+
     // Calculate the absolute position of the button
     const buttonLeft = rect.left + scrollLeft;
     const buttonTop = rect.top + scrollTop;
     const buttonBottom = rect.bottom + scrollTop;
-    
+
     // Define popup dimensions
     const popupWidth = 200;
     const popupHeight = 200;
-    
+
     // Calculate initial position (below the button)
     let x = buttonLeft;
     let y = buttonBottom;
-    
+
     // Adjust position to keep popup within viewport
     if (x + popupWidth > viewportWidth + scrollLeft) {
       x = viewportWidth + scrollLeft - popupWidth;
     }
-    
+
     // If popup would go below viewport, position it above the button
     if (y + popupHeight > viewportHeight + scrollTop) {
       y = buttonTop - popupHeight;
     }
-    
+
     // Ensure minimum distance from viewport edges
-    x = Math.max(scrollLeft, Math.min(x, viewportWidth + scrollLeft - popupWidth));
-    y = Math.max(scrollTop, Math.min(y, viewportHeight + scrollTop - popupHeight));
-    
+    x = Math.max(
+      scrollLeft,
+      Math.min(x, viewportWidth + scrollLeft - popupWidth)
+    );
+    y = Math.max(
+      scrollTop,
+      Math.min(y, viewportHeight + scrollTop - popupHeight)
+    );
+
     setPopupPosition({ x, y });
     setActivePopup(popupType);
   };
@@ -312,28 +346,37 @@ function TextToolbar({
   const handlePopupClose = () => {
     setActivePopup(null);
   };
-
+  console.log("font family", selectedElement?.styles?.fontFamily);
   return (
     <>
       <div className="w-full overflow-x-auto">
         {/* <div className="flex items-center gap-2  px-2"> */}
         <div className="flex items-center gap-2 px-2 overflow-x-auto w-[90vw] md:w-full scrollbar-hide sm:flex-wrap sm:justify-start">
-
-          <Tooltip id="undo-tooltip" content={canUndo ? "Undo last action" : "Nothing to undo"}>
-            <button 
+          <Tooltip
+            id="undo-tooltip"
+            content={canUndo ? "Undo last action" : "Nothing to undo"}
+          >
+            <button
               onClick={undo}
               disabled={!canUndo}
-              className={`p-2 rounded-md hover:bg-gray-100 ${!canUndo ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`p-2 rounded-md hover:bg-gray-100 ${
+                !canUndo ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <RotateCcw className="h-5 w-5 text-gray-600" />
             </button>
           </Tooltip>
 
-          <Tooltip id="redo-tooltip" content={canRedo ? "Redo last action" : "Nothing to redo"}>
-            <button 
+          <Tooltip
+            id="redo-tooltip"
+            content={canRedo ? "Redo last action" : "Nothing to redo"}
+          >
+            <button
               onClick={redo}
               disabled={!canRedo}
-              className={`p-2 rounded-md hover:bg-gray-100 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`p-2 rounded-md hover:bg-gray-100 ${
+                !canRedo ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <RotateCw className="h-5 w-5 text-gray-600" />
             </button>
@@ -342,30 +385,31 @@ function TextToolbar({
           <Tooltip id="color-picker-tooltip" content="Change text color">
             <button
               ref={colorButtonRef}
-              onClick={() => handlePopupOpen('color', colorButtonRef)}
+              onClick={() => handlePopupOpen("color", colorButtonRef)}
               className="flex items-center gap-2 px-3 py-2 border rounded-md hover:bg-gray-50 transition-colors"
-              >
-              <div  className="w-5 h-5 rounded-sm border border-gray-200" 
-                   style={{ backgroundColor: selectedElement?.styles?.color }} />
-                    <span className="text-sm w-max font-medium">Color</span>
+            >
+              <div
+                className="w-5 h-5 rounded-sm border border-gray-200"
+                style={{ backgroundColor: selectedElement?.styles?.color }}
+              />
+              <span className="text-sm w-max font-medium">Color</span>
             </button>
-
-
-        
           </Tooltip>
 
           <Tooltip id="font-selector-tooltip" content="Change font family">
-
-
-          <button
-        className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
-        ref={fontButtonRef}
-              onClick={() => handlePopupOpen('font', fontButtonRef)}
-      >
-        <span className="w-max">{selectedElement?.styles?.fontFamily || 'Roboto'}</span>
-        <ChevronDown className="h-4 w-4" />
-      </button> 
-       
+            <button
+              className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
+              ref={fontButtonRef}
+              onClick={() => handlePopupOpen("font", fontButtonRef)}
+            >
+              <span
+                className="w-max"
+                style={{ fontFamily: selectedElement?.styles.fontFamily }}
+              >
+                {selectedElement?.styles?.fontFamily || "Poppins"}
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </button>
           </Tooltip>
 
           <Tooltip id="font-size-tooltip" content="Change font size">
@@ -519,7 +563,9 @@ function TextToolbar({
 
               <button
                 className={`p-2 hover:bg-gray-100 ${
-                  selectedElement?.styles?.textDecoration?.includes("line-through")
+                  selectedElement?.styles?.textDecoration?.includes(
+                    "line-through"
+                  )
                     ? "bg-gray-200"
                     : ""
                 }`}
@@ -542,15 +588,17 @@ function TextToolbar({
             </div>
           </Tooltip>
 
-          <Tooltip id="text-style-popup-tooltip" content="Advanced text styling">
+          <Tooltip
+            id="text-style-popup-tooltip"
+            content="Advanced text styling"
+          >
             <button
               ref={textStyleButtonRef}
-              onClick={() => handlePopupOpen('textStyle', textStyleButtonRef)}
+              onClick={() => handlePopupOpen("textStyle", textStyleButtonRef)}
               className="p-2 rounded-md hover:bg-gray-100"
             >
-        <List className="h-5 w-5 text-gray-600" />
-        </button>
-
+              <List className="h-5 w-5 text-gray-600" />
+            </button>
           </Tooltip>
 
           <Tooltip id="text-effects-tooltip" content="Apply text effects">
@@ -574,7 +622,7 @@ function TextToolbar({
           <Tooltip id="position-tooltip" content="Adjust element position">
             <button
               ref={positionButtonRef}
-              onClick={() => handlePopupOpen('position', positionButtonRef)}
+              onClick={() => handlePopupOpen("position", positionButtonRef)}
               className="p-2 rounded-md hover:bg-gray-100"
             >
               <span>Position</span>
@@ -584,14 +632,21 @@ function TextToolbar({
           <Tooltip id="transparency-tooltip" content="Adjust transparency">
             <button
               ref={transparencyButtonRef}
-              onClick={() => handlePopupOpen('transparency', transparencyButtonRef)}
+              onClick={() =>
+                handlePopupOpen("transparency", transparencyButtonRef)
+              }
               className="p-2 rounded-md hover:bg-gray-100"
             >
               <Droplet className="h-5 w-5 text-gray-600" />
             </button>
           </Tooltip>
 
-          <Tooltip id="lock-tooltip" content={selectedElement?.locked ? "Unlock element" : "Lock element"}>
+          <Tooltip
+            id="lock-tooltip"
+            content={
+              selectedElement?.locked ? "Unlock element" : "Lock element"
+            }
+          >
             <button
               onClick={() => handleLock(selectedElement?.id)}
               className={`p-2 rounded-md hover:bg-gray-100 ${
@@ -626,94 +681,105 @@ function TextToolbar({
         </div>
       </div>
 
-      {activePopup === 'color' && createPortal(
-        <div 
-          className="absolute z-[9999] popup-content"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-          }}
-        >
-          <ColorPicker
-            color={selectedElement?.styles?.color?.startsWith('rgba') ? 
-              `#${selectedElement?.styles?.color.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/).slice(1).map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}` : 
-              selectedElement?.styles?.color}
-            onChange={handleColorChange}
-            showPalette={false}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "color" &&
+        createPortal(
+          <div
+            className="absolute z-[9999] popup-content"
+            style={{
+              left: popupPosition.x,
+              top: popupPosition.y,
+            }}
+          >
+            <ColorPicker
+              color={
+                selectedElement?.styles?.color?.startsWith("rgba")
+                  ? `#${selectedElement?.styles?.color
+                      .match(/rgba\((\d+),\s*(\d+),\s*(\d+)/)
+                      .slice(1)
+                      .map((x) => parseInt(x).toString(16).padStart(2, "0"))
+                      .join("")}`
+                  : selectedElement?.styles?.color
+              }
+              onChange={handleColorChange}
+              showPalette={false}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
 
-      {activePopup === 'font' && createPortal(
-        <div 
-          className="absolute z-[9999] popup-content"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-          }}
-        >
-          <FontSelector
-            font={selectedElement?.styles?.fontFamily}
-            onChange={handleFontChange}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "font" &&
+        createPortal(
+          <div
+            className="absolute z-[9999] popup-content"
+            style={{
+              left: popupPosition.x,
+              top: popupPosition.y,
+            }}
+          >
+            <FontSelector
+              font={selectedElement?.styles?.fontFamily || "Poppins"}
+              onChange={handleFontChange}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
 
-      {activePopup === 'textStyle' && createPortal(
-        <div 
-          className="absolute z-[9999] popup-content"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-          }}
-        >
-          <TextStylePopup
-            lineHeight={selectedElement?.styles?.lineHeight}
-            letterSpacing={selectedElement?.styles?.letterSpacing}
-            onChange={handleTextStyleChange}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "textStyle" &&
+        createPortal(
+          <div
+            className="absolute z-[9999] popup-content"
+            style={{
+              left: popupPosition.x,
+              top: popupPosition.y,
+            }}
+          >
+            <TextStylePopup
+              lineHeight={selectedElement?.styles?.lineHeight}
+              letterSpacing={selectedElement?.styles?.letterSpacing}
+              onChange={handleTextStyleChange}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
 
-      {activePopup === 'position' && createPortal(
-        <div 
-          className="absolute z-[9999] popup-content"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-          }}
-        >
-          <PositionPopup
-            onLayerPositionChange={handleLayerPositionChange}
-            onPositionChange={handlePositionChange}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "position" &&
+        createPortal(
+          <div
+            className="absolute z-[9999] popup-content"
+            style={{
+              left: popupPosition.x,
+              top: popupPosition.y,
+            }}
+          >
+            <PositionPopup
+              onLayerPositionChange={handleLayerPositionChange}
+              onPositionChange={handlePositionChange}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
 
-      {activePopup === 'transparency' && createPortal(
-        <div 
-          className="absolute z-[9999] popup-content"
-          style={{
-            left: popupPosition.x,
-            top: popupPosition.y,
-          }}
-        >
-          <TransparencyPopup
-            transparency={transparency}
-            onChange={handleTransparencyChange}
-            onClose={handlePopupClose}
-          />
-        </div>,
-        document.body
-      )}
+      {activePopup === "transparency" &&
+        createPortal(
+          <div
+            className="absolute z-[9999] popup-content"
+            style={{
+              left: popupPosition.x,
+              top: popupPosition.y,
+            }}
+          >
+            <TransparencyPopup
+              transparency={transparency}
+              onChange={handleTransparencyChange}
+              onClose={handlePopupClose}
+            />
+          </div>,
+          document.body
+        )}
     </>
   );
 }

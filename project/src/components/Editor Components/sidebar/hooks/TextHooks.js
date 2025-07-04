@@ -5,6 +5,7 @@ export const createTextElement = (category = "body", text) => {
     color: "#000000",
     fontSize: "24px",
     fontWeight: "normal",
+    fontFamily: "Poppins",
   };
 
   // Custom styles per category
