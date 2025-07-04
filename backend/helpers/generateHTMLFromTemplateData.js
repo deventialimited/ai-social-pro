@@ -117,7 +117,9 @@ exports.generateHTMLFromTemplateData = (templateData) => {
                   }
                 }
               }
-
+              if (!fontStyles.fontFamily) {
+                fontStyles.fontFamily = "Poppins";
+              }
               const fontStyleString = convertStylesToString(fontStyles);
               const layoutStyleString = convertStylesToString(layoutStyles);
 

@@ -1,93 +1,73 @@
-import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Search } from "lucide-react";
 import WebFont from "webfontloader";
 import axios from "axios";
-function FontSelector({ font = "Poppins", onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
+
+function FontSelector({ font = "Poppins", onChange, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [fonts, setFonts] = useState([]);
-  const [selectedFont, setSelectedFont] = useState("");
+  const [selectedFont, setSelectedFont] = useState(null);
 
   const selectorRef = useRef(null);
-  const API_KEY = "AIzaSyC26vJC8yUlX5URokX7mZPvJW7Sg-wom-g";
+  const API_KEY = "AIzaSyC26vJC8yUlX5URokX7mZPvJW7Sg-wom-g"; // Replace with your real API key
 
+  // Fetch fonts once
   useEffect(() => {
-    // const proxyUrl = "https://cors-anywhere.herokuapp.com/";
-    const googleFontsApiUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`;
-
     axios
-      .get(googleFontsApiUrl)
-      .then((response) => {
-        const fontList = response.data.items.map((item) => item.family);
-        console.log(fontList);
+      .get(`https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`)
+      .then((res) => {
+        const fontList = res.data.items;
         setFonts(fontList);
 
-        const defaultFont = fontList.includes("Roboto")
-          ? "Roboto"
-          : fontList[0];
-        setSelectedFont(defaultFont);
+        // Determine initial font selection
+        let initialFont =
+          fontList.find((f) => f.family === font) ||
+          fontList.find((f) => f.family === "Poppins") ||
+          fontList[0];
 
-        // Dynamically load the selected font through a proxied @import
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        // Use Google Fonts CSS through the proxy:
-        link.href = `https://fonts.googleapis.com/css2?family=${defaultFont.replace(
-          / /g,
-          "+"
-        )}&display=swap`;
-        document.head.appendChild(link);
+        setSelectedFont(initialFont);
+
+        // Load initial font
+        WebFont.load({
+          google: { families: [initialFont.family] },
+        });
       })
-      .catch((error) => {
-        console.error("Error fetching fonts:", error);
-      });
-  }, []);
+      .catch((err) => console.error("Error fetching fonts:", err));
+  }, [font]);
 
-  useEffect(() => {
-    if (selectedFont) {
-      WebFont.load({
-        google: {
-          families: [selectedFont],
-        },
-      });
-    }
-  }, [selectedFont]);
-
+  // Filter fonts client-side
   const filteredFonts = searchQuery
-    ? fonts.filter((f) => f.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? fonts.filter((f) =>
+        f.family.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : fonts;
 
+  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (selectorRef.current && !selectorRef.current.contains(event.target)) {
-        setIsOpen(false);
+        onClose?.();
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
-  const handleFontSelect = (font) => {
-    setSelectedFont(font);
-    setIsOpen(false);
-    if (onChange) {
-      onChange(font);
-    }
-  };
+  const handleFontSelect = useCallback(
+    (fontObj) => {
+      setSelectedFont(fontObj);
+      onClose?.();
+      onChange?.(fontObj.family);
+
+      WebFont.load({
+        google: { families: [fontObj.family] },
+      });
+    },
+    [onChange, onClose]
+  );
 
   return (
-    <div className=" relative " ref={selectorRef}>
-      {/* <button
-        className="flex items-center gap-1 px-3 py-2 rounded-md hover:bg-gray-100 border min-w-[150px] justify-between"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="w-max">{selectedFont}</span>
-        <ChevronDown className="h-4 w-4" />
-      </button> */}
-
-      {/* {isOpen && ( */}
+    <div className="relative" ref={selectorRef}>
       <div className="absolute z-50 mt-1 md:w-64 w-44 bg-white rounded-md shadow-lg border">
         <div className="p-2 border-b">
           <div className="relative">
@@ -104,19 +84,18 @@ function FontSelector({ font = "Poppins", onChange }) {
         <div className="max-h-64 overflow-y-auto">
           {filteredFonts.map((font) => (
             <button
-              key={font}
+              key={font.family}
               className={`w-full text-left px-4 py-3 hover:bg-gray-50 ${
-                selectedFont === font ? "bg-purple-50" : ""
+                selectedFont?.family === font.family ? "bg-purple-50" : ""
               }`}
               onClick={() => handleFontSelect(font)}
-              style={{ fontFamily: font }}
+              style={{ fontFamily: font.family }}
             >
-              {font}
+              {font.family}
             </button>
           ))}
         </div>
       </div>
-      {/* )} */}
     </div>
   );
 }

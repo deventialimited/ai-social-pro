@@ -10,7 +10,6 @@ import { useEditor } from "../EditorStoreHooks/FullEditorHooks";
 import CanvasElement from "./CanvasElement";
 import LoadingOverlay from "../common/LoadingOverlay";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { generateReplacedPostDesignValues } from "./helpers/generateReplacedPostDesignValues";
 import useAlignmentGuides from "./helpers/useAlignmentGuides";
 import AlignmentGuides from "./AlignmentGuides";
 
@@ -28,8 +27,6 @@ function EditorCanvas({
     elements,
     isCanvasLoading,
     postOtherValues,
-    selectedTemplateId,
-    setSelectedTemplateId,
     setCanvasLoading,
     removeElement,
     allFiles,
@@ -54,38 +51,6 @@ function EditorCanvas({
   const transformRef = useRef(null);
 
   const [isMobile, setIsMobile] = useState(false);
-  const handleGenerate = useCallback(async () => {
-    setCanvasLoading(true);
-    const result = await generateReplacedPostDesignValues(postOtherValues, {
-      canvas,
-      elements,
-      layers,
-      backgrounds,
-    });
-    setCanvas(result?.canvas);
-    setElements(result?.elements);
-    setLayers(result?.layers);
-    setAllFiles(result?.allFiles);
-    setBackgrounds(result?.backgrounds);
-    setSelectedTemplateId(null);
-    setCanvasLoading(false);
-  }, [postOtherValues, canvas, elements, layers, backgrounds]);
-  // console.log(postOtherValues);
-  console.log(elements);
-  useEffect(() => {
-    const shouldGenerate =
-      selectedTemplateId &&
-      (canvas ||
-        elements?.length ||
-        layers?.length ||
-        Object.keys(backgrounds || {}).length);
-
-    if (shouldGenerate) {
-      handleGenerate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTemplateId]);
-
   useEffect(() => {
     function handleResize() {
       setIsMobile(window.innerWidth <= 768);

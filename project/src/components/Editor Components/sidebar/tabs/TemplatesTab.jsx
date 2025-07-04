@@ -27,8 +27,9 @@ function TemplatesTab() {
     canvasLoading,
     historyRef,
     postOtherValues,
-    selectedTemplateId,
-    setSelectedTemplateId,
+    addFile,
+    setAllFiles,
+    allFiles,
   } = useEditor();
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -69,7 +70,7 @@ function TemplatesTab() {
   const handleLoadTemplate = async (template) => {
     try {
       setCanvasLoading(true);
-
+      setAllFiles([]);
       // Create new state object with template data
       const newState = {
         ...historyRef.current.present,
@@ -85,14 +86,40 @@ function TemplatesTab() {
       if (template.elements) setElements(template.elements);
       if (template.layers) setLayers(template.layers);
       if (template.backgrounds) setBackgrounds(template.backgrounds);
-      setSelectedTemplateId(template?.templateId);
+      // Handle image elements
+      const imageElements = (template?.elements || []).filter(
+        (el) => el.type === "image"
+      );
+
+      for (const element of imageElements) {
+        const src = element?.props?.src;
+        if (!src) continue;
+
+        try {
+          const response = await fetch(src, {
+            method: "GET",
+            headers: {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+          });
+
+          const blob = await response.blob();
+          const file = new File([blob], element.id, { type: blob.type });
+          console.log(file);
+          addFile(file);
+        } catch (error) {
+          console.error("Failed to fetch or process image:", element.id, error);
+        }
+      }
+
       setCanvasLoading(false);
     } catch (error) {
       setCanvasLoading(false);
       console.error("Failed to load template:", error);
     }
   };
-
+  console.log("All files", allFiles);
   useEffect(() => {
     if (userId) refetch();
   }, [userId, refetch]);
