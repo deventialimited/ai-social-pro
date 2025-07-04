@@ -553,7 +553,7 @@ const CanvasElement = ({
                                   if (match) {
                                     const rawValue = parseFloat(match[1]); // gets the numeric part: 5
                                     // Map 0–50 → 0–1
-                                    const mapped = (rawValue / 50) * 2.0;
+                                    const mapped = (rawValue / 100) * 8.0;
                                     return `blur(${mapped}px)`;
                                   }
                                 }
@@ -659,7 +659,7 @@ const CanvasElement = ({
                                   styles.filter.match(/blur\(([\d.]+)px\)/);
                                 if (match) {
                                   const rawValue = parseFloat(match[1]);
-                                  const mapped = (rawValue / 50) * 2.0;
+                                  const mapped = (rawValue / 100) * 8.0;
                                   return `blur(${mapped}px)`;
                                 }
                               }
@@ -702,7 +702,7 @@ const CanvasElement = ({
                             if (match) {
                               const rawValue = parseFloat(match[1]); // gets the numeric part: 5
                               // Map 0–50 → 0–1
-                              const mapped = (rawValue / 50) * 2.0;
+                              const mapped = (rawValue / 100) * 8.0;
                               return `blur(${mapped}px)`;
                             }
                           }

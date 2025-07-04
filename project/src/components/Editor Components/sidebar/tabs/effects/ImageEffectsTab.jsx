@@ -222,12 +222,16 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("blur")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.blur.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.blur.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.blur.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.blur.enabled ? "translate-x-5" : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -237,7 +241,7 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             <div className="w-full">
               <Slider
                 min={0}
-                max={50}
+                max={100}
                 value={selectedElement?.effects.blur.value}
                 onChange={(value) => handleChangeEffectValue("blur", value)}
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
@@ -276,12 +280,18 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("brightness")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.brightness.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.brightness.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.brightness.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.brightness.enabled
+                    ? "translate-x-5"
+                    : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -293,7 +303,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 min={0}
                 max={200}
                 value={selectedElement?.effects.brightness.value}
-                onChange={(value) => handleChangeEffectValue("brightness", value)}
+                onChange={(value) =>
+                  handleChangeEffectValue("brightness", value)
+                }
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                 handleStyle={{
                   borderColor: "#3b82f6",
@@ -333,12 +345,16 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("sepia")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.sepia.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.sepia.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.sepia.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.sepia.enabled ? "translate-x-5" : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -366,7 +382,10 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
               type="number"
               value={selectedElement?.effects.sepia.value}
               onChange={(e) =>
-                handleChangeEffectValue("sepia", Number.parseInt(e.target.value))
+                handleChangeEffectValue(
+                  "sepia",
+                  Number.parseInt(e.target.value)
+                )
               }
               className="w-12 p-1 text-sm border rounded-md"
             />
@@ -387,12 +406,18 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("grayscale")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.grayscale.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.grayscale.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.grayscale.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.grayscale.enabled
+                    ? "translate-x-5"
+                    : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -404,7 +429,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 min={0}
                 max={100}
                 value={selectedElement?.effects.grayscale.value}
-                onChange={(value) => handleChangeEffectValue("grayscale", value)}
+                onChange={(value) =>
+                  handleChangeEffectValue("grayscale", value)
+                }
                 trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                 handleStyle={{
                   borderColor: "#3b82f6",
@@ -420,7 +447,10 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
               type="number"
               value={selectedElement?.effects.grayscale.value}
               onChange={(e) =>
-                handleChangeEffectValue("grayscale", Number.parseInt(e.target.value))
+                handleChangeEffectValue(
+                  "grayscale",
+                  Number.parseInt(e.target.value)
+                )
               }
               className="w-12 p-1 text-sm border rounded-md"
             />
@@ -441,12 +471,16 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("border")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.border.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.border.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.border.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.border.enabled ? "translate-x-5" : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -475,7 +509,10 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 type="number"
                 value={selectedElement?.effects.border.value}
                 onChange={(e) =>
-                  handleChangeEffectValue("border", Number.parseInt(e.target.value))
+                  handleChangeEffectValue(
+                    "border",
+                    Number.parseInt(e.target.value)
+                  )
                 }
                 className="w-12 p-1 text-sm border rounded-md"
               />
@@ -505,12 +542,18 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("cornerRadius")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.cornerRadius.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.cornerRadius.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.cornerRadius.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.cornerRadius.enabled
+                    ? "translate-x-5"
+                    : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -564,12 +607,16 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
             />
             <span
               onClick={() => handleToggleEffect("shadow")}
-              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${selectedElement?.effects.shadow.enabled ? "bg-blue-500" : "bg-gray-300"
-                }`}
+              className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all ${
+                selectedElement?.effects.shadow.enabled
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+              }`}
             >
               <span
-                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${selectedElement?.effects.shadow.enabled ? "translate-x-5" : ""
-                  }`}
+                className={`absolute h-4 w-4 left-0.5 bottom-0.5 bg-white rounded-full transition-all ${
+                  selectedElement?.effects.shadow.enabled ? "translate-x-5" : ""
+                }`}
               ></span>
             </span>
           </div>
@@ -585,7 +632,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                     min={0}
                     max={50}
                     value={selectedElement?.effects.shadow.blur}
-                    onChange={(value) => handleChangeNestedEffectValue("shadow", "blur", value)}
+                    onChange={(value) =>
+                      handleChangeNestedEffectValue("shadow", "blur", value)
+                    }
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
                       borderColor: "#3b82f6",
@@ -601,7 +650,11 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                   type="number"
                   value={selectedElement?.effects.shadow.blur}
                   onChange={(e) =>
-                    handleChangeNestedEffectValue("shadow", "blur", Number.parseInt(e.target.value))
+                    handleChangeNestedEffectValue(
+                      "shadow",
+                      "blur",
+                      Number.parseInt(e.target.value)
+                    )
                   }
                   className="w-12 p-1 text-sm border rounded-md"
                 />
@@ -617,7 +670,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                     min={-50}
                     max={50}
                     value={selectedElement?.effects.shadow.offsetX}
-                    onChange={(value) => handleChangeShadowValue("offsetX", value)}
+                    onChange={(value) =>
+                      handleChangeShadowValue("offsetX", value)
+                    }
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
                       borderColor: "#3b82f6",
@@ -652,7 +707,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                     min={-50}
                     max={50}
                     value={selectedElement?.effects.shadow.offsetY}
-                    onChange={(value) => handleChangeShadowValue("offsetY", value)}
+                    onChange={(value) =>
+                      handleChangeShadowValue("offsetY", value)
+                    }
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
                       borderColor: "#3b82f6",
@@ -687,7 +744,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                     min={0}
                     max={100}
                     value={selectedElement?.effects.shadow.opacity}
-                    onChange={(value) => handleChangeShadowValue("opacity", value)}
+                    onChange={(value) =>
+                      handleChangeShadowValue("opacity", value)
+                    }
                     trackStyle={{ backgroundColor: "#3b82f6", height: 2 }}
                     handleStyle={{
                       borderColor: "#3b82f6",
@@ -720,7 +779,9 @@ function ImageEffectsTab({ onClose, selectedElementId }) {
                 <input
                   type="color"
                   value={selectedElement?.effects.shadow.color}
-                  onChange={(e) => handleChangeShadowValue("color", e.target.value)}
+                  onChange={(e) =>
+                    handleChangeShadowValue("color", e.target.value)
+                  }
                   className="w-8 h-8 p-0 border border-gray-300"
                 />
               </div>
