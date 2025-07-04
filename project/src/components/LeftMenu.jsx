@@ -100,7 +100,7 @@ export const LeftMenu = ({
         >
           <div className="flex items-center gap-3">
             <img
-              src="/oneyear-logo.svg"
+              src="/OneYearSocialPro.jpeg"
               alt="OneYear Social"
               className="w-8 h-8"
             />

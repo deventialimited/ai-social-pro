@@ -22,7 +22,7 @@ import { useAddDomainMutation } from "../libs/domainService";
 import axios from "axios";
 import { BusinessModal } from "../NewUIComponents/Modal";
 import { useSocket } from "../store/useSocket";
-import { updateSelectedDomain } from "../libs/authService"
+import { updateSelectedDomain } from "../libs/authService";
 
 export function extractDomain(fullUrl) {
   try {
@@ -52,7 +52,7 @@ export const HomePage = () => {
     client_email: "",
     clientWebsite: "",
     clientName: "",
-    client_id:"",
+    client_id: "",
     clientDescription: "",
     industry: "",
     niche: "",
@@ -238,7 +238,7 @@ export const HomePage = () => {
         country: result?.country || "",
         state: result?.state || "",
         userId: result?.userId || "",
-        client_id:result?.client_id || "",
+        client_id: result?.client_id || "",
         siteLogo: result?.siteLogo || "",
         marketingStrategy: {
           audience: Array.isArray(result?.marketingStrategy?.audience)
@@ -252,7 +252,7 @@ export const HomePage = () => {
             : [],
         },
       });
-          
+
       toast.success("Domain successfully added!");
       setIsLoading(false);
       setisModalOpen(true);
@@ -326,7 +326,7 @@ export const HomePage = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <img
-                src="/oneyear-logo.svg"
+                src="/OneYearSocialPro.jpeg"
                 alt="OneYear Social"
                 className="w-8 h-8"
               />
@@ -384,8 +384,8 @@ export const HomePage = () => {
               of Social Posts
             </h1>
             <p className="text-md md:px-0 px-3 md:text-xl text-gray-600 dark:text-gray-400">
-              Enter your website URL and let AI create a year's worth of engaging social media content, perfectly
-              tailored to your brand
+              Enter your website URL and let AI create a year's worth of
+              engaging social media content, perfectly tailored to your brand
             </p>
           </div>
 
