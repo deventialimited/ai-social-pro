@@ -41,6 +41,14 @@ function FontSelector({ font = "Poppins", onChange, onClose }) {
         f.family.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : fonts;
+  useEffect(() => {
+    const familiesToLoad = filteredFonts.slice(0, 30).map((f) => f.family); // Limit to top 30 visible fonts
+    if (familiesToLoad.length > 0) {
+      WebFont.load({
+        google: { families: familiesToLoad },
+      });
+    }
+  }, [filteredFonts]);
 
   // Close on outside click
   useEffect(() => {
